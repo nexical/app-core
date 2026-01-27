@@ -1,0 +1,39 @@
+---
+import { PageGuard } from "@/lib/ui/page-guard";
+import Layout from "@/layouts/Layout.astro";
+// Rule: Components should reside in src/components/{feature}/
+import { MyReactComponent } from "../components/__feature__/my-react-component";
+
+// modules/__module__/src/pages/__page__.astro
+
+// 1. Security Check (MUST be first)
+// Ensure the user has the required role (e.g., 'anonymous', 'user', 'admin')
+const guard = await PageGuard.protect(Astro, "anonymous");
+if (guard) return guard;
+
+// 2. Astro Frontmatter
+// Server-side logic runs here (at build time or request time for SSR)
+const title = "My Feature Page";
+---
+
+<!-- 3. Use the Standard Layout -->
+<Layout title={title}>
+    
+    <!-- 4. Semantic Container -->
+    <div class="p-6 max-w-7xl mx-auto w-full flex flex-col gap-6">
+        
+        <!-- Header Section -->
+        <header class="flex flex-col gap-2">
+            <h1 class="text-3xl font-bold tracking-tight">{title}</h1>
+            <p class="text-muted-foreground">Description of this feature page.</p>
+        </header>
+
+        <!-- 
+            5. React Island 
+            client:load = Hydrates immediately
+            client:idle = Hydrates when CPU is free
+        -->
+        <MyReactComponent client:load />
+        
+    </div>
+</Layout>

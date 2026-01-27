@@ -1,0 +1,36 @@
+import { PersistentAgent } from ' @nexical/agent/src/core/persistent';
+import { someManualService } from ' @modules/{{kebab-case-module-name}}/src/services/manual-service';
+
+/**
+ * Persistent Agent for background tasks.
+ * 
+ * Implement the tick() method for periodic logic.
+ * 
+ * STRICT RULE: Never import ' @/lib/core/db' here.
+ * Use manual Services or the Federated SDK (this.api) for data access.
+ * 
+ * Location: modules/{{kebab-case-module-name}}/src/agent/{{kebab-case-name}}.ts
+ */
+export class {{PascalCaseName}}Agent extends PersistentAgent {
+  public name = '{{kebab-case-name}}';
+  
+  /**
+   * Interval in milliseconds between ticks.
+   */
+  protected intervalMs = 60000; // 1 minute
+
+  /**
+   * The tick method is executed periodically.
+   */
+  public async tick(): Promise<void> {
+    this.logger.info(`[${this.name}] Tick started...`);
+
+    try {
+      // 1. Logic via manual Services
+      // 2. Data access via this.api (Federated SDK)
+      // 3. No direct DB calls
+    } catch (error: any) {
+      this.logger.error(`[${this.name}] Tick failed: ${error.message}`);
+    }
+  }
+}

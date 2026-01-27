@@ -1,0 +1,44 @@
+import { db } from ' @/lib/core/db';
+import type { ServiceResponse } from ' @/types/service';
+
+/**
+ * Manual Service for domain-specific logic.
+ * Use this for complex transactions or logic that isn't simple CRUD.
+ * 
+ * Location: modules/{{kebab-case-module-name}}/src/services/{{kebab-case-name}}-service.ts
+ */
+export class {{PascalCaseName}}Service {
+  /**
+   * Example domain method.
+   * All public methods must be 'public static async' and return ServiceResponse.
+   */
+  public static async executeComplexLogic(id: string): Promise<ServiceResponse<boolean>> {
+    try {
+      return await db.$transaction(async (tx) => {
+        // Use 'tx' for operations within the transaction
+        const record = await tx.{{entityCamelCase}}.findUnique({ where: { id } });
+        
+        if (!record) {
+          return {
+            success: false,
+            error: 'Record not found',
+            code: 404
+          };
+        }
+
+        // Domain logic here
+        
+        return {
+          success: true,
+          data: true
+        };
+      });
+    } catch (error) {
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Unknown error',
+        code: 500
+      };
+    }
+  }
+}

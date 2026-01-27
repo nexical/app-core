@@ -1,0 +1,437 @@
+config:
+  test:
+    roles:
+      admin: { role: 'ADMIN' }
+      member: { role: 'EMPLOYEE' }
+
+enums:
+  SiteRole:
+    values:
+      - ADMIN
+      - EMPLOYEE
+      - CONTRACTOR
+  UserStatus:
+    values:
+      - ACTIVE
+      - INACTIVE
+      - BANNED
+  UserMode:
+    values:
+      - SINGLE
+      - PUBLIC
+      - ADMIN
+
+models:
+  User:
+    default: true
+    role:
+      create: admin
+      delete: admin
+      update: admin
+      list: admin
+      get: admin
+    actor:
+      name: user
+      prefix: ne_pat_
+      strategy: bearer
+      validStatus: ACTIVE
+      fields:
+        tokenModel: PersonalAccessToken
+        ownerField: userId
+        keyField: hashedKey
+    test:
+      actor: user
+    fields:
+      id:
+        type: String
+        attributes:
+          - "@id"
+          - "@default(cuid())"
+      username:
+        type: String
+        isRequired: false
+        attributes:
+          - "@unique"
+      email:
+        type: String
+        isRequired: false
+        attributes:
+          - "@unique"
+      password:
+        api: false
+        private: true
+        type: String
+        isRequired: false
+      passwordUpdatedAt:
+        type: DateTime
+        attributes:
+          - "@default(now())"
+      emailVerified:
+        type: DateTime
+        isRequired: false
+      name:
+        type: String
+        isRequired: false
+      image:
+        type: String
+        isRequired: false
+      role:
+        type: SiteRole
+        attributes:
+          - "@default(EMPLOYEE)"
+      status:
+        type: UserStatus
+        attributes:
+          - "@default(ACTIVE)"
+      accounts:
+        api: false
+        type: Account
+        isList: true
+      createdAt:
+        type: DateTime
+        attributes:
+          - "@default(now())"
+      updatedAt:
+        type: DateTime
+        attributes:
+          - "@updatedAt"
+      accessTokens:
+        api: false
+        private: true
+        type: PersonalAccessToken
+        isList: true
+
+  PersonalAccessToken:
+    api: false
+    test:
+      actor: user
+    fields:
+      id:
+        type: String
+        attributes:
+          - "@id"
+          - "@default(cuid())"
+      name:
+        type: String
+      hashedKey:
+        type: String
+        attributes:
+          - "@unique"
+      prefix:
+        type: String
+      lastUsedAt:
+        type: DateTime
+        isRequired: false
+      expiresAt:
+        type: DateTime
+        isRequired: false
+      createdAt:
+        type: DateTime
+        attributes:
+          - "@default(now())"
+      userId:
+        type: String
+      user:
+        type: User
+        attributes:
+          - "@relation(fields: [userId], references: [id], onDelete: Cascade)"
+
+  Account:
+    api: false
+    fields:
+      id:
+        type: String
+        attributes:
+          - "@id"
+          - "@default(cuid())"
+      userId:
+        type: String
+      type:
+        type: String
+      provider:
+        type: String
+      providerAccountId:
+        type: String
+      refresh_token:
+        type: String
+        isRequired: false
+      access_token:
+        type: String
+        isRequired: false
+      expires_at:
+        type: Int
+        isRequired: false
+      token_type:
+        type: String
+        isRequired: false
+      scope:
+        type: String
+        isRequired: false
+      id_token:
+        type: String
+        isRequired: false
+      session_state:
+        type: String
+        isRequired: false
+      createdAt:
+        type: DateTime
+        attributes:
+          - "@default(now())"
+      updatedAt:
+        type: DateTime
+        attributes:
+          - "@updatedAt"
+      user:
+        type: User
+        attributes:
+          - "@relation(fields: [userId], references: [id], onDelete: Cascade)"
+    attributes:
+      - "@@unique([provider, providerAccountId])"
+
+
+  VerificationToken:
+    api: false
+    fields:
+      id:
+        type: String
+        attributes:
+          - "@id"
+          - "@default(cuid())"
+      identifier:
+        type: String
+      token:
+        type: String
+      expires:
+        type: DateTime
+    attributes:
+      - "@@unique([identifier, token])"
+
+  PasswordResetToken:
+    api: false
+    fields:
+      id:
+        type: String
+        attributes:
+          - "@id"
+          - "@default(cuid())"
+      email:
+        type: String
+      token:
+        type: String
+        attributes:
+          - "@unique"
+      expires:
+        type: DateTime
+      createdAt:
+        type: DateTime
+        attributes:
+          - "@default(now())"
+    attributes:
+      - "@@index([email])"
+
+  Invitation:
+    api: false
+    fields:
+      id:
+        type: String
+        attributes:
+          - "@id"
+          - "@default(cuid())"
+      email:
+        type: String
+        attributes:
+          - "@unique"
+      token:
+        type: String
+        attributes:
+          - "@unique"
+      role:
+        type: SiteRole
+        attributes:
+          - "@default(EMPLOYEE)"
+      expires:
+        type: DateTime
+      createdAt:
+        type: DateTime
+        attributes:
+          - "@default(now())"
+    attributes:
+      - "@@index([token])"
+
+  CreateUserDTO:
+    db: false
+    api: false
+    fields:
+      email:
+        type: String
+        isRequired: true
+      password:
+        type: String
+        isRequired: true
+      confirmPassword:
+        type: String
+        isRequired: true
+      name:
+        type: String
+        isRequired: false
+      username:
+        type: String
+        isRequired: false
+      token:
+        type: String
+        isRequired: false
+
+  LoginDTO:
+    db: false
+    api: false
+    fields:
+      email:
+        type: String
+        isRequired: true
+      password:
+        type: String
+        isRequired: true
+
+  InviteUserDTO:
+    db: false
+    api: false
+    fields:
+      email:
+        type: String
+        isRequired: true
+      role:
+        type: SiteRole
+        isRequired: false
+
+  RequestPasswordResetDTO:
+    db: false
+    api: false
+    fields:
+      email:
+        type: String
+        isRequired: true
+
+  ResetPasswordDTO:
+    db: false
+    api: false
+    fields:
+      token:
+        type: String
+        isRequired: true
+      password:
+        type: String
+        isRequired: true
+      confirmPassword:
+        type: String
+        isRequired: true
+
+  VerifyEmailDTO:
+    db: false
+    api: false
+    fields:
+      token:
+        type: String
+        isRequired: true
+
+  UpdateUserDTO:
+    db: false
+    api: false
+    fields:
+      id:
+        type: String
+        isRequired: true
+      name:
+        type: String
+        isRequired: false
+      username:
+        type: String
+        isRequired: false
+      email:
+        type: String
+        isRequired: false
+      image:
+        type: String
+        isRequired: false
+      role:
+        type: SiteRole
+        isRequired: false
+      status:
+        type: UserStatus
+        isRequired: false
+      password:
+        type: String
+        isRequired: false
+
+  CreateTokenDTO:
+    db: false
+    api: false
+    fields:
+      userId:
+        type: String
+        isRequired: false
+      name:
+        type: String
+        isRequired: true
+      expiresAt:
+        type: DateTime
+        isRequired: false
+
+  ValidateResetTokenDTO:
+    db: false
+    api: false
+    fields:
+      token:
+        type: String
+        isRequired: true
+
+  ValidateResetTokenResponseDTO:
+    db: false
+    api: false
+    fields:
+      valid:
+        type: Boolean
+        isRequired: true
+      email:
+        type: String
+        isRequired: false
+
+  LogoutDTO:
+    db: false
+    api: false
+    fields: {}
+
+  DeleteMeDTO:
+    db: false
+    api: false
+    fields:
+      userId:
+        type: String
+        isRequired: false
+
+
+  ListTokensDTO:
+    db: false
+    api: false
+    fields: {}
+
+  DeleteTokenDTO:
+    db: false
+    api: false
+    fields:
+      id:
+        type: String
+        isRequired: true
+      userId:
+        type: String
+        isRequired: false
+
+  CreateTokenResponseDTO:
+    db: false
+    api: false
+    fields:
+      token:
+        type: PersonalAccessToken
+        isRequired: true
+      rawKey:
+        type: String
+        isRequired: true

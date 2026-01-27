@@ -1,0 +1,14 @@
+---
+import Layout from "@/layouts/Layout.astro";
+import { LoginForm } from "@modules/user-ui/src/components/auth/login-form";
+import { config } from "@/lib/core/config";
+import { isPublicMode } from "@modules/user-api/src/config";
+import { PageGuard } from "@/lib/ui/page-guard";
+
+const guard = await PageGuard.protect(Astro, "anonymous");
+if (guard) return guard;
+---
+
+<Layout showShell={true}>
+  <LoginForm client:load isPublic={isPublicMode()} />
+</Layout>

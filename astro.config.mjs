@@ -1,0 +1,85 @@
+import { defineConfig } from 'astro/config';
+
+import react from '@astrojs/react';
+import tailwindcss from '@tailwindcss/vite';
+
+import node from '@astrojs/node';
+
+
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
+import fs from 'node:fs';
+import { defu } from 'defu';
+import modulePages from './src/lib/integrations/module-pages-integration.ts';
+import moduleEmailTheme from './src/lib/integrations/module-email-theme-integration.ts';
+
+import moduleStyles from './src/lib/integrations/module-styles-integration.ts';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Modular Config Discovery
+import { ModuleDiscovery } from './src/lib/modules/module-discovery.ts';
+
+let moduleIntegrations = [];
+let moduleViteConfig = {};
+
+const loadedModules = await ModuleDiscovery.loadModules();
+
+let selectedAdapter = null;
+
+for (const module of loadedModules) {
+  const { config } = module;
+  if (config.integrations) moduleIntegrations.push(...config.integrations);
+  if (config.vite) moduleViteConfig = defu(moduleViteConfig, config.vite);
+
+  if (config.adapter) {
+    if (selectedAdapter) throw new Error(`Multiple modules provide an Astro Adapter! Conflict between ${module.name} and previous adapter.`);
+    selectedAdapter = config.adapter;
+  }
+}
+
+// Resolve Final Adapter
+const isStatic = process.env.PUBLIC_SITE_MODE === 'static';
+const adapter = isStatic ? undefined : (selectedAdapter || node({ mode: 'standalone' }));
+
+// https://astro.build/config
+export default defineConfig({
+  output: isStatic ? 'static' : 'server',
+  integrations: [react(), modulePages(), moduleEmailTheme(), moduleStyles(), ...moduleIntegrations],
+  devToolbar: {
+    enabled: process.env.ASTRO_DEV_TOOLBAR === 'true'
+  },
+
+  vite: defu(moduleViteConfig, {
+    plugins: [tailwindcss()],
+    server: {
+      allowedHosts: process.env.ALLOWED_HOSTS ? process.env.ALLOWED_HOSTS.split(',') : ['web', 'localhost'],
+      watch: {
+        ignored: process.env.NODE_ENV === 'test' ? ['**/*'] : [
+          '**/.git/**',
+          '**/node_modules/**',
+          '**/dist/**',
+          '**/packages/**',
+          '**/.agent/**',
+          '**/scripts/**',
+          '**/tests/**',
+          '**/db/**',
+          '**/tmp/**',
+          '**/*.txt',
+          '**/*.log'
+        ]
+      }
+    },
+    build: {
+      chunkSizeWarningLimit: 3000,
+      rollupOptions: {
+        external: [/^node:/, 'jiti']
+      }
+    },
+    ssr: {
+      external: ['jiti']
+    }
+  }),
+
+  adapter
+});

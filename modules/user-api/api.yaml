@@ -1,0 +1,106 @@
+Auth:
+  - path: /register
+    verb: POST
+    method: register
+    summary: Register a new user
+    input: CreateUserDTO
+    output: User
+    role: anonymous
+
+  - path: /login
+    verb: POST
+    method: login
+    summary: Login user
+    input: LoginDTO
+    output: User
+    role: anonymous
+
+  - path: /logout
+    verb: POST
+    method: logout
+    summary: Logout user
+    input: LogoutDTO
+    role: member
+
+  - path: /invite
+    verb: POST
+    method: inviteUser
+    summary: Invite a user
+    input: InviteUserDTO
+    output: Invitation
+    role: admin
+
+  - path: /verify-email
+    verb: POST
+    method: verifyEmail
+    summary: Verify email address
+    input: VerifyEmailDTO
+    role: anonymous
+
+  - path: /password/request-reset
+    verb: POST
+    method: requestPasswordReset
+    summary: Request password reset
+    input: RequestPasswordResetDTO
+    role: anonymous
+
+  - path: /password/reset
+    verb: POST
+    method: resetPassword
+    summary: Reset password
+    input: ResetPasswordDTO
+    role: anonymous
+
+  - path: /password/validate-token
+    verb: POST
+    method: validateResetToken
+    summary: Validate reset token
+    input: ValidateResetTokenDTO
+    output: ValidateResetTokenResponseDTO
+    role: anonymous
+
+User:
+  - path: /me
+    verb: GET
+    method: getMe
+    summary: Get current user profile
+    output: User
+    role: member
+
+  - path: /me
+    verb: PUT
+    method: updateMe
+    summary: Update current user profile
+    input: UpdateUserDTO
+    output: User
+    role: member
+
+  - path: /me
+    verb: DELETE
+    method: deleteMe
+    summary: Delete current user account
+    input: DeleteMeDTO
+    role: member
+
+  - path: /me/tokens
+    verb: GET
+    method: listTokens
+    summary: List personal access tokens
+    input: ListTokensDTO
+    output: PersonalAccessToken[]
+    role: member
+
+  - path: /me/tokens
+    verb: POST
+    method: createToken
+    summary: Create personal access token
+    input: CreateTokenDTO
+    output: CreateTokenResponseDTO
+    role: member
+
+  - path: /me/tokens/[id]
+    verb: DELETE
+    method: deleteToken
+    summary: Delete personal access token
+    input: DeleteTokenDTO
+    role: member

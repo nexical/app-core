@@ -1,0 +1,12 @@
+{
+    "name": "@nexical/sdk",
+    "version": "0.1.0",
+    "type": "module",
+    "main": "src/index.ts",
+    "dependencies": {
+        "@nexical/sdk-core": "*"
+    },
+    "devDependencies": {
+        "typescript": "^5.9.3"
+    }
+}

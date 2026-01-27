@@ -1,0 +1,103 @@
+---
+import { ModuleDiscovery } from "@/lib/modules/module-discovery";
+import { generateDocs } from "@/lib/api/api-docs";
+import { config } from "@/lib/core/config";
+import { ScalarDocs } from "@/components/ScalarDocs";
+import "@/styles/styles.css";
+
+// Eagerly load all module styles
+import.meta.glob("/modules/*/styles.css", { eager: true });
+
+// Access Control
+if (config.PUBLIC_DISABLE_API_DOCS) {
+    return new Response(null, { status: 404 });
+}
+
+const isStatic = config.PUBLIC_SITE_MODE === "static";
+const actor = Astro.locals.actor;
+
+// In static mode, we cannot check auth at build time, so we must assume public access if the user builds for static.
+// If the user wants private docs, they should stick to server mode.
+if (!isStatic && !config.PUBLIC_DOCS_PUBLIC_ACCESS && !actor) {
+    return new Response(null, { status: 401 });
+}
+
+// Generate Spec
+const modules = await ModuleDiscovery.loadModules();
+
+const openApiDoc: any = {
+    openapi: "3.0.0",
+    info: {
+        title: config.PUBLIC_SITE_NAME,
+        version: config.PUBLIC_SITE_VERSION,
+        description: config.PUBLIC_API_DESCRIPTION,
+    },
+    servers: [{ url: "/api" }],
+    paths: {},
+    components: {
+        securitySchemes: {
+            BearerAuth: {
+                type: "http",
+                scheme: "bearer",
+                bearerFormat: "JWT",
+            },
+            CookieAuth: {
+                type: "apiKey",
+                in: "cookie",
+                name: "authjs.session-token",
+            },
+        },
+    },
+    security: [{ BearerAuth: [] }, { CookieAuth: [] }],
+};
+
+for (const module of modules) {
+    const moduleDocs = await generateDocs(module, actor);
+    // Deep merge or simple merge? paths are unique per module usually
+    openApiDoc.paths = { ...openApiDoc.paths, ...moduleDocs };
+}
+---
+
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <title>{config.PUBLIC_SITE_NAME} - API Reference</title>
+        <script is:inline>
+            const getThemePreference = () => {
+                if (
+                    typeof localStorage !== "undefined" &&
+                    localStorage.getItem("app-theme")
+                ) {
+                    return localStorage.getItem("app-theme");
+                }
+                return window.matchMedia("(prefers-color-scheme: dark)").matches
+                    ? "dark"
+                    : "light";
+            };
+            const isDark = getThemePreference() === "dark";
+            document.documentElement.classList[isDark ? "add" : "remove"](
+                "dark",
+            );
+
+            if (typeof localStorage !== "undefined") {
+                const observer = new MutationObserver(() => {
+                    const isDark =
+                        document.documentElement.classList.contains("dark");
+                    localStorage.setItem(
+                        "app-theme",
+                        isDark ? "dark" : "light",
+                    );
+                });
+                observer.observe(document.documentElement, {
+                    attributes: true,
+                    attributeFilter: ["class"],
+                });
+            }
+        </script>
+    </head>
+    <body data-testid="docs-body">
+        <ScalarDocs spec={openApiDoc} client:only="react" />
+    </body>
+</html>

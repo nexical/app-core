@@ -1,0 +1,17 @@
+{
+    "name": "@module/user-ui",
+    "version": "0.1.0",
+    "type": "module",
+    "private": true,
+    "exports": {
+        "./*": "./src/*"
+    },
+    "dependencies": {
+        "auth-astro": "^4.2.0",
+        "zod": "^4.3.0",
+        "zxcvbn": "^4.4.2"
+    },
+    "devDependencies": {
+        "@types/zxcvbn": "^4.4.5"
+    }
+}

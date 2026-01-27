@@ -1,0 +1,35 @@
+import { HookSystem } from ' @/lib/modules/hooks';
+
+/**
+ * Custom Hook for logic that cannot be generated.
+ * 
+ * REGISTRATION: This hook is AUTOMATICALLY registered by the system because
+ * it is located in the src/hooks/ directory.
+ * Do NOT edit server-init.ts manually.
+ * 
+ * Location: modules/{{kebab-case-module-name}}/src/hooks/{{kebab-case-name}}-hooks.ts
+ */
+export class {{PascalCaseName}}Hook {
+  static async init() {
+    // Intercept a data-driven event for DATA MODIFICATION (Filter)
+    // Pattern: HookSystem.filter('{{entityCamelCase}}.beforeCreate', callback)
+    HookSystem.filter('{{entityCamelCase}}.beforeCreate', async (data: any) => {
+      // Implement custom validation or data transformation
+      // MUST return the data to continue the chain
+      return {
+        ...data,
+        // custom: 'logic'
+      };
+    });
+
+    // Handle SIDE-EFFECTS after a successful operation (Event)
+    // Pattern: HookSystem.on('{{entityCamelCase}}.created', callback)
+    HookSystem.on('{{entityCamelCase}}.created', async (result: any) => {
+      // Example: Send an email or notify an external system
+      await HookSystem.dispatch('email:send', {
+        template: 'welcome',
+        to: result.email
+      });
+    });
+  }
+}

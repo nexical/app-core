@@ -1,0 +1,153 @@
+---
+import { Toaster } from "@/components/ui/sonner";
+import { SystemWrapper } from "@/components/system/SystemWrapper";
+import { ErrorToastHandler } from "@/components/error-toast-handler";
+import { config, publicConfig } from "@/lib/core/config";
+import { ModuleI18nIntegration } from "@/lib/integrations/module-i18n-integration";
+import { ShellRegistry } from "@/lib/registries/shell-registry";
+import { FooterRegistry } from "@/lib/registries/footer-registry";
+import { HeadRegistry } from "@/lib/registries/head-registry";
+import { MasterShell } from "@/components/shell/master-shell";
+import { InstallPrompt } from "@/components/pwa/install-prompt";
+import { OfflineIndicator } from "@/components/pwa/offline-indicator";
+
+interface Props {
+  title?: string;
+  showShell?: boolean;
+  navData?: any;
+}
+
+const {
+  title = config.PUBLIC_SITE_NAME,
+  showShell = true,
+  navData = Astro.props.navData || Astro.locals.navData || { context: {} },
+} = Astro.props;
+
+// Shell Selection (Server-Side)
+const shellContext = {
+  url: Astro.url,
+  navData,
+  // If static, we cannot determine device server-side. Default to false.
+  // MasterShell will handle client-side hydration for mobile.
+  isMobile:
+    config.PUBLIC_SITE_MODE === "static"
+      ? false
+      : (Astro.request.headers
+          .get("user-agent")
+          ?.toLowerCase()
+          .includes("mobile") ?? false),
+  width: 0,
+  height: 0,
+};
+const shellEntry = showShell
+  ? ShellRegistry.findEntry(shellContext)
+  : undefined;
+const shellName = shellEntry?.name;
+
+const footerEntry = showShell
+  ? FooterRegistry.findEntry(shellContext)
+  : undefined;
+const footerName = footerEntry?.name;
+
+// Fetch Data for I18n
+const availableLanguages = await ModuleI18nIntegration.getAvailableLanguages();
+const targetLanguages = config.PUBLIC_SUPPORTED_LANGUAGES
+  ? config.PUBLIC_SUPPORTED_LANGUAGES.split(",")
+      .map((s) => s.trim())
+      .filter((l) => availableLanguages.includes(l))
+  : availableLanguages;
+
+const langCookie = Astro.cookies.get("i18next")?.value;
+const currentLang =
+  langCookie && targetLanguages.includes(langCookie)
+    ? langCookie
+    : config.PUBLIC_DEFAULT_LANGUAGE;
+const initialStore = await ModuleI18nIntegration.getMergedLocale(currentLang);
+
+const i18nData = {
+  language: currentLang,
+  store: initialStore,
+  availableLanguages: targetLanguages,
+};
+---
+
+<script is:inline define:vars={{ i18nData, publicConfig }}>
+  window.__I18N_DATA__ = i18nData;
+  window.__APP_CONFIG__ = publicConfig;
+</script>
+
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+
+    <!-- PWA Tags -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#6366f1" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+
+    {
+      HeadRegistry.getEntries().map((entry) => {
+        const Tag = entry.tag;
+        // @ts-ignore
+        return <Tag {...(entry.props || {})} set:html={entry.content} />;
+      })
+    }
+    <script is:inline>
+      const getThemePreference = () => {
+        if (
+          typeof localStorage !== "undefined" &&
+          localStorage.getItem("app-theme")
+        ) {
+          return localStorage.getItem("app-theme");
+        }
+        return window.matchMedia("(prefers-color-scheme: dark)").matches
+          ? "dark"
+          : "light";
+      };
+      const isDark = getThemePreference() === "dark";
+      document.documentElement.classList[isDark ? "add" : "remove"]("dark");
+
+      if (typeof localStorage !== "undefined") {
+        const observer = new MutationObserver(() => {
+          const isDark = document.documentElement.classList.contains("dark");
+          localStorage.setItem("app-theme", isDark ? "dark" : "light");
+        });
+        observer.observe(document.documentElement, {
+          attributes: true,
+          attributeFilter: ["class"],
+        });
+      }
+    </script>
+  </head>
+  <body class="app-body">
+    <SystemWrapper client:load i18nData={i18nData}>
+      <ErrorToastHandler client:load />
+      {
+        showShell ? (
+          <MasterShell
+            client:load
+            navData={navData}
+            shellName={shellName}
+            footerName={footerName}
+          >
+            <slot />
+          </MasterShell>
+        ) : (
+          <slot />
+        )
+      }
+    </SystemWrapper>
+    <Toaster client:load />
+    <InstallPrompt client:load />
+    <OfflineIndicator client:load />
+  </body>
+</html>

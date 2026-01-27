@@ -1,0 +1,45 @@
+{
+  "extends": "astro/tsconfigs/strict",
+  "include": [
+    ".astro/types.d.ts",
+    "src/**/*",
+    "modules/**/*",
+    "modules/*/src/types.d.ts",
+    "prisma.config.ts",
+    "tests/**/*",
+    "packages/**/*"
+  ],
+  "exclude": [
+    "dist",
+    "node_modules"
+  ],
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": [
+      "DOM",
+      "DOM.Iterable",
+      "ES2022"
+    ],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "jsxImportSource": "react",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "src/*"
+      ],
+      "@modules/*": [
+        "modules/*"
+      ],
+      "@tests/*": [
+        "tests/*"
+      ],
+      "@nexical/agent/*": [
+        "packages/agent/*"
+      ]
+    },
+    "esModuleInterop": true,
+    "skipLibCheck": true
+  }
+}

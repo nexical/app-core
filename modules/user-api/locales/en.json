@@ -1,0 +1,62 @@
+{
+    "user": {
+        "service": {
+            "default_inviter_name": "Someone",
+            "error": {
+                "unauthorized": "Unauthorized access.",
+                "user_not_found": "User not found.",
+                "invalid_token": "Invalid or expired token.",
+                "token_expired": "Token has expired.",
+                "passwords_mismatch": "Passwords do not match.",
+                "user_exists": "User already exists (Email or Username taken).",
+                "registration_restricted": "Registration is restricted to invited users only.",
+                "invitation_invalid": "Invalid or expired invitation token.",
+                "invitation_expired": "Invitation token has expired.",
+                "invitation_email_mismatch": "Email does not match the invitation.",
+                "create_account_failed": "Failed to create account.",
+                "update_profile_failed": "Failed to update profile.",
+                "delete_account_failed": "Failed to delete account.",
+                "fetch_users_failed": "Failed to fetch users.",
+                "update_role_failed": "Failed to update role.",
+                "deactivate_failed": "Failed to deactivate user.",
+                "reactivate_failed": "Failed to reactivate user.",
+                "invite_failed": "Failed to send invitation.",
+                "reset_password_failed": "Failed to reset password.",
+                "verify_email_failed": "Failed to verify email.",
+                "cannot_change_own_role": "Cannot change your own role.",
+                "cannot_deactivate_self": "Cannot deactivate yourself.",
+                "cannot_delete_self": "Cannot delete yourself."
+            }
+        },
+        "email": {
+            "layout": {
+                "copyright": "© {{year}} {{siteName}}. All rights reserved."
+            },
+            "invite": {
+                "subject": "You have been invited to {{siteName}}",
+                "preview": "Join {{workspaceName}} on {{siteName}}",
+                "greeting": "Hello,",
+                "body": "<strong>{{inviterName}}</strong> has invited you to join <strong>{{workspaceName}}</strong> as a <strong>{{role}}</strong>.",
+                "button": "Accept Invitation",
+                "or_copy": "or copy and paste this URL into your browser:"
+            },
+            "verify": {
+                "subject": "Verify your email - {{siteName}}",
+                "preview": "Verify your email address for {{siteName}}",
+                "greeting": "Hello {{userName}},",
+                "body": "Welcome to {{siteName}}. Please verify your email address to get started.",
+                "button": "Verify Email",
+                "or_copy": "or copy and paste this URL into your browser:"
+            },
+            "reset_password": {
+                "subject": "Reset your {{siteName}} password",
+                "preview": "Reset your {{siteName}} password",
+                "greeting": "Hello,",
+                "body": "We received a request to reset the password for the account associated with {{userEmail}}.",
+                "button": "Reset Password",
+                "or_copy": "or copy and paste this URL into your browser:",
+                "ignore": "If you didn't ask for this, you can safely ignore this email."
+            }
+        }
+    }
+}

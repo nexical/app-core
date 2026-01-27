@@ -1,0 +1,41 @@
+import { db } from "@/lib/core/db";
+import type { ServiceResponse } from "@/types/service";
+
+/**
+ * Service: {Name}
+ * Role: System of Record authority for {Name} domain logic.
+ * 
+ * Rules:
+ * 1. Authority for domain logic and DB access.
+ * 2. Public methods should be 'public static'.
+ * 3. Public methods should return Promise<ServiceResponse<T>>.
+ */
+export class {Name}Service {
+  /**
+   * Example domain method.
+   */
+  public static async getById(id: string): Promise<ServiceResponse<unknown>> {
+    try {
+      const data = await db.{model}.findUnique({
+        where: { id },
+      });
+
+      if (!data) {
+        return {
+          success: false,
+          error: "{kebab-name}.service.error.not_found",
+        };
+      }
+
+      return {
+        success: true,
+        data,
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: "{kebab-name}.service.error.internal_error",
+      };
+    }
+  }
+}
