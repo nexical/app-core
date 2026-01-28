@@ -16,8 +16,29 @@ export default defineConfig({
         ],
         exclude: [
             '**/node_modules/**',
-            '**/dist/**'
+            '**/dist/**',
+            '**/.agent/**'
         ],
+        coverage: {
+            provider: 'v8',
+            reporter: ['text', 'json', 'html'],
+            include: ['src/**/*.ts', 'src/**/*.tsx'],
+            exclude: [
+                'src/**/*.d.ts',
+                'src/**/*.test.ts',
+                'src/**/*.test.tsx',
+                'src/env.d.ts',
+                'src/types/**',
+                '**/node_modules/**'
+            ],
+            thresholds: {
+                lines: 80,
+                functions: 80,
+                branches: 80,
+                statements: 80
+            }
+        },
+        testTimeout: 30000,
     },
     resolve: {
         alias: [
@@ -29,6 +50,9 @@ export default defineConfig({
             // Fallback for direct package imports (e.g. '@nexical/sdk')
             { find: /^@nexical\/sdk$/, replacement: path.resolve(__dirname, 'packages/sdk/src/index.ts') },
             { find: /^@nexical\/agent$/, replacement: path.resolve(__dirname, 'packages/agent/src/main.ts') },
+            // Mocks for Astro virtual modules
+            { find: 'astro:middleware', replacement: path.resolve(__dirname, 'tests/unit/mocks/astro.ts') },
+            { find: 'astro:actions', replacement: path.resolve(__dirname, 'tests/unit/mocks/astro.ts') },
         ],
     },
 });
