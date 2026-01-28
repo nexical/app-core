@@ -4,7 +4,7 @@ import tsconfigPaths from 'vite-tsconfig-paths';
 import path from 'path';
 
 export default defineConfig({
-    plugins: [react(), tsconfigPaths()],
+    plugins: [react(), tsconfigPaths({ ignoreConfigErrors: true })],
     test: {
         environment: 'jsdom',
         globals: true,
@@ -20,9 +20,10 @@ export default defineConfig({
             '**/.agent/**'
         ],
         coverage: {
+            enabled: true,
             provider: 'v8',
             reporter: ['text', 'json', 'html'],
-            include: ['src/**/*.ts', 'src/**/*.tsx'],
+            include: ['src/**/*.ts', 'src/**/*.tsx', 'modules/*/src/**/*.ts', 'modules/*/src/**/*.tsx'],
             exclude: [
                 'src/**/*.d.ts',
                 'src/**/*.test.ts',
