@@ -14,6 +14,7 @@
     "astro": "astro",
     "build": "npm run setup && astro build",
     "core:check": "npx tsx scripts/sentinel.ts check",
+    "docgap": "docgap",
     "core:accept": "npx tsx scripts/sentinel.ts accept",
     "db:destroy": "docker compose -f compose.db.yml down --volumes",
     "db:down": "docker compose -f compose.db.yml down",
@@ -110,6 +111,7 @@
     "zustand": "^5.0.9"
   },
   "devDependencies": {
+    "@nexical/docgap": "^0.2.3",
     "@nexical/generator": "*",
     "@playwright/test": "^1.57.0",
     "@testing-library/dom": "^10.4.1",
