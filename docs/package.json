@@ -1,0 +1,22 @@
+{
+  "name": "docs",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "npm run gather-docs && npm run generate-llms && astro dev",
+    "start": "astro dev",
+    "build": "npm run gather-docs && npm run generate-llms && astro build",
+    "preview": "astro preview",
+    "astro": "astro",
+    "gather-docs": "tsx scripts/gather-docs.ts",
+    "generate-llms": "tsx scripts/generate-llms-txt.ts"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "^0.37.4",
+    "astro": "^5.6.1",
+    "sharp": "^0.34.2"
+  },
+  "devDependencies": {
+    "tsx": "^4.21.0"
+  }
+}

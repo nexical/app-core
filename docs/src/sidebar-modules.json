@@ -1,0 +1,14 @@
+[
+  {
+    "label": "user-api",
+    "link": "modules/user-api"
+  },
+  {
+    "label": "user-email",
+    "link": "modules/user-email"
+  },
+  {
+    "label": "user-ui",
+    "link": "modules/user-ui"
+  }
+]
