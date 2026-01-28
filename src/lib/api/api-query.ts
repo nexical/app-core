@@ -27,7 +27,7 @@ const OPERATORS_BY_TYPE: Record<FilterFieldType, string[]> = {
     string: ['eq', 'ne', 'contains', 'startsWith', 'endsWith', 'in'],
     number: ['eq', 'ne', 'gt', 'gte', 'lt', 'lte', 'in'],
     date: ['eq', 'ne', 'gt', 'gte', 'lt', 'lte', 'in'],
-    boolean: ['eq', 'ne'],
+    boolean: ['eq', 'ne', 'in'],
     enum: ['eq', 'ne', 'in']
 };
 

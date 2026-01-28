@@ -25,6 +25,13 @@ class FooterRegistryClass {
     }
 
     /**
+     * Clear the registry (useful for tests).
+     */
+    clear() {
+        this.registry.clear();
+    }
+
+    /**
      * Get a footer component by name directly.
      */
     get(name: string): FooterComponent | undefined {

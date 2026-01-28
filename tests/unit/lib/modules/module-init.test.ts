@@ -55,4 +55,21 @@ describe('initializeModules', () => {
 
         logSpy.mockRestore();
     });
+
+    it('should ignore modules without an init function', async () => {
+        vi.mocked(GlobHelper.getCoreInits).mockReturnValue({
+            '/src/no-init.ts': { somethingElse: () => { } }
+        });
+        vi.mocked(GlobHelper.getModuleInits).mockReturnValue({
+            '/modules/foo/src/no-init.ts': {}
+        });
+
+        const logSpy = vi.spyOn(console, 'log').mockImplementation(() => { });
+
+        await initializeModules();
+        // Should not throw and should log 2 modules even if they don't have init
+        expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Initialized 2 module(s)'));
+
+        logSpy.mockRestore();
+    });
 });

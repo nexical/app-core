@@ -75,3 +75,91 @@ describe('Core Config: createConfig', () => {
         expect(config).toEqual({});
     });
 });
+
+describe('Core Config: publicConfig', () => {
+    const backupEnv = { ...process.env };
+
+    beforeEach(() => {
+        vi.unstubAllGlobals();
+        vi.stubGlobal('process', { env: { PUBLIC_TEST_VAR: 'env-value' } });
+    });
+
+    afterEach(() => {
+        process.env = backupEnv;
+        vi.unstubAllGlobals();
+    });
+
+    it('should expose PUBLIC_ variables from process.env', async () => {
+        vi.resetModules();
+        const { publicConfig } = await import('@/lib/core/config');
+        expect(publicConfig.PUBLIC_TEST_VAR).toBe('env-value');
+    });
+
+    it('should expose PUBLIC_ variables from internal defaults', async () => {
+        vi.resetModules();
+        const { publicConfig } = await import('@/lib/core/config');
+        expect(publicConfig.PUBLIC_SITE_NAME).toBeDefined();
+        expect(publicConfig.PUBLIC_SITE_NAME).toBe('My Application');
+    });
+});
+
+describe('Core Config: coreSchema', () => {
+    it('should correctly preprocess and transform boolean-like strings', async () => {
+        const createConfig = await resetConfig();
+        const schema = z.object({
+            PUBLIC_DOCS_PUBLIC_ACCESS: z.preprocess((v) => (v === undefined || v === null) ? 'false' : String(v).toLowerCase(), z.enum(['true', 'false'])).default('false').transform((v) => v === 'true'),
+        });
+
+        // Test undefined -> false
+        const conf1 = createConfig(schema);
+        expect(conf1.PUBLIC_DOCS_PUBLIC_ACCESS).toBe(false);
+
+        // Test 'true' -> true
+        vi.stubGlobal('process', { env: { PUBLIC_DOCS_PUBLIC_ACCESS: 'true' } });
+        vi.resetModules();
+        const conf2 = createConfig(schema);
+        expect(conf2.PUBLIC_DOCS_PUBLIC_ACCESS).toBe(true);
+
+        // Test null (via stubbing)
+        vi.stubGlobal('process', { env: { PUBLIC_DOCS_PUBLIC_ACCESS: null } });
+        vi.resetModules();
+        const conf3 = createConfig(schema);
+        expect(conf3.PUBLIC_DOCS_PUBLIC_ACCESS).toBe(false);
+
+        // Test lowercase transform
+        vi.stubGlobal('process', { env: { PUBLIC_DOCS_PUBLIC_ACCESS: 'TRUE' } });
+        vi.resetModules();
+        const conf4 = createConfig(schema);
+        expect(conf4.PUBLIC_DOCS_PUBLIC_ACCESS).toBe(true);
+    });
+
+    it('should correctly handle PUBLIC_DISABLE_API_DOCS', async () => {
+        vi.resetModules();
+        const { config } = await import('@/lib/core/config');
+        expect(config.PUBLIC_DISABLE_API_DOCS).toBe(false); // Default
+    });
+
+    it('should correctly handle PUBLIC_DISABLE_API_DOCS set to true', async () => {
+        vi.stubGlobal('process', { env: { PUBLIC_DISABLE_API_DOCS: 'TRUE' } });
+        vi.resetModules();
+        const { config } = await import('@/lib/core/config');
+        expect(config.PUBLIC_DISABLE_API_DOCS).toBe(true);
+    });
+});
+
+describe('Core Config: getProcessEnv', () => {
+    it('should return undefined if process is not defined', async () => {
+        vi.stubGlobal('process', undefined);
+        vi.resetModules();
+        const { getProcessEnv } = await import('@/lib/core/config');
+        const val = getProcessEnv('ANY');
+        expect(val).toBe(undefined);
+    });
+
+    it('should return value from process.env if defined', async () => {
+        vi.stubGlobal('process', { env: { FOO: 'bar' } });
+        vi.resetModules();
+        const { getProcessEnv } = await import('@/lib/core/config');
+        expect(getProcessEnv('FOO')).toBe('bar');
+    });
+});
