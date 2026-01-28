@@ -1,4 +1,4 @@
-import type { MethodConfig, VariableStatementConfig, ReturnStatementConfig } from "../types.js";
+import type { MethodConfig, VariableStatementConfig, ReturnStatementConfig } from "../types";
 
 export class CrudPatterns {
     static createMethod(modelName: string): MethodConfig {

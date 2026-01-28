@@ -1,5 +1,5 @@
 
-import { BaseCommand } from '../base.js';
+import { BaseCommand } from '../base';
 import chalk from 'chalk';
 import ora from 'ora';
 import fs from 'fs-extra';
@@ -7,23 +7,23 @@ import path from 'path';
 import YAML from 'yaml';
 import { Project, SourceFile } from 'ts-morph';
 import { z } from 'zod';
-import { PlatformDefinitionSchema, PlatformApiDefinitionSchema } from '../../schema.js';
+import { PlatformDefinitionSchema, PlatformApiDefinitionSchema } from '../../schema';
 
 // Builders
-import { ModelParser } from '../../engine/model-parser.js';
-import { ServiceBuilder } from '../../engine/builders/service-builder.js';
-import { ApiBuilder } from '../../engine/builders/api-builder.js';
-import { SdkBuilder } from '../../engine/builders/sdk-builder.js';
-import { SdkIndexBuilder } from '../../engine/builders/sdk-index-builder.js';
-import { InitBuilder } from '../../engine/builders/init-builder.js';
-import { TestBuilder } from '../../engine/builders/test-builder.js';
-import { ActionBuilder } from '../../engine/builders/action-builder.js';
-import { TypeBuilder } from '../../engine/builders/type-builder.js';
-import { FactoryBuilder } from '../../engine/builders/factory-builder.js';
-import { ActorBuilder } from '../../engine/builders/actor-builder.js';
-import { ActorTypeBuilder } from '../../engine/builders/actor-type-builder.js';
-import { type CustomRoute, type ModelDef } from '../../engine/types.js';
-import { ModuleLocator } from '../../lib/module-locator.js';
+import { ModelParser } from '../../engine/model-parser';
+import { ServiceBuilder } from '../../engine/builders/service-builder';
+import { ApiBuilder } from '../../engine/builders/api-builder';
+import { SdkBuilder } from '../../engine/builders/sdk-builder';
+import { SdkIndexBuilder } from '../../engine/builders/sdk-index-builder';
+import { InitBuilder } from '../../engine/builders/init-builder';
+import { TestBuilder } from '../../engine/builders/test-builder';
+import { ActionBuilder } from '../../engine/builders/action-builder';
+import { TypeBuilder } from '../../engine/builders/type-builder';
+import { FactoryBuilder } from '../../engine/builders/factory-builder';
+import { ActorBuilder } from '../../engine/builders/actor-builder';
+import { ActorTypeBuilder } from '../../engine/builders/actor-type-builder';
+import { type CustomRoute, type ModelDef } from '../../engine/types';
+import { ModuleLocator } from '../../lib/module-locator';
 
 export default class AuditApiCommand extends BaseCommand {
     constructor() {

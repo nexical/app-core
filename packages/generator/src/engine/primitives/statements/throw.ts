@@ -1,4 +1,4 @@
-import { type ThrowStatementConfig } from "../../types.js";
+import { type ThrowStatementConfig } from "../../types";
 
 export class ThrowStatementPrimitive {
     constructor(private config: ThrowStatementConfig) { }

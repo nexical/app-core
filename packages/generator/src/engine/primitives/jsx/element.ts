@@ -1,6 +1,6 @@
-import { type JsxElementConfig } from "../../types.js";
-import { JsxAttributePrimitive } from "./attribute.js";
-import { StatementPrimitive } from "../statements/statement-primitive.js";
+import { type JsxElementConfig } from "../../types";
+import { JsxAttributePrimitive } from "./attribute";
+import { StatementPrimitive } from "../statements/statement-primitive";
 
 export class JsxElementPrimitive extends StatementPrimitive<any, JsxElementConfig> {
     generate(): string {

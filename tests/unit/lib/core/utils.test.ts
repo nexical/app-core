@@ -1,25 +1,25 @@
 import { describe, it, expect } from 'vitest';
 import { cn } from '@/lib/core/utils';
 
-describe('cn utility', () => {
+describe('Core Utils: cn', () => {
     it('should merge class names correctly', () => {
-        expect(cn('btn', 'btn-primary')).toBe('btn btn-primary');
+        expect(cn('a', 'b')).toBe('a b');
     });
 
-    it('should handle conditional class names', () => {
-        expect(cn('btn', true && 'active', false && 'hidden')).toBe('btn active');
+    it('should handle conditional classes', () => {
+        expect(cn('a', true && 'b', false && 'c')).toBe('a b');
     });
 
-    it('should merge tailwind classes using twMerge', () => {
-        // twMerge should resolve 'px-2 px-4' to 'px-4'
-        expect(cn('px-2', 'px-4')).toBe('px-4');
+    it('should handle tailwind conflict resolution', () => {
+        // twMerge should prefer the later class
+        expect(cn('p-2 p-4')).toBe('p-4');
     });
 
     it('should handle arrays and objects', () => {
-        expect(cn(['btn', 'active'], { 'hidden': false, 'visible': true })).toBe('btn active visible');
+        expect(cn(['a', 'b'], { c: true, d: false })).toBe('a b c');
     });
 
     it('should handle undefined and null', () => {
-        expect(cn('btn', undefined, null)).toBe('btn');
+        expect(cn('a', undefined, null, 'b')).toBe('a b');
     });
 });

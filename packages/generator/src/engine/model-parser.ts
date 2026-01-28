@@ -1,4 +1,4 @@
-import { type ModelDef, type EnumConfig, type MethodConfig, type GlobalConfig } from "./types.js";
+import { type ModelDef, type EnumConfig, type MethodConfig, type GlobalConfig } from "./types";
 import { parse } from "yaml";
 import fs from "node:fs";
 

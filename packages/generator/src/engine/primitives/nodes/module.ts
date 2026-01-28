@@ -1,8 +1,8 @@
 import { SourceFile, ModuleDeclaration, ModuleDeclarationKind, type OptionalKind, type ModuleDeclarationStructure } from "ts-morph";
-import { BasePrimitive } from "../core/base-primitive.js";
-import { type ModuleConfig } from "../../types.js";
-import { type ValidationResult } from "../contracts.js";
-import { Reconciler } from "../../reconciler.js";
+import { BasePrimitive } from "../core/base-primitive";
+import { type ModuleConfig } from "../../types";
+import { type ValidationResult } from "../contracts";
+import { Reconciler } from "../../reconciler";
 
 // We need a common interface for SourceFile and ModuleDeclaration as they both hold statements
 // but they don't share a simple common interface in ts-morph export that exposes addClass etc easily without casting
@@ -40,7 +40,14 @@ export class ModulePrimitive extends BasePrimitive<ModuleDeclaration, ModuleConf
 
     validate(node: ModuleDeclaration): ValidationResult {
         const result = Reconciler.validate(node as any, this.config as any);
-        return result;
+        if (!result.valid) return result;
+
+        const issues: string[] = [];
+        if (this.config.isExported !== undefined && node.isExported() !== this.config.isExported) {
+            issues.push(`Module '${this.config.name}' exported status mismatch. Expected: ${this.config.isExported}, Found: ${node.isExported()}`);
+        }
+
+        return { valid: issues.length === 0, issues };
     }
 
     private toStructure(): OptionalKind<ModuleDeclarationStructure> {

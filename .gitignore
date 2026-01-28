@@ -25,6 +25,7 @@ pnpm-debug.log*
 .idea/
 
 # Testing
+coverage.json
 coverage/
 playwright-report/
 test-results*/

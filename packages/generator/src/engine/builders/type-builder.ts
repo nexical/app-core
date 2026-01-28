@@ -1,7 +1,7 @@
 import { SourceFile } from "ts-morph";
-import { type ModelDef, type FileDefinition, type InterfaceConfig, type EnumConfig } from "../types.js";
-import { Reconciler } from "../reconciler.js";
-import { BaseBuilder } from "./base-builder.js";
+import { type ModelDef, type FileDefinition, type InterfaceConfig, type EnumConfig } from "../types";
+import { Reconciler } from "../reconciler";
+import { BaseBuilder } from "./base-builder";
 
 export class TypeBuilder extends BaseBuilder {
     constructor(private models: ModelDef[], private enums: EnumConfig[] = []) {

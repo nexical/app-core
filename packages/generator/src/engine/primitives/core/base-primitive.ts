@@ -1,5 +1,5 @@
 import { Node } from "ts-morph";
-import { type Primitive, type ValidationResult } from "../contracts.js";
+import { type Primitive, type ValidationResult } from "../contracts";
 
 export abstract class BasePrimitive<TNode extends Node, TConfig> implements Primitive<TNode> {
     constructor(protected config: TConfig) { }

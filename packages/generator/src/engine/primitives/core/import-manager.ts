@@ -5,6 +5,13 @@ import { type ImportConfig } from "../../types.js";
 export class ImportPrimitive extends BasePrimitive<ImportDeclaration, ImportConfig> {
 
     private normalizeModuleSpecifier(specifier: string): string {
+        // 1. Remove extensions
+        let normalized = specifier.replace(/\.(ts|js|mjs|cjs)$/, '');
+
+        // 2. Strip /index
+        normalized = normalized.replace(/\/index$/, '');
+
+        // 3. Apply legacy mapping
         const legacyMapping: Record<string, string> = {
             "@/lib/api-docs": "@/lib/api/api-docs",
             "@/lib/api-guard": "@/lib/api/api-guard",
@@ -13,15 +20,9 @@ export class ImportPrimitive extends BasePrimitive<ImportDeclaration, ImportConf
             "@/lib/utils": "@/lib/core/utils",
             "@/lib/db": "@/lib/core/db"
         };
-        let normalized = legacyMapping[specifier] || specifier;
+        normalized = legacyMapping[normalized] || normalized;
 
-        // Remove extensions
-        normalized = normalized.replace(/\.(ts|js|mjs|cjs)$/, '');
-
-        // Strip /index
-        normalized = normalized.replace(/\/index$/, '');
-
-        // Standardize SDK subpaths to canonical SDK root if it's the same logical target
+        // 4. Standardize SDK subpaths to canonical SDK root if it's the same logical target
         // e.g., @modules/user-api/src/sdk/types -> @modules/user-api/src/sdk
         if (normalized.includes('/src/sdk/')) {
             normalized = normalized.split('/src/sdk/')[0] + '/src/sdk';
@@ -29,6 +30,7 @@ export class ImportPrimitive extends BasePrimitive<ImportDeclaration, ImportConf
 
         return normalized;
     }
+
 
     find(parent: SourceFile) {
         const normalizedTarget = this.normalizeModuleSpecifier(this.config.moduleSpecifier);

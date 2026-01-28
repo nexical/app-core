@@ -1,10 +1,10 @@
-import { type StatementConfig } from "../../types.js";
-import { VariableStatementPrimitive } from "./variable.js";
-import { ReturnStatementPrimitive } from "./return.js";
-import { ExpressionStatementPrimitive } from "./expression.js";
-import { JsxElementPrimitive } from "../jsx/element.js";
-import { IfStatementPrimitive } from "./if.js";
-import { ThrowStatementPrimitive } from "./throw.js";
+import { type StatementConfig } from "../../types";
+import { VariableStatementPrimitive } from "./variable";
+import { ReturnStatementPrimitive } from "./return";
+import { ExpressionStatementPrimitive } from "./expression";
+import { JsxElementPrimitive } from "../jsx/element";
+import { IfStatementPrimitive } from "./if";
+import { ThrowStatementPrimitive } from "./throw";
 
 export class StatementFactory {
     static generate(config: StatementConfig): string {

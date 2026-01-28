@@ -1,10 +1,10 @@
 import { ClassDeclaration, ConstructorDeclaration, Scope, type OptionalKind, type ConstructorDeclarationStructure } from "ts-morph";
-import { BasePrimitive } from "../core/base-primitive.js";
-import { type ConstructorConfig } from "../../types.js";
-import { type ValidationResult } from "../contracts.js";
-import { JSDocPrimitive } from "./docs.js";
-import { StatementFactory } from "../statements/factory.js";
-import { Normalizer } from "../../../utils/normalizer.js";
+import { BasePrimitive } from "../core/base-primitive";
+import { type ConstructorConfig } from "../../types";
+import { type ValidationResult } from "../contracts";
+import { JSDocPrimitive } from "./docs";
+import { StatementFactory } from "../statements/factory";
+import { Normalizer } from "../../../utils/normalizer";
 
 export class ConstructorPrimitive extends BasePrimitive<ConstructorDeclaration, ConstructorConfig> {
 

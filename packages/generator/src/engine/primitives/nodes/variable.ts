@@ -1,7 +1,7 @@
 import { SourceFile, VariableStatement, VariableDeclarationKind, ModuleDeclaration } from "ts-morph";
-import { BasePrimitive } from "../core/base-primitive.js";
-import { type VariableConfig } from "../../types.js";
-import { type ValidationResult } from "../contracts.js";
+import { BasePrimitive } from "../core/base-primitive";
+import { type VariableConfig } from "../../types";
+import { type ValidationResult } from "../contracts";
 
 export class VariablePrimitive extends BasePrimitive<VariableStatement, VariableConfig> {
 
@@ -57,6 +57,10 @@ export class VariablePrimitive extends BasePrimitive<VariableStatement, Variable
 
         if (this.config.isExported !== undefined && node.isExported() !== this.config.isExported) {
             issues.push(`Variable '${this.config.name}' export mismatch.`);
+        }
+
+        if (this.config.initializer && decl.getInitializer()?.getText() !== this.config.initializer) {
+            issues.push(`Variable '${this.config.name}' initializer mismatch. Expected: ${this.config.initializer}, Found: ${decl.getInitializer()?.getText()}`);
         }
 
         // Additional validations can be added

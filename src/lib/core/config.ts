@@ -1,7 +1,16 @@
 import { z, type ZodObject, type ZodRawShape } from 'zod';
 import { APP_VERSION } from './version';
 
-export const getProcessEnv = (key: string) => typeof process !== 'undefined' ? process.env[key] : undefined;
+export const getProcessEnv = (key: string) => {
+    try {
+        if (typeof process !== 'undefined' && process && process.env) {
+            return process.env[key];
+        }
+    } catch (e) {
+        // Fallback for environments where process is restricted
+    }
+    return undefined;
+};
 
 export function createConfig<T extends ZodRawShape>(schema: ZodObject<T>) {
     const processEnv: Record<string, string | undefined> = {};
@@ -13,7 +22,16 @@ export function createConfig<T extends ZodRawShape>(schema: ZodObject<T>) {
             processEnv[key] = globalConfig[key];
         } else {
             // Fallback to env vars (Server or Build-time replacement)
-            processEnv[key] = (import.meta.env && import.meta.env[key]) || getProcessEnv(key);
+            let envVal: string | undefined = undefined;
+            try {
+                // @ts-ignore
+                if (typeof import.meta !== 'undefined' && import.meta && import.meta.env) {
+                    // @ts-ignore
+                    envVal = import.meta.env[key];
+                }
+            } catch (e) { }
+
+            processEnv[key] = envVal || getProcessEnv(key);
         }
     }
 
@@ -52,7 +70,7 @@ export const publicConfig = (() => {
     }
 
     // 2. Auto-discover PUBLIC_ keys from process.env (Server-side Runtime)
-    if (typeof process !== 'undefined' && process.env) {
+    if (typeof process !== 'undefined' && process && process.env) {
         for (const key of Object.keys(process.env)) {
             if (key.startsWith('PUBLIC_')) {
                 safeConfig[key] = process.env[key];

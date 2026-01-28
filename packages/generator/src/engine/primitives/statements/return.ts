@@ -1,10 +1,13 @@
-import { type ReturnStatementConfig } from "../../types.js";
-import { StatementPrimitive } from "./statement-primitive.js";
-import { JsxElementPrimitive } from "../jsx/element.js";
+import { type ReturnStatementConfig } from "../../types";
+import { StatementPrimitive } from "./statement-primitive";
+import { JsxElementPrimitive } from "../jsx/element";
 
 export class ReturnStatementPrimitive extends StatementPrimitive<any, ReturnStatementConfig> {
     generate(): string {
         const { expression } = this.config;
+        if (!expression) {
+            return 'return;';
+        }
         if (typeof expression === 'string') {
             return `return ${expression};`;
         }

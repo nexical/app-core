@@ -1,4 +1,7 @@
 import { vi } from 'vitest';
+import { z } from 'zod';
+
+export { z };
 
 export const defineMiddleware = vi.fn((handler) => handler);
 export const sequence = vi.fn((...handlers) => handlers[0]);

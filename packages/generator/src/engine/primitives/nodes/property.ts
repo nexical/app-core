@@ -1,10 +1,10 @@
 import { ClassDeclaration, PropertyDeclaration, Scope, type OptionalKind, type PropertyDeclarationStructure } from "ts-morph";
-import { BasePrimitive } from "../core/base-primitive.js";
-import { type PropertyConfig } from "../../types.js";
-import { type ValidationResult } from "../contracts.js";
-import { DecoratorPrimitive } from "./decorator.js";
-import { JSDocPrimitive } from "./docs.js";
-import { Normalizer } from "../../../utils/normalizer.js";
+import { BasePrimitive } from "../core/base-primitive";
+import { type PropertyConfig } from "../../types";
+import { type ValidationResult } from "../contracts";
+import { DecoratorPrimitive } from "./decorator";
+import { JSDocPrimitive } from "./docs";
+import { Normalizer } from "../../../utils/normalizer";
 
 export class PropertyPrimitive extends BasePrimitive<PropertyDeclaration, PropertyConfig> {
 
@@ -35,6 +35,14 @@ export class PropertyPrimitive extends BasePrimitive<PropertyDeclaration, Proper
             node.setIsReadonly(structure.isReadonly);
         }
 
+        if (structure.isStatic !== undefined && node.isStatic() !== structure.isStatic) {
+            node.setIsStatic(structure.isStatic);
+        }
+
+        if (structure.hasQuestionToken !== undefined && node.hasQuestionToken() !== structure.hasQuestionToken) {
+            node.setHasQuestionToken(structure.hasQuestionToken);
+        }
+
         // Handle Decorators
         this.config.decorators?.forEach(deco => {
             new DecoratorPrimitive(deco).ensure(node);
@@ -57,6 +65,17 @@ export class PropertyPrimitive extends BasePrimitive<PropertyDeclaration, Proper
 
         if (curType !== neuType) {
             issues.push(`Property '${this.config.name}' type mismatch. Expected: ${structure.type}, Found: ${curTypeRaw}`);
+        }
+
+        if (structure.initializer) {
+            const curInit = node.getInitializer()?.getText();
+            if (curInit !== structure.initializer) {
+                issues.push(`Property '${this.config.name}' initializer mismatch. Expected: ${structure.initializer}, Found: ${curInit}`);
+            }
+        }
+
+        if (structure.isStatic !== undefined && node.isStatic() !== structure.isStatic) {
+            issues.push(`Property '${this.config.name}' static modifier mismatch.`);
         }
 
         // Validate Decorators
@@ -93,6 +112,7 @@ export class PropertyPrimitive extends BasePrimitive<PropertyDeclaration, Proper
             type: this.config.type,
             initializer: this.config.initializer,
             scope: this.config.scope,
+            isStatic: this.config.isStatic,
             isReadonly: this.config.readonly,
             hasQuestionToken: this.config.optional,
             decorators: this.config.decorators?.map(d => ({ name: d.name, arguments: d.arguments })),

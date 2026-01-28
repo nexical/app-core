@@ -1,5 +1,5 @@
-import { type VariableStatementConfig } from "../../types.js";
-import { StatementPrimitive } from "./statement-primitive.js";
+import { type VariableStatementConfig } from "../../types";
+import { StatementPrimitive } from "./statement-primitive";
 
 export class VariableStatementPrimitive extends StatementPrimitive<any, VariableStatementConfig> {
     generate(): string {

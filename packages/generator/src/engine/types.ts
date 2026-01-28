@@ -169,6 +169,7 @@ export interface MethodConfig {
 export interface ClassConfig {
     name: string;
     isExported?: boolean;
+    isAbstract?: boolean;
     extends?: string;
     implements?: string[];
     decorators?: DecoratorConfig[];
@@ -195,6 +196,7 @@ export interface PropertyConfig {
     type: string;
     optional?: boolean;
     readonly?: boolean;
+    isStatic?: boolean;
     initializer?: string;
     scope?: Scope;
     decorators?: DecoratorConfig[];

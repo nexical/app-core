@@ -44,6 +44,13 @@ class ShellRegistryClass {
     }
 
     /**
+     * Clear all registrations.
+     */
+    clear() {
+        this.registry.clear();
+    }
+
+    /**
      * Find the best matching shell entry for the current context.
      * Iterates in REVERSE order (LIFO) so latest registrations win.
      */

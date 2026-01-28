@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createTestProject } from '../helpers/test-project';
+import { createTestProject } from '@nexical/generator-tests/helpers/test-project';
 import { Reconciler } from '../../src/engine/reconciler';
 
 describe('Reconciler - Exports', () => {

@@ -1,8 +1,8 @@
 import { SourceFile, TypeAliasDeclaration, ModuleDeclaration } from "ts-morph";
-import { BasePrimitive } from "../core/base-primitive.js";
-import { type TypeConfig } from "../../types.js";
-import { type ValidationResult } from "../contracts.js";
-import { Normalizer } from "../../../utils/normalizer.js";
+import { BasePrimitive } from "../core/base-primitive";
+import { type TypeConfig } from "../../types";
+import { type ValidationResult } from "../contracts";
+import { Normalizer } from "../../../utils/normalizer";
 
 export class TypePrimitive extends BasePrimitive<TypeAliasDeclaration, TypeConfig> {
 
@@ -19,6 +19,9 @@ export class TypePrimitive extends BasePrimitive<TypeAliasDeclaration, TypeConfi
     }
 
     update(node: TypeAliasDeclaration) {
+        if (this.config.isExported !== undefined && node.isExported() !== this.config.isExported) {
+            node.setIsExported(this.config.isExported);
+        }
         const curTypeRaw = node.getTypeNode()?.getText() || "";
         if (Normalizer.normalizeType(curTypeRaw) !== Normalizer.normalizeType(this.config.type)) {
             node.setType(this.config.type);
