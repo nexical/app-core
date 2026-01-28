@@ -17,7 +17,7 @@
   "compose.yml": "66cb336a613f5988519785da0c57c9058728377d287d7e14de8e5a1cc109bba5",
   "docker/entrypoint.sh": "fe02187893fc10cb4a67378a8befe231663b9dfb499c54665d8a5c46300257e3",
   "locales/en.json": "1ac2b5af0fd31045578e152705f873c52a31daa5558393365afb120a4bacfd23",
-  "package.json": "b26ca2c36e809743800b63149c532b8c6bbb22266a581e72fee2b58327f034df",
+  "package.json": "10f099b29d9365da992093f24452b8a44ff6d2ef33008a2bd89eb22dfe32fe2d",
   "packages/generator/README.md": "090f4d1053975d7bd4ac7fbd1a4c99cbe431eea63325bc74aee3ed48c16e0fa2",
   "packages/generator/package.json": "5abe40919b8e3050272f0da478ac28eb36143cdf6c34cc17584c75e6b9ba09aa",
   "packages/generator/src/ast-builders/schema-gen.ts": "1a8b576a5daf416aedb175416156a0e2518b46017bbb444794b3718b6b546d43",
@@ -256,5 +256,5 @@
   "tests/unit/setup.ts": "a820ab83589e19717f2e427db06cd77c1ba4827f8631ec6105b9662d2b643a85",
   "tsconfig.json": "dd9f123847e77f65f404bbd3eae723014968131f1199075897fcee6b00d7d110",
   "vitest.integration.config.ts": "172a2e5b9874def197766d0f1e195a31e799af0dff521c561b8232ea979a2849",
-  "vitest.unit.config.ts": "171cda2b139ecea5d3a914efcc7bdae574ba2d2440fffcd37d7903d3c7e8c04b"
+  "vitest.unit.config.ts": "27bba5b1873dff6fb651973b2181db5fad751a822072c95cf0c48dc9783435d3"
 }
