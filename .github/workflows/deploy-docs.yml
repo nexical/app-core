@@ -36,8 +36,11 @@ jobs:
       - name: Install dependencies
         run: cd docs && npm ci
 
-      - name: Gather Module Docs
-        run: cd docs && npm run gather-docs
+      # - name: Install Root Dependencies
+      #   run: npm ci
+
+      # - name: Run DocGap
+      #   run: npx docgap
 
       - name: Build with Astro
         run: cd docs && npm run build
