@@ -6,6 +6,8 @@ import starlight from '@astrojs/starlight';
 import sidebarModules from './src/sidebar-modules.json';
 
 export default defineConfig({
+	site: 'https://nexical.github.io',
+	base: '/app-core',
 	integrations: [
 		starlight({
 			title: 'Nexical Ecosystem',
