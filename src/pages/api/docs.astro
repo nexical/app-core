@@ -3,6 +3,7 @@ import { ModuleDiscovery } from "@/lib/modules/module-discovery";
 import { generateDocs } from "@/lib/api/api-docs";
 import { config } from "@/lib/core/config";
 import { ScalarDocs } from "@/components/ScalarDocs";
+import Layout from "@/layouts/Layout.astro";
 import "@/styles/styles.css";
 
 // Eagerly load all module styles
@@ -58,46 +59,8 @@ for (const module of modules) {
 }
 ---
 
-<!doctype html>
-<html lang="en">
-    <head>
-        <meta charset="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>{config.PUBLIC_SITE_NAME} - API Reference</title>
-        <script is:inline>
-            const getThemePreference = () => {
-                if (
-                    typeof localStorage !== "undefined" &&
-                    localStorage.getItem("app-theme")
-                ) {
-                    return localStorage.getItem("app-theme");
-                }
-                return window.matchMedia("(prefers-color-scheme: dark)").matches
-                    ? "dark"
-                    : "light";
-            };
-            const isDark = getThemePreference() === "dark";
-            document.documentElement.classList[isDark ? "add" : "remove"](
-                "dark",
-            );
-
-            if (typeof localStorage !== "undefined") {
-                const observer = new MutationObserver(() => {
-                    const isDark =
-                        document.documentElement.classList.contains("dark");
-                    localStorage.setItem(
-                        "app-theme",
-                        isDark ? "dark" : "light",
-                    );
-                });
-                observer.observe(document.documentElement, {
-                    attributes: true,
-                    attributeFilter: ["class"],
-                });
-            }
-        </script>
-    </head>
-    <body data-testid="docs-body">
+<Layout title={`${config.PUBLIC_SITE_NAME} - API Reference`} showShell={true}>
+    <div class="h-full w-full bg-background">
         <ScalarDocs spec={openApiDoc} client:only="react" />
-    </body>
-</html>
+    </div>
+</Layout>
