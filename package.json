@@ -111,7 +111,6 @@
     "zustand": "^5.0.9"
   },
   "devDependencies": {
-    "@nexical/docgap": "^0.2.3",
     "@nexical/generator": "*",
     "@playwright/test": "^1.57.0",
     "@testing-library/dom": "^10.4.1",
