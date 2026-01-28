@@ -1,6 +1,6 @@
-import { type FileDefinition, type FunctionConfig } from "../types.js";
-import { Reconciler } from "../reconciler.js";
-import { BaseBuilder } from "./base-builder.js";
+import { type FileDefinition, type FunctionConfig } from "../types";
+import { Reconciler } from "../reconciler";
+import { BaseBuilder } from "./base-builder";
 import { SourceFile } from "ts-morph";
 
 export class InitBuilder extends BaseBuilder {

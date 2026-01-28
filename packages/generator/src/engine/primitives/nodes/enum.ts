@@ -1,7 +1,7 @@
 import { SourceFile, EnumDeclaration, ModuleDeclaration } from "ts-morph";
-import { BasePrimitive } from "../core/base-primitive.js";
-import { type EnumConfig } from "../../types.js";
-import { type ValidationResult } from "../contracts.js";
+import { BasePrimitive } from "../core/base-primitive";
+import { type EnumConfig } from "../../types";
+import { type ValidationResult } from "../contracts";
 
 export class EnumPrimitive extends BasePrimitive<EnumDeclaration, EnumConfig> {
 

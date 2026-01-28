@@ -1,5 +1,5 @@
 import ts from 'typescript';
-import { type PlatformDefinition, type PlatformModel, type PrismaFieldSchema } from '../schema.js';
+import { type PlatformDefinition, type PlatformModel, type PrismaFieldSchema } from '../schema';
 
 const { factory } = ts;
 

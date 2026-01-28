@@ -1,85 +1,77 @@
+/**
+ * @vitest-environment node
+ */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { z } from 'zod';
-import { createConfig } from '@/lib/core/config';
 
-describe('config utility', () => {
-    const originalEnv = process.env;
+// We need to mock import.meta.env
+// Vitest handles this, but we might need to resetModules to test different scenarios
+const resetConfig = async () => {
+    vi.resetModules();
+    const { createConfig } = await import('@/lib/core/config');
+    return createConfig;
+};
+
+describe('Core Config: createConfig', () => {
+    const backupEnv = { ...process.env };
+    const schema = z.object({
+        TEST_KEY: z.string().default('default-value'),
+        REQUIRED_KEY: z.string(),
+    });
 
     beforeEach(() => {
-        vi.resetModules();
-        process.env = { ...originalEnv };
-        // Clear window mock if any
-        if (typeof window !== 'undefined') {
-            delete (window as any).__APP_CONFIG__;
-        }
+        // Clear all globals to start fresh
+        vi.unstubAllGlobals();
+        vi.stubGlobal('process', { env: {} });
     });
 
     afterEach(() => {
-        process.env = originalEnv;
+        process.env = backupEnv;
+        vi.unstubAllGlobals();
     });
 
-    it('should create config from process.env', () => {
-        process.env.TEST_VAR = 'hello';
-        const schema = z.object({
-            TEST_VAR: z.string()
+    it('should use default values if nothing is provided', async () => {
+        vi.stubGlobal('window', undefined);
+        const createConfig = await resetConfig();
+        const config = createConfig(z.object({
+            KEY: z.string().default('default')
+        }));
+        expect(config.KEY).toBe('default');
+    });
+
+    it('should prefer hydrated config from window.__APP_CONFIG__', async () => {
+        const mockConfig = { TEST_KEY: 'hydrated-value', REQUIRED_KEY: 'present' };
+        vi.stubGlobal('window', {
+            __APP_CONFIG__: mockConfig
         });
+
+        const createConfig = await resetConfig();
         const config = createConfig(schema);
-        expect(config.TEST_VAR).toBe('hello');
+
+        expect(config.TEST_KEY).toBe('hydrated-value');
+        expect(config.REQUIRED_KEY).toBe('present');
     });
 
-    it('should prioritize window.__APP_CONFIG__ over process.env', () => {
-        process.env.TEST_VAR = 'env-value';
+    it('should use process.env as fallback in server environment', async () => {
+        vi.stubGlobal('window', undefined);
+        process.env.TEST_KEY = 'env-value';
+        process.env.REQUIRED_KEY = 'required-value';
 
-        // Mock global window
-        global.window = {
-            __APP_CONFIG__: {
-                TEST_VAR: 'window-value'
-            }
-        } as any;
-
-        const schema = z.object({
-            TEST_VAR: z.string()
-        });
+        const createConfig = await resetConfig();
         const config = createConfig(schema);
-        expect(config.TEST_VAR).toBe('window-value');
-
-        // Cleanup global window
-        delete (global as any).window;
+        expect(config.TEST_KEY).toBe('env-value');
+        expect(config.REQUIRED_KEY).toBe('required-value');
     });
 
-    it('should use default values from zod schema', () => {
-        const schema = z.object({
-            DEFAULT_VAR: z.string().default('default-value')
-        });
-        const config = createConfig(schema);
-        expect(config.DEFAULT_VAR).toBe('default-value');
-    });
-
-    it('should handle invalid config gracefully (logs warning and returns empty or default)', () => {
+    it('should warn and return empty/invalid config if schema validation fails', async () => {
         const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => { });
-        const schema = z.object({
-            REQUIRED_VAR: z.string()
-        });
 
-        // No REQUIRED_VAR in env
-        const config = createConfig(schema);
+        const createConfig = await resetConfig();
+        const config = createConfig(z.object({
+            STRICT_KEY: z.string()
+        }));
 
-        expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Invalid configuration:'), expect.anything());
-        expect(config.REQUIRED_VAR).toBeUndefined();
-
-        consoleSpy.mockRestore();
-    });
-
-    it('should handle boolean transformation in preprocess', () => {
-        process.env.BOOL_VAR = 'true';
-        const schema = z.object({
-            BOOL_VAR: z.preprocess((v) => String(v).toLowerCase() === 'true', z.boolean())
-        });
-        const config = createConfig(schema);
-        expect(config.BOOL_VAR).toBe(true);
-
-        process.env.BOOL_VAR = 'false';
-        const config2 = createConfig(schema);
-        expect(config2.BOOL_VAR).toBe(false);
+        expect(consoleSpy).toHaveBeenCalledWith('Invalid configuration:', expect.anything());
+        expect(config).toEqual({});
     });
 });

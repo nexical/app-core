@@ -1,11 +1,11 @@
 import { ClassDeclaration, GetAccessorDeclaration, SetAccessorDeclaration, Scope, type OptionalKind, type GetAccessorDeclarationStructure, type SetAccessorDeclarationStructure } from "ts-morph";
-import { BasePrimitive } from "../core/base-primitive.js";
-import { type AccessorConfig } from "../../types.js";
-import { type ValidationResult } from "../contracts.js";
-import { DecoratorPrimitive } from "./decorator.js";
-import { JSDocPrimitive } from "./docs.js";
-import { StatementFactory } from "../statements/factory.js";
-import { Normalizer } from "../../../utils/normalizer.js";
+import { BasePrimitive } from "../core/base-primitive";
+import { type AccessorConfig } from "../../types";
+import { type ValidationResult } from "../contracts";
+import { DecoratorPrimitive } from "./decorator";
+import { JSDocPrimitive } from "./docs";
+import { StatementFactory } from "../statements/factory";
+import { Normalizer } from "../../../utils/normalizer";
 
 type AccessorDeclaration = GetAccessorDeclaration | SetAccessorDeclaration;
 
@@ -76,6 +76,14 @@ export class AccessorPrimitive extends BasePrimitive<AccessorDeclaration, Access
         }
         if (this.config.kind === 'set' && !(node instanceof SetAccessorDeclaration)) {
             issues.push(`Accessor '${this.config.name}' kind mismatch. Expected set.`);
+        }
+
+        if (this.config.kind === 'get' && node instanceof GetAccessorDeclaration && this.config.returnType) {
+            const curType = Normalizer.normalizeType(node.getReturnType().getText());
+            const neuType = Normalizer.normalizeType(this.config.returnType);
+            if (curType !== neuType) {
+                issues.push(`Accessor '${this.config.name}' return type mismatch. Expected: ${this.config.returnType}, Found: ${node.getReturnType().getText()}`);
+            }
         }
 
         // Validate Decorators

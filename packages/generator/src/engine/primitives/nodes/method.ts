@@ -1,11 +1,11 @@
 import { ClassDeclaration, Scope, type MethodDeclarationStructure, type OptionalKind, MethodDeclaration } from "ts-morph";
-import { BasePrimitive } from "../core/base-primitive.js";
-import { DecoratorPrimitive } from "./decorator.js";
-import { JSDocPrimitive } from "./docs.js";
-import { type ValidationResult } from "../contracts.js";
-import { type MethodConfig } from "../../types.js";
-import { StatementFactory } from "../statements/factory.js";
-import { Normalizer } from "../../../utils/normalizer.js";
+import { BasePrimitive } from "../core/base-primitive";
+import { DecoratorPrimitive } from "./decorator";
+import { JSDocPrimitive } from "./docs";
+import { type ValidationResult } from "../contracts";
+import { type MethodConfig } from "../../types";
+import { StatementFactory } from "../statements/factory";
+import { Normalizer } from "../../../utils/normalizer";
 
 export class MethodPrimitive extends BasePrimitive<MethodDeclaration, MethodConfig> {
 
@@ -75,9 +75,11 @@ export class MethodPrimitive extends BasePrimitive<MethodDeclaration, MethodConf
             node.addParameters(newParams);
         }
 
-        // Body Preservation (Default) or Overwrite
+        // Body Reconciliation
         if (this.config.overwriteBody && structure.statements) {
             node.setBodyText(structure.statements as string);
+        } else {
+            this.reconcileBody(node);
         }
 
         // Update Decorators
@@ -185,5 +187,29 @@ export class MethodPrimitive extends BasePrimitive<MethodDeclaration, MethodConf
             decorators: this.config.decorators?.map(d => ({ name: d.name, arguments: d.arguments })),
             docs: this.config.docs ? [{ description: this.config.docs.join('\n') }] : undefined
         };
+    }
+
+    private reconcileBody(node: MethodDeclaration) {
+        if (!this.config.statements || this.config.overwriteBody) {
+            return;
+        }
+
+        for (const stmtConfig of this.config.statements) {
+            if (typeof stmtConfig === 'string') {
+                const normalizedConfig = Normalizer.normalize(stmtConfig);
+                const sourceText = Normalizer.normalize(node.getBodyText() || "");
+                if (sourceText.includes(normalizedConfig)) continue;
+                node.addStatements(stmtConfig);
+                continue;
+            }
+            // Logic for other statement types (reused conceptually from FunctionPrimitive)
+            // Ideally we extract this to a shared 'StatementReconciler' but for now duplication is safer than major refactor
+
+            if ((stmtConfig as any).isDefault === false) {
+                // handle enforced updates
+            }
+
+            // Reuse logic if we copy-paste significantly, but for now simple string append is key requirement
+        }
     }
 }

@@ -1,7 +1,7 @@
 import { SourceFile } from "ts-morph";
-import { type ModelDef, type FileDefinition, type ClassDefinition, type MethodConfig, type CustomRoute, type ImportConfig } from "../types.js";
-import { Reconciler } from "../reconciler.js";
-import { BaseBuilder } from "./base-builder.js";
+import { type ModelDef, type FileDefinition, type ClassDefinition, type MethodConfig, type CustomRoute, type ImportConfig } from "../types";
+import { Reconciler } from "../reconciler";
+import { BaseBuilder } from "./base-builder";
 
 export class SdkBuilder extends BaseBuilder {
     constructor(private model: ModelDef, private customRoutes: CustomRoute[] = []) {

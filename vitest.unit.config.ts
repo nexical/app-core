@@ -51,9 +51,12 @@ export default defineConfig({
             // Fallback for direct package imports (e.g. '@nexical/sdk')
             { find: /^@nexical\/sdk$/, replacement: path.resolve(__dirname, 'packages/sdk/src/index.ts') },
             { find: /^@nexical\/agent$/, replacement: path.resolve(__dirname, 'packages/agent/src/main.ts') },
+            { find: /^@nexical\/generator\/(.*)/, replacement: path.resolve(__dirname, 'packages/generator/src/$1') },
+            { find: /^@nexical\/generator-tests\/(.*)/, replacement: path.resolve(__dirname, 'packages/generator/tests/unit/$1') },
             // Mocks for Astro virtual modules
             { find: 'astro:middleware', replacement: path.resolve(__dirname, 'tests/unit/mocks/astro.ts') },
             { find: 'astro:actions', replacement: path.resolve(__dirname, 'tests/unit/mocks/astro.ts') },
+            { find: 'astro:schema', replacement: path.resolve(__dirname, 'tests/unit/mocks/astro.ts') },
         ],
     },
 });

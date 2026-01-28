@@ -1,7 +1,7 @@
 import { SourceFile, Scope } from "ts-morph";
-import { type ModelDef, type FileDefinition, type ClassDefinition, type PropertyConfig, type ConstructorConfig } from "../types.js";
-import { Reconciler } from "../reconciler.js";
-import { BaseBuilder } from "./base-builder.js";
+import { type ModelDef, type FileDefinition, type ClassDefinition, type PropertyConfig, type ConstructorConfig } from "../types";
+import { Reconciler } from "../reconciler";
+import { BaseBuilder } from "./base-builder";
 
 export class SdkIndexBuilder extends BaseBuilder {
     constructor(

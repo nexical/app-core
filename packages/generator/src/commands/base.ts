@@ -1,5 +1,5 @@
 import { Command } from 'commander';
-import { CustomHelp, type HelpSection } from '../lib/help.js';
+import { CustomHelp, type HelpSection } from '../lib/help';
 import { z } from 'zod';
 import chalk from 'chalk';
 

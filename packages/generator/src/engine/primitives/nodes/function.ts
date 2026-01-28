@@ -1,9 +1,9 @@
 import { SourceFile, FunctionDeclaration, type OptionalKind, type FunctionDeclarationStructure, ModuleDeclaration } from "ts-morph";
-import { BasePrimitive } from "../core/base-primitive.js";
-import { type FunctionConfig } from "../../types.js";
-import { type ValidationResult } from "../contracts.js";
-import { StatementFactory } from "../statements/factory.js";
-import { Normalizer } from "../../../utils/normalizer.js";
+import { BasePrimitive } from "../core/base-primitive";
+import { type FunctionConfig } from "../../types";
+import { type ValidationResult } from "../contracts";
+import { StatementFactory } from "../statements/factory";
+import { Normalizer } from "../../../utils/normalizer";
 
 export class FunctionPrimitive extends BasePrimitive<FunctionDeclaration, FunctionConfig> {
 

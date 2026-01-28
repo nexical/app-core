@@ -1,7 +1,7 @@
 import { Project, SourceFile } from "ts-morph";
 import path from "node:path";
 import fs from "node:fs";
-import { Formatter } from "../utils/formatter.js";
+import { Formatter } from "../utils/formatter";
 
 export abstract class ModuleGenerator {
     protected project: Project;

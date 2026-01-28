@@ -1,5 +1,5 @@
-import { type IfStatementConfig } from "../../types.js";
-import { StatementFactory } from "./factory.js";
+import { type IfStatementConfig } from "../../types";
+import { StatementFactory } from "./factory";
 
 export class IfStatementPrimitive {
     constructor(private config: IfStatementConfig) { }

@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-import { BaseCommand } from '../base.js';
+import { BaseCommand } from '../base';
 import chalk from 'chalk';
 import fs from 'fs-extra';
 import path from 'path';
-import { ApiModuleGenerator } from '../../engine/api-module-generator.js';
-import { ModuleLocator } from '../../lib/module-locator.js';
+import { ApiModuleGenerator } from '../../engine/api-module-generator';
+import { ModuleLocator } from '../../lib/module-locator';
 import { glob } from 'glob';
 
 export default class GenApiCommand extends BaseCommand {

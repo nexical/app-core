@@ -1,4 +1,6 @@
 
+import { getCoreInits, getClientModuleInits } from './glob-helper';
+
 /**
  * Client-Side Module Initialization
  * 
@@ -11,14 +13,14 @@ export async function initializeClientModules() {
     const promises: Promise<void>[] = [];
 
     // 1. Initialize Core (Shells)
-    const core = import.meta.glob('/src/init.ts', { eager: true });
+    const core = getCoreInits();
     Object.values(core).forEach((mod: any) => {
         if (typeof mod.init === 'function') promises.push(mod.init());
         // Some init files execute globally on import, which is fine for eager glob
     });
 
     // 2. Initialize Modules (Shared init.ts and client-init.ts)
-    const modules = import.meta.glob(['/modules/*/src/init.ts', '/modules/*/src/client-init.ts'], { eager: true });
+    const modules = getClientModuleInits();
     Object.values(modules).forEach((mod: any) => {
         if (typeof mod.init === 'function') promises.push(mod.init());
         else if (typeof mod.default === 'function') promises.push(mod.default());

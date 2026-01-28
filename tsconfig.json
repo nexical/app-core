@@ -37,6 +37,12 @@
       ],
       "@nexical/agent/*": [
         "packages/agent/*"
+      ],
+      "@nexical/generator/*": [
+        "packages/generator/src/*"
+      ],
+      "@nexical/generator-tests/*": [
+        "packages/generator/tests/unit/*"
       ]
     },
     "esModuleInterop": true,

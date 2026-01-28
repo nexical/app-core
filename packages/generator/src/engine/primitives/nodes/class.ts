@@ -1,9 +1,9 @@
 import { SourceFile, type ClassDeclarationStructure, type OptionalKind, ClassDeclaration, ModuleDeclaration } from "ts-morph";
-import { BasePrimitive } from "../core/base-primitive.js";
-import { type ValidationResult } from "../contracts.js";
-import { type ClassConfig } from "../../types.js";
-import { DecoratorPrimitive } from "./decorator.js";
-import { JSDocPrimitive } from "./docs.js";
+import { BasePrimitive } from "../core/base-primitive";
+import { type ValidationResult } from "../contracts";
+import { type ClassConfig } from "../../types";
+import { DecoratorPrimitive } from "./decorator";
+import { JSDocPrimitive } from "./docs";
 
 export class ClassPrimitive extends BasePrimitive<ClassDeclaration, ClassConfig> {
 
@@ -25,6 +25,25 @@ export class ClassPrimitive extends BasePrimitive<ClassDeclaration, ClassConfig>
         // Enforce Extends
         if (structure.extends && node.getExtends()?.getText() !== structure.extends) {
             node.setExtends(structure.extends as string);
+        }
+
+        if (this.config.isAbstract !== undefined && node.isAbstract() !== this.config.isAbstract) {
+            node.setIsAbstract(this.config.isAbstract);
+        }
+
+        // Handle Implements
+        if (this.config.implements) {
+            const currentImplements = node.getImplements().map(i => i.getText());
+            const newImplements = this.config.implements;
+
+            // Simple additive/check logic. 
+            // If strict sync needed: remove existing not in config? 
+            // For now, let's ensure configured ones exist.
+            for (const impl of newImplements) {
+                if (!currentImplements.includes(impl)) {
+                    node.addImplements(impl);
+                }
+            }
         }
 
         // Handle Decorators
@@ -49,6 +68,18 @@ export class ClassPrimitive extends BasePrimitive<ClassDeclaration, ClassConfig>
 
         if (structure.extends && node.getExtends()?.getText() !== structure.extends) {
             issues.push(`Class '${this.config.name}' extends mismatch. Expected: ${structure.extends}, Found: ${node.getExtends()?.getText()}`);
+        }
+
+        if (this.config.isAbstract !== undefined && node.isAbstract() !== this.config.isAbstract) {
+            issues.push(`Class '${this.config.name}' abstract mismatch. Expected: ${this.config.isAbstract}, Found: ${node.isAbstract()}`);
+        }
+
+        if (this.config.implements) {
+            const currentImplements = node.getImplements().map(i => i.getText());
+            const missing = this.config.implements.filter(i => !currentImplements.includes(i));
+            if (missing.length > 0) {
+                issues.push(`Class '${this.config.name}' implements mismatch. Missing: ${missing.join(', ')}`);
+            }
         }
 
         // Validate Decorators

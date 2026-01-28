@@ -1,4 +1,5 @@
 import type { ComponentType } from 'react';
+import { getRegistryModules } from '../core/glob-helper';
 
 export interface RegistryComponent {
     component: ComponentType<any>; // ComponentType often needs any or a broad type for generic registry use
@@ -13,7 +14,7 @@ export interface RegistryComponent {
 export async function getZoneComponents(zone: string): Promise<RegistryComponent[]> {
     // Glob pattern to find all files in the specific zone directory
     // Pattern: /src/registry/{zone}/*.tsx AND /modules/{module}/registry/{zone}/*.tsx
-    const modules = import.meta.glob(['/src/registry/**/*.tsx', '/modules/*/src/registry/**/*.tsx'], { eager: true });
+    const modules = getRegistryModules();
 
     const components: RegistryComponent[] = [];
 
