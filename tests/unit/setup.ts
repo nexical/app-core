@@ -12,6 +12,11 @@ vi.mock('astro:actions', () => ({
     })
 }));
 
+vi.mock('astro:middleware', () => ({
+    defineMiddleware: vi.fn((handler) => handler),
+    sequence: vi.fn((...handlers) => handlers[0]),
+}));
+
 // Automatically cleanup after each test to prevent memory leaks and state pollution
 afterEach(() => {
     cleanup();
