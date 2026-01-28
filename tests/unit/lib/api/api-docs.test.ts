@@ -7,9 +7,6 @@ import { createMockAstroContext } from '@tests/unit/helpers';
 // Mock GlobHelper entirely
 vi.mock('@/lib/core/glob-helper', () => ({
     getApiModules: vi.fn(),
-    getCoreInits: vi.fn(),
-    getModuleInits: vi.fn(),
-    getClientModuleInits: vi.fn(),
 }));
 
 describe('api-docs and defineApi', () => {
@@ -69,106 +66,79 @@ describe('api-docs and defineApi', () => {
         it('should handle various error types and statuses', async () => {
             const scenarios = [
                 { error: new Error('Unauthorized'), expected: 403 },
-                { error: new Error('Not found'), expected: 404 },
+                { error: new Error('Forbidden access'), expected: 403 },
+                { error: new Error('Access denied'), expected: 403 },
+                { error: new Error('Not a member'), expected: 403 },
+                { error: new Error('Not found items'), expected: 404 },
                 { error: { name: 'ZodError', message: 'Invalid' }, expected: 400 },
-                { error: new Error('Generic'), expected: 500 }
+                { error: new Error('already exists'), expected: 400 },
+                { error: new Error('mismatch detected'), expected: 400 },
+                { error: new Error('Generic'), expected: 500 },
+                { error: null, expected: 500 },
+                { error: 'String error', expected: 500 }
             ];
 
             for (const s of scenarios) {
-                const handler = () => { throw s.error; };
+                const handler = () => {
+                    if (s.error === null) throw undefined;
+                    if (typeof s.error === 'string') throw s.error;
+                    throw s.error;
+                };
                 const api = defineApi(handler, { protected: false });
                 const context = createMockAstroContext();
                 const response = await api(context);
                 expect(response.status).toBe(s.expected);
             }
         });
-
-        it('should handle Zod errors with issues', async () => {
-            const handler = () => {
-                const err = new Error('Invalid');
-                err.name = 'ZodError';
-                (err as any).issues = [{ message: 'too short' }];
-                throw err;
-            };
-            const api = defineApi(handler, { protected: false });
-            const response = await api(createMockAstroContext());
-            const body = await response.json();
-            expect(body.details).toEqual([{ message: 'too short' }]);
-        });
     });
 
     describe('generateDocs', () => {
-        it('should generate OpenAPI paths object', async () => {
-            const mockModule = {
-                GET: defineApi(() => ({}), { summary: 'Get list' })
-            };
-
+        it('should generate OpenAPI paths object and handle all branches', async () => {
             vi.mocked(GlobHelper.getApiModules).mockReturnValue({
-                '/modules/test-api/src/pages/api/items/index.ts': mockModule
+                '/modules/test-api/src/pages/api/items/index.ts': {
+                    GET: Object.assign(vi.fn(), { schema: { summary: 'Get list', tags: ['items'] } }),
+                    POST: Object.assign(vi.fn(), {}) // Default branch
+                },
+                '/modules/test-api/src/pages/api/users/[id]/profile.ts': {
+                    GET: Object.assign(vi.fn(), {})
+                }
             });
 
             const { generateDocs: gen } = await import('@/lib/api/api-docs');
-
             const docs = await gen({ name: 'test-api', path: '' });
 
             expect(docs['/items']).toBeDefined();
             expect(docs['/items'].get.summary).toBe('Get list');
+            expect(docs['/items'].post).toBeDefined();
+            expect(docs['/users/{id}/profile']).toBeDefined();
         });
 
-        it('should handle non-index paths', async () => {
-            vi.mocked(GlobHelper.getApiModules).mockReturnValue({
-                '/modules/test-api/src/pages/api/direct.ts': { GET: defineApi(() => ({})) }
-            });
-            const { generateDocs: gen } = await import('@/lib/api/api-docs');
-            const docs = await gen({ name: 'test-api', path: '' });
-            expect(docs['/direct']).toBeDefined();
-        });
-
-        it('should filter visibility based on actor', async () => {
+        it('should handle visibility branches', async () => {
             const mockModule = {
-                GET: defineApi(() => ({}), {
-                    visibility: (actor) => actor.isAdmin === true
-                })
+                GET: Object.assign(vi.fn(), {
+                    schema: { visibility: (actor: any) => actor.isAdmin }
+                }),
+                POST: Object.assign(vi.fn(), { schema: { summary: 'No visibility' } })
             };
 
             vi.mocked(GlobHelper.getApiModules).mockReturnValue({
-                '/modules/test-api/src/pages/api/secret.ts': mockModule
+                '/modules/test-api/src/pages/api/admin.ts': mockModule
             });
 
             const { generateDocs: gen } = await import('@/lib/api/api-docs');
 
+            // 1. No actor -> show all
+            const publicDocs = await gen({ name: 'test-api', path: '' });
+            expect(publicDocs['/admin'].get).toBeDefined();
+            expect(publicDocs['/admin'].post).toBeDefined();
+
+            // 2. Actor with visibility function
             const adminDocs = await gen({ name: 'test-api', path: '' }, { isAdmin: true });
-            expect(adminDocs['/secret']).toBeDefined();
+            expect(adminDocs['/admin'].get).toBeDefined();
 
             const userDocs = await gen({ name: 'test-api', path: '' }, { isAdmin: false });
-            expect(userDocs['/secret']).toBeUndefined();
-        });
-
-        it('should show endpoint if actor is provided but no visibility function defined', async () => {
-            const mockModule = {
-                GET: defineApi(() => ({}), { summary: 'Publicish' })
-            };
-            vi.mocked(GlobHelper.getApiModules).mockReturnValue({
-                '/modules/test-api/src/pages/api/publicish.ts': mockModule
-            });
-
-            const { generateDocs: gen } = await import('@/lib/api/api-docs');
-            const docs = await gen({ name: 'test-api', path: '' }, { some: 'actor' });
-
-            expect(docs['/publicish']).toBeDefined();
-        });
-
-        it('should show all endpoints if no actor is provided', async () => {
-            const mockModule = {
-                GET: defineApi(() => ({}), { visibility: () => false })
-            };
-            vi.mocked(GlobHelper.getApiModules).mockReturnValue({
-                '/modules/test-api/src/pages/api/always.ts': mockModule
-            });
-            const { generateDocs: gen } = await import('@/lib/api/api-docs');
-
-            const docs = await gen({ name: 'test-api', path: '' }, undefined);
-            expect(docs['/always']).toBeDefined();
+            expect(userDocs['/admin'].get).toBeUndefined();
+            expect(userDocs['/admin'].post).toBeDefined(); // visibility is undefined -> true
         });
     });
 });

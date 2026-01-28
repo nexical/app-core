@@ -2,6 +2,10 @@ import React from 'react';
 import '@testing-library/jest-dom';
 import { cleanup } from '@testing-library/react';
 import { afterEach, vi } from 'vitest';
+import { TextEncoder, TextDecoder } from 'util';
+
+global.TextEncoder = TextEncoder;
+global.TextDecoder = TextDecoder as any;
 
 // Automatically cleanup after each test to prevent memory leaks and state pollution
 afterEach(() => {

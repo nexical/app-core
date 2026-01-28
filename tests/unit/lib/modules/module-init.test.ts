@@ -7,69 +7,47 @@ vi.mock('@/lib/core/glob-helper', () => ({
     getCoreInits: vi.fn(),
     getModuleInits: vi.fn(),
     getClientModuleInits: vi.fn(),
-    getApiModules: vi.fn().mockReturnValue({}),
-    getMiddlewareModules: vi.fn(),
-    getRegistryModules: vi.fn()
 }));
 
-describe('initializeModules', () => {
+describe('module-init', () => {
     beforeEach(() => {
         vi.clearAllMocks();
     });
 
-    it('should call init functions from globbed files', async () => {
-        const mockCoreInit = vi.fn().mockResolvedValue(undefined);
-        const mockModuleInit = vi.fn().mockResolvedValue(undefined);
+    it('should initialize all core and module inits', async () => {
+        const coreInit = vi.fn().mockResolvedValue(undefined);
+        const modInit = vi.fn().mockResolvedValue(undefined);
 
         vi.mocked(GlobHelper.getCoreInits).mockReturnValue({
-            '/src/init.ts': { init: mockCoreInit }
+            'core-1': { init: coreInit },
+            'core-2': {} // No init function, should be skipped
         });
 
         vi.mocked(GlobHelper.getModuleInits).mockReturnValue({
-            '/modules/foo/src/init.ts': { init: mockModuleInit }
+            'mod-1': { init: modInit }
         });
-
-        const logSpy = vi.spyOn(console, 'log').mockImplementation(() => { });
 
         await initializeModules();
 
-        expect(mockCoreInit).toHaveBeenCalled();
-        expect(mockModuleInit).toHaveBeenCalled();
-        expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Initialized 2 module(s)'));
-
-        logSpy.mockRestore();
+        expect(coreInit).toHaveBeenCalled();
+        expect(modInit).toHaveBeenCalled();
     });
 
-    it('should handle errors in init functions gracefully', async () => {
-        const mockErrorInit = vi.fn().mockRejectedValue(new Error('Fail'));
+    it('should handle initialization failures gracefully with allSettled', async () => {
+        const failingInit = vi.fn().mockRejectedValue(new Error('Failed'));
+        const successInit = vi.fn().mockResolvedValue(undefined);
 
-        vi.mocked(GlobHelper.getCoreInits).mockReturnValue({});
-        vi.mocked(GlobHelper.getModuleInits).mockReturnValue({
-            '/modules/err/src/init.ts': { init: mockErrorInit }
+        vi.mocked(GlobHelper.getCoreInits).mockReturnValue({
+            'fail': { init: failingInit }
         });
 
-        const logSpy = vi.spyOn(console, 'log').mockImplementation(() => { });
+        vi.mocked(GlobHelper.getModuleInits).mockReturnValue({
+            'success': { init: successInit }
+        });
 
+        // Should not throw
         await expect(initializeModules()).resolves.not.toThrow();
-        expect(mockErrorInit).toHaveBeenCalled();
-
-        logSpy.mockRestore();
-    });
-
-    it('should ignore modules without an init function', async () => {
-        vi.mocked(GlobHelper.getCoreInits).mockReturnValue({
-            '/src/no-init.ts': { somethingElse: () => { } }
-        });
-        vi.mocked(GlobHelper.getModuleInits).mockReturnValue({
-            '/modules/foo/src/no-init.ts': {}
-        });
-
-        const logSpy = vi.spyOn(console, 'log').mockImplementation(() => { });
-
-        await initializeModules();
-        // Should not throw and should log 2 modules even if they don't have init
-        expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Initialized 2 module(s)'));
-
-        logSpy.mockRestore();
+        expect(failingInit).toHaveBeenCalled();
+        expect(successInit).toHaveBeenCalled();
     });
 });

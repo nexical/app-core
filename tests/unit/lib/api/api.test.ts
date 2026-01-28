@@ -1,44 +1,47 @@
+/** @vitest-environment node */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-// Use a hoisted spy so it's available in vi.mock
-const { constructorSpy } = vi.hoisted(() => ({
-    constructorSpy: vi.fn()
-}));
-
+// Mock NexicalClient
 vi.mock('@nexical/sdk', () => ({
-    NexicalClient: vi.fn().mockImplementation(function (this: any, config: any) {
-        constructorSpy(config);
-        this.config = config;
-    })
+    NexicalClient: class {
+        options: any;
+        constructor(options: any) {
+            this.options = options;
+        }
+    },
 }));
 
-describe('api client', () => {
+describe('api client initialization', () => {
     beforeEach(() => {
         vi.resetModules();
-        vi.clearAllMocks();
-        delete (globalThis as any).window;
+        vi.stubEnv('PUBLIC_SITE_URL', 'http://test.com');
     });
 
-    it('should initialize with server-side baseUrl', async () => {
-        process.env.PUBLIC_SITE_URL = 'https://mysite.com';
-
-        await import('@/lib/api/api');
-
-        expect(constructorSpy).toHaveBeenCalledWith({
-            baseUrl: 'https://mysite.com/api'
-        });
+    it('should initialize with server-side baseUrl from env', async () => {
+        // @ts-ignore
+        global.window = undefined;
+        const { api } = await import('@/lib/api/api');
+        expect(api.options.baseUrl).toBe('http://test.com/api');
     });
 
-    it('should initialize with browser-side baseUrl', async () => {
-        (globalThis as any).window = { api: null } as any;
+    it('should use localhost default if env is missing', async () => {
+        vi.stubEnv('PUBLIC_SITE_URL', '');
+        // @ts-ignore
+        global.window = undefined;
+        const { api } = await import('@/lib/api/api');
+        expect(api.options.baseUrl).toBe('http://localhost:4321/api');
+    });
+});
 
-        await import('@/lib/api/api');
-
-        expect(constructorSpy).toHaveBeenCalledWith({
-            baseUrl: '/api'
-        });
-        expect((globalThis as any).window.api).toBeDefined();
-
-        delete (globalThis as any).window;
+describe('api client browser initialization', () => {
+    it('should initialize with /api baseUrl in browser', async () => {
+        vi.resetModules();
+        // @ts-ignore
+        global.window = { location: { origin: 'http://localhost' } };
+        const { api } = await import('@/lib/api/api');
+        expect(api.options.baseUrl).toBe('/api');
+        expect((global.window as any).api).toBe(api);
+        // @ts-ignore
+        global.window = undefined;
     });
 });

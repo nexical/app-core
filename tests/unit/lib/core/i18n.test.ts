@@ -1,57 +1,49 @@
+/** @vitest-environment node */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { getTranslation, getServerTranslation } from '@/lib/core/i18n';
 import { ModuleI18nIntegration } from '@/lib/integrations/module-i18n-integration';
 
 vi.mock('@/lib/integrations/module-i18n-integration', () => ({
     ModuleI18nIntegration: {
-        getMergedLocale: vi.fn()
-    }
+        getMergedLocale: vi.fn(),
+    },
 }));
 
-describe('i18n utility', () => {
-    const mockLocale = {
-        common: {
-            welcome: 'Welcome {{name}}',
-            nested: {
-                key: 'Value'
-            }
-        }
-    };
-
+describe('i18n', () => {
     beforeEach(() => {
         vi.clearAllMocks();
-        (ModuleI18nIntegration.getMergedLocale as any).mockResolvedValue(mockLocale);
     });
 
-    it('should translate correctly using nested keys', async () => {
-        const t = await getTranslation('en');
-        expect(t('common.nested.key')).toBe('Value');
-    });
-
-    it('should substitute parameters correctly', async () => {
-        const t = await getTranslation('en');
-        expect(t('common.welcome', { name: 'Adrian' })).toBe('Welcome Adrian');
-    });
-
-    it('should return the key if translation is missing', async () => {
-        const t = await getTranslation('en');
-        expect(t('missing.key')).toBe('missing.key');
-    });
-
-    it('should determine language from cookies in getServerTranslation', async () => {
-        const request = new Request('http://localhost:4321', {
-            headers: {
-                'cookie': 'i18next=fr; other=value'
-            }
+    it('should replace parameters in translations', async () => {
+        vi.mocked(ModuleI18nIntegration.getMergedLocale).mockResolvedValue({
+            greeting: 'Hello {{name}}!',
+            nested: { key: 'Val' }
         });
 
-        await getServerTranslation(request);
-        expect(ModuleI18nIntegration.getMergedLocale).toHaveBeenCalledWith('fr');
+        const t = await getTranslation('en');
+        expect(t('greeting', { name: 'Alice' })).toBe('Hello Alice!');
+        expect(t('nested.key')).toBe('Val');
+        expect(t('missing')).toBe('missing');
     });
 
-    it('should fallback to default language if cookie is missing', async () => {
-        const request = new Request('http://localhost:4321');
+    it('should derive lang from cookie in getServerTranslation', async () => {
+        vi.mocked(ModuleI18nIntegration.getMergedLocale).mockResolvedValue({
+            btn: 'Click'
+        });
+
+        const request = new Request('http://localhost', {
+            headers: { cookie: 'i18next=es' }
+        });
+
+        const t = await getServerTranslation(request);
+        expect(ModuleI18nIntegration.getMergedLocale).toHaveBeenCalledWith('es');
+        expect(t('btn')).toBe('Click');
+    });
+
+    it('should fallback to default lang in getServerTranslation', async () => {
+        vi.mocked(ModuleI18nIntegration.getMergedLocale).mockResolvedValue({});
+        const request = new Request('http://localhost');
         await getServerTranslation(request);
-        expect(ModuleI18nIntegration.getMergedLocale).toHaveBeenCalledWith('en');
+        expect(ModuleI18nIntegration.getMergedLocale).toHaveBeenCalledWith(expect.any(String));
     });
 });

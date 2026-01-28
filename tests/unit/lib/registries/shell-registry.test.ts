@@ -10,6 +10,24 @@ describe('ShellRegistry', () => {
         expect(ShellRegistry.find(context)).toBe(MockComp);
     });
 
+    it('should find the whole entry', () => {
+        const MockComp = () => null;
+        const condition = (ctx: any) => ctx.url.pathname === '/entry';
+        ShellRegistry.register('entry', MockComp, condition);
+
+        const context = { url: new URL('http://localhost/entry'), navData: {}, isMobile: false, width: 0, height: 0 };
+        const entry = ShellRegistry.findEntry(context);
+        expect(entry?.name).toBe('entry');
+        expect(entry?.component).toBe(MockComp);
+    });
+
+    it('should clear all shells', () => {
+        ShellRegistry.register('something', () => null, '*');
+        ShellRegistry.clear();
+        const context = { url: new URL('http://localhost/'), navData: {}, isMobile: false, width: 0, height: 0 };
+        expect(ShellRegistry.find(context)).toBeUndefined();
+    });
+
     it('should support wildcard matching (*)', () => {
         const DefaultComp = () => null;
         ShellRegistry.register('default', DefaultComp, '*');
