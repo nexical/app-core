@@ -1,17 +1,17 @@
 /** @vitest-environment jsdom */
 import React from 'react';
-import { render, screen, fireEvent, act } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { AppShellMobile } from '@/components/shell/app-shell-mobile';
-import { getZoneComponents } from '@/lib/ui/registry-loader';
-import { useShellStore } from '@/lib/ui/shell-store';
+import { AppShellMobile } from '../../../../src/components/shell/app-shell-mobile';
+import { getZoneComponents } from '../../../../src/lib/ui/registry-loader';
+import { useShellStore } from '../../../../src/lib/ui/shell-store';
 
 // Mock dependencies
-vi.mock('@/lib/ui/registry-loader', () => ({
+vi.mock('../../../../src/lib/ui/registry-loader', () => ({
     getZoneComponents: vi.fn(),
 }));
 
-vi.mock('@/lib/ui/shell-store', () => ({
+vi.mock('../../../../src/lib/ui/shell-store', () => ({
     useShellStore: vi.fn(),
 }));
 
@@ -19,11 +19,11 @@ vi.mock('react-i18next', () => ({
     useTranslation: () => ({ t: (key: string) => key }),
 }));
 
-vi.mock('@/components/ui/scroll-area', () => ({
+vi.mock('../../../../src/components/ui/scroll-area', () => ({
     ScrollArea: ({ children }: any) => <div data-testid="scroll-area">{children}</div>,
 }));
 
-vi.mock('@/components/ui/sheet', () => ({
+vi.mock('../../../../src/components/ui/sheet', () => ({
     Sheet: ({ children, open, onOpenChange }: any) => (
         <div data-testid="mock-sheet" data-open={open}>
             {children}
@@ -34,7 +34,7 @@ vi.mock('@/components/ui/sheet', () => ({
     SheetTrigger: ({ children }: any) => <div data-testid="sheet-trigger">{children}</div>,
 }));
 
-vi.mock('@/components/ui/button', () => ({
+vi.mock('../../../../src/components/ui/button', () => ({
     Button: ({ children, onClick, ...props }: any) => <button onClick={onClick} {...props}>{children}</button>,
 }));
 
@@ -42,7 +42,7 @@ vi.mock('lucide-react', () => ({
     Menu: () => <div data-testid="menu-icon" />,
 }));
 
-vi.mock('@/lib/core/config', () => ({
+vi.mock('../../../../src/lib/core/config', () => ({
     config: {
         PUBLIC_SITE_NAME: 'Test Site',
     },
@@ -73,8 +73,6 @@ describe('AppShellMobile', () => {
         await act(async () => {
             render(<AppShellMobile>Content</AppShellMobile>);
         });
-
-
 
         // AppShellMobile renders two sheets (nav and details). Nav is the first one.
         const sheets = screen.getAllByTestId('mock-sheet');

@@ -296,7 +296,7 @@
   "tests/unit/components/pwa/offline-indicator.test.tsx": "10913dc6b4f43ef3cbd6c07fbff37af996637f8678e050b96178869d0385498a",
   "tests/unit/components/shell/api-docs-shell.test.tsx": "33232729bd31a710279473f380739c28ee1ff970e5be1f3014e80e33fcfa4391",
   "tests/unit/components/shell/app-shell-desktop.test.tsx": "d66b240f78f535c6e9fbba5189d3ef487ec67f200bff2374519ac0c54afb8493",
-  "tests/unit/components/shell/app-shell-mobile.test.tsx": "e7825576ed4fb3423b2050206d7c275a9eb6677e98bf0307e7ab58383167b228",
+  "tests/unit/components/shell/app-shell-mobile.test.tsx": "25fbfb44c9da76724571bc3cc2572c8253beb5918b55cd0466afd6fbf1c7d333",
   "tests/unit/components/shell/master-shell.test.tsx": "37cb7ec7188fa3d3faea1ad977cc1f9dbfbd3fc1ba881de02f5f9e82ed2f019f",
   "tests/unit/components/shell/registry-loader.test.tsx": "ac78877ac308e66014be04e011fc5a357629f11435fac4f2a3aad8831d2ec2b1",
   "tests/unit/components/system/i18n-provider.test.tsx": "c2236855e90619230abd91be08b917e03acdb862f44e5767852cf9e4b088d68e",
@@ -364,9 +364,11 @@
   "tests/unit/middleware.test.ts": "09bb8a526621138c39198da42aee48795bf8fd7e414c18266644c963d8301a47",
   "tests/unit/mocks/astro.ts": "7742a5bc35452700ed87b72d1fa94248bfd57142a4508efe6f3ff8bc01a2ad58",
   "tests/unit/mocks/ui/radix-slot.tsx": "306a1cc0f415d46d01cc910b8badf75dd075dfe40733d2a76e3328f84728efb4",
+  "tests/unit/pages/api/schema.test.ts": "cf9a439bd31202fcbaaed6e0fe9318697f69a22c077d30963ea1a464f8b2bf34",
+  "tests/unit/pages/api/status.test.ts": "a7019f6d92883585e552adb7f77ecb9773bc0546efaf5b3017106603f7f55d5b",
   "tests/unit/setup.ts": "c183a9dbf9576a858a6b7c406a3d15bcd0161a555d8505bd9c406e2ceb6b2d38",
   "tests/unit/simple-astro.test.ts": "1b22a957b71927726fbf75bd77134034c76d9dafe7e35186b098fa81c1bd8d84",
   "tsconfig.json": "68c9d2d9ee46d083cd6671f97044bfb6b002e2f14b3ffed364fa243def38b531",
   "vitest.integration.config.ts": "172a2e5b9874def197766d0f1e195a31e799af0dff521c561b8232ea979a2849",
-  "vitest.unit.config.ts": "bea8e03503477d72b873bf0313f7fd49ffd3a42899bec4fc8894285cbc678621"
+  "vitest.unit.config.ts": "ec0b4d6a70e0e9c9b3e8c2d54ed48a8c836600a00e61133952ddaa4785486b57"
 }
