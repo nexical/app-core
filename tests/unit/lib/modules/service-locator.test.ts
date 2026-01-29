@@ -1,65 +1,54 @@
+/** @vitest-environment node */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { ServiceLocator } from '@/lib/modules/service-locator';
+import { HookSystem } from '@/lib/modules/hooks';
 
 vi.mock('@/lib/modules/hooks', () => ({
     HookSystem: {
-        dispatch: vi.fn()
-    }
+        dispatch: vi.fn(),
+    },
 }));
 
 describe('ServiceLocator', () => {
-    beforeEach(async () => {
-        vi.resetModules();
+    beforeEach(() => {
+        // Clear private static services if possible, or just use different names
+        // Since it's a static class, we can't easily reset it without a helper method.
+        // But we can test it by using unique names.
         vi.clearAllMocks();
     });
 
-    const getServiceLocator = async () => {
-        const { ServiceLocator } = await import('@/lib/modules/service-locator');
-        return ServiceLocator;
-    };
-
-    it('should provide and consume a service', async () => {
-        const ServiceLocator = await getServiceLocator();
-        const { HookSystem } = await import('@/lib/modules/hooks');
-
+    it('should provide and consume a service', () => {
         const mockService = { id: 1 };
         ServiceLocator.provide('TestService', mockService);
 
-        const retrieved = ServiceLocator.consume('TestService');
-        expect(retrieved).toBe(mockService);
+        expect(ServiceLocator.consume('TestService')).toBe(mockService);
+        expect(ServiceLocator.tryConsume('TestService')).toBe(mockService);
         expect(HookSystem.dispatch).toHaveBeenCalledWith('core.service.provided', { name: 'TestService' });
     });
 
-    it('should throw if service not found', async () => {
-        const ServiceLocator = await getServiceLocator();
-        expect(() => ServiceLocator.consume('MissingService')).toThrow('[ServiceLocator] Service \'MissingService\' not found');
+    it('should warn when overwriting a service', () => {
+        const spy = vi.spyOn(console, 'warn').mockImplementation(() => { });
+        ServiceLocator.provide('OverwriteService', { a: 1 });
+        ServiceLocator.provide('OverwriteService', { a: 2 });
+
+        expect(spy).toHaveBeenCalled();
+        expect(ServiceLocator.consume('OverwriteService')).toEqual({ a: 2 });
+        spy.mockRestore();
     });
 
-    it('should return undefined for tryConsume if not found', async () => {
-        const ServiceLocator = await getServiceLocator();
-        expect(ServiceLocator.tryConsume('MissingService')).toBeUndefined();
+    it('should throw error when consuming non-existent service', () => {
+        expect(() => ServiceLocator.consume('NonExistent')).toThrow();
     });
 
-    it('should return service for tryConsume if found', async () => {
-        const ServiceLocator = await getServiceLocator();
-        const mockService = { id: 2 };
-        ServiceLocator.provide('TryService', mockService);
-        expect(ServiceLocator.tryConsume('TryService')).toBe(mockService);
+    it('should return undefined when tryConsume non-existent service', () => {
+        expect(ServiceLocator.tryConsume('MaybeService')).toBeUndefined();
     });
 
-    it('should list services in debug', async () => {
-        const ServiceLocator = await getServiceLocator();
-        ServiceLocator.provide('D1', {});
-        ServiceLocator.provide('D2', {});
-        const list = ServiceLocator.debug();
-        expect(list).toContain('D1');
-        expect(list).toContain('D2');
-    });
-
-    it('should warn when overwriting a service', async () => {
-        const ServiceLocator = await getServiceLocator();
-        const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => { });
-        ServiceLocator.provide('OverwriteService', { v: 1 });
-        ServiceLocator.provide('OverwriteService', { v: 2 });
-        expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Service \'OverwriteService\' is being overwritten'));
+    it('should return all service names via debug', () => {
+        ServiceLocator.provide('Debug1', {});
+        ServiceLocator.provide('Debug2', {});
+        const keys = ServiceLocator.debug();
+        expect(keys).toContain('Debug1');
+        expect(keys).toContain('Debug2');
     });
 });

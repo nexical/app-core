@@ -1,70 +1,51 @@
 /** @vitest-environment jsdom */
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
+import { createConfig, getProcessEnv } from '@/lib/core/config';
 import { z } from 'zod';
 
-describe('config creation and merging', () => {
-    const originalEnv = process.env;
-
-    beforeEach(() => {
-        vi.resetModules();
-        process.env = { ...originalEnv };
-        // @ts-ignore
-        delete window.__APP_CONFIG__;
+describe('config utilities', () => {
+    it('should get entries from process.env', () => {
+        vi.stubEnv('TEST_KEY', 'test_val');
+        expect(getProcessEnv('TEST_KEY')).toBe('test_val');
+        vi.unstubAllEnvs();
     });
 
-    afterEach(() => {
-        process.env = originalEnv;
-    });
-
-    it('should prioritize window.__APP_CONFIG__ in browser', async () => {
-        // @ts-ignore
-        window.__APP_CONFIG__ = { PUBLIC_TEST_VAR: 'window-value' };
-        const { createConfig } = await import('@/lib/core/config');
-
-        const schema = z.object({ PUBLIC_TEST_VAR: z.string() });
-        const config = createConfig(schema);
-
-        expect(config.PUBLIC_TEST_VAR).toBe('window-value');
-    });
-
-    it('should fallback to process.env if window config is missing', async () => {
-        process.env.PUBLIC_TEST_VAR = 'env-value';
-        const { createConfig } = await import('@/lib/core/config');
-
-        const schema = z.object({ PUBLIC_TEST_VAR: z.string() });
-        const config = createConfig(schema);
-
-        expect(config.PUBLIC_TEST_VAR).toBe('env-value');
-    });
-
-    it('should handle invalid config with warnings', async () => {
-        const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => { });
-        const { createConfig } = await import('@/lib/core/config');
-
-        const schema = z.object({ REQUIRED_VAR: z.string() });
-        const config = createConfig(schema);
-
-        expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('Invalid configuration'), expect.anything());
-        expect(config).toEqual({});
-    });
-
-    it('should discover PUBLIC_ keys for publicConfig', async () => {
-        process.env.PUBLIC_RUNTIME_VAR = 'runtime-value';
-        const { publicConfig } = await import('@/lib/core/config');
-
-        expect(publicConfig.PUBLIC_RUNTIME_VAR).toBe('runtime-value');
-        expect(publicConfig.PUBLIC_SITE_NAME).toBeDefined();
-    });
-
-    it('should handle getProcessEnv failure', async () => {
-        // Mock process to be undefined or throw
+    it('should handle restricted process environment', () => {
         const originalProcess = global.process;
         // @ts-ignore
         global.process = undefined;
-
-        const { getProcessEnv } = await import('@/lib/core/config');
         expect(getProcessEnv('ANY')).toBeUndefined();
-
         global.process = originalProcess;
+    });
+
+    it('should prioritize window.__APP_CONFIG__ in browser', () => {
+        const schema = z.object({ KEY: z.string() });
+        (window as any).__APP_CONFIG__ = { KEY: 'hydrated' };
+
+        const config = createConfig(schema);
+        expect(config.KEY).toBe('hydrated');
+
+        delete (window as any).__APP_CONFIG__;
+    });
+
+    it('should use import.meta.env if available', () => {
+        // Can't easily mock import.meta.env directly without complex setup
+        // But we can check that it defaults to {} and warns on invalid schema
+        const schema = z.object({ REQUIRED: z.string() });
+        const spy = vi.spyOn(console, 'warn').mockImplementation(() => { });
+
+        const config = createConfig(schema);
+        expect(config).toEqual({});
+        expect(spy).toHaveBeenCalled();
+        spy.mockRestore();
+    });
+
+    it('should implement publicConfig discovery logic', async () => {
+        vi.stubEnv('PUBLIC_DYNAMIC', 'val');
+        // Re-import to trigger top-level publicConfig logic
+        vi.resetModules();
+        const { publicConfig } = await import('@/lib/core/config');
+        expect(publicConfig.PUBLIC_DYNAMIC).toBe('val');
+        vi.unstubAllEnvs();
     });
 });

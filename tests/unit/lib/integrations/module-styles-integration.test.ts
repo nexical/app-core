@@ -1,17 +1,14 @@
 /** @vitest-environment node */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import stylesIntegration from '@/lib/integrations/module-styles-integration';
+import integration from '@/lib/integrations/module-styles-integration';
 import fs from 'node:fs';
-import path from 'node:path';
 
-vi.mock('node:fs');
-vi.mock('node:path', async () => {
-    const actual = await vi.importActual('node:path') as any;
-    return {
-        ...actual,
-        resolve: vi.fn((...args) => actual.join(...args)),
-    };
-});
+vi.mock('node:fs', () => ({
+    default: {
+        existsSync: vi.fn(),
+        readdirSync: vi.fn(),
+    },
+}));
 
 describe('module-styles-integration', () => {
     const injectScript = vi.fn();
@@ -20,37 +17,31 @@ describe('module-styles-integration', () => {
         vi.clearAllMocks();
     });
 
-    it('should inject core styles if they exist', () => {
-        vi.mocked(fs.existsSync).mockImplementation((p: string) => p.includes('styles.css'));
+    it('should inject Core and Module CSS', () => {
+        const inst = integration();
+        vi.mocked(fs.existsSync).mockImplementation((p: any) => {
+            if (p.endsWith('src/styles/styles.css')) return true;
+            if (p.endsWith('modules/mod1/styles.css')) return true;
+            if (p.endsWith('modules')) return true;
+            return false;
+        });
+        vi.mocked(fs.readdirSync).mockReturnValue(['mod1', 'mod2'] as any);
 
-        const integration = stylesIntegration();
-        const setup = (integration.hooks as any)['astro:config:setup'];
+        const hook = inst.hooks['astro:config:setup'] as any;
+        hook({ injectScript });
 
-        setup({ injectScript });
-
-        expect(injectScript).toHaveBeenCalledWith('page', expect.stringContaining('styles.css'));
+        expect(injectScript).toHaveBeenCalledWith('page', expect.stringContaining('src/styles/styles.css'));
+        expect(injectScript).toHaveBeenCalledWith('page', expect.stringContaining('modules/mod1/styles.css'));
+        expect(injectScript).not.toHaveBeenCalledWith('page', expect.stringContaining('modules/mod2/styles.css'));
     });
 
-    it('should discover and inject module styles', () => {
-        vi.mocked(fs.existsSync).mockReturnValue(true);
-        vi.mocked(fs.readdirSync).mockReturnValue(['auth-mod'] as any);
+    it('should handle missing modules directory', () => {
+        const inst = integration();
+        vi.mocked(fs.existsSync).mockReturnValue(false);
 
-        const integration = stylesIntegration();
-        const setup = (integration.hooks as any)['astro:config:setup'];
+        const hook = inst.hooks['astro:config:setup'] as any;
+        hook({ injectScript });
 
-        setup({ injectScript });
-
-        expect(injectScript).toHaveBeenCalledWith('page', expect.stringContaining('modules/auth-mod/styles.css'));
-    });
-
-    it('should skip if modules directory does not exist', () => {
-        vi.mocked(fs.existsSync).mockImplementation((p: string) => !p.includes('modules'));
-
-        const integration = stylesIntegration();
-        const setup = (integration.hooks as any)['astro:config:setup'];
-
-        setup({ injectScript });
-
-        expect(fs.readdirSync).not.toHaveBeenCalled();
+        expect(injectScript).not.toHaveBeenCalled();
     });
 });

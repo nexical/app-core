@@ -53,4 +53,23 @@ describe('registry-loader', () => {
         const components = await getZoneComponents('header');
         expect(components[0].name).toBe('MainLogo');
     });
+
+    it('should skip modules without default export', async () => {
+        vi.mocked(GlobHelper.getRegistryModules).mockReturnValue({
+            '/src/registry/header/invalid.tsx': { someOtherExport: 'foo' }
+        });
+
+        const components = await getZoneComponents('header');
+        expect(components).toHaveLength(0);
+    });
+
+    it('should handle complex filename part extraction', async () => {
+        vi.mocked(GlobHelper.getRegistryModules).mockReturnValue({
+            '/src/registry/header/10-multi-part-name.tsx': { default: () => null }
+        });
+
+        const components = await getZoneComponents('header');
+        expect(components[0].name).toBe('multi-part-name');
+        expect(components[0].order).toBe(10);
+    });
 });

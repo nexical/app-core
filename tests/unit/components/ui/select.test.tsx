@@ -36,6 +36,9 @@ describe('Select', () => {
         const appleItems = await screen.findAllByText('Apple');
         expect(appleItems.length).toBeGreaterThan(0);
 
-        expect(await screen.findByText('Banana')).toBeDefined();
+        // Wait for options to appear
+        const options = await screen.findAllByRole('option', {}, { timeout: 2000 });
+        expect(options.length).toBeGreaterThan(0);
+        expect(options[1]).toHaveTextContent('Banana');
     });
 });

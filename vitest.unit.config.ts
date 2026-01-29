@@ -1,10 +1,8 @@
-import { defineConfig } from 'vitest/config';
-import react from '@vitejs/plugin-react';
-import tsconfigPaths from 'vite-tsconfig-paths';
+
+import { getViteConfig } from 'astro/config';
 import path from 'path';
 
-export default defineConfig({
-    plugins: [react(), tsconfigPaths({ ignoreConfigErrors: true })],
+export default getViteConfig({
     test: {
         environment: 'jsdom',
         globals: true,
@@ -40,23 +38,26 @@ export default defineConfig({
             }
         },
         testTimeout: 30000,
+        server: {
+            deps: {
+                inline: [
+                    /@radix-ui\/.*/,
+                    /@tanstack\/.*/,
+                    'lucide-react'
+                ]
+            }
+        }
     },
     resolve: {
         alias: [
-            { find: /^@\/(.*)/, replacement: path.resolve(__dirname, 'src/$1') },
-            { find: /^@modules\/(.*)/, replacement: path.resolve(__dirname, 'modules/$1') },
-            { find: /^@tests\/(.*)/, replacement: path.resolve(__dirname, 'tests/$1') },
-            { find: /^@nexical\/agent\/(.*)/, replacement: path.resolve(__dirname, 'packages/agent/$1') },
-            { find: /^@nexical\/sdk\/(.*)/, replacement: path.resolve(__dirname, 'packages/sdk/$1') },
-            // Fallback for direct package imports (e.g. '@nexical/sdk')
-            { find: /^@nexical\/sdk$/, replacement: path.resolve(__dirname, 'packages/sdk/src/index.ts') },
-            { find: /^@nexical\/agent$/, replacement: path.resolve(__dirname, 'packages/agent/src/main.ts') },
-            { find: /^@nexical\/generator\/(.*)/, replacement: path.resolve(__dirname, 'packages/generator/src/$1') },
-            { find: /^@nexical\/generator-tests\/(.*)/, replacement: path.resolve(__dirname, 'packages/generator/tests/unit/$1') },
+            { find: '@', replacement: path.resolve(process.cwd(), 'src') },
+            // Fix for @radix-ui/react-slot resolution issue by mocking it if necessary
+            { find: '@radix-ui/react-slot', replacement: path.resolve(process.cwd(), 'tests/unit/mocks/ui/radix-slot.tsx') },
+
             // Mocks for Astro virtual modules
-            { find: 'astro:middleware', replacement: path.resolve(__dirname, 'tests/unit/mocks/astro.ts') },
-            { find: 'astro:actions', replacement: path.resolve(__dirname, 'tests/unit/mocks/astro.ts') },
-            { find: 'astro:schema', replacement: path.resolve(__dirname, 'tests/unit/mocks/astro.ts') },
+            { find: 'astro:middleware', replacement: path.resolve(process.cwd(), 'tests/unit/mocks/astro.ts') },
+            { find: 'astro:actions', replacement: path.resolve(process.cwd(), 'tests/unit/mocks/astro.ts') },
+            { find: 'astro:schema', replacement: path.resolve(process.cwd(), 'tests/unit/mocks/astro.ts') },
         ],
     },
 });

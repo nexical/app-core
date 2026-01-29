@@ -90,6 +90,12 @@ describe('api-docs and defineApi', () => {
                 expect(response.status).toBe(s.expected);
             }
         });
+
+        it('should handle non-string error messages in branch 82', async () => {
+            const api = defineApi(() => { throw { message: 123 }; }, { protected: false });
+            const response = await api(createMockAstroContext());
+            expect(response.status).toBe(500);
+        });
     });
 
     describe('generateDocs', () => {
@@ -111,6 +117,26 @@ describe('api-docs and defineApi', () => {
             expect(docs['/items'].get.summary).toBe('Get list');
             expect(docs['/items'].post).toBeDefined();
             expect(docs['/users/{id}/profile']).toBeDefined();
+        });
+
+        it('should handle root path, non-matching files and empty pathItem', async () => {
+            vi.mocked(GlobHelper.getApiModules).mockReturnValue({
+                '/modules/test-api/src/pages/api/index.ts': {
+                    GET: Object.assign(vi.fn(), {})
+                },
+                '/modules/other-api/src/pages/api/something.ts': { // Line 118: should be skipped
+                    GET: Object.assign(vi.fn(), {})
+                },
+                '/modules/test-api/src/pages/api/empty.ts': { // Line 167: should be skipped from paths
+                    OTHER: vi.fn()
+                }
+            });
+
+            const { generateDocs: gen } = await import('@/lib/api/api-docs');
+            const docs = await gen({ name: 'test-api', path: '' });
+
+            expect(docs['/']).toBeDefined(); // Line 128
+            expect(Object.keys(docs)).toHaveLength(1); // root only
         });
 
         it('should handle visibility branches', async () => {

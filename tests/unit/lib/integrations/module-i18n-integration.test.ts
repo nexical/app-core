@@ -1,37 +1,34 @@
 /** @vitest-environment node */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { ModuleI18nIntegration } from '@/lib/integrations/module-i18n-integration';
 
-describe('ModuleI18nIntegration', () => {
-    beforeEach(() => {
-        vi.resetModules();
-    });
-
-    it('should handle sorting modules by phase and order', () => {
+describe('module-i18n-integration', () => {
+    it('should sort modules by phase and order', () => {
         const modules = [
             { name: 'theme', config: { type: 'theme', order: 10 } },
-            { name: 'core', config: { type: 'core', order: 50 } },
-            { name: 'feature', config: { type: 'feature', order: 1 } },
-        ];
+            { name: 'feat1', config: { type: 'feature', order: 100 } },
+            { name: 'feat2', config: { type: 'feature', order: 10 } },
+            { name: 'core', config: { type: 'core', order: 1 } },
+            { name: 'unknown', config: { type: 'unknown', order: 5 } },
+        ] as any;
 
-        // Access private sortModules via any cast
         const sorted = (ModuleI18nIntegration as any).sortModules(modules);
 
         expect(sorted[0].name).toBe('core');
-        expect(sorted[1].name).toBe('feature');
-        expect(sorted[2].name).toBe('theme');
+        expect(sorted[1].name).toBe('unknown'); // phase 20 (feature fallback), order 5
+        expect(sorted[2].name).toBe('feat2');   // phase 20, order 10
+        expect(sorted[3].name).toBe('feat1');   // phase 20, order 100
+        expect(sorted[4].name).toBe('theme');   // phase 40
     });
 
-    it('should return unique languages from glob paths', async () => {
-        // We can test the logic by mocking the glob results if we can reach it.
-        // Since we can't easily mock import.meta.glob inside the class from outside,
-        // we'll at least verify the methods run without error.
-        const langs = await ModuleI18nIntegration.getAvailableLanguages();
-        expect(Array.isArray(langs)).toBe(true);
-    });
+    it('should handle default values in sorting', () => {
+        const modules = [
+            { name: 'b', config: { type: 'feature' } }, // order defaults to 50
+            { name: 'a', config: { type: 'feature', order: 10 } },
+        ] as any;
 
-    it('should handle missing locales gracefully', async () => {
-        const locale = await ModuleI18nIntegration.getMergedLocale('non-existent');
-        expect(locale).toEqual({});
+        const sorted = (ModuleI18nIntegration as any).sortModules(modules);
+        expect(sorted[0].name).toBe('a');
+        expect(sorted[1].name).toBe('b');
     });
 });

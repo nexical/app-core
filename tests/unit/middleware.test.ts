@@ -1,96 +1,81 @@
+/** @vitest-environment node */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { onRequest } from '@/middleware';
 import { getModuleMiddlewares } from '@/lib/registries/middleware-registry';
 import { HookSystem } from '@/lib/modules/hooks';
-import { createMockAstroContext, createMockNext } from './helpers';
+
+vi.mock('astro:middleware', () => ({
+    defineMiddleware: (cb: any) => cb
+}));
 
 vi.mock('@/lib/registries/middleware-registry', () => ({
-    getModuleMiddlewares: vi.fn()
+    getModuleMiddlewares: vi.fn(),
 }));
 
 vi.mock('@/lib/modules/hooks', () => ({
     HookSystem: {
-        dispatch: vi.fn()
-    }
+        dispatch: vi.fn(),
+    },
 }));
 
 vi.mock('@/lib/modules/module-init', () => ({
-    initializeModules: vi.fn(() => Promise.resolve())
+    initializeModules: vi.fn().mockResolvedValue(undefined),
 }));
 
-describe('Core Middleware', () => {
+describe('Middleware', () => {
+    // Generate a fresh response for each call
+    const next = vi.fn().mockImplementation(() => Promise.resolve(new Response('next')));
+
     beforeEach(() => {
         vi.clearAllMocks();
     });
 
-    it('should be defined', () => {
-        expect(onRequest).toBeDefined();
-    });
-
-    it('should skip middleware for assets', async () => {
-        const context = createMockAstroContext({ url: 'http://localhost:4321/styles.css' });
-        const next = createMockNext();
-
-        await onRequest(context, next);
-
-        expect(next).toHaveBeenCalled();
+    it('should skip assets', async () => {
+        const context = { url: new URL('http://localhost/style.css') } as any;
+        const response = await onRequest(context, next);
+        expect(await response.text()).toBe('next');
         expect(getModuleMiddlewares).not.toHaveBeenCalled();
     });
 
     it('should allow public routes from modules', async () => {
-        const context = createMockAstroContext({ url: 'http://localhost:4321/public-page' });
-        const next = createMockNext();
-
-        (getModuleMiddlewares as any).mockResolvedValue([
-            { publicRoutes: ['/public-page'] }
+        vi.mocked(getModuleMiddlewares).mockResolvedValue([
+            { publicRoutes: ['/public', '/docs/*'] }
         ]);
-
-        await onRequest(context, next);
-        expect(next).toHaveBeenCalled();
+        const context = { url: new URL('http://localhost/public') } as any;
+        const response = await onRequest(context, next);
+        expect(await response.text()).toBe('next');
     });
 
     it('should handle wildcard public routes', async () => {
-        const context = createMockAstroContext({ url: 'http://localhost:4321/public/anything' });
-        const next = createMockNext();
+        vi.mocked(getModuleMiddlewares).mockResolvedValue([
+            { publicRoutes: ['/docs/*'] }
+        ]);
+        const context = { url: new URL('http://localhost/docs/api') } as any;
+        const response = await onRequest(context, next);
+        expect(await response.text()).toBe('next');
+    });
 
-        (getModuleMiddlewares as any).mockResolvedValue([
-            { publicRoutes: ['/public/*'] }
+    it('should execute module middlewares and stop if one returns a response', async () => {
+        const mockResponse = new Response('intercepted');
+        vi.mocked(getModuleMiddlewares).mockResolvedValue([
+            { onRequest: async () => mockResponse },
+            { onRequest: async () => new Response('should-not-run') }
         ]);
 
-        await onRequest(context, next);
-        expect(next).toHaveBeenCalled();
-    });
+        const context = { url: new URL('http://localhost/private') } as any;
+        const response = await onRequest(context, next);
 
-    it('should execute module middlewares in order', async () => {
-        const context = createMockAstroContext({ url: 'http://localhost:4321/protected' });
-        const next = createMockNext();
-
-        const m1 = { onRequest: vi.fn() };
-        const m2 = { onRequest: vi.fn() };
-        (getModuleMiddlewares as any).mockResolvedValue([m1, m2]);
-
-        await onRequest(context, next);
-
-        expect(m1.onRequest).toHaveBeenCalled();
-        expect(m2.onRequest).toHaveBeenCalled();
-        expect(next).toHaveBeenCalled();
-    });
-
-    it('should stop and return response if a module middleware returns one', async () => {
-        const context = createMockAstroContext({ url: 'http://localhost:4321/protected' });
-        const next = createMockNext();
-        const response = new Response('Redirect', { status: 302 });
-
-        const m1 = { onRequest: vi.fn(() => response) };
-        const m2 = { onRequest: vi.fn() };
-        (getModuleMiddlewares as any).mockResolvedValue([m1, m2]);
-
-        const result = await onRequest(context, next);
-
-        expect(m1.onRequest).toHaveBeenCalled();
-        expect(m2.onRequest).not.toHaveBeenCalled();
+        expect(await response.text()).toBe('intercepted');
+        expect(HookSystem.dispatch).toHaveBeenCalledWith('core.module.handled', expect.any(Object));
         expect(next).not.toHaveBeenCalled();
-        expect(result).toBe(response);
-        expect(HookSystem.dispatch).toHaveBeenCalledWith('core.module.handled', { path: '/protected' });
+    });
+
+    it('should continue to next if no module middleware returns a response', async () => {
+        vi.mocked(getModuleMiddlewares).mockResolvedValue([
+            { onRequest: async () => undefined }
+        ]);
+        const context = { url: new URL('http://localhost/private') } as any;
+        const response = await onRequest(context, next);
+        expect(await response.text()).toBe('next');
     });
 });

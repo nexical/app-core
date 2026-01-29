@@ -14,7 +14,7 @@ describe('i18n', () => {
         vi.clearAllMocks();
     });
 
-    it('should replace parameters in translations', async () => {
+    it('should translate keys with parameters', async () => {
         vi.mocked(ModuleI18nIntegration.getMergedLocale).mockResolvedValue({
             greeting: 'Hello {{name}}!',
             nested: { key: 'Val' }
@@ -26,24 +26,29 @@ describe('i18n', () => {
         expect(t('missing')).toBe('missing');
     });
 
-    it('should derive lang from cookie in getServerTranslation', async () => {
+    it('should handle non-string translations gracefully', async () => {
         vi.mocked(ModuleI18nIntegration.getMergedLocale).mockResolvedValue({
-            btn: 'Click'
+            arr: [1, 2]
         });
+        const t = await getTranslation('en');
+        expect(t('arr')).toBe('arr');
+    });
 
+    it('should getServerTranslation from cookie', async () => {
+        vi.mocked(ModuleI18nIntegration.getMergedLocale).mockResolvedValue({ hi: 'hola' });
         const request = new Request('http://localhost', {
-            headers: { cookie: 'i18next=es' }
+            headers: { cookie: 'other=val; i18next=es' }
         });
 
         const t = await getServerTranslation(request);
         expect(ModuleI18nIntegration.getMergedLocale).toHaveBeenCalledWith('es');
-        expect(t('btn')).toBe('Click');
+        expect(t('hi')).toBe('hola');
     });
 
-    it('should fallback to default lang in getServerTranslation', async () => {
+    it('should fallback to default lang if no cookie', async () => {
         vi.mocked(ModuleI18nIntegration.getMergedLocale).mockResolvedValue({});
         const request = new Request('http://localhost');
         await getServerTranslation(request);
-        expect(ModuleI18nIntegration.getMergedLocale).toHaveBeenCalledWith(expect.any(String));
+        expect(ModuleI18nIntegration.getMergedLocale).toHaveBeenCalledWith('en');
     });
 });

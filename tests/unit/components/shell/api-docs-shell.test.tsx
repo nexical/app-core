@@ -1,11 +1,11 @@
+
 /** @vitest-environment jsdom */
 import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { AppShellDesktop } from '@/components/shell/app-shell-desktop';
+import { ApiDocsShell } from '@/components/shell/api-docs-shell';
 import { getZoneComponents } from '@/lib/ui/registry-loader';
 import { useShellStore } from '@/lib/ui/shell-store';
-import { useTranslation } from 'react-i18next';
 
 // Mock dependencies
 vi.mock('@/lib/ui/registry-loader', () => ({
@@ -30,8 +30,7 @@ vi.mock('@/lib/core/config', () => ({
     },
 }));
 
-describe('AppShellDesktop', () => {
-    const mockSetSidebarWidth = vi.fn();
+describe('ApiDocsShell', () => {
     const mockSetDetailsPanelWidth = vi.fn();
     const mockSetDetailPanel = vi.fn();
 
@@ -41,8 +40,6 @@ describe('AppShellDesktop', () => {
             detailPanelId: null,
             setDetailPanel: mockSetDetailPanel,
             panelProps: {},
-            sidebarWidth: 300,
-            setSidebarWidth: mockSetSidebarWidth,
             detailsPanelWidth: 500,
             setDetailsPanelWidth: mockSetDetailsPanelWidth,
         } as any);
@@ -51,55 +48,20 @@ describe('AppShellDesktop', () => {
 
     it('should render basic structure', async () => {
         await act(async () => {
-            render(<AppShellDesktop>Content</AppShellDesktop>);
+            render(<ApiDocsShell>Content</ApiDocsShell>);
         });
 
-        expect(screen.getByText('Test Site')).toBeDefined();
+        expect(screen.getByText('Test Site API')).toBeDefined();
         expect(screen.getByText('Content')).toBeDefined();
-        expect(screen.getByTestId('shell-sidebar')).toHaveStyle({ width: '300px' });
     });
 
     it('should load zone components on mount', async () => {
         await act(async () => {
-            render(<AppShellDesktop>Content</AppShellDesktop>);
+            render(<ApiDocsShell>Content</ApiDocsShell>);
         });
 
-        expect(getZoneComponents).toHaveBeenCalledWith('nav-main');
         expect(getZoneComponents).toHaveBeenCalledWith('header-end');
         expect(getZoneComponents).toHaveBeenCalledWith('details-panel');
-    });
-
-    it('should render registry components', async () => {
-        const MockComp = () => <div data-testid="mock-item">Item</div>;
-        vi.mocked(getZoneComponents).mockImplementation(async (zone) => {
-            if (zone === 'nav-main') return [{ name: 'test', component: MockComp, order: 1 }];
-            return [];
-        });
-
-        await act(async () => {
-            render(<AppShellDesktop>Content</AppShellDesktop>);
-        });
-
-        expect(screen.getByTestId('mock-item')).toBeDefined();
-    });
-
-    it('should handle sidebar resizing', async () => {
-        await act(async () => {
-            render(<AppShellDesktop>Content</AppShellDesktop>);
-        });
-
-        const handle = screen.getByTitle('Drag to resize sidebar');
-
-        // Start resizing
-        fireEvent.mouseDown(handle);
-        // cursor check removed as it depends on style injection
-
-        // Move mouse
-        fireEvent.mouseMove(document, { clientX: 400 });
-        expect(mockSetSidebarWidth).toHaveBeenCalled();
-
-        // Stop resizing
-        fireEvent.mouseUp(document);
     });
 
     it('should handle details panel resizing', async () => {
@@ -107,8 +69,6 @@ describe('AppShellDesktop', () => {
             detailPanelId: 'test-panel',
             setDetailPanel: mockSetDetailPanel,
             panelProps: {},
-            sidebarWidth: 300,
-            setSidebarWidth: mockSetSidebarWidth,
             detailsPanelWidth: 500,
             setDetailsPanelWidth: mockSetDetailsPanelWidth,
         } as any);
@@ -120,7 +80,7 @@ describe('AppShellDesktop', () => {
         });
 
         await act(async () => {
-            render(<AppShellDesktop>Content</AppShellDesktop>);
+            render(<ApiDocsShell>Content</ApiDocsShell>);
         });
 
         const handle = screen.getByTitle('Drag to resize detail panel');
@@ -129,8 +89,8 @@ describe('AppShellDesktop', () => {
         fireEvent.mouseDown(handle);
 
         // Move mouse
-        fireEvent.mouseMove(document, { clientX: 424 });
-        expect(mockSetDetailsPanelWidth).toHaveBeenCalled(); // Relaxed value check
+        fireEvent.mouseMove(document, { clientX: 424 }); // 1024 - 424 = 600
+        expect(mockSetDetailsPanelWidth).toHaveBeenCalled();
 
         // Stop resizing
         fireEvent.mouseUp(document);
@@ -141,8 +101,6 @@ describe('AppShellDesktop', () => {
             detailPanelId: 'test-panel',
             setDetailPanel: mockSetDetailPanel,
             panelProps: {},
-            sidebarWidth: 300,
-            setSidebarWidth: mockSetSidebarWidth,
             detailsPanelWidth: 500,
             setDetailsPanelWidth: mockSetDetailsPanelWidth,
         } as any);
@@ -154,26 +112,10 @@ describe('AppShellDesktop', () => {
         });
 
         await act(async () => {
-            render(<AppShellDesktop>Content</AppShellDesktop>);
+            render(<ApiDocsShell>Content</ApiDocsShell>);
         });
 
         fireEvent.click(screen.getByTestId('shell-details-close'));
         expect(mockSetDetailPanel).toHaveBeenCalledWith(null);
-    });
-
-    it('should navigate home on logo click', async () => {
-        const originalLocation = window.location;
-        // @ts-ignore
-        delete window.location;
-        window.location = { ...originalLocation, href: '' } as any;
-
-        await act(async () => {
-            render(<AppShellDesktop>Content</AppShellDesktop>);
-        });
-
-        fireEvent.click(screen.getByTitle('Home'));
-        expect(window.location.href).toBe('/');
-
-        window.location = originalLocation;
     });
 });
