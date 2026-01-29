@@ -149,6 +149,10 @@
   "packages/sdk-core/src/client.ts": "1fc8dc3204c20d26d27a1264be3e04d7c50593fe64260b46543dc3ab17cd1c6a",
   "packages/sdk-core/src/index.ts": "503ed3abcad6f84491eafa26ecb9b8d3a9f4bc9cf87b3d97a350f46462672d54",
   "packages/sdk-core/src/resource.ts": "af7952956b3ba357a1f93481e459a70914e7168bcb0f878c1536d97115fe0f8c",
+  "packages/sdk-core/tests/unit/README.md": "c20bbb0a2c8c7a8c67ed8abec853853877df1a06adaf4a00ea2d3bfc2146562c",
+  "packages/sdk-core/tests/unit/client.test.ts": "da9729d2312425be0735dc35b0bc1c4b5d0c5ef9dfe7213741818565598b8e41",
+  "packages/sdk-core/tests/unit/index.test.ts": "51f962987b27b97fc97d288eb440b835f109dcce03ee6fe909880a4a9a2486c7",
+  "packages/sdk-core/tests/unit/resource.test.ts": "6fd6c346624b5628460a58723b9c3bf869b6046d0309d21feed89afe7f921e15",
   "packages/sdk/README.md": "3bcc7b2329be3b7195d02efcb54c7e84f7374aa358278a019f55074788140d4c",
   "packages/sdk/package.json": "8852e517ab631c276121eef9e2be8fd0c75e727298f8be9771868d6631a805e7",
   "packages/sdk/src/index.ts": "8bc91cf79fb37595f59ba415a820e90dfabc74068db0172473ca84c3dd03e31d",
@@ -377,5 +381,5 @@
   "tests/unit/simple-astro.test.ts": "1b22a957b71927726fbf75bd77134034c76d9dafe7e35186b098fa81c1bd8d84",
   "tsconfig.json": "68c9d2d9ee46d083cd6671f97044bfb6b002e2f14b3ffed364fa243def38b531",
   "vitest.integration.config.ts": "172a2e5b9874def197766d0f1e195a31e799af0dff521c561b8232ea979a2849",
-  "vitest.unit.config.ts": "550ef3e0faf26a40aaab1185cfeae3f31335fdc8d3b56d4b52fa6f0393353b70"
+  "vitest.unit.config.ts": "82ff4979beb1afb92618533655d639efaebabb91b5389c48f1a31b44be865de6"
 }

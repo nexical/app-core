@@ -25,7 +25,14 @@ export default getViteConfig({
             enabled: true,
             provider: 'v8',
             reporter: ['text', 'json', 'html'],
-            include: ['src/**/*.ts', 'src/**/*.tsx', 'modules/*/src/**/*.ts', 'modules/*/src/**/*.tsx'],
+            include: [
+                'src/**/*.ts',
+                'src/**/*.tsx',
+                'modules/*/src/**/*.ts',
+                'modules/*/src/**/*.tsx',
+                'packages/*/src/**/*.ts',
+                'packages/*/src/**/*.tsx'
+            ],
             exclude: [
                 'src/**/*.d.ts',
                 'src/**/*.test.ts',
