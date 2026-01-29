@@ -15,13 +15,13 @@ describe('i18n-client', () => {
             store: { hello: 'bonjour' }
         };
 
-        const i18n = (await import('@/lib/core/i18n-client')).default;
+        const i18n = (await import('../../../../src/lib/core/i18n-client')).default;
         expect(i18n.language).toBe('fr');
         expect(i18n.t('hello')).toBe('bonjour');
     });
 
     it('should handle missing window data gracefully', async () => {
-        const i18n = (await import('@/lib/core/i18n-client')).default;
+        const i18n = (await import('../../../../src/lib/core/i18n-client')).default;
         expect(i18n.isInitialized).toBe(true);
     });
 });

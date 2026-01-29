@@ -1,7 +1,10 @@
 import React from 'react';
-import '@testing-library/jest-dom';
+import '@testing-library/jest-dom/vitest';
 import { cleanup } from '@testing-library/react';
-import { afterEach, vi } from 'vitest';
+import * as matchers from '@testing-library/jest-dom/matchers';
+import { afterEach, vi, expect } from 'vitest';
+
+expect.extend(matchers as any);
 import { TextEncoder, TextDecoder } from 'util';
 
 global.TextEncoder = TextEncoder;

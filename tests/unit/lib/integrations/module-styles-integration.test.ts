@@ -1,6 +1,6 @@
 /** @vitest-environment node */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import integration from '@/lib/integrations/module-styles-integration';
+import integration from '../../../../src/lib/integrations/module-styles-integration';
 import fs from 'node:fs';
 
 vi.mock('node:fs', () => ({

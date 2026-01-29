@@ -1,9 +1,9 @@
 /** @vitest-environment node */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import * as GlobHelper from '@/lib/core/glob-helper';
-import { getZoneComponents } from '@/lib/ui/registry-loader';
+import * as GlobHelper from '../../../../src/lib/core/glob-helper';
+import { getZoneComponents } from '../../../../src/lib/ui/registry-loader';
 
-vi.mock('@/lib/core/glob-helper', () => ({
+vi.mock('../../../../src/lib/core/glob-helper', () => ({
     getCoreInits: vi.fn(),
     getModuleInits: vi.fn(),
     getClientModuleInits: vi.fn(),

@@ -2,9 +2,11 @@
 import { getViteConfig } from 'astro/config';
 import path from 'path';
 import tsconfigPaths from 'vite-tsconfig-paths';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default getViteConfig({
-    plugins: [tsconfigPaths()],
     test: {
         environment: 'jsdom',
         globals: true,
@@ -51,15 +53,12 @@ export default getViteConfig({
         }
     },
     resolve: {
-        alias: [
-            { find: '@', replacement: path.resolve(process.cwd(), 'src') },
-            // Fix for @radix-ui/react-slot resolution issue by mocking it if necessary
-            { find: '@radix-ui/react-slot', replacement: path.resolve(process.cwd(), 'tests/unit/mocks/ui/radix-slot.tsx') },
-
-            // Mocks for Astro virtual modules
-            { find: 'astro:middleware', replacement: path.resolve(process.cwd(), 'tests/unit/mocks/astro.ts') },
-            { find: 'astro:actions', replacement: path.resolve(process.cwd(), 'tests/unit/mocks/astro.ts') },
-            { find: 'astro:schema', replacement: path.resolve(process.cwd(), 'tests/unit/mocks/astro.ts') },
-        ],
+        alias: {
+            '@': path.resolve(__dirname, 'src'),
+            '@radix-ui/react-slot': path.resolve(__dirname, 'tests/unit/mocks/ui/radix-slot.tsx'),
+            'astro:middleware': path.resolve(__dirname, 'tests/unit/mocks/astro.ts'),
+            'astro:actions': path.resolve(__dirname, 'tests/unit/mocks/astro.ts'),
+            'astro:schema': path.resolve(__dirname, 'tests/unit/mocks/astro.ts')
+        }
     },
 });

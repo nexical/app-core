@@ -1,18 +1,18 @@
 /** @vitest-environment jsdom */
 import React from 'react';
-import { render, screen, fireEvent, act } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { AppShellDesktop } from '@/components/shell/app-shell-desktop';
-import { getZoneComponents } from '@/lib/ui/registry-loader';
-import { useShellStore } from '@/lib/ui/shell-store';
+import { render, screen, fireEvent, act, cleanup } from '@testing-library/react';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { AppShellDesktop } from '../../../../src/components/shell/app-shell-desktop';
+import { getZoneComponents } from '../../../../src/lib/ui/registry-loader';
+import { useShellStore } from '../../../../src/lib/ui/shell-store';
 import { useTranslation } from 'react-i18next';
 
 // Mock dependencies
-vi.mock('@/lib/ui/registry-loader', () => ({
+vi.mock('../../../../src/lib/ui/registry-loader', () => ({
     getZoneComponents: vi.fn(),
 }));
 
-vi.mock('@/lib/ui/shell-store', () => ({
+vi.mock('../../../../src/lib/ui/shell-store', () => ({
     useShellStore: vi.fn(),
 }));
 
@@ -20,11 +20,11 @@ vi.mock('react-i18next', () => ({
     useTranslation: () => ({ t: (key: string) => key }),
 }));
 
-vi.mock('@/components/ui/scroll-area', () => ({
+vi.mock('../../../../src/components/ui/scroll-area', () => ({
     ScrollArea: ({ children }: any) => <div data-testid="scroll-area">{children}</div>,
 }));
 
-vi.mock('@/lib/core/config', () => ({
+vi.mock('../../../../src/lib/core/config', () => ({
     config: {
         PUBLIC_SITE_NAME: 'Test Site',
     },
@@ -49,6 +49,10 @@ describe('AppShellDesktop', () => {
         vi.mocked(getZoneComponents).mockResolvedValue([]);
     });
 
+    afterEach(() => {
+        cleanup();
+    });
+
     it('should render basic structure', async () => {
         await act(async () => {
             render(<AppShellDesktop>Content</AppShellDesktop>);
@@ -56,7 +60,7 @@ describe('AppShellDesktop', () => {
 
         expect(screen.getByText('Test Site')).toBeDefined();
         expect(screen.getByText('Content')).toBeDefined();
-        expect(screen.getByTestId('shell-sidebar')).toHaveStyle({ width: '300px' });
+        expect(screen.getByTestId('shell-sidebar').style.width).toBe('300px');
     });
 
     it('should load zone components on mount', async () => {

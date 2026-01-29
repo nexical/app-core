@@ -1,9 +1,9 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { PageGuard } from '@/lib/ui/page-guard';
-import { roleRegistry } from '@/lib/registries/role-registry';
+import { PageGuard } from '../../../../src/lib/ui/page-guard';
+import { roleRegistry } from '../../../../src/lib/registries/role-registry';
 import { createMockAstroContext } from '../../helpers';
 
-vi.mock('@/lib/registries/role-registry', () => ({
+vi.mock('../../../../src/lib/registries/role-registry', () => ({
     roleRegistry: {
         get: vi.fn()
     }

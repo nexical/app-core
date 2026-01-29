@@ -28,3 +28,15 @@ export function getMiddlewareModules() {
 export function getRegistryModules() {
     return import.meta.glob(['/src/registry/**/*.tsx', '/modules/*/src/registry/**/*.tsx'], { eager: true });
 }
+
+export function getI18nCoreLocales() {
+    return import.meta.glob('../../../locales/*.json', { eager: true });
+}
+
+export function getI18nModuleLocales() {
+    return import.meta.glob('../../../modules/*/locales/*.json', { eager: true });
+}
+
+export function getModuleConfigs() {
+    return import.meta.glob('../../../modules/*/module.config.mjs', { eager: true });
+}

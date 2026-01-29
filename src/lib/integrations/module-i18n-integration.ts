@@ -1,5 +1,6 @@
 import { defu } from 'defu';
 import type { ModulePhase } from '../modules/module-discovery';
+import { getI18nCoreLocales, getI18nModuleLocales, getModuleConfigs } from '../core/glob-helper';
 
 const PHASE_ORDER: Record<ModulePhase, number> = {
     'core': 0,
@@ -23,9 +24,8 @@ export class ModuleI18nIntegration {
     static async getAvailableLanguages(): Promise<string[]> {
         const languages = new Set<string>();
 
-        // 1. Scan Core Locales
-        // Uses import.meta.glob to ensure files are bundled in build
-        const coreLocales = import.meta.glob('../../../locales/*.json', { eager: true });
+        // Uses import.meta.glob via helper to ensure files are bundled in build
+        const coreLocales = getI18nCoreLocales();
         Object.keys(coreLocales).forEach(path => {
             const match = path.match(/\/locales\/(.+)\.json$/);
             if (match) {
@@ -34,7 +34,7 @@ export class ModuleI18nIntegration {
         });
 
         // 2. Scan Module Locales
-        const moduleLocales = import.meta.glob('../../../modules/*/locales/*.json', { eager: true });
+        const moduleLocales = getI18nModuleLocales();
         Object.keys(moduleLocales).forEach(path => {
             // path example: ../../modules/user/locales/en.json
             const match = path.match(/\/modules\/[^\/]+\/locales\/(.+)\.json$/);
@@ -54,7 +54,7 @@ export class ModuleI18nIntegration {
         const localeObjects: Record<string, any>[] = [];
 
         // 1. Load Core Locale (Base)
-        const coreLocales = import.meta.glob('../../../locales/*.json', { eager: true });
+        const coreLocales = getI18nCoreLocales();
         // Find the specific language file
         const coreKey = Object.keys(coreLocales).find(k => k.endsWith(`/locales/${lang}.json`));
 
@@ -66,7 +66,7 @@ export class ModuleI18nIntegration {
         // 2. Load Module Locales (Overrides)
         // We must respect the module load order (Phase/Order)
         const modules = this.getRuntimeModules();
-        const moduleLocales = import.meta.glob('../../../modules/*/locales/*.json', { eager: true });
+        const moduleLocales = getI18nModuleLocales();
 
         for (const module of modules) {
             // Find the locale file for this module
@@ -89,7 +89,7 @@ export class ModuleI18nIntegration {
      * ensuring it works in bundled environments (SSR, Prod) where sources are missing.
      */
     private static getRuntimeModules(): RuntimeModule[] {
-        const moduleConfigs = import.meta.glob('../../../modules/*/module.config.mjs', { eager: true });
+        const moduleConfigs = getModuleConfigs();
         const modules: RuntimeModule[] = [];
 
         for (const [path, mod] of Object.entries(moduleConfigs)) {

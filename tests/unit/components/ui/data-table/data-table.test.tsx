@@ -1,9 +1,9 @@
 /** @vitest-environment jsdom */
 import React from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
-import { DataTable } from '@/components/ui/data-table/data-table';
-import { ColumnDef } from '@tanstack/react-table';
+import { render, screen, fireEvent, cleanup } from '@testing-library/react';
+import { describe, it, expect, vi, afterEach } from 'vitest';
+import { DataTable } from '../../../../../src/components/ui/data-table/data-table';
+import type { ColumnDef } from '@tanstack/react-table';
 
 // Simple data and columns for testing
 const data = [
@@ -29,6 +29,9 @@ vi.mock('react-i18next', () => ({
 }));
 
 describe('DataTable', () => {
+    afterEach(() => {
+        cleanup();
+    });
     it('should render table with data', () => {
         render(<DataTable columns={columns} data={data} />);
 

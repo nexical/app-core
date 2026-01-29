@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { getZoneComponents, type RegistryComponent } from '@/lib/ui/registry-loader';
-import { useShellStore } from '@/lib/ui/shell-store';
-import { config } from "@/lib/core/config";
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { getZoneComponents, type RegistryComponent } from '../../lib/ui/registry-loader';
+import { useShellStore } from '../../lib/ui/shell-store';
+import { config } from "../../lib/core/config";
+import { ScrollArea } from '../ui/scroll-area';
 import { useTranslation } from 'react-i18next';
 
 export function ApiDocsShell({ children }: { children: React.ReactNode }) {

@@ -1,7 +1,7 @@
 /** @vitest-environment node */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import integration from '@/lib/integrations/module-email-theme-integration';
-import { ModuleDiscovery } from '@/lib/modules/module-discovery';
+import integration from '../../../../src/lib/integrations/module-email-theme-integration';
+import { ModuleDiscovery } from '../../../../src/lib/modules/module-discovery';
 import fs from 'node:fs';
 
 vi.mock('node:fs', () => ({
@@ -12,7 +12,7 @@ vi.mock('node:fs', () => ({
     },
 }));
 
-vi.mock('@/lib/modules/module-discovery', () => ({
+vi.mock('../../../../src/lib/modules/module-discovery', () => ({
     ModuleDiscovery: {
         loadModules: vi.fn(),
     },

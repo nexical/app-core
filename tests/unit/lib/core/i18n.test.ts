@@ -1,9 +1,9 @@
 /** @vitest-environment node */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { getTranslation, getServerTranslation } from '@/lib/core/i18n';
-import { ModuleI18nIntegration } from '@/lib/integrations/module-i18n-integration';
+import { getTranslation, getServerTranslation } from '../../../../src/lib/core/i18n';
+import { ModuleI18nIntegration } from '../../../../src/lib/integrations/module-i18n-integration';
 
-vi.mock('@/lib/integrations/module-i18n-integration', () => ({
+vi.mock('../../../../src/lib/integrations/module-i18n-integration', () => ({
     ModuleI18nIntegration: {
         getMergedLocale: vi.fn(),
     },

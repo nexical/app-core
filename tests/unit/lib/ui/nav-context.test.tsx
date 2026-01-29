@@ -1,7 +1,8 @@
+/** @vitest-environment jsdom */
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import { NavProvider, useNavData } from '@/lib/ui/nav-context';
+import { NavProvider, useNavData } from '../../../../src/lib/ui/nav-context';
 
 const TestComponent = () => {
     const data = useNavData();

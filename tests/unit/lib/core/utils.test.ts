@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { cn } from '@/lib/core/utils';
+import { cn } from '../../../../src/lib/core/utils';
 
 describe('Core Utils: cn', () => {
     it('should merge class names correctly', () => {

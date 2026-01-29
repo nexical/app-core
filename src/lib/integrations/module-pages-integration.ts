@@ -42,11 +42,7 @@ export default (): AstroIntegration => {
                                         routePattern = routePattern.replace('/index', '') || '/';
                                     }
 
-                                    // Ensure it starts with /
-                                    if (!routePattern.startsWith('/')) {
-                                        routePattern = '/' + routePattern;
-                                    }
-
+                                    // Handled above: routePattern starts with / because baseRoute or initial separator
                                     injectRoute({
                                         pattern: routePattern,
                                         entrypoint: filePath,

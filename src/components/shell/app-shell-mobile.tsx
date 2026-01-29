@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { getZoneComponents, type RegistryComponent } from '@/lib/ui/registry-loader';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { Button } from '@/components/ui/button';
+import { getZoneComponents, type RegistryComponent } from '../../lib/ui/registry-loader';
+import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet';
+import { Button } from '../ui/button';
 import { Menu } from 'lucide-react';
-import { config } from "@/lib/core/config";
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { config } from "../../lib/core/config";
+import { ScrollArea } from '../ui/scroll-area';
 import { useTranslation } from 'react-i18next';
-import { useShellStore } from '@/lib/ui/shell-store';
+import { useShellStore } from '../../lib/ui/shell-store';
 
 export function AppShellMobile({ children }: { children: React.ReactNode }) {
     const { t } = useTranslation();

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { APP_VERSION } from '@/lib/core/version';
+import { APP_VERSION } from '../../../../src/lib/core/version';
 
 describe('Version', () => {
     it('should have a version', () => {

@@ -2,23 +2,23 @@
 import React from 'react';
 import { render, screen, act } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { MasterShell } from '@/components/shell/master-shell';
-import { ShellRegistry } from '@/lib/registries/shell-registry';
-import { FooterRegistry } from '@/lib/registries/footer-registry';
+import { MasterShell } from '../../../../src/components/shell/master-shell';
+import { ShellRegistry } from '../../../../src/lib/registries/shell-registry';
+import { FooterRegistry } from '../../../../src/lib/registries/footer-registry';
 
 // Aggressively mock all shell components to prevent loading heavy dependencies
-vi.mock('@/components/shell/app-shell-desktop', () => ({
+vi.mock('../../../../src/components/shell/app-shell-desktop', () => ({
     AppShellDesktop: ({ children }: any) => <div data-testid="desktop-shell">{children}</div>
 }));
-vi.mock('@/components/shell/app-shell-mobile', () => ({
+vi.mock('../../../../src/components/shell/app-shell-mobile', () => ({
     AppShellMobile: ({ children }: any) => <div data-testid="mobile-shell">{children}</div>
 }));
-vi.mock('@/components/shell/api-docs-shell.tsx', () => ({
+vi.mock('../../../../src/components/shell/api-docs-shell.tsx', () => ({
     ApiDocsShell: ({ children }: any) => <div data-testid="api-docs-shell">{children}</div>
 }));
 
 // Mock registries
-vi.mock('@/lib/registries/shell-registry', () => ({
+vi.mock('../../../../src/lib/registries/shell-registry', () => ({
     ShellRegistry: {
         get: vi.fn(),
         findEntry: vi.fn(),
@@ -26,7 +26,7 @@ vi.mock('@/lib/registries/shell-registry', () => ({
     },
 }));
 
-vi.mock('@/lib/registries/footer-registry', () => ({
+vi.mock('../../../../src/lib/registries/footer-registry', () => ({
     FooterRegistry: {
         get: vi.fn(),
         findEntry: vi.fn(),
@@ -34,11 +34,11 @@ vi.mock('@/lib/registries/footer-registry', () => ({
     },
 }));
 
-vi.mock('@/lib/core/client-init', () => ({
+vi.mock('../../../../src/lib/core/client-init', () => ({
     initializeClientModules: vi.fn(),
 }));
 
-vi.mock('@/hooks/use-shell-context', () => ({
+vi.mock('../../../../src/hooks/use-shell-context', () => ({
     useShellContext: vi.fn((data) => data),
 }));
 
@@ -48,6 +48,20 @@ const MockFooter = () => <div data-testid="mock-footer">Footer</div>;
 describe('MasterShell', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+
+        Object.defineProperty(window, 'matchMedia', {
+            writable: true,
+            value: vi.fn().mockImplementation(query => ({
+                matches: false,
+                media: query,
+                onchange: null,
+                addListener: vi.fn(),
+                removeListener: vi.fn(),
+                addEventListener: vi.fn(),
+                removeEventListener: vi.fn(),
+                dispatchEvent: vi.fn(),
+            })),
+        });
     });
 
     it('should render children within the selected shell and footer', async () => {

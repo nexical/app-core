@@ -46,7 +46,7 @@ describe('Core DB', () => {
     });
 
     it('should initialize successfully', async () => {
-        const { db } = await import('@/lib/core/db');
+        const { db } = await import('../../../../src/lib/core/db');
         expect(db).toBeDefined();
         expect(mocks.Pool).toHaveBeenCalled();
         expect(mocks.PrismaPg).toHaveBeenCalled();
@@ -56,8 +56,18 @@ describe('Core DB', () => {
     it('should use global instance', async () => {
         const mockInstance = { isMock: true };
         (globalThis as any).prisma_db_v1 = mockInstance;
-        const { db } = await import('@/lib/core/db');
+        const { db } = await import('../../../../src/lib/core/db');
         expect(db).toBe(mockInstance);
         delete (globalThis as any).prisma_db_v1;
+    });
+
+    it('should not set global instance in production', async () => {
+        vi.stubEnv('NODE_ENV', 'production');
+        process.env.NODE_ENV = 'production'; // redundant but ensuring
+
+        await import('../../../../src/lib/core/db');
+        expect((globalThis as any).prisma_db_v1).toBeUndefined();
+
+        vi.unstubAllEnvs();
     });
 });

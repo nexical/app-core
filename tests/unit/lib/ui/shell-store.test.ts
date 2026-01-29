@@ -1,5 +1,6 @@
+/** @vitest-environment jsdom */
 import { describe, it, expect, beforeEach } from 'vitest';
-import { useShellStore } from '@/lib/ui/shell-store';
+import { useShellStore } from '../../../../src/lib/ui/shell-store';
 
 describe('useShellStore', () => {
     beforeEach(() => {

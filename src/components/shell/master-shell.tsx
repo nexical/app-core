@@ -1,11 +1,11 @@
 
 import React, { useEffect, useState, useMemo } from 'react';
-import { ShellRegistry } from '@/lib/registries/shell-registry';
-import { FooterRegistry } from '@/lib/registries/footer-registry';
-import { ThemeProvider } from '@/components/system/ThemeProvider';
-import { NavProvider } from '@/lib/ui/nav-context';
-import { initializeClientModules } from '@/lib/core/client-init';
-import { useShellContext } from '@/hooks/use-shell-context';
+import { ShellRegistry } from '../../lib/registries/shell-registry';
+import { FooterRegistry } from '../../lib/registries/footer-registry';
+import { ThemeProvider } from '../system/ThemeProvider';
+import { NavProvider } from '../../lib/ui/nav-context';
+import { initializeClientModules } from '../../lib/core/client-init';
+import { useShellContext } from '../../hooks/use-shell-context';
 import { AppShellDesktop } from './app-shell-desktop';
 
 // Ensure modules are initialized when this component is loaded on the client

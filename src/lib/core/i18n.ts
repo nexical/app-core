@@ -1,5 +1,5 @@
-import { ModuleI18nIntegration } from '@/lib/integrations/module-i18n-integration';
-import { config } from '@/lib/core/config';
+import { ModuleI18nIntegration } from '../integrations/module-i18n-integration';
+import { config } from './config';
 
 export type TranslationFunction = (key: string, params?: Record<string, string>) => string;
 
