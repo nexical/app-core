@@ -36,12 +36,6 @@ jobs:
       - name: Install dependencies
         run: cd docs && npm ci
 
-      # - name: Install Root Dependencies
-      #   run: npm ci
-
-      # - name: Run DocGap
-      #   run: npx docgap
-
       - name: Build with Astro
         run: cd docs && npm run build
 

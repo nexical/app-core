@@ -17,7 +17,7 @@
   "compose.yml": "66cb336a613f5988519785da0c57c9058728377d287d7e14de8e5a1cc109bba5",
   "docker/entrypoint.sh": "fe02187893fc10cb4a67378a8befe231663b9dfb499c54665d8a5c46300257e3",
   "locales/en.json": "1ac2b5af0fd31045578e152705f873c52a31daa5558393365afb120a4bacfd23",
-  "package.json": "07290df86ef3d38337450a2b6bfa2b9828db713f74f047f767c4ed98df282001",
+  "package.json": "23d0b7ea4236e4e600cd3377dea15a3e9eb69d3b457c932df5a41cecc6e38014",
   "packages/generator/README.md": "090f4d1053975d7bd4ac7fbd1a4c99cbe431eea63325bc74aee3ed48c16e0fa2",
   "packages/generator/package.json": "dd3885e87bc7be85b52347c130dcc2c5fe5f2bc1be2b329dd9ed0b133a6156de",
   "packages/generator/src/ast-builders/schema-gen.ts": "03907754e4b69030412084ddacda79f4bac29f6491b6e5b5546c9683f9f5c1c8",
