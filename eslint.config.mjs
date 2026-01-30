@@ -10,7 +10,7 @@ import js from '@eslint/js';
 export default tseslint.config(
   // Global ignore
   {
-    ignores: ['**/dist/**', '**/node_modules/**', '**/coverage/**', '**/.astro/**'],
+    ignores: ['**/dist/**', '**/node_modules/**', '**/coverage/**', '**/.astro/**', '**/.agent/**'],
   },
 
   // Base JS/TS configuration
