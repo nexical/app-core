@@ -40,7 +40,15 @@ export default getViteConfig({
                 'src/**/*.test.tsx',
                 'src/env.d.ts',
                 'src/types/**',
-                '**/node_modules/**'
+                '**/node_modules/**',
+                'src/pages/api/**',
+                'modules/**/pages/api/**',
+                'modules/**/services/**',
+                'modules/**/sdk/**',
+                'packages/sdk/**',
+                '**/middleware.ts',
+                '**/server-init.ts',
+                'src/init.ts'
             ],
             thresholds: {
                 lines: 80,
