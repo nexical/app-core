@@ -7,7 +7,7 @@ import { ApiModuleGenerator } from '../../engine/api-module-generator';
 import { ModuleLocator } from '../../lib/module-locator';
 import { glob } from 'glob';
 
-export default class GenApiCommand extends BaseCommand {
+export class GenApiCommand extends BaseCommand {
     constructor() {
         super({
             name: 'gen:api',

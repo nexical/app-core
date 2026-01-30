@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 import { Command } from 'commander';
 import chalk from 'chalk';
 import fs from 'fs';
@@ -8,14 +7,15 @@ import { fileURLToPath } from 'url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-const program = new Command();
+// Dynamic Command Loading
+// Exported for testing/programmatic usage
+export const program = new Command();
 
 program
     .name('arc')
     .description('ArcNexus Generator CLI')
     .version('0.0.1');
 
-// Dynamic Command Loading
 async function registerCommands() {
     const commandsDir = path.join(__dirname, 'commands');
 
@@ -50,7 +50,7 @@ async function registerCommands() {
     await scanDir(commandsDir);
 }
 
-async function main() {
+export async function main() {
     try {
         await registerCommands();
         await program.parseAsync(process.argv);
@@ -59,5 +59,3 @@ async function main() {
         process.exit(1);
     }
 }
-
-main();

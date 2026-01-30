@@ -1,5 +1,5 @@
 import ts from 'typescript';
-import { type PlatformDefinition, type PlatformModel, type PrismaFieldSchema } from '../schema';
+import { type PlatformDefinition, type PlatformModel, type PrismaFieldSchema } from '../schema.js';
 
 const { factory } = ts;
 
@@ -26,7 +26,7 @@ export class ZodSchemaGenerator {
         // Generate Enums
         if (definition.enums) {
             for (const [name, enumDef] of Object.entries(definition.enums)) {
-                statements.push(this.createZodEnum(name, enumDef.values));
+                statements.push(this.createZodEnum(name, (enumDef as any).values));
             }
         }
 
@@ -76,7 +76,7 @@ export class ZodSchemaGenerator {
         const propertyAssignments: ts.PropertyAssignment[] = [];
 
         for (const [fieldName, fieldDef] of Object.entries(model.fields)) {
-            propertyAssignments.push(this.createZodField(fieldName, fieldDef));
+            propertyAssignments.push(this.createZodField(fieldName, fieldDef as any));
         }
 
         return factory.createVariableStatement(
@@ -182,29 +182,25 @@ export class ZodSchemaGenerator {
                 break;
             default:
                 // Assume it's an enum or another model
-                return factory.createIdentifier(`${type}Schema`);
-        }
-
-        // Wrap in call expression () unless it's a Schema identifier
-        if (ts.isIdentifier(base) && base.text.endsWith('Schema')) {
-            // Use z.lazy(() => NameSchema) to handle hoisting/circular deps
-            return factory.createCallExpression(
-                factory.createPropertyAccessExpression(
-                    factory.createIdentifier('z'),
-                    'lazy'
-                ),
-                undefined,
-                [
-                    factory.createArrowFunction(
-                        undefined,
-                        undefined,
-                        [],
-                        undefined,
-                        factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-                        base
-                    )
-                ]
-            );
+                const schemaId = factory.createIdentifier(`${type}Schema`);
+                // Use z.lazy(() => NameSchema) to handle hoisting/circular deps
+                return factory.createCallExpression(
+                    factory.createPropertyAccessExpression(
+                        factory.createIdentifier('z'),
+                        'lazy'
+                    ),
+                    undefined,
+                    [
+                        factory.createArrowFunction(
+                            undefined,
+                            undefined,
+                            [],
+                            undefined,
+                            factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+                            schemaId
+                        )
+                    ]
+                );
         }
 
         return factory.createCallExpression(base, undefined, []);

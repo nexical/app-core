@@ -1,5 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { Project, SourceFile } from 'ts-morph';
+import ts from 'typescript';
+import { ZodSchemaGenerator } from '@nexical/generator/ast-builders/schema-gen';
+import { type PlatformDefinition } from '@nexical/generator/schema';
 import { ApiBuilder } from '@nexical/generator/engine/builders/api-builder';
 import { type ModelDef } from '@nexical/generator/engine/types';
 
@@ -77,5 +80,83 @@ describe('ApiBuilder', () => {
         expect(text).toContain('GET');
         expect(text).not.toContain('POST');
         expect(text).toContain("ApiGuard.protect(context, 'admin'");
+    });
+
+    it('should handle custom route returning a list of models', () => {
+        const routes = [{
+            method: 'listRecent',
+            path: '/recent',
+            verb: 'GET' as const,
+            output: 'User[]',
+            role: 'member'
+        }];
+        const builder = new ApiBuilder(model, [model], 'user-api', 'custom', routes);
+        builder.ensure(sourceFile);
+
+        const text = sourceFile.getFullText();
+        expect(text).toContain('schema: { type: "array", items: {');
+        expect(text).toContain('type: "object"');
+    });
+
+    it('should handle custom route returning a DTO', () => {
+        const routes = [{
+            method: 'getStats',
+            path: '/stats',
+            verb: 'GET' as const,
+            output: 'UserStatsResponse',
+            role: 'member'
+        }];
+        const builder = new ApiBuilder(model, [model], 'user-api', 'custom', routes);
+        builder.ensure(sourceFile);
+
+        const text = sourceFile.getFullText();
+        expect(text).toContain('import type { UserStatsResponse } from "@modules/user-api/src/sdk"');
+    });
+    it('should handle complex field types (Float, DateTime, Json)', () => {
+        const complexModel: ModelDef = {
+            ...model,
+            fields: {
+                ...model.fields,
+                price: { type: 'Float', isRequired: true, isList: false, attributes: [], api: true },
+                birthday: { type: 'DateTime', isRequired: false, isList: false, attributes: [], api: true },
+                meta: { type: 'Json', isRequired: false, isList: false, attributes: [], api: true }
+            }
+        };
+        const builder = new ApiBuilder(complexModel, [complexModel], 'user-api', 'collection');
+        builder.ensure(sourceFile);
+
+        const text = sourceFile.getFullText();
+        expect(text).toContain('price: z.number()');
+        expect(text).toContain('birthday: z.string().datetime().optional()');
+        expect(text).toContain('meta: z.any().optional()');
+        expect(text).toContain('type: "number"');
+        expect(text).toContain('format: "date-time"');
+    });
+
+    it('should handle anonymous role correctly', () => {
+        const publicModel: ModelDef = {
+            ...model,
+            role: 'anonymous'
+        };
+        const builder = new ApiBuilder(publicModel, [publicModel], 'user-api', 'collection');
+        builder.ensure(sourceFile);
+
+        const text = sourceFile.getFullText();
+        expect(text).toContain('protected: false');
+        expect(text).toContain("ApiGuard.protect(context, 'anonymous'");
+    });
+
+    it('should handle empty fields in select and zod generation', () => {
+        const emptyModel: ModelDef = {
+            name: 'Empty',
+            fields: {},
+            api: true
+        };
+        const builder = new ApiBuilder(emptyModel, [emptyModel], 'user-api', 'collection');
+        builder.ensure(sourceFile);
+
+        const text = sourceFile.getFullText();
+        expect(text).toContain('z.object({}).passthrough()');
+        expect(text).toContain('const select = {}');
     });
 });

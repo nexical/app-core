@@ -51,6 +51,10 @@ export class ApiBuilder extends BaseBuilder {
                         case 'Int':
                             validator += 'number().int()';
                             break;
+                        case 'Float':
+                        case 'Decimal':
+                            validator += 'number()';
+                            break;
                         case 'Boolean':
                             validator += 'boolean()';
                             break;

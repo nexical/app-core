@@ -25,7 +25,7 @@ import { ActorTypeBuilder } from '../../engine/builders/actor-type-builder';
 import { type CustomRoute, type ModelDef } from '../../engine/types';
 import { ModuleLocator } from '../../lib/module-locator';
 
-export default class AuditApiCommand extends BaseCommand {
+export class AuditApiCommand extends BaseCommand {
     constructor() {
         super({
             name: 'audit:api',
