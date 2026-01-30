@@ -1,5 +1,5 @@
 import type { AstroGlobal } from 'astro';
-import { roleRegistry, type RolePolicy } from '../registries/role-registry';
+import { roleRegistry } from '../registries/role-registry';
 
 export interface PagePermission {
   check(context: AstroGlobal, input?: any): Promise<void>;

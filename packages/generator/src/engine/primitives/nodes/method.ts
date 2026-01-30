@@ -5,13 +5,13 @@ import {
   type OptionalKind,
   MethodDeclaration,
 } from 'ts-morph';
-import { BasePrimitive } from '../core/base-primitive';
-import { DecoratorPrimitive } from './decorator';
-import { JSDocPrimitive } from './docs';
-import { type ValidationResult } from '../contracts';
-import { type MethodConfig } from '../../types';
-import { StatementFactory } from '../statements/factory';
-import { Normalizer } from '../../../utils/normalizer';
+import { BasePrimitive } from '../core/base-primitive.js';
+import { DecoratorPrimitive } from './decorator.js';
+import { JSDocPrimitive } from './docs.js';
+import { type ValidationResult } from '../contracts.js';
+import { type MethodConfig } from '../../types.js';
+import { StatementFactory } from '../statements/factory.js';
+import { Normalizer } from '../../../utils/normalizer.js';
 
 export class MethodPrimitive extends BasePrimitive<MethodDeclaration, MethodConfig> {
   find(parent: ClassDeclaration) {

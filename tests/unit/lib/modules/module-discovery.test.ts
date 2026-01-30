@@ -2,7 +2,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ModuleDiscovery } from '@/lib/modules/module-discovery';
 import fs from 'node:fs';
-import { createJiti } from 'jiti';
 
 const { mockJiti } = vi.hoisted(() => ({
   mockJiti: {

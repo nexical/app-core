@@ -8,7 +8,7 @@ export interface HelpSection {
 
 export class CustomHelp {
   static format(command: Command, sections: HelpSection[] = []): string {
-    const help = command.createHelp();
+    command.createHelp();
     let output = '';
 
     // Usage

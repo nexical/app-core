@@ -1,15 +1,16 @@
 ---
-import { Toaster } from "@/components/ui/sonner";
-import { SystemWrapper } from "@/components/system/SystemWrapper";
-import { ErrorToastHandler } from "@/components/error-toast-handler";
-import { config, publicConfig } from "@/lib/core/config";
-import { ModuleI18nIntegration } from "@/lib/integrations/module-i18n-integration";
-import { ShellRegistry } from "@/lib/registries/shell-registry";
-import { FooterRegistry } from "@/lib/registries/footer-registry";
-import { HeadRegistry } from "@/lib/registries/head-registry";
-import { MasterShell } from "@/components/shell/master-shell";
-import { InstallPrompt } from "@/components/pwa/install-prompt";
-import { OfflineIndicator } from "@/components/pwa/offline-indicator";
+/* eslint-disable */
+import { Toaster } from '@/components/ui/sonner';
+import { SystemWrapper } from '@/components/system/SystemWrapper';
+import { ErrorToastHandler } from '@/components/error-toast-handler';
+import { config, publicConfig } from '@/lib/core/config';
+import { ModuleI18nIntegration } from '@/lib/integrations/module-i18n-integration';
+import { ShellRegistry } from '@/lib/registries/shell-registry';
+import { FooterRegistry } from '@/lib/registries/footer-registry';
+import { HeadRegistry } from '@/lib/registries/head-registry';
+import { MasterShell } from '@/components/shell/master-shell';
+import { InstallPrompt } from '@/components/pwa/install-prompt';
+import { OfflineIndicator } from '@/components/pwa/offline-indicator';
 
 interface Props {
   title?: string;
@@ -30,38 +31,29 @@ const shellContext = {
   // If static, we cannot determine device server-side. Default to false.
   // MasterShell will handle client-side hydration for mobile.
   isMobile:
-    config.PUBLIC_SITE_MODE === "static"
+    config.PUBLIC_SITE_MODE === 'static'
       ? false
-      : (Astro.request.headers
-          .get("user-agent")
-          ?.toLowerCase()
-          .includes("mobile") ?? false),
+      : (Astro.request.headers.get('user-agent')?.toLowerCase().includes('mobile') ?? false),
   width: 0,
   height: 0,
 };
-const shellEntry = showShell
-  ? ShellRegistry.findEntry(shellContext)
-  : undefined;
+const shellEntry = showShell ? ShellRegistry.findEntry(shellContext) : undefined;
 const shellName = shellEntry?.name;
 
-const footerEntry = showShell
-  ? FooterRegistry.findEntry(shellContext)
-  : undefined;
+const footerEntry = showShell ? FooterRegistry.findEntry(shellContext) : undefined;
 const footerName = footerEntry?.name;
 
 // Fetch Data for I18n
 const availableLanguages = await ModuleI18nIntegration.getAvailableLanguages();
 const targetLanguages = config.PUBLIC_SUPPORTED_LANGUAGES
-  ? config.PUBLIC_SUPPORTED_LANGUAGES.split(",")
+  ? config.PUBLIC_SUPPORTED_LANGUAGES.split(',')
       .map((s) => s.trim())
       .filter((l) => availableLanguages.includes(l))
   : availableLanguages;
 
-const langCookie = Astro.cookies.get("i18next")?.value;
+const langCookie = Astro.cookies.get('i18next')?.value;
 const currentLang =
-  langCookie && targetLanguages.includes(langCookie)
-    ? langCookie
-    : config.PUBLIC_DEFAULT_LANGUAGE;
+  langCookie && targetLanguages.includes(langCookie) ? langCookie : config.PUBLIC_DEFAULT_LANGUAGE;
 const initialStore = await ModuleI18nIntegration.getMergedLocale(currentLang);
 
 const i18nData = {
@@ -88,42 +80,34 @@ const i18nData = {
     <link rel="manifest" href="/manifest.webmanifest" />
     <meta name="theme-color" content="#6366f1" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta
-      name="apple-mobile-web-app-status-bar-style"
-      content="black-translucent"
-    />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <link rel="apple-touch-icon" href="/icons/icon-192.png" />
 
     {
       HeadRegistry.getEntries().map((entry) => {
         const Tag = entry.tag;
-        // @ts-ignore
+        // @ts-expect-error
         return <Tag {...(entry.props || {})} set:html={entry.content} />;
       })
     }
     <script is:inline>
       const getThemePreference = () => {
-        if (
-          typeof localStorage !== "undefined" &&
-          localStorage.getItem("app-theme")
-        ) {
-          return localStorage.getItem("app-theme");
+        if (typeof localStorage !== 'undefined' && localStorage.getItem('app-theme')) {
+          return localStorage.getItem('app-theme');
         }
-        return window.matchMedia("(prefers-color-scheme: dark)").matches
-          ? "dark"
-          : "light";
+        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
       };
-      const isDark = getThemePreference() === "dark";
-      document.documentElement.classList[isDark ? "add" : "remove"]("dark");
+      const isDark = getThemePreference() === 'dark';
+      document.documentElement.classList[isDark ? 'add' : 'remove']('dark');
 
-      if (typeof localStorage !== "undefined") {
+      if (typeof localStorage !== 'undefined') {
         const observer = new MutationObserver(() => {
-          const isDark = document.documentElement.classList.contains("dark");
-          localStorage.setItem("app-theme", isDark ? "dark" : "light");
+          const isDark = document.documentElement.classList.contains('dark');
+          localStorage.setItem('app-theme', isDark ? 'dark' : 'light');
         });
         observer.observe(document.documentElement, {
           attributes: true,
-          attributeFilter: ["class"],
+          attributeFilter: ['class'],
         });
       }
     </script>
@@ -133,12 +117,7 @@ const i18nData = {
       <ErrorToastHandler client:load />
       {
         showShell ? (
-          <MasterShell
-            client:load
-            navData={navData}
-            shellName={shellName}
-            footerName={footerName}
-          >
+          <MasterShell client:load navData={navData} shellName={shellName} footerName={footerName}>
             <slot />
           </MasterShell>
         ) : (

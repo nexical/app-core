@@ -11,7 +11,14 @@ vi.mock('../../../../../src/components/ui/dropdown-menu', () => ({
   DropdownMenuContent: ({ children }: any) => <div>{children}</div>,
   DropdownMenuItem: ({ children }: any) => <div>{children}</div>,
   DropdownMenuCheckboxItem: ({ children, checked, onCheckedChange }: any) => (
-    <div data-testid="column-item" onClick={() => onCheckedChange(!checked)}>
+    <div
+      role="menuitemcheckbox"
+      aria-checked={checked}
+      tabIndex={0}
+      data-testid="column-item"
+      onClick={() => onCheckedChange(!checked)}
+      onKeyDown={(e) => e.key === 'Enter' && onCheckedChange(!checked)}
+    >
       {children}
     </div>
   ),

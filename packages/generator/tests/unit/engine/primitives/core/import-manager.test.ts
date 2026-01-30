@@ -13,9 +13,9 @@ describe('ImportPrimitive', () => {
 
   it('should normalize module specifiers', () => {
     const primitive = new ImportPrimitive({ moduleSpecifier: '@/lib/utils.ts' });
-    // @ts-ignore
+    // @ts-expect-error - testing invalid assignment
     expect(primitive.normalizeModuleSpecifier('@/lib/utils.ts')).toBe('@/lib/core/utils');
-    // @ts-ignore
+    // @ts-expect-error - testing invalid assignment
     expect(primitive.normalizeModuleSpecifier('@modules/user-api/src/sdk/types.ts')).toBe(
       '@modules/user-api/src/sdk',
     );

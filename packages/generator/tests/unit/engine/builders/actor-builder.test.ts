@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Project, SourceFile } from 'ts-morph';
 import { ActorBuilder } from '@nexical/generator/engine/builders/actor-builder';

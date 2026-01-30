@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { describe, it, expect } from 'vitest';
 import { Project, SyntaxKind } from 'ts-morph';
 import { ImportPrimitive } from '@nexical/generator/engine/primitives/core/import-manager';

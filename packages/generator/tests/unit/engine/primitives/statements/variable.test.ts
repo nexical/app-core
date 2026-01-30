@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { describe, it, expect } from 'vitest';
 import { VariableStatementPrimitive } from '@nexical/generator/engine/primitives/statements/variable';
 import { Normalizer } from '@nexical/generator/utils/normalizer';

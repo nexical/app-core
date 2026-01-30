@@ -5,12 +5,12 @@ import {
   type OptionalKind,
   type PropertyDeclarationStructure,
 } from 'ts-morph';
-import { BasePrimitive } from '../core/base-primitive';
-import { type PropertyConfig } from '../../types';
-import { type ValidationResult } from '../contracts';
-import { DecoratorPrimitive } from './decorator';
-import { JSDocPrimitive } from './docs';
-import { Normalizer } from '../../../utils/normalizer';
+import { BasePrimitive } from '../core/base-primitive.js';
+import { type PropertyConfig } from '../../types.js';
+import { type ValidationResult } from '../contracts.js';
+import { DecoratorPrimitive } from './decorator.js';
+import { JSDocPrimitive } from './docs.js';
+import { Normalizer } from '../../../utils/normalizer.js';
 
 export class PropertyPrimitive extends BasePrimitive<PropertyDeclaration, PropertyConfig> {
   find(parent: ClassDeclaration) {

@@ -19,7 +19,6 @@ const __dirname = path.dirname(__filename);
 const ROOT_DIR = path.resolve(__dirname, '..');
 const SRC_STYLES_DIR = path.join(ROOT_DIR, 'src/styles');
 
-const THEME_AGGREGATE_PATH = path.join(SRC_STYLES_DIR, 'theme.base.css');
 const TARGET_THEME_PATH = path.join(ROOT_DIR, 'src/styles/theme.css');
 
 /**

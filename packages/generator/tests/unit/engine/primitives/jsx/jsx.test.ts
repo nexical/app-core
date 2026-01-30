@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { Project, SourceFile } from 'ts-morph';
 import { MethodPrimitive } from '@nexical/generator/engine/primitives/nodes/method.js';

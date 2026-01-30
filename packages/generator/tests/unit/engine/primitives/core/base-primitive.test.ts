@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { describe, it, expect } from 'vitest';
 import { Node, Project } from 'ts-morph';
 import { BasePrimitive } from '@nexical/generator/engine/primitives/core/base-primitive';

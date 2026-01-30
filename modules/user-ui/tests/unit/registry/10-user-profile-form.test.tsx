@@ -1,5 +1,5 @@
 import { render, screen } from '@testing-library/react';
-import { expect, test, vi } from 'vitest';
+import { expect, test } from 'vitest';
 import UserProfileForm from '@modules/user-ui/src/registry/details-panel/10-user-profile-form';
 import { NavProvider } from '@/lib/ui/nav-context';
 

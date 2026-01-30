@@ -207,7 +207,7 @@ function loadState(): string[] {
   if (fs.existsSync(STATE_FILE)) {
     try {
       return JSON.parse(fs.readFileSync(STATE_FILE, 'utf-8'));
-    } catch (e) {
+    } catch {
       return [];
     }
   }

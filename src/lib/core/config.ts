@@ -6,7 +6,7 @@ export const getProcessEnv = (key: string) => {
     if (typeof process !== 'undefined' && process && process.env) {
       return process.env[key];
     }
-  } catch (e) {
+  } catch {
     // Fallback for environments where process is restricted
   }
   return undefined;
@@ -24,12 +24,12 @@ export function createConfig<T extends ZodRawShape>(schema: ZodObject<T>) {
       // Fallback to env vars (Server or Build-time replacement)
       let envVal: string | undefined = undefined;
       try {
-        // @ts-ignore
         if (typeof import.meta !== 'undefined' && import.meta && import.meta.env) {
-          // @ts-ignore
           envVal = import.meta.env[key];
         }
-      } catch (e) {}
+      } catch {
+        // Ignored
+      }
 
       processEnv[key] = envVal || getProcessEnv(key);
     }

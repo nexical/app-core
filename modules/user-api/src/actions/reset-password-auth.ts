@@ -2,7 +2,6 @@ import type { ServiceResponse } from '@/types/service';
 import type { ResetPasswordDTO } from '../sdk/types';
 import { db } from '@/lib/core/db';
 import { HookSystem } from '@/lib/modules/hooks';
-import bcrypt from 'bcryptjs';
 import type { APIContext } from 'astro';
 
 export class ResetPasswordAuthAction {

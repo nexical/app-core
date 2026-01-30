@@ -3,10 +3,8 @@ import { getZoneComponents, type RegistryComponent } from '../../lib/ui/registry
 import { useShellStore } from '../../lib/ui/shell-store';
 import { config } from '../../lib/core/config';
 import { ScrollArea } from '../ui/scroll-area';
-import { useTranslation } from 'react-i18next';
 
 export function ApiDocsShell({ children }: { children: React.ReactNode }) {
-  const { t } = useTranslation();
   const [headerEndItems, setHeaderEndItems] = useState<RegistryComponent[]>([]);
   const [detailsPanelItems, setDetailsPanelItems] = useState<RegistryComponent[]>([]);
 
@@ -102,7 +100,15 @@ export function ApiDocsShell({ children }: { children: React.ReactNode }) {
           <div
             className="absolute top-0 left-[-10px] w-5 h-full cursor-w-resize hover:bg-primary/5 transition-colors z-[100] touch-none select-none flex justify-center"
             onMouseDown={startResizingDetails}
-            title="Drag to resize detail panel"
+            role="slider"
+            aria-orientation="vertical"
+            aria-label="Resize details panel"
+            aria-valuenow={detailsPanelWidth}
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === 'ArrowLeft') setDetailsPanelWidth(detailsPanelWidth + 10);
+              if (e.key === 'ArrowRight') setDetailsPanelWidth(detailsPanelWidth - 10);
+            }}
           >
             <div className="h-full w-1 bg-primary/0 hover:bg-primary/50 transition-colors rounded-full" />
           </div>

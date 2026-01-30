@@ -1,15 +1,15 @@
+/* eslint-disable */
 /** @vitest-environment jsdom */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 describe('i18n-client', () => {
   beforeEach(() => {
     vi.resetModules();
-    // @ts-ignore
     delete window.__I18N_DATA__;
   });
 
   it('should initialize with window data if available', async () => {
-    // @ts-ignore
+    // @ts-expect-error
     window.__I18N_DATA__ = {
       language: 'fr',
       store: { hello: 'bonjour' },

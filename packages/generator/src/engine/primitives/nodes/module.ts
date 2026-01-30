@@ -5,10 +5,10 @@ import {
   type OptionalKind,
   type ModuleDeclarationStructure,
 } from 'ts-morph';
-import { BasePrimitive } from '../core/base-primitive';
-import { type ModuleConfig } from '../../types';
-import { type ValidationResult } from '../contracts';
-import { Reconciler } from '../../reconciler';
+import { BasePrimitive } from '../core/base-primitive.js';
+import { type ModuleConfig } from '../../types.js';
+import { type ValidationResult } from '../contracts.js';
+import { Reconciler } from '../../reconciler.js';
 
 // We need a common interface for SourceFile and ModuleDeclaration as they both hold statements
 // but they don't share a simple common interface in ts-morph export that exposes addClass etc easily without casting

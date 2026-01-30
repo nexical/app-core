@@ -15,7 +15,7 @@ const _test = describe('User API - Create', () => {
   // POST /api/user
   describe('POST /api/user', () => {
     it('should allow admin to create user', async () => {
-      const actor = await client.as('user', { role: 'ADMIN' });
+      const _actor = await client.as('user', { role: 'ADMIN' });
 
       const payload = {
         passwordUpdatedAt: new Date().toISOString(),
@@ -35,7 +35,7 @@ const _test = describe('User API - Create', () => {
 
     it('should forbid non-admin/unauthorized users', async () => {
       (client as any).bearerToken = 'invalid-token';
-      const actor = undefined as any;
+      const _actor = undefined as any;
 
       const payload = {
         passwordUpdatedAt: new Date().toISOString(),

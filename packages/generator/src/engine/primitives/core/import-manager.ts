@@ -129,7 +129,6 @@ export class ImportPrimitive extends BasePrimitive<ImportDeclaration, ImportConf
     // 3. Add missing named imports
     if (this.config.namedImports) {
       const namedImports = node.getNamedImports();
-      const existingNames = namedImports.map((ni) => ni.getName());
       const normalizedExisting = namedImports.map((ni) => ni.getText().replace(/^type\s+/, ''));
 
       // Remove imports not in the config

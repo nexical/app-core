@@ -1,14 +1,10 @@
-import { Node, Statement } from 'ts-morph';
-import { type StatementConfig } from '../../types';
+import { type StatementConfig } from '../../types.js';
 
 // StatementPrimitive is slightly different from BasePrimitive.
 // It might not manage a *single* node forever if we don't have IDs.
 // But we want to implement standard create/update logic.
 
-export abstract class StatementPrimitive<
-  TNode extends Statement = Statement,
-  TConfig extends StatementConfig = StatementConfig,
-> {
+export abstract class StatementPrimitive<TConfig extends StatementConfig = StatementConfig> {
   constructor(protected config: TConfig) {}
 
   // Convert config to writer function or structure string

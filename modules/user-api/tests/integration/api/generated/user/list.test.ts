@@ -1,3 +1,4 @@
+/* eslint-disable */
 // GENERATED CODE - DO NOT MODIFY
 import { describe, it, expect, beforeEach } from 'vitest';
 import { ApiClient } from '@tests/integration/lib/client';
@@ -92,7 +93,7 @@ const _test = describe('User API - List', () => {
       await new Promise((r) => setTimeout(r, 10));
       const val2 = 'username_' + Date.now() + '_B';
 
-      const relationSnippet = ''.replace(/^, /, '').replace(/actor.id/g, 'actor.id');
+      const _relationSnippet = ''.replace(/^, /, '').replace(/actor.id/g, 'actor.id');
       const data1 = {
         ...baseData,
         username: val1,
@@ -123,7 +124,7 @@ const _test = describe('User API - List', () => {
       await new Promise((r) => setTimeout(r, 10));
       const val2 = 'email_' + Date.now() + '_B@example.com';
 
-      const relationSnippet = ''.replace(/^, /, '').replace(/actor.id/g, 'actor.id');
+      const _relationSnippet = ''.replace(/^, /, '').replace(/actor.id/g, 'actor.id');
       const data1 = { ...baseData, email: val1 };
       const data2 = { ...baseData, email: val2 };
 
@@ -146,7 +147,7 @@ const _test = describe('User API - List', () => {
       await new Promise((r) => setTimeout(r, 10));
       const val2 = 'name_' + Date.now() + '_B';
 
-      const relationSnippet = ''.replace(/^, /, '').replace(/actor.id/g, 'actor.id');
+      const _relationSnippet = ''.replace(/^, /, '').replace(/actor.id/g, 'actor.id');
       const data1 = {
         ...baseData,
         name: val1,
@@ -177,7 +178,7 @@ const _test = describe('User API - List', () => {
       await new Promise((r) => setTimeout(r, 10));
       const val2 = 'image_' + Date.now() + '_B';
 
-      const relationSnippet = ''.replace(/^, /, '').replace(/actor.id/g, 'actor.id');
+      const _relationSnippet = ''.replace(/^, /, '').replace(/actor.id/g, 'actor.id');
       const data1 = {
         ...baseData,
         image: val1,

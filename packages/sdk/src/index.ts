@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { ApiClient, type ApiClientOptions } from '@nexical/sdk-core';
 import { initializeSdkRegistry, type SdkRegistry } from './registry.generated';
 

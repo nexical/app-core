@@ -1,6 +1,5 @@
 import { Command } from 'commander';
-import { CustomHelp, type HelpSection } from '../lib/help';
-import { z } from 'zod';
+import { CustomHelp, type HelpSection } from '../lib/help.js';
 import chalk from 'chalk';
 
 export interface CommandOptions {

@@ -1,7 +1,6 @@
 import { Button, Section, Text } from '@react-email/components';
 import * as React from 'react';
 import EmailLayout from './layout';
-import { config } from '@/lib/core/config';
 
 interface VerifyEmailProps {
   userName?: string;

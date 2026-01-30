@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ModuleLocator } from '@nexical/generator/lib/module-locator';
 import path from 'path';

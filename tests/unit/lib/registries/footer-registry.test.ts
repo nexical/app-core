@@ -132,7 +132,7 @@ describe('FooterRegistry', () => {
   });
 
   it('should return false for unknown matcher types', () => {
-    // @ts-ignore - testing runtime branch line 85
+    // @ts-expect-error - testing invalid configuration - testing runtime branch line 85
     FooterRegistry.register('wrong', () => null, 123);
     const context = {
       url: new URL('http://localhost/'),

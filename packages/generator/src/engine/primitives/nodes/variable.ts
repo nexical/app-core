@@ -4,9 +4,9 @@ import {
   VariableDeclarationKind,
   ModuleDeclaration,
 } from 'ts-morph';
-import { BasePrimitive } from '../core/base-primitive';
-import { type VariableConfig } from '../../types';
-import { type ValidationResult } from '../contracts';
+import { BasePrimitive } from '../core/base-primitive.js';
+import { type VariableConfig } from '../../types.js';
+import { type ValidationResult } from '../contracts.js';
 
 export class VariablePrimitive extends BasePrimitive<VariableStatement, VariableConfig> {
   find(parent: SourceFile | ModuleDeclaration) {

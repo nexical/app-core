@@ -1,4 +1,4 @@
-import type { ComponentType, ReactNode } from 'react';
+import type { ComponentType } from 'react';
 import type { ShellContext, ShellMatcher } from './shell-registry';
 
 export type FooterComponent = ComponentType<{ navData?: any }>;

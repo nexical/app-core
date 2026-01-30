@@ -1,6 +1,6 @@
-import { Node, JSDoc, JSDocableNode, type OptionalKind, type JSDocStructure } from 'ts-morph';
-import { BasePrimitive } from '../core/base-primitive';
-import { type ValidationResult } from '../contracts';
+import { Node, JSDoc, type OptionalKind, type JSDocStructure } from 'ts-morph';
+import { BasePrimitive } from '../core/base-primitive.js';
+import { type ValidationResult } from '../contracts.js';
 
 interface JSDocConfig {
   description: string;

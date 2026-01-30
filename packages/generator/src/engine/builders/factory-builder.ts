@@ -1,12 +1,10 @@
-import { SourceFile } from 'ts-morph';
 import {
   type ModelDef,
   type FileDefinition,
   type VariableConfig,
   type FunctionConfig,
-} from '../types';
-import { Reconciler } from '../reconciler';
-import { BaseBuilder } from './base-builder';
+} from '../types.js';
+import { BaseBuilder } from './base-builder.js';
 
 export class FactoryBuilder extends BaseBuilder {
   constructor(private models: ModelDef[]) {

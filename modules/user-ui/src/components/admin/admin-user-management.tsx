@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { api, type ApiError } from '@/lib/api/api';

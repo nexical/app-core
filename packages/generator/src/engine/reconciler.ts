@@ -1,20 +1,20 @@
 import { SourceFile, StatementedNode, ModuleDeclaration } from 'ts-morph';
-import { GeneratorError } from './errors';
-import { type FileDefinition } from './types';
-import { ImportPrimitive } from './primitives/core/import-manager';
-import { ExportPrimitive } from './primitives/core/export-manager';
-import { ClassPrimitive } from './primitives/nodes/class';
-import { MethodPrimitive } from './primitives/nodes/method';
-import { InterfacePrimitive } from './primitives/nodes/interface';
-import { EnumPrimitive } from './primitives/nodes/enum';
-import { FunctionPrimitive } from './primitives/nodes/function';
-import { TypePrimitive } from './primitives/nodes/type';
-import { VariablePrimitive } from './primitives/nodes/variable';
-import { PropertyPrimitive } from './primitives/nodes/property';
-import { ConstructorPrimitive } from './primitives/nodes/constructor';
-import { AccessorPrimitive } from './primitives/nodes/accessor';
-import { ModulePrimitive } from './primitives/nodes/module';
-import { Normalizer } from '../utils/normalizer';
+import { GeneratorError } from './errors.js';
+import { type FileDefinition } from './types.js';
+import { ImportPrimitive } from './primitives/core/import-manager.js';
+import { ExportPrimitive } from './primitives/core/export-manager.js';
+import { ClassPrimitive } from './primitives/nodes/class.js';
+import { MethodPrimitive } from './primitives/nodes/method.js';
+import { InterfacePrimitive } from './primitives/nodes/interface.js';
+import { EnumPrimitive } from './primitives/nodes/enum.js';
+import { FunctionPrimitive } from './primitives/nodes/function.js';
+import { TypePrimitive } from './primitives/nodes/type.js';
+import { VariablePrimitive } from './primitives/nodes/variable.js';
+import { PropertyPrimitive } from './primitives/nodes/property.js';
+import { ConstructorPrimitive } from './primitives/nodes/constructor.js';
+import { AccessorPrimitive } from './primitives/nodes/accessor.js';
+import { ModulePrimitive } from './primitives/nodes/module.js';
+import { Normalizer } from '../utils/normalizer.js';
 
 // Helper type to handle both SourceFile and ModuleDeclaration (Namespace)
 type NodeContainer = SourceFile | ModuleDeclaration;
@@ -100,8 +100,8 @@ export class Reconciler {
       }
 
       // 9. Handle Raw Statements (Explicitly added for flexibility)
-      if ('statements' in definition && Array.isArray((definition as any).statements)) {
-        const stmts = (definition as any).statements as string[];
+      if ('statements' in definition && Array.isArray(definition.statements)) {
+        const stmts = definition.statements as string[];
         if ('addStatements' in sourceFile) {
           const existingText = Normalizer.normalize((sourceFile as any).getFullText());
           // Filter out statements that already exist perfectly in the file

@@ -1,6 +1,5 @@
 import prettier from 'prettier';
 import path from 'node:path';
-import fs from 'node:fs';
 
 export class Formatter {
   private static configCache: prettier.Options | null = null;

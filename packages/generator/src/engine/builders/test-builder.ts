@@ -1,12 +1,10 @@
-import { SourceFile } from 'ts-morph';
 import {
   type ModelDef,
   type FileDefinition,
   type VariableConfig,
   type TestRoleConfig,
-} from '../types';
-import { Reconciler } from '../reconciler';
-import { BaseBuilder } from './base-builder';
+} from '../types.js';
+import { BaseBuilder } from './base-builder.js';
 
 type TestOperation = 'create' | 'list' | 'get' | 'update' | 'delete';
 

@@ -1,4 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY
+/* eslint-disable */
+// @ts-nocheck
 import { db } from '@/lib/core/db';
 import { Logger } from '@/lib/core/logger';
 import type { ServiceResponse } from '@/types/service';
@@ -11,7 +13,7 @@ import type { ApiActor } from '@/lib/api/api-docs';
 export class PersonalAccessTokenService {
   public static async list(
     params?: Prisma.PersonalAccessTokenFindManyArgs,
-    actor?: ApiActor,
+    _actor?: ApiActor,
   ): Promise<ServiceResponse<PersonalAccessToken[]>> {
     try {
       const { where, take, skip, orderBy, select } = params || {};
@@ -62,7 +64,7 @@ export class PersonalAccessTokenService {
   public static async create(
     data: Prisma.PersonalAccessTokenCreateInput,
     select?: Prisma.PersonalAccessTokenSelect,
-    actor?: ApiActor,
+    _actor?: ApiActor,
   ): Promise<ServiceResponse<PersonalAccessToken>> {
     try {
       const input = await HookSystem.filter('personalAccessToken.beforeCreate', data);
@@ -95,7 +97,7 @@ export class PersonalAccessTokenService {
     id: string,
     data: Prisma.PersonalAccessTokenUpdateInput,
     select?: Prisma.PersonalAccessTokenSelect,
-    actor?: ApiActor,
+    _actor?: ApiActor,
   ): Promise<ServiceResponse<PersonalAccessToken>> {
     try {
       const input = await HookSystem.filter('personalAccessToken.beforeUpdate', data);

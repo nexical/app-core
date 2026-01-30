@@ -1,7 +1,5 @@
-import { SourceFile } from 'ts-morph';
-import { type FileDefinition, type ClassDefinition, type MethodConfig } from '../types';
-import { Reconciler } from '../reconciler';
-import { BaseBuilder } from './base-builder';
+import { type FileDefinition, type ClassDefinition, type MethodConfig } from '../types.js';
+import { BaseBuilder } from './base-builder.js';
 
 export class ActionBuilder extends BaseBuilder {
   constructor(

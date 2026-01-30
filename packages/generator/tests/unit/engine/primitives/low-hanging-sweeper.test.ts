@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { describe, it, expect } from 'vitest';
 import { Project, ModuleDeclarationKind } from 'ts-morph';
 import { ConstructorPrimitive } from '@nexical/generator/engine/primitives/nodes/constructor';

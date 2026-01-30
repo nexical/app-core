@@ -1,11 +1,6 @@
 import { SourceFile } from 'ts-morph';
-import { type FileDefinition, type ClassDefinition } from '../types';
-import { Reconciler } from '../reconciler';
-
-type PermissionContext = {
-  actionName: string; // e.g. "RegisterUser"
-  // entityName: string; // e.g. "User" - inferred from actionName usually, or passed
-};
+import { type FileDefinition, type ClassDefinition } from '../types.js';
+import { Reconciler } from '../reconciler.js';
 
 export class PermissionBuilder {
   constructor(

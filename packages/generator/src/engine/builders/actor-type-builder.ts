@@ -1,7 +1,5 @@
-import { SourceFile } from 'ts-morph';
-import { type ModelDef, type FileDefinition, type ImportConfig, type ModuleConfig } from '../types';
-import { Reconciler } from '../reconciler';
-import { BaseBuilder } from './base-builder';
+import { type ModelDef, type FileDefinition, type ImportConfig } from '../types.js';
+import { BaseBuilder } from './base-builder.js';
 
 export class ActorTypeBuilder extends BaseBuilder {
   constructor(private models: ModelDef[]) {
@@ -26,11 +24,11 @@ export class ActorTypeBuilder extends BaseBuilder {
 
     if (actorModels.length > 0) {
       statements.push(`declare global {
-    namespace App {
-        interface ActorMap {
+  namespace App {
+    interface ActorMap {
             ${actorModels.map((m: ModelDef) => `${m.name.charAt(0).toLowerCase() + m.name.slice(1)}: ${m.name} & { type: '${m.name.charAt(0).toLowerCase() + m.name.slice(1)}' };`).join('\n            ')}
-        }
-    }
+  }
+}
 }`);
     }
 
@@ -40,9 +38,9 @@ export class ActorTypeBuilder extends BaseBuilder {
     };
   }
 
-  public override ensure(sourceFile: SourceFile): void {
+  public override ensure(node: any): void {
     // Fully generated file, clear previous content to avoid duplication
-    sourceFile.removeText();
-    super.ensure(sourceFile);
+    if ('removeText' in node) node.removeText();
+    super.ensure(node);
   }
 }

@@ -7,7 +7,9 @@ describe('Core Utils: cn', () => {
   });
 
   it('should handle conditional classes', () => {
-    expect(cn('a', true && 'b', false && 'c')).toBe('a b');
+    const isTrue = !!1;
+    const isFalse = !!0;
+    expect(cn('a', isTrue && 'b', isFalse && 'c')).toBe('a b');
   });
 
   it('should handle tailwind conflict resolution', () => {

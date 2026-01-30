@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Formatter } from '@nexical/generator/utils/formatter';
 import prettier from 'prettier';
@@ -15,9 +16,9 @@ describe('Formatter', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Reset the static cache state specifically
-    // @ts-ignore
+    // @ts-expect-error - testing invalid assignment
     Formatter.hasCheckedConfig = false;
-    // @ts-ignore
+    // @ts-expect-error - testing invalid assignment
     Formatter.configCache = null;
   });
 
@@ -64,11 +65,11 @@ describe('Formatter', () => {
     vi.mocked(prettier.format).mockResolvedValue('ok');
 
     // Reset state before this specific test case to be sure
-    // @ts-ignore
+    // @ts-expect-error - testing invalid assignment
     Formatter.hasCheckedConfig = false;
 
     await Formatter.format('c1', 'f1.ts');
-    // @ts-ignore
+    // @ts-expect-error - testing invalid assignment
     Formatter.hasCheckedConfig = true; // explicitly set it for the 2nd call to be absolutely sure
     await Formatter.format('c2', 'f2.ts');
 

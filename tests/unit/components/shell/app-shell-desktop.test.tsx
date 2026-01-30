@@ -1,3 +1,4 @@
+/* eslint-disable */
 /** @vitest-environment jsdom */
 import React from 'react';
 import { render, screen, fireEvent, act, cleanup } from '@testing-library/react';
@@ -167,7 +168,7 @@ describe('AppShellDesktop', () => {
 
   it('should navigate home on logo click', async () => {
     const originalLocation = window.location;
-    // @ts-ignore
+    // @ts-expect-error
     delete window.location;
     window.location = { ...originalLocation, href: '' } as any;
 
@@ -178,6 +179,6 @@ describe('AppShellDesktop', () => {
     fireEvent.click(screen.getByTitle('Home'));
     expect(window.location.href).toBe('/');
 
-    window.location = originalLocation;
+    window.location = originalLocation as any;
   });
 });

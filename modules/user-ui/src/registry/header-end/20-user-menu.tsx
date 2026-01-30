@@ -5,14 +5,11 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { signOut } from 'auth-astro/client';
-import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useShellStore } from '@/lib/ui/shell-store';
 import { useNavData } from '@/lib/ui/nav-context'; // Check path if it needs relative or absolute alias
@@ -29,15 +26,6 @@ export default function UserProfile() {
   const user = context?.user as any;
 
   if (!user) return null;
-
-  const userInitials = user.name
-    ? user.name
-        .split(' ')
-        .map((n: string) => n[0])
-        .join('')
-        .substring(0, 2)
-        .toUpperCase()
-    : user.email?.substring(0, 2).toUpperCase() || 'U';
 
   const isAdmin = user.role === 'ADMIN' || user.role === 'OWNER'; // Assuming role exists on user object or needing fetch.
   // Context user might not have role. If not, we might need to skip admin link or use a different check.

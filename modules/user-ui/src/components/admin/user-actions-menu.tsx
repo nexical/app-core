@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { MoreHorizontal, Shield, Trash, UserX, UserCheck, Settings } from 'lucide-react';

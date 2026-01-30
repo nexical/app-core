@@ -1,13 +1,10 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
-import { BaseResource, ApiClient } from '@nexical/sdk-core';
+import { BaseResource } from '@nexical/sdk-core';
 import type {
   User,
   UpdateUserDTO,
-  DeleteMeDTO,
-  ListTokensDTO,
   PersonalAccessToken,
   CreateTokenDTO,
-  DeleteTokenDTO,
   CreateTokenResponseDTO,
 } from './types';
 

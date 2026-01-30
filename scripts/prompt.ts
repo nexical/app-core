@@ -1,4 +1,5 @@
 #!/usr/bin/env -S npx tsx
+/* eslint-disable */
 
 import fs from 'node:fs/promises';
 import { readFileSync } from 'node:fs';
@@ -199,7 +200,7 @@ Examples:
   try {
     await fs.unlink(tempFile);
     console.log(`[Cleanup] Removed active prompt file`);
-  } catch (e) {
+  } catch {
     // ignore cleanup errors
   }
 

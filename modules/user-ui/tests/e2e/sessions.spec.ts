@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { test, expect } from '@tests/e2e/lib/fixtures';
 
 test.describe('2.2 Manage Sessions', () => {

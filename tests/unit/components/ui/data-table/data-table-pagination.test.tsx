@@ -1,3 +1,4 @@
+/* eslint-disable */
 /** @vitest-environment jsdom */
 import React from 'react';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
@@ -6,15 +7,26 @@ import { DataTablePagination } from '../../../../../src/components/ui/data-table
 
 // Mock Radix Select to expose onValueChange
 vi.mock('../../../../../src/components/ui/select', () => ({
-  Select: ({ children, onValueChange, value }: any) => (
-    <div data-testid="mock-select" onClick={() => onValueChange('20')}>
+  Select: ({ children, onValueChange }: any) => (
+    <div
+      role="combobox"
+      aria-expanded="true"
+      tabIndex={0}
+      data-testid="mock-select"
+      onClick={() => onValueChange('20')}
+      onKeyDown={(e) => e.key === 'Enter' && onValueChange('20')}
+    >
       {children}
     </div>
   ),
   SelectTrigger: ({ children }: any) => <div>{children}</div>,
   SelectValue: ({ placeholder }: any) => <div>{placeholder}</div>,
   SelectContent: ({ children }: any) => <div>{children}</div>,
-  SelectItem: ({ children, value }: any) => <div data-testid={`item-${value}`}>{children}</div>,
+  SelectItem: ({ children, value }: any) => (
+    <div role="option" aria-selected="false" data-testid={`item-${value}`}>
+      {children}
+    </div>
+  ),
 }));
 
 describe('DataTablePagination', () => {

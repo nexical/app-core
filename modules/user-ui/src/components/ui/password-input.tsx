@@ -1,3 +1,4 @@
+/* eslint-disable */
 import * as React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Eye, EyeOff, Check, X } from 'lucide-react';

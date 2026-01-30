@@ -1,7 +1,7 @@
 'use client';
 
 import * as React from 'react';
-import { useState, useTransition, useEffect } from 'react';
+import { useState, useTransition } from 'react';
 import { api, type ApiError } from '@/lib/api/api';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';

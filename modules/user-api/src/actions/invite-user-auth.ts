@@ -4,7 +4,6 @@ import { db } from '@/lib/core/db';
 import { HookSystem } from '@/lib/modules/hooks';
 import { SiteRole } from '@modules/user-api/src/sdk';
 
-import { getTranslation } from '@/lib/core/i18n';
 import type { APIContext } from 'astro';
 
 export class InviteUserAuthAction {

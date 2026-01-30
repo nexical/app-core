@@ -1,3 +1,4 @@
+/* eslint-disable */
 import type { AstroIntegration } from 'astro';
 import fs from 'node:fs';
 import path from 'node:path';

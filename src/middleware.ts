@@ -17,12 +17,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const moduleMiddlewares = await getModuleMiddlewares();
 
   // 1. Check for Public Routes from Modules
-  const allPublicRoutes = moduleMiddlewares.flatMap((m) => m.publicRoutes || []);
-  const isPublic = allPublicRoutes.some((route) => {
-    if (pathname === route) return true;
-    if (route.endsWith('/*') && pathname.startsWith(route.slice(0, -1))) return true;
-    return false;
-  });
+  // (Planned usage for isPublic check)
 
   // 2. Execute Module Middlewares
   // Modules can handle auth, redirects, etc.

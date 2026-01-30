@@ -2,7 +2,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GET } from '../../../../src/pages/api/schema';
 import { ModuleDiscovery } from '../../../../src/lib/modules/module-discovery';
 import { generateDocs } from '../../../../src/lib/api/api-docs';
-import { config } from '../../../../src/lib/core/config';
 
 // Mock dependencies
 vi.mock('../../../../src/lib/modules/module-discovery', () => ({

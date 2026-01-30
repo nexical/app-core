@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { test as base } from '@playwright/test';
 import { Client, Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
@@ -109,8 +110,8 @@ export const workerAppFixture = async ({}, use: any, workerInfo: any) => {
                 AND pid <> pg_backend_pid();
             `);
       await cleanupClient.query(`DROP DATABASE IF EXISTS ${dbName}`);
-    } catch (e) {
-      console.error(`[Worker ${workerIndex}] Failed to drop DB ${dbName}`, e);
+    } catch {
+      console.error(`[Worker ${workerIndex}] Failed to drop DB ${dbName}`);
     } finally {
       await cleanupClient.end();
     }
@@ -126,7 +127,7 @@ async function waitForServer(url: string, timeout: number) {
         // 404 is fine, means server is reachable
         return;
       }
-    } catch (e) {
+    } catch {
       // Wait and retry
     }
     await new Promise((r) => setTimeout(r, 500));

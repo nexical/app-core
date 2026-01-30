@@ -78,7 +78,7 @@ export interface CreateTokenDTO {
   userId?: string;
 }
 
-export interface Auth {}
+export type Auth = Record<string, unknown>;
 
 export interface DeleteTokenDTO {
   id: string;
@@ -91,7 +91,7 @@ export interface ListTokensDTO {
   take?: number;
 }
 
-export interface LogoutDTO {}
+export type LogoutDTO = Record<string, unknown>;
 
 export interface ValidateResetTokenDTO {
   token: string;

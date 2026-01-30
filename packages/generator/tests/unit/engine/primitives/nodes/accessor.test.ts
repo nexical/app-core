@@ -144,7 +144,7 @@ describe('AccessorPrimitive', () => {
 
   it('should validate correctly', () => {
     const classNode = sourceFile.getClass('TestClass');
-    const getterNode = classNode?.addGetAccessor({ name: 'test' })!;
+    const getterNode = classNode?.addGetAccessor({ name: 'test' }) as any;
 
     const primitive = new AccessorPrimitive({
       name: 'test',
@@ -161,7 +161,7 @@ describe('AccessorPrimitive', () => {
 
   it('should validate kind mismatch', () => {
     const classNode = sourceFile.getClass('TestClass');
-    const getterNode = classNode?.addGetAccessor({ name: 'test' })!;
+    const getterNode = classNode?.addGetAccessor({ name: 'test' }) as any;
 
     const primitive = new AccessorPrimitive({
       name: 'test',
@@ -175,7 +175,7 @@ describe('AccessorPrimitive', () => {
 
   it('should validate missing validation details', () => {
     const classNode = sourceFile.getClass('TestClass');
-    const getterNode = classNode?.addGetAccessor({ name: 'test' })!;
+    const getterNode = classNode?.addGetAccessor({ name: 'test' }) as any;
 
     const primitive = new AccessorPrimitive({
       name: 'test',

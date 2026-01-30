@@ -1,5 +1,5 @@
 import ts from 'typescript';
-import { type PlatformDefinition, type PlatformModel, type PrismaFieldSchema } from '../schema.js';
+import { type PlatformDefinition, type PlatformModel } from '../schema.js';
 
 const { factory } = ts;
 
@@ -180,7 +180,7 @@ export class ZodSchemaGenerator {
       case 'Json':
         base = factory.createPropertyAccessExpression(z, 'any');
         break;
-      default:
+      default: {
         // Assume it's an enum or another model
         const schemaId = factory.createIdentifier(`${type}Schema`);
         // Use z.lazy(() => NameSchema) to handle hoisting/circular deps
@@ -198,6 +198,7 @@ export class ZodSchemaGenerator {
             ),
           ],
         );
+      }
     }
 
     return factory.createCallExpression(base, undefined, []);

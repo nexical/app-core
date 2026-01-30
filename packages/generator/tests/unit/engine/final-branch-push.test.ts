@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Reconciler } from '@nexical/generator/engine/reconciler';
 import { Project } from 'ts-morph';

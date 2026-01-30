@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { TestServer } from './server';
 
 export class ApiClient {

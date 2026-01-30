@@ -1,11 +1,10 @@
 /** @vitest-environment jsdom */
-import React from 'react';
 import { render, screen } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
+import { describe, test, expect } from 'vitest';
+import { Avatar, AvatarImage, AvatarFallback } from '../../../../src/components/ui/avatar';
 
 describe('Avatar', () => {
-  it('should render fallback initially (as Radix waits for image load)', () => {
+  test('should render fallback initially (as Radix waits for image load)', () => {
     render(
       <Avatar>
         <AvatarImage src="test.jpg" alt="User" />
@@ -19,7 +18,7 @@ describe('Avatar', () => {
     expect(fallback.getAttribute('data-slot')).toBe('avatar-fallback');
   });
 
-  it('should render fallback when no image is provided', () => {
+  test('should render fallback when no image is provided', () => {
     render(
       <Avatar>
         <AvatarFallback>FB</AvatarFallback>

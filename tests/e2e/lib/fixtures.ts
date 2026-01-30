@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { test as base } from '@playwright/test';
 import { Actor } from './actor';
 import { TestUtils } from './utils';

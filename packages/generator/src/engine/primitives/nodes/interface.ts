@@ -1,7 +1,7 @@
 import { SourceFile, InterfaceDeclaration, ModuleDeclaration } from 'ts-morph';
-import { BasePrimitive } from '../core/base-primitive';
-import { type InterfaceConfig } from '../../types';
-import { type ValidationResult } from '../contracts';
+import { BasePrimitive } from '../core/base-primitive.js';
+import { type InterfaceConfig } from '../../types.js';
+import { type ValidationResult } from '../contracts.js';
 
 export class InterfacePrimitive extends BasePrimitive<InterfaceDeclaration, InterfaceConfig> {
   find(parent: SourceFile | ModuleDeclaration) {

@@ -3,8 +3,8 @@ import {
   type FileDefinition,
   type ImportConfig,
   type FunctionConfig,
-} from '../types';
-import { BaseBuilder } from './base-builder';
+} from '../types.js';
+import { BaseBuilder } from './base-builder.js';
 import { SourceFile, ModuleDeclaration } from 'ts-morph';
 
 export class MiddlewareBuilder extends BaseBuilder {

@@ -1,7 +1,8 @@
+/* eslint-disable no-console */
 import { Project, SourceFile } from 'ts-morph';
 import path from 'node:path';
 import fs from 'node:fs';
-import { Formatter } from '../utils/formatter';
+import { Formatter } from '../utils/formatter.js';
 
 export abstract class ModuleGenerator {
   protected project: Project;

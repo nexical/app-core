@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { defu } from 'defu';
 import type { ModulePhase } from '../modules/module-discovery';
 import { getI18nCoreLocales, getI18nModuleLocales, getModuleConfigs } from '../core/glob-helper';

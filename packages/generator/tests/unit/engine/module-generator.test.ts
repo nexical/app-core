@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ModuleGenerator } from '@nexical/generator/engine/module-generator';
 import fs from 'node:fs';

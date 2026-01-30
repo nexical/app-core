@@ -19,7 +19,7 @@ export const validateResetToken = async (
       valid: true,
       email: resetToken.email,
     };
-  } catch (e) {
+  } catch {
     return { valid: false };
   }
 };

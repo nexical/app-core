@@ -1,13 +1,7 @@
-import {
-  Node,
-  Decorator,
-  DecoratableNode,
-  type OptionalKind,
-  type DecoratorStructure,
-} from 'ts-morph';
-import { BasePrimitive } from '../core/base-primitive';
-import { type ValidationResult } from '../contracts';
-import { type DecoratorConfig } from '../../types';
+import { Node, Decorator, type OptionalKind, type DecoratorStructure } from 'ts-morph';
+import { BasePrimitive } from '../core/base-primitive.js';
+import { type ValidationResult } from '../contracts.js';
+import { type DecoratorConfig } from '../../types.js';
 
 // DecoratableNode is a union of all nodes that can have decorators.
 

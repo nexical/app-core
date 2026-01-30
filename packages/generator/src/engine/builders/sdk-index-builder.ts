@@ -3,11 +3,9 @@ import {
   type ModelDef,
   type FileDefinition,
   type ClassDefinition,
-  type PropertyConfig,
   type ConstructorConfig,
-} from '../types';
-import { Reconciler } from '../reconciler';
-import { BaseBuilder } from './base-builder';
+} from '../types.js';
+import { BaseBuilder } from './base-builder.js';
 
 export class SdkIndexBuilder extends BaseBuilder {
   constructor(

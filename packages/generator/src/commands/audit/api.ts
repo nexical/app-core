@@ -1,28 +1,27 @@
-import { BaseCommand } from '../base';
+import { BaseCommand } from '../base.js';
 import chalk from 'chalk';
 import ora from 'ora';
-import fs from 'fs-extra';
+import fs from 'fs';
 import path from 'path';
-import YAML from 'yaml';
 import { Project, SourceFile } from 'ts-morph';
-import { z } from 'zod';
-import { PlatformDefinitionSchema, PlatformApiDefinitionSchema } from '../../schema';
+import YAML from 'yaml';
+import { PlatformDefinitionSchema, PlatformApiDefinitionSchema } from '../../schema.js';
 
 // Builders
-import { ModelParser } from '../../engine/model-parser';
-import { ServiceBuilder } from '../../engine/builders/service-builder';
-import { ApiBuilder } from '../../engine/builders/api-builder';
-import { SdkBuilder } from '../../engine/builders/sdk-builder';
-import { SdkIndexBuilder } from '../../engine/builders/sdk-index-builder';
-import { InitBuilder } from '../../engine/builders/init-builder';
-import { TestBuilder } from '../../engine/builders/test-builder';
-import { ActionBuilder } from '../../engine/builders/action-builder';
-import { TypeBuilder } from '../../engine/builders/type-builder';
-import { FactoryBuilder } from '../../engine/builders/factory-builder';
-import { ActorBuilder } from '../../engine/builders/actor-builder';
-import { ActorTypeBuilder } from '../../engine/builders/actor-type-builder';
-import { type CustomRoute, type ModelDef } from '../../engine/types';
-import { ModuleLocator } from '../../lib/module-locator';
+import { ModelParser } from '../../engine/model-parser.js';
+import { ServiceBuilder } from '../../engine/builders/service-builder.js';
+import { ApiBuilder } from '../../engine/builders/api-builder.js';
+import { SdkBuilder } from '../../engine/builders/sdk-builder.js';
+import { SdkIndexBuilder } from '../../engine/builders/sdk-index-builder.js';
+import { InitBuilder } from '../../engine/builders/init-builder.js';
+import { TestBuilder } from '../../engine/builders/test-builder.js';
+import { ActionBuilder } from '../../engine/builders/action-builder.js';
+import { TypeBuilder } from '../../engine/builders/type-builder.js';
+import { FactoryBuilder } from '../../engine/builders/factory-builder.js';
+import { ActorBuilder } from '../../engine/builders/actor-builder.js';
+import { ActorTypeBuilder } from '../../engine/builders/actor-type-builder.js';
+import { type ModelDef, type CustomRoute } from '../../engine/types.js';
+import { ModuleLocator } from '../../lib/module-locator.js';
 
 export class AuditApiCommand extends BaseCommand {
   constructor() {
@@ -61,13 +60,13 @@ export class AuditApiCommand extends BaseCommand {
     const spinner = ora('Auditing modules...').start();
 
     for (const moduleName of modules) {
-      spinner.text = `Auditing module: ${moduleName}`;
+      spinner.text = `Auditing module: ${moduleName} `;
       const issues = await this.auditModule(moduleName, options.schema || false);
       totalIssues = totalIssues.concat(issues);
     }
 
     if (totalIssues.length > 0) {
-      spinner.fail(chalk.red(`Audit failed with ${totalIssues.length} issues:`));
+      spinner.fail(chalk.red(`Audit failed with ${totalIssues.length} issues: `));
       totalIssues.forEach((issue) => console.log(issue));
       process.exitCode = 1;
     } else {
@@ -81,12 +80,12 @@ export class AuditApiCommand extends BaseCommand {
     const apiPath = path.join(moduleDir, 'api.yaml');
 
     const issues: string[] = [];
-    const report = (msg: string) => issues.push(`[${name}] ${msg}`);
+    const report = (msg: string) => issues.push(`[${name}] ${msg} `);
 
     try {
       // 1. Schema Validation
       if (!fs.existsSync(modelsPath)) {
-        report(`models.yaml not found at: ${modelsPath}`);
+        report(`models.yaml not found at: ${modelsPath} `);
         return issues;
       }
 
@@ -95,16 +94,16 @@ export class AuditApiCommand extends BaseCommand {
       try {
         parsedModels = YAML.parse(modelsContent);
       } catch (e: any) {
-        report(`Failed to parse models.yaml: ${e.message}`);
+        report(`Failed to parse models.yaml: ${e.message} `);
         return issues;
       }
 
       // Validate against Zod Schema
       const modelResult = PlatformDefinitionSchema.safeParse(parsedModels);
       if (!modelResult.success) {
-        report(chalk.bold.red(`[Schema] models.yaml validation errors:`));
+        report(chalk.bold.red(`[Schema] models.yaml validation errors: `));
         modelResult.error.errors.forEach((err) => {
-          report(chalk.red(`  Path: ${err.path.join('.')} - ${err.message}`));
+          report(chalk.red(`  Path: ${err.path.join('.')} - ${err.message} `));
         });
       }
 
@@ -116,13 +115,13 @@ export class AuditApiCommand extends BaseCommand {
           const apiResult = PlatformApiDefinitionSchema.safeParse(parsedApi);
 
           if (!apiResult.success) {
-            report(chalk.bold.red(`[Schema] api.yaml validation errors:`));
+            report(chalk.bold.red(`[Schema] api.yaml validation errors: `));
             apiResult.error.errors.forEach((err) => {
-              report(chalk.red(`  Path: ${err.path.join('.')} - ${err.message}`));
+              report(chalk.red(`  Path: ${err.path.join('.')} - ${err.message} `));
             });
           }
         } catch (e: any) {
-          report(chalk.red(`[Schema] Failed to parse api.yaml: ${e.message}`));
+          report(chalk.red(`[Schema] Failed to parse api.yaml: ${e.message} `));
         }
       }
 
@@ -196,7 +195,7 @@ export class AuditApiCommand extends BaseCommand {
               if (!validRoles.has(r)) {
                 report(
                   chalk.red(
-                    `[Semantic] Model '${modelName}' has unknown role '${r}'. Valid: ${Array.from(validRoles).join(', ')}`,
+                    `[Semantic] Model '${modelName}' has unknown role '${r}'.Valid: ${Array.from(validRoles).join(', ')} `,
                   ),
                 );
               }
@@ -213,7 +212,7 @@ export class AuditApiCommand extends BaseCommand {
 
           for (const [entityName, routes] of Object.entries(parsedApi)) {
             routes.forEach((route, idx) => {
-              const label = `api.yaml [${entityName}][${idx}] ${route.path}`;
+              const label = `api.yaml[${entityName}][${idx}] ${route.path} `;
 
               // Check Input Type
               if (route.input) {
@@ -242,14 +241,14 @@ export class AuditApiCommand extends BaseCommand {
                 if (!validRoles.has(route.role)) {
                   report(
                     chalk.red(
-                      `[Semantic] ${label} has unknown role '${route.role}'. Valid: ${Array.from(validRoles).join(', ')}`,
+                      `[Semantic] ${label} has unknown role '${route.role}'.Valid: ${Array.from(validRoles).join(', ')} `,
                     ),
                   );
                 }
               }
             });
           }
-        } catch (e) {
+        } catch {
           // Parsed before, redundant catch but safe
         }
       }
@@ -279,7 +278,7 @@ export class AuditApiCommand extends BaseCommand {
       const getFile = (relPath: string): SourceFile | undefined => {
         const absPath = path.join(moduleDir, relPath);
         if (!fs.existsSync(absPath)) {
-          report(`[Missing] ${relPath}`);
+          report(`[Missing] ${relPath} `);
           return undefined;
         }
         return project.addSourceFileAtPath(absPath);
@@ -289,7 +288,7 @@ export class AuditApiCommand extends BaseCommand {
         if (!file) return;
         const res = builder.validate(file);
         if (!res.valid) {
-          res.issues.forEach((i: string) => report(`[${label}] ${i}`));
+          res.issues.forEach((i: string) => report(`[${label}] ${i} `));
         }
       };
 
@@ -311,8 +310,8 @@ export class AuditApiCommand extends BaseCommand {
         if (model.db) {
           validate(
             new ServiceBuilder(model),
-            getFile(`src/services/${kebabName}-service.ts`),
-            `${entityName}Service`,
+            getFile(`src / services / ${kebabName} -service.ts`),
+            `${entityName} Service`,
           );
         }
 
@@ -320,7 +319,7 @@ export class AuditApiCommand extends BaseCommand {
           if (model.db) {
             validate(
               new ApiBuilder(model, models, name, 'collection'),
-              getFile(`src/pages/api/${kebabName}/index.ts`),
+              getFile(`src / pages / api / ${kebabName}/index.ts`),
               `${entityName}API List`,
             );
             validate(

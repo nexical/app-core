@@ -1,13 +1,11 @@
-import { SourceFile } from 'ts-morph';
 import {
   type ModelDef,
   type FileDefinition,
   type VariableConfig,
   type ImportConfig,
   type CustomRoute,
-} from '../types';
-import { Reconciler } from '../reconciler';
-import { BaseBuilder } from './base-builder';
+} from '../types.js';
+import { BaseBuilder } from './base-builder.js';
 
 export class ApiBuilder extends BaseBuilder {
   constructor(

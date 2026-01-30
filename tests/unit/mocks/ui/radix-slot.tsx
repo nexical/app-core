@@ -13,6 +13,7 @@ export const Slot = React.forwardRef<HTMLElement, any>(({ children, ...props }, 
   }
   return null;
 });
+Slot.displayName = 'Slot';
 
 export const Root = Slot;
 

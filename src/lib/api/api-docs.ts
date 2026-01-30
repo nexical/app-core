@@ -2,7 +2,6 @@ import type { APIRoute, APIContext } from 'astro';
 
 import { getApiModules } from '../core/glob-helper';
 
-// @ts-ignore
 const allApiModules = getApiModules();
 
 export type ApiActor = App.Locals['actor'];

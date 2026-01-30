@@ -5,11 +5,11 @@ import {
   ClassDeclaration,
   ModuleDeclaration,
 } from 'ts-morph';
-import { BasePrimitive } from '../core/base-primitive';
-import { type ValidationResult } from '../contracts';
-import { type ClassConfig } from '../../types';
-import { DecoratorPrimitive } from './decorator';
-import { JSDocPrimitive } from './docs';
+import { BasePrimitive } from '../core/base-primitive.js';
+import { type ValidationResult } from '../contracts.js';
+import { type ClassConfig } from '../../types.js';
+import { DecoratorPrimitive } from './decorator.js';
+import { JSDocPrimitive } from './docs.js';
 
 export class ClassPrimitive extends BasePrimitive<ClassDeclaration, ClassConfig> {
   find(parent: SourceFile | ModuleDeclaration) {

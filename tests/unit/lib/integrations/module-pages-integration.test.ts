@@ -3,7 +3,6 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import integration from '../../../../src/lib/integrations/module-pages-integration';
 import { ModuleDiscovery } from '../../../../src/lib/modules/module-discovery';
 import fs from 'node:fs';
-import path from 'node:path';
 
 vi.mock('node:fs', () => ({
   default: {

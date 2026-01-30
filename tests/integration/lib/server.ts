@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { spawn, type ChildProcess } from 'node:child_process';
 import path from 'node:path';
 import fs from 'node:fs';

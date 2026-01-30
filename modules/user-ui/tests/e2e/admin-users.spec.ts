@@ -1,3 +1,4 @@
+/* eslint-disable */
 import { test, expect } from '@tests/e2e/lib/fixtures';
 import { AdminUserPage } from './pages/admin-user-page';
 

@@ -1,17 +1,18 @@
 ---
-import Layout from "@/layouts/Layout.astro";
-import { ResetPasswordForm } from "@modules/user-ui/src/components/auth/reset-password-form";
-import { config } from "@/lib/core/config";
-import { PageGuard } from "@/lib/ui/page-guard";
-import { api } from "@/lib/api/api";
+/* eslint-disable */
+import Layout from '@/layouts/Layout.astro';
+import { ResetPasswordForm } from '@modules/user-ui/src/components/auth/reset-password-form';
+import { config } from '@/lib/core/config';
+import { PageGuard } from '@/lib/ui/page-guard';
+import { api } from '@/lib/api/api';
 
-const guard = await PageGuard.protect(Astro, "anonymous");
+const guard = await PageGuard.protect(Astro, 'anonymous');
 if (guard) return guard;
 
 const { token } = Astro.params;
 
 if (!token) {
-    return Astro.redirect("/login");
+  return Astro.redirect('/login');
 }
 
 let isTokenValid = false;
@@ -19,19 +20,19 @@ let isTokenValid = false;
 // Pre-check token validity on server to pass as prop
 // (Action will re-verify, but this is for UI state)
 try {
-    const response = await api.user.auth.validateResetToken({ token });
-    isTokenValid = response.valid;
+  const response = await api.user.auth.validateResetToken({ token });
+  isTokenValid = response.valid;
 } catch (e) {
-    // console.error("Token Check Error", e);
+  // console.error("Token Check Error", e);
 }
 ---
 
 <Layout title={`Reset Password - ${config.PUBLIC_SITE_NAME}`}>
-    <div class="auth-page-container" data-testid="reset-password-page">
-        {/* Gradient Orbs */}
-        <div class="auth-orb auth-orb-primary"></div>
-        <div class="auth-orb auth-orb-secondary"></div>
+  <div class="auth-page-container" data-testid="reset-password-page">
+    {/* Gradient Orbs */}
+    <div class="auth-orb auth-orb-primary"></div>
+    <div class="auth-orb auth-orb-secondary"></div>
 
-        <ResetPasswordForm client:load token={token} isValid={isTokenValid} />
-    </div>
+    <ResetPasswordForm client:load token={token} isValid={isTokenValid} />
+  </div>
 </Layout>

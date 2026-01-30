@@ -7,7 +7,6 @@ import node from '@astrojs/node';
 
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import fs from 'node:fs';
 import { defu } from 'defu';
 import modulePages from './src/lib/integrations/module-pages-integration.ts';
 import moduleEmailTheme from './src/lib/integrations/module-email-theme-integration.ts';

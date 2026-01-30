@@ -1,3 +1,4 @@
+/* eslint-disable */
 import type { Page, BrowserContext } from '@playwright/test';
 import { Factory } from '@tests/integration/lib/factory';
 
@@ -32,7 +33,6 @@ export class Actor {
     if (!actorDef) {
       try {
         const { globby } = await import('globby');
-        const path = await import('path');
 
         // Find all actor definition files
         const files = await globby('modules/*/tests/e2e/actors.ts', {

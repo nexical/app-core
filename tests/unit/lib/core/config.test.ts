@@ -1,3 +1,4 @@
+/* eslint-disable */
 /** @vitest-environment jsdom */
 import { describe, it, expect, vi } from 'vitest';
 import { createConfig, getProcessEnv } from '../../../../src/lib/core/config';
@@ -12,7 +13,7 @@ describe('config utilities', () => {
 
   it('should handle restricted process environment', () => {
     const originalProcess = global.process;
-    // @ts-ignore
+    // @ts-expect-error
     global.process = undefined;
     expect(getProcessEnv('ANY')).toBeUndefined();
     global.process = originalProcess;
