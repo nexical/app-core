@@ -1,7 +1,7 @@
-import type { ServiceResponse } from "@/types/service";
-import type { DeleteTokenDTO } from "../sdk/types";
-import { PersonalAccessTokenService } from "../services/personal-access-token-service";
-import type { APIContext } from "astro";
+import type { ServiceResponse } from '@/types/service';
+import type { DeleteTokenDTO } from '../sdk/types';
+import { PersonalAccessTokenService } from '../services/personal-access-token-service';
+import type { APIContext } from 'astro';
 
 export class DeleteTokenUserAction {
   public static async run(
@@ -9,8 +9,7 @@ export class DeleteTokenUserAction {
     context: APIContext,
   ): Promise<ServiceResponse<any>> {
     const { id, userId } = input;
-    if (!userId)
-      return { success: false, error: "user.service.error.missing_user_id" };
+    if (!userId) return { success: false, error: 'user.service.error.missing_user_id' };
 
     // Ownership Check via Service
     const exists = await PersonalAccessTokenService.list({
@@ -20,7 +19,7 @@ export class DeleteTokenUserAction {
     if (!exists.success || !exists.data || exists.data.length === 0) {
       return {
         success: false,
-        error: "user.service.error.token_not_found_or_unauthorized",
+        error: 'user.service.error.token_not_found_or_unauthorized',
       };
     }
 

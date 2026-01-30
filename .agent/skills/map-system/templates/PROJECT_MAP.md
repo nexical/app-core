@@ -4,31 +4,35 @@
 > This document provides a high-level map of the system's architecture, enforcing the "Modular Monolith" Canon.
 
 ## 1. System Core (The Shell)
-*   **Registry**: `src/registry/` - Dynamic loader for module content.
-*   **Shell Layout**: `src/components/shell/` - The immutable host.
+
+- **Registry**: `src/registry/` - Dynamic loader for module content.
+- **Shell Layout**: `src/components/shell/` - The immutable host.
 
 ## 2. Active Modules
 
 <!-- REPEAT FOR EACH MODULE IN modules/ -->
+
 ### [Module Name]
-*   **Path**: `modules/{name}/`
-*   **Description**: {description from package.json or "No description provided"}
-*   **API Routes** (`src/pages/api/`):
-    *   *Generated*: Main endpoints from `api.yaml`.
-    *   *Manual*: {List of manual escape-hatch routes, if any}
-*   **Actions** (`src/actions/`):
-    *   `{ActionName}` - {Description of the manual operation}
-*   **Services** (`src/services/`):
-    *   `{ServiceName}` - {Description of the manual domain logic. Note if missing ServiceResponse wrapper}
-*   **Agents** (`src/agent/`):
-    *   `{AgentName}` - {Description of background task or persistent actor}
-*   **Hooks** (`src/hooks/`):
-    *   `{HookFile}` - Listens to/Dispatches specific system events.
-*   **Roles** (`src/roles/`):
-    *   `{RoleName}` - {Policy description}
+
+- **Path**: `modules/{name}/`
+- **Description**: {description from package.json or "No description provided"}
+- **API Routes** (`src/pages/api/`):
+  - _Generated_: Main endpoints from `api.yaml`.
+  - _Manual_: {List of manual escape-hatch routes, if any}
+- **Actions** (`src/actions/`):
+  - `{ActionName}` - {Description of the manual operation}
+- **Services** (`src/services/`):
+  - `{ServiceName}` - {Description of the manual domain logic. Note if missing ServiceResponse wrapper}
+- **Agents** (`src/agent/`):
+  - `{AgentName}` - {Description of background task or persistent actor}
+- **Hooks** (`src/hooks/`):
+  - `{HookFile}` - Listens to/Dispatches specific system events.
+- **Roles** (`src/roles/`):
+  - `{RoleName}` - {Policy description}
 
 <!-- END MODULE REPEAT -->
 
 ## 3. Global Dependencies
-*   **Shared SDK**: `packages/sdk/`
-*   **Core Logic**: `packages/sdk-core/`
+
+- **Shared SDK**: `packages/sdk/`
+- **Core Logic**: `packages/sdk-core/`

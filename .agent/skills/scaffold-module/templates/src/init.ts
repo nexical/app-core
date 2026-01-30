@@ -6,15 +6,15 @@ import { HeadRegistry } from '@/lib/registries/head-registry';
  * Runs on both Server and Client.
  */
 export async function init() {
-    // 1. Register Shell Overrides
-    // ShellRegistry.register('custom', MyShell, (ctx) => ctx.url.pathname === '/custom');
+  // 1. Register Shell Overrides
+  // ShellRegistry.register('custom', MyShell, (ctx) => ctx.url.pathname === '/custom');
 
-    // 2. Register Global Head Items
-    HeadRegistry.register({
-        tag: 'meta',
-        props: { name: 'feature-flag', content: 'enabled' },
-        key: 'my-feature-flag'
-    });
+  // 2. Register Global Head Items
+  HeadRegistry.register({
+    tag: 'meta',
+    props: { name: 'feature-flag', content: 'enabled' },
+    key: 'my-feature-flag',
+  });
 }
 
 // Auto-execute

@@ -1,10 +1,10 @@
 // GENERATED CODE - DO NOT MODIFY
-import { db } from "@/lib/core/db";
-import { Logger } from "@/lib/core/logger";
-import type { ServiceResponse } from "@/types/service";
-import { HookSystem } from "@/lib/modules/hooks";
-import type { PersonalAccessToken, Prisma } from "@prisma/client";
-import type { ApiActor } from "@/lib/api/api-docs";
+import { db } from '@/lib/core/db';
+import { Logger } from '@/lib/core/logger';
+import type { ServiceResponse } from '@/types/service';
+import { HookSystem } from '@/lib/modules/hooks';
+import type { PersonalAccessToken, Prisma } from '@prisma/client';
+import type { ApiActor } from '@/lib/api/api-docs';
 
 // GENERATED CODE - DO NOT MODIFY
 /** Service class for PersonalAccessToken-related business logic. */
@@ -20,17 +20,14 @@ export class PersonalAccessTokenService {
         db.personalAccessToken.count({ where }),
       ]);
 
-      const filteredData = await HookSystem.filter(
-        "personalAccessToken.list",
-        data,
-      );
+      const filteredData = await HookSystem.filter('personalAccessToken.list', data);
 
       return { success: true, data: filteredData, total };
     } catch (error) {
-      Logger.error("PersonalAccessToken list Error", error);
+      Logger.error('PersonalAccessToken list Error', error);
       return {
         success: false,
-        error: "personalAccessToken.service.error.list_failed",
+        error: 'personalAccessToken.service.error.list_failed',
       };
     }
   }
@@ -47,20 +44,17 @@ export class PersonalAccessTokenService {
       if (!data)
         return {
           success: false,
-          error: "personalAccessToken.service.error.not_found",
+          error: 'personalAccessToken.service.error.not_found',
         };
 
-      const filtered = await HookSystem.filter(
-        "personalAccessToken.read",
-        data,
-      );
+      const filtered = await HookSystem.filter('personalAccessToken.read', data);
 
       return { success: true, data: filtered };
     } catch (error) {
-      Logger.error("PersonalAccessToken get Error", error);
+      Logger.error('PersonalAccessToken get Error', error);
       return {
         success: false,
-        error: "personalAccessToken.service.error.get_failed",
+        error: 'personalAccessToken.service.error.get_failed',
       };
     }
   }
@@ -71,34 +65,28 @@ export class PersonalAccessTokenService {
     actor?: ApiActor,
   ): Promise<ServiceResponse<PersonalAccessToken>> {
     try {
-      const input = await HookSystem.filter(
-        "personalAccessToken.beforeCreate",
-        data,
-      );
+      const input = await HookSystem.filter('personalAccessToken.beforeCreate', data);
 
       const newItem = await db.$transaction(async (tx) => {
         const created = await tx.personalAccessToken.create({
           data: input as any,
           select,
         });
-        await HookSystem.dispatch("personalAccessToken.created", {
+        await HookSystem.dispatch('personalAccessToken.created', {
           id: created.id,
-          actorId: "system",
+          actorId: 'system',
         });
         return created;
       });
 
-      const filtered = await HookSystem.filter(
-        "personalAccessToken.read",
-        newItem,
-      );
+      const filtered = await HookSystem.filter('personalAccessToken.read', newItem);
 
       return { success: true, data: filtered };
     } catch (error) {
-      Logger.error("PersonalAccessToken create Error", error);
+      Logger.error('PersonalAccessToken create Error', error);
       return {
         success: false,
-        error: "personalAccessToken.service.error.create_failed",
+        error: 'personalAccessToken.service.error.create_failed',
       };
     }
   }
@@ -110,10 +98,7 @@ export class PersonalAccessTokenService {
     actor?: ApiActor,
   ): Promise<ServiceResponse<PersonalAccessToken>> {
     try {
-      const input = await HookSystem.filter(
-        "personalAccessToken.beforeUpdate",
-        data,
-      );
+      const input = await HookSystem.filter('personalAccessToken.beforeUpdate', data);
 
       const updatedItem = await db.$transaction(async (tx) => {
         const updated = await tx.personalAccessToken.update({
@@ -121,24 +106,21 @@ export class PersonalAccessTokenService {
           data: input as any,
           select,
         });
-        await HookSystem.dispatch("personalAccessToken.updated", {
+        await HookSystem.dispatch('personalAccessToken.updated', {
           id,
           changes: Object.keys(input),
         });
         return updated;
       });
 
-      const filtered = await HookSystem.filter(
-        "personalAccessToken.read",
-        updatedItem,
-      );
+      const filtered = await HookSystem.filter('personalAccessToken.read', updatedItem);
 
       return { success: true, data: filtered };
     } catch (error) {
-      Logger.error("PersonalAccessToken update Error", error);
+      Logger.error('PersonalAccessToken update Error', error);
       return {
         success: false,
-        error: "personalAccessToken.service.error.update_failed",
+        error: 'personalAccessToken.service.error.update_failed',
       };
     }
   }
@@ -147,14 +129,14 @@ export class PersonalAccessTokenService {
     try {
       await db.$transaction(async (tx) => {
         await tx.personalAccessToken.delete({ where: { id } });
-        await HookSystem.dispatch("personalAccessToken.deleted", { id });
+        await HookSystem.dispatch('personalAccessToken.deleted', { id });
       });
       return { success: true };
     } catch (error) {
-      Logger.error("PersonalAccessToken delete Error", error);
+      Logger.error('PersonalAccessToken delete Error', error);
       return {
         success: false,
-        error: "personalAccessToken.service.error.delete_failed",
+        error: 'personalAccessToken.service.error.delete_failed',
       };
     }
   }

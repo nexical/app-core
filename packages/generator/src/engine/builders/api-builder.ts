@@ -1,140 +1,155 @@
-import { SourceFile } from "ts-morph";
-import { type ModelDef, type FileDefinition, type VariableConfig, type ImportConfig, type CustomRoute } from "../types";
-import { Reconciler } from "../reconciler";
-import { BaseBuilder } from "./base-builder";
+import { SourceFile } from 'ts-morph';
+import {
+  type ModelDef,
+  type FileDefinition,
+  type VariableConfig,
+  type ImportConfig,
+  type CustomRoute,
+} from '../types';
+import { Reconciler } from '../reconciler';
+import { BaseBuilder } from './base-builder';
 
 export class ApiBuilder extends BaseBuilder {
-    constructor(
-        private model: ModelDef,
-        private allModels: ModelDef[],
-        private moduleName: string, // e.g. "user-api"
-        private type: 'collection' | 'individual' | 'custom',
-        private routes?: CustomRoute[] // For custom type
-    ) {
-        super();
-    }
+  constructor(
+    private model: ModelDef,
+    private allModels: ModelDef[],
+    private moduleName: string, // e.g. "user-api"
+    private type: 'collection' | 'individual' | 'custom',
+    private routes?: CustomRoute[], // For custom type
+  ) {
+    super();
+  }
 
-    protected getSchema(node?: any): FileDefinition {
-        if (this.type === 'collection') {
-            return this.getCollectionSchema();
-        } else if (this.type === 'individual') {
-            return this.getIndividualSchema();
+  protected getSchema(node?: any): FileDefinition {
+    if (this.type === 'collection') {
+      return this.getCollectionSchema();
+    } else if (this.type === 'individual') {
+      return this.getIndividualSchema();
+    } else {
+      return this.getCustomSchema();
+    }
+  }
+
+  private getRole(action: string): string {
+    // ... existing getRole logic ...
+    const roleConfig = this.model.role;
+    if (!roleConfig) return 'member';
+    if (typeof roleConfig === 'string') return roleConfig;
+    return roleConfig[action] || 'member';
+  }
+
+  private generateZodSchema(): string {
+    // ... existing generateZodSchema logic ...
+    const fields = Object.entries(this.model.fields)
+      .filter(([name, f]) => {
+        const typeName = f.type.replace('[]', '');
+        const isModel = this.allModels.some((m) => m.name === typeName);
+        const isIdWithDefault =
+          name === 'id' && f.attributes?.some((a) => a.startsWith('@default'));
+        return (
+          (!['id', 'createdAt', 'updatedAt'].includes(name) ||
+            (name === 'id' && !isIdWithDefault)) &&
+          f.api !== false &&
+          !f.private &&
+          !f.isRelation &&
+          !isModel
+        );
+      })
+      .map(([name, f]) => {
+        let validator = 'z.';
+        if (f.isEnum) {
+          validator += `nativeEnum(${f.type})`;
         } else {
-            return this.getCustomSchema();
+          switch (f.type) {
+            case 'Int':
+              validator += 'number().int()';
+              break;
+            case 'Float':
+            case 'Decimal':
+              validator += 'number()';
+              break;
+            case 'Boolean':
+              validator += 'boolean()';
+              break;
+            case 'DateTime':
+              validator += 'string().datetime()';
+              break;
+            case 'Json':
+              validator += 'any()';
+              break;
+            default:
+              validator += 'string()';
+          }
         }
+        if (f.isList) {
+          validator = `z.array(${validator})`;
+        }
+        if (!f.isRequired || f.isRelation || f.attributes?.some((a) => a.startsWith('@default'))) {
+          validator += '.optional()';
+        }
+        return `${name}: ${validator}`;
+      });
+
+    if (fields.length === 0) {
+      return `z.object({}).passthrough()`;
     }
 
-    private getRole(action: string): string {
-        // ... existing getRole logic ...
-        const roleConfig = this.model.role;
-        if (!roleConfig) return 'member';
-        if (typeof roleConfig === 'string') return roleConfig;
-        return roleConfig[action] || 'member';
-    }
-
-    private generateZodSchema(): string {
-        // ... existing generateZodSchema logic ...
-        const fields = Object.entries(this.model.fields)
-            .filter(([name, f]) => {
-                const typeName = f.type.replace('[]', '');
-                const isModel = this.allModels.some(m => m.name === typeName);
-                const isIdWithDefault = name === 'id' && f.attributes?.some(a => a.startsWith('@default'));
-                return (!['id', 'createdAt', 'updatedAt'].includes(name) || (name === 'id' && !isIdWithDefault)) &&
-                    f.api !== false && !f.private && !f.isRelation && !isModel;
-            })
-            .map(([name, f]) => {
-                let validator = 'z.';
-                if (f.isEnum) {
-                    validator += `nativeEnum(${f.type})`;
-                } else {
-                    switch (f.type) {
-                        case 'Int':
-                            validator += 'number().int()';
-                            break;
-                        case 'Float':
-                        case 'Decimal':
-                            validator += 'number()';
-                            break;
-                        case 'Boolean':
-                            validator += 'boolean()';
-                            break;
-                        case 'DateTime':
-                            validator += 'string().datetime()';
-                            break;
-                        case 'Json':
-                            validator += 'any()';
-                            break;
-                        default:
-                            validator += 'string()';
-                    }
-                }
-                if (f.isList) {
-                    validator = `z.array(${validator})`;
-                }
-                if (!f.isRequired || f.isRelation || f.attributes?.some(a => a.startsWith('@default'))) {
-                    validator += '.optional()';
-                }
-                return `${name}: ${validator}`;
-            });
-
-        if (fields.length === 0) {
-            return `z.object({}).passthrough()`;
-        }
-
-        return `z.object({
+    return `z.object({
         ${fields.join(',\n        ')}
     })`;
-    }
+  }
 
-    private generateSelectObject(): string {
-        const fields = Object.entries(this.model.fields)
-            .filter(([name, f]) => f.api !== false && !f.private)
-            .map(([name, f]) => {
-                const props: string[] = [];
+  private generateSelectObject(): string {
+    const fields = Object.entries(this.model.fields)
+      .filter(([name, f]) => f.api !== false && !f.private)
+      .map(([name, f]) => {
+        const props: string[] = [];
 
-                // Performance: Limit relation lists
-                // Robust check for list types (handle arrays or explicit isList flag)
-                if (f.isRelation && (f.isList || f.type.trim().endsWith('[]'))) {
-                    // Default limit for nested lists to prevent performance issues
-                    props.push('take: 10');
-                }
+        // Performance: Limit relation lists
+        // Robust check for list types (handle arrays or explicit isList flag)
+        if (f.isRelation && (f.isList || f.type.trim().endsWith('[]'))) {
+          // Default limit for nested lists to prevent performance issues
+          props.push('take: 10');
+        }
 
-                // Security: Filter private fields in relations
-                if (f.isRelation && f.relationTo) {
-                    const targetModel = this.allModels.find(m => m.name === f.relationTo);
-                    if (targetModel) {
-                        const privateFields = Object.values(targetModel.fields).filter(tf => tf.private || tf.api === false);
-                        if (privateFields.length > 0) {
-                            const targetFields = Object.entries(targetModel.fields)
-                                .filter(([_, tf]) => tf.api !== false && !tf.private)
-                                .map(([tfName]) => `${tfName}: true`);
+        // Security: Filter private fields in relations
+        if (f.isRelation && f.relationTo) {
+          const targetModel = this.allModels.find((m) => m.name === f.relationTo);
+          if (targetModel) {
+            const privateFields = Object.values(targetModel.fields).filter(
+              (tf) => tf.private || tf.api === false,
+            );
+            if (privateFields.length > 0) {
+              const targetFields = Object.entries(targetModel.fields)
+                .filter(([_, tf]) => tf.api !== false && !tf.private)
+                .map(([tfName]) => `${tfName}: true`);
 
-                            props.push(`select: {
+              props.push(`select: {
                     ${targetFields.join(',\n                    ')}
                 }`);
-                        }
-                    }
-                }
+            }
+          }
+        }
 
-                if (props.length > 0) {
-                    return `${name}: { ${props.join(', ')} }`;
-                }
+        if (props.length > 0) {
+          return `${name}: { ${props.join(', ')} }`;
+        }
 
-                return `${name}: true`;
-            });
+        return `${name}: true`;
+      });
 
-        if (fields.length === 0) return '{}';
+    if (fields.length === 0) return '{}';
 
-        return `{
+    return `{
             ${fields.join(',\n            ')}
         }`;
-    }
+  }
 
-    private generateResponseSchema(modelName: string, isList: boolean = false): string {
-        const jsonSchema = this.generateJsonSchema(modelName);
+  private generateResponseSchema(modelName: string, isList: boolean = false): string {
+    const jsonSchema = this.generateJsonSchema(modelName);
 
-        if (isList) {
-            return `{
+    if (isList) {
+      return `{
                 type: "object",
                 properties: {
                     data: {
@@ -149,83 +164,101 @@ export class ApiBuilder extends BaseBuilder {
                     }
                 }
             }`;
-        }
-
-        return jsonSchema;
     }
 
-    private getCollectionSchema(): FileDefinition {
-        // ... existing getCollectionSchema logic ...
-        const entityName = this.model.name;
-        const serviceName = `${entityName}Service`;
-        const kebabName = entityName.replace(/([a-z])([A-Z])/g, "$1-$2").replace(/[\s_]+/g, '-').toLowerCase();
-        const serviceImport = `@modules/${this.moduleName}/src/services/${kebabName}-service`;
+    return jsonSchema;
+  }
 
-        const listRole = this.getRole('list');
-        const createRole = this.getRole('create');
+  private getCollectionSchema(): FileDefinition {
+    // ... existing getCollectionSchema logic ...
+    const entityName = this.model.name;
+    const serviceName = `${entityName}Service`;
+    const kebabName = entityName
+      .replace(/([a-z])([A-Z])/g, '$1-$2')
+      .replace(/[\s_]+/g, '-')
+      .toLowerCase();
+    const serviceImport = `@modules/${this.moduleName}/src/services/${kebabName}-service`;
 
-        const filterFields = Object.entries(this.model.fields)
-            .filter(([_, f]) => (f.type === 'String' || f.type === 'Boolean' || f.type === 'Int' || f.type === 'DateTime' || f.isEnum) && f.api !== false && !f.isList)
-            .map(([name, f]) => {
-                let type = f.type.toLowerCase();
-                if (f.type === 'Int') type = 'number';
-                if (f.type === 'DateTime') type = 'date';
-                if (f.isEnum) type = 'enum';
-                return `${name}: '${type}'`;
-            })
-            .join(',\n        ');
+    const listRole = this.getRole('list');
+    const createRole = this.getRole('create');
 
-        const searchFields = Object.entries(this.model.fields)
-            .filter(([_, f]) => f.type === 'String' && f.api !== false && !f.isList)
-            .map(([name]) => `'${name}'`)
-            .join(', ');
+    const filterFields = Object.entries(this.model.fields)
+      .filter(
+        ([_, f]) =>
+          (f.type === 'String' ||
+            f.type === 'Boolean' ||
+            f.type === 'Int' ||
+            f.type === 'DateTime' ||
+            f.isEnum) &&
+          f.api !== false &&
+          !f.isList,
+      )
+      .map(([name, f]) => {
+        let type = f.type.toLowerCase();
+        if (f.type === 'Int') type = 'number';
+        if (f.type === 'DateTime') type = 'date';
+        if (f.isEnum) type = 'enum';
+        return `${name}: '${type}'`;
+      })
+      .join(',\n        ');
 
-        const zodSchema = this.generateZodSchema();
-        const selectObject = this.generateSelectObject();
+    const searchFields = Object.entries(this.model.fields)
+      .filter(([_, f]) => f.type === 'String' && f.api !== false && !f.isList)
+      .map(([name]) => `'${name}'`)
+      .join(', ');
 
-        const jsonSchema = this.generateJsonSchema(this.model.name);
-        const listResponseSchema = this.generateResponseSchema(this.model.name, true);
+    const zodSchema = this.generateZodSchema();
+    const selectObject = this.generateSelectObject();
 
-        // Generate allowed operators docs
-        const parameterDocs: string[] = [];
-        parameterDocs.push('{ name: "take", in: "query", schema: { type: "integer" } }');
-        parameterDocs.push('{ name: "skip", in: "query", schema: { type: "integer" } }');
-        parameterDocs.push('{ name: "search", in: "query", schema: { type: "string" } }');
-        parameterDocs.push('{ name: "orderBy", in: "query", schema: { type: "string" }, description: "Ordering (format: field:asc or field:desc)" }');
+    const jsonSchema = this.generateJsonSchema(this.model.name);
+    const listResponseSchema = this.generateResponseSchema(this.model.name, true);
 
-        for (const [name, f] of Object.entries(this.model.fields)) {
-            if (f.api === false) continue;
+    // Generate allowed operators docs
+    const parameterDocs: string[] = [];
+    parameterDocs.push('{ name: "take", in: "query", schema: { type: "integer" } }');
+    parameterDocs.push('{ name: "skip", in: "query", schema: { type: "integer" } }');
+    parameterDocs.push('{ name: "search", in: "query", schema: { type: "string" } }');
+    parameterDocs.push(
+      '{ name: "orderBy", in: "query", schema: { type: "string" }, description: "Ordering (format: field:asc or field:desc)" }',
+    );
 
-            let type = 'string';
-            let operators = ['eq', 'ne', 'in']; // Default (Enum)
+    for (const [name, f] of Object.entries(this.model.fields)) {
+      if (f.api === false) continue;
 
-            if (f.type === 'String') {
-                operators = ['eq', 'ne', 'contains', 'startsWith', 'endsWith', 'in'];
-            } else if (f.type === 'Int' || f.type === 'Float') {
-                type = 'number';
-                operators = ['eq', 'ne', 'gt', 'gte', 'lt', 'lte', 'in'];
-            } else if (f.type === 'Boolean') {
-                type = 'boolean';
-                operators = ['eq', 'ne'];
-            } else if (f.type === 'DateTime') {
-                operators = ['eq', 'ne', 'gt', 'gte', 'lt', 'lte', 'in'];
-            }
+      let type = 'string';
+      let operators = ['eq', 'ne', 'in']; // Default (Enum)
 
-            for (const op of operators) {
-                parameterDocs.push(`{ name: "${name}.${op}", in: "query", schema: { type: "${type}" }, required: false, description: "Filter by ${name} (${op})" }`);
-            }
-            // Add shorthand 'eq'
-            parameterDocs.push(`{ name: "${name}", in: "query", schema: { type: "${type}" }, required: false, description: "Filter by ${name} (eq)" }`);
-        }
+      if (f.type === 'String') {
+        operators = ['eq', 'ne', 'contains', 'startsWith', 'endsWith', 'in'];
+      } else if (f.type === 'Int' || f.type === 'Float') {
+        type = 'number';
+        operators = ['eq', 'ne', 'gt', 'gte', 'lt', 'lte', 'in'];
+      } else if (f.type === 'Boolean') {
+        type = 'boolean';
+        operators = ['eq', 'ne'];
+      } else if (f.type === 'DateTime') {
+        operators = ['eq', 'ne', 'gt', 'gte', 'lt', 'lte', 'in'];
+      }
 
-        const variables: VariableConfig[] = [];
+      for (const op of operators) {
+        parameterDocs.push(
+          `{ name: "${name}.${op}", in: "query", schema: { type: "${type}" }, required: false, description: "Filter by ${name} (${op})" }`,
+        );
+      }
+      // Add shorthand 'eq'
+      parameterDocs.push(
+        `{ name: "${name}", in: "query", schema: { type: "${type}" }, required: false, description: "Filter by ${name} (eq)" }`,
+      );
+    }
 
-        if (listRole !== 'none') {
-            variables.push({
-                name: 'GET',
-                declarationKind: 'const',
-                isExported: true,
-                initializer: `defineApi(async (context) => {
+    const variables: VariableConfig[] = [];
+
+    if (listRole !== 'none') {
+      variables.push({
+        name: 'GET',
+        declarationKind: 'const',
+        isExported: true,
+        initializer: `defineApi(async (context) => {
     const filterOptions = {
         fields: {
             ${filterFields}
@@ -271,16 +304,16 @@ export class ApiBuilder extends BaseBuilder {
             }
         }
     }${listRole === 'anonymous' ? ',\n    protected: false' : ''}
-})`
-            });
-        }
+})`,
+      });
+    }
 
-        if (createRole !== 'none') {
-            variables.push({
-                name: 'POST',
-                declarationKind: 'const',
-                isExported: true,
-                initializer: `defineApi(async (context) => {
+    if (createRole !== 'none') {
+      variables.push({
+        name: 'POST',
+        declarationKind: 'const',
+        isExported: true,
+        initializer: `defineApi(async (context) => {
     const body = await context.request.json();
     
     // Security Check
@@ -325,61 +358,69 @@ export class ApiBuilder extends BaseBuilder {
             }
         }
     }${createRole === 'anonymous' ? ',\n    protected: false' : ''}
-})`
-            });
-        }
-
-        const usedEnums = Object.values(this.model.fields)
-            .filter(f => f.isEnum && f.api !== false && !f.private)
-            .map(f => f.type)
-            .filter((value, index, self) => self.indexOf(value) === index);
-
-        const imports: ImportConfig[] = [
-            { moduleSpecifier: "@/lib/api/api-docs", namedImports: ["defineApi"] },
-            { moduleSpecifier: "@/lib/api/api-guard", namedImports: ["ApiGuard"] },
-            { moduleSpecifier: "@/lib/api/api-query", namedImports: ["parseQuery"] },
-            { moduleSpecifier: "@/lib/modules/hooks", namedImports: ["HookSystem"] },
-            { moduleSpecifier: "zod", namedImports: ["z"] },
-            { moduleSpecifier: serviceImport, namedImports: [serviceName] }
-        ];
-
-        if (usedEnums.length > 0) {
-            imports.push({ moduleSpecifier: `@modules/${this.moduleName}/src/sdk/index`, namedImports: usedEnums });
-        }
-
-        return {
-            header: "// GENERATED CODE - DO NOT MODIFY",
-            imports,
-            variables
-        };
+})`,
+      });
     }
 
-    private getIndividualSchema(): FileDefinition {
-        // ... existing getIndividualSchema logic ...
-        const entityName = this.model.name;
-        const serviceName = `${entityName}Service`;
-        const kebabName = entityName.replace(/([a-z])([A-Z])/g, "$1-$2").replace(/[\s_]+/g, '-').toLowerCase();
-        const serviceImport = `@modules/${this.moduleName}/src/services/${kebabName}-service`;
+    const usedEnums = Object.values(this.model.fields)
+      .filter((f) => f.isEnum && f.api !== false && !f.private)
+      .map((f) => f.type)
+      .filter((value, index, self) => self.indexOf(value) === index);
 
-        const getRole = this.getRole('get');
-        const updateRole = this.getRole('update');
-        const deleteRole = this.getRole('delete');
+    const imports: ImportConfig[] = [
+      { moduleSpecifier: '@/lib/api/api-docs', namedImports: ['defineApi'] },
+      { moduleSpecifier: '@/lib/api/api-guard', namedImports: ['ApiGuard'] },
+      { moduleSpecifier: '@/lib/api/api-query', namedImports: ['parseQuery'] },
+      { moduleSpecifier: '@/lib/modules/hooks', namedImports: ['HookSystem'] },
+      { moduleSpecifier: 'zod', namedImports: ['z'] },
+      { moduleSpecifier: serviceImport, namedImports: [serviceName] },
+    ];
 
-        const zodSchema = this.generateZodSchema().replace(/z\.object\({/, 'z.object({').replace(/}\)$/, '}).partial()');
-        const selectObject = this.generateSelectObject();
+    if (usedEnums.length > 0) {
+      imports.push({
+        moduleSpecifier: `@modules/${this.moduleName}/src/sdk/index`,
+        namedImports: usedEnums,
+      });
+    }
 
-        // Generate Partial JSON Schema for Update
-        const jsonSchema = this.generateJsonSchema(this.model.name);
-        const partialJsonSchema = jsonSchema.replace(/, required: \[.*?\]/, ''); // Remove required for partial update
+    return {
+      header: '// GENERATED CODE - DO NOT MODIFY',
+      imports,
+      variables,
+    };
+  }
 
-        const variables: VariableConfig[] = [];
+  private getIndividualSchema(): FileDefinition {
+    // ... existing getIndividualSchema logic ...
+    const entityName = this.model.name;
+    const serviceName = `${entityName}Service`;
+    const kebabName = entityName
+      .replace(/([a-z])([A-Z])/g, '$1-$2')
+      .replace(/[\s_]+/g, '-')
+      .toLowerCase();
+    const serviceImport = `@modules/${this.moduleName}/src/services/${kebabName}-service`;
 
-        if (getRole !== 'none') {
-            variables.push({
-                name: 'GET',
-                declarationKind: 'const',
-                isExported: true,
-                initializer: `defineApi(async (context) => {
+    const getRole = this.getRole('get');
+    const updateRole = this.getRole('update');
+    const deleteRole = this.getRole('delete');
+
+    const zodSchema = this.generateZodSchema()
+      .replace(/z\.object\({/, 'z.object({')
+      .replace(/}\)$/, '}).partial()');
+    const selectObject = this.generateSelectObject();
+
+    // Generate Partial JSON Schema for Update
+    const jsonSchema = this.generateJsonSchema(this.model.name);
+    const partialJsonSchema = jsonSchema.replace(/, required: \[.*?\]/, ''); // Remove required for partial update
+
+    const variables: VariableConfig[] = [];
+
+    if (getRole !== 'none') {
+      variables.push({
+        name: 'GET',
+        declarationKind: 'const',
+        isExported: true,
+        initializer: `defineApi(async (context) => {
     const { id } = context.params;
     if (!id) return new Response(null, { status: 404 });
     
@@ -415,16 +456,16 @@ export class ApiBuilder extends BaseBuilder {
             }
         }
     }${getRole === 'anonymous' ? ',\n    protected: false' : ''}
-})`
-            });
-        }
+})`,
+      });
+    }
 
-        if (updateRole !== 'none') {
-            variables.push({
-                name: 'PUT',
-                declarationKind: 'const',
-                isExported: true,
-                initializer: `defineApi(async (context) => {
+    if (updateRole !== 'none') {
+      variables.push({
+        name: 'PUT',
+        declarationKind: 'const',
+        isExported: true,
+        initializer: `defineApi(async (context) => {
     const { id } = context.params;
     if (!id) return new Response(null, { status: 404 });
 
@@ -476,16 +517,16 @@ export class ApiBuilder extends BaseBuilder {
             }
         }
     }${updateRole === 'anonymous' ? ',\n    protected: false' : ''}
-})` // Line 303 end of getIndividualSchema logic replacement
-            });
-        }
+})`, // Line 303 end of getIndividualSchema logic replacement
+      });
+    }
 
-        if (deleteRole !== 'none') {
-            variables.push({
-                name: 'DELETE',
-                declarationKind: 'const',
-                isExported: true,
-                initializer: `defineApi(async (context) => {
+    if (deleteRole !== 'none') {
+      variables.push({
+        name: 'DELETE',
+        declarationKind: 'const',
+        isExported: true,
+        initializer: `defineApi(async (context) => {
     const { id } = context.params;
     if (!id) return new Response(null, { status: 404 });
 
@@ -527,152 +568,162 @@ export class ApiBuilder extends BaseBuilder {
             }
         }
     }${deleteRole === 'anonymous' ? ',\n    protected: false' : ''}
-})`
-            });
-        }
-
-        const usedEnums = Object.values(this.model.fields)
-            .filter(f => f.isEnum && f.api !== false && !f.private)
-            .map(f => f.type)
-            .filter((value, index, self) => self.indexOf(value) === index);
-
-        const imports: ImportConfig[] = [
-            { moduleSpecifier: "@/lib/api/api-docs", namedImports: ["defineApi"] },
-            { moduleSpecifier: "@/lib/api/api-guard", namedImports: ["ApiGuard"] },
-            { moduleSpecifier: "@/lib/modules/hooks", namedImports: ["HookSystem"] },
-            { moduleSpecifier: "zod", namedImports: ["z"] },
-            { moduleSpecifier: serviceImport, namedImports: [serviceName] }
-        ];
-
-        if (usedEnums.length > 0) {
-            imports.push({ moduleSpecifier: `@modules/${this.moduleName}/src/sdk/index`, namedImports: usedEnums });
-        }
-
-        return {
-            header: "// GENERATED CODE - DO NOT MODIFY",
-            imports,
-            variables
-        };
+})`,
+      });
     }
 
-    private generateJsonSchema(modelName: string): string {
-        const model = this.allModels.find(m => m.name === modelName);
-        if (!model) return '{ type: "object" }';
+    const usedEnums = Object.values(this.model.fields)
+      .filter((f) => f.isEnum && f.api !== false && !f.private)
+      .map((f) => f.type)
+      .filter((value, index, self) => self.indexOf(value) === index);
 
-        const properties: string[] = [];
-        const required: string[] = [];
+    const imports: ImportConfig[] = [
+      { moduleSpecifier: '@/lib/api/api-docs', namedImports: ['defineApi'] },
+      { moduleSpecifier: '@/lib/api/api-guard', namedImports: ['ApiGuard'] },
+      { moduleSpecifier: '@/lib/modules/hooks', namedImports: ['HookSystem'] },
+      { moduleSpecifier: 'zod', namedImports: ['z'] },
+      { moduleSpecifier: serviceImport, namedImports: [serviceName] },
+    ];
 
-        for (const [name, field] of Object.entries(model.fields)) {
-            if (field.api === false || field.private) continue;
+    if (usedEnums.length > 0) {
+      imports.push({
+        moduleSpecifier: `@modules/${this.moduleName}/src/sdk/index`,
+        namedImports: usedEnums,
+      });
+    }
 
-            let type = 'string';
-            let format = '';
+    return {
+      header: '// GENERATED CODE - DO NOT MODIFY',
+      imports,
+      variables,
+    };
+  }
 
-            if (field.type === 'Int' || field.type === 'Float') type = 'number';
-            else if (field.type === 'Boolean') type = 'boolean';
-            else if (field.type === 'Json') type = 'object';
-            else if (field.type === 'DateTime') {
-                type = 'string';
-                format = ', format: "date-time"';
-            }
+  private generateJsonSchema(modelName: string): string {
+    const model = this.allModels.find((m) => m.name === modelName);
+    if (!model) return '{ type: "object" }';
 
-            let schemaProp = `{ type: "${type}"${format} }`;
+    const properties: string[] = [];
+    const required: string[] = [];
 
-            if (field.isList) {
-                schemaProp = `{ type: "array", items: ${schemaProp} }`;
-            }
+    for (const [name, field] of Object.entries(model.fields)) {
+      if (field.api === false || field.private) continue;
 
-            properties.push(`${name}: ${schemaProp}`);
+      let type = 'string';
+      let format = '';
 
-            if (field.isRequired && !field.attributes?.some(a => a.startsWith('@default'))) {
-                required.push(`"${name}"`);
-            }
-        }
+      if (field.type === 'Int' || field.type === 'Float') type = 'number';
+      else if (field.type === 'Boolean') type = 'boolean';
+      else if (field.type === 'Json') type = 'object';
+      else if (field.type === 'DateTime') {
+        type = 'string';
+        format = ', format: "date-time"';
+      }
 
-        const requiredStr = required.length > 0 ? `, required: [${required.join(', ')}]` : '';
+      let schemaProp = `{ type: "${type}"${format} }`;
 
-        return `{
+      if (field.isList) {
+        schemaProp = `{ type: "array", items: ${schemaProp} }`;
+      }
+
+      properties.push(`${name}: ${schemaProp}`);
+
+      if (field.isRequired && !field.attributes?.some((a) => a.startsWith('@default'))) {
+        required.push(`"${name}"`);
+      }
+    }
+
+    const requiredStr = required.length > 0 ? `, required: [${required.join(', ')}]` : '';
+
+    return `{
             type: "object",
             properties: {
                 ${properties.join(',\n                ')}
             }${requiredStr}
         }`;
-    }
+  }
 
-    private getCustomSchema(): FileDefinition {
-        if (!this.routes || this.routes.length === 0) return { variables: [] };
+  private getCustomSchema(): FileDefinition {
+    if (!this.routes || this.routes.length === 0) return { variables: [] };
 
-        const variables: VariableConfig[] = [];
-        const imports: ImportConfig[] = [
-            { moduleSpecifier: "@/lib/api/api-docs", namedImports: ["defineApi"] },
-            { moduleSpecifier: "@/lib/api/api-guard", namedImports: ["ApiGuard"] },
-            { moduleSpecifier: "@/lib/modules/hooks", namedImports: ["HookSystem"] },
-        ];
+    const variables: VariableConfig[] = [];
+    const imports: ImportConfig[] = [
+      { moduleSpecifier: '@/lib/api/api-docs', namedImports: ['defineApi'] },
+      { moduleSpecifier: '@/lib/api/api-guard', namedImports: ['ApiGuard'] },
+      { moduleSpecifier: '@/lib/modules/hooks', namedImports: ['HookSystem'] },
+    ];
 
-        for (const route of this.routes) {
-            const { method, verb, input, output, role } = route;
-            console.log(`[ApiBuilder] Processing route: ${verb} ${method}, input: ${input}`);
-            const entityName = this.model.name;
-            // ... (rest of variable setup, entityName, etc)
-            const kebabName = entityName.replace(/([a-z])([A-Z])/g, "$1-$2").replace(/[\s_]+/g, '-').toLowerCase();
+    for (const route of this.routes) {
+      const { method, verb, input, output, role } = route;
+      console.log(`[ApiBuilder] Processing route: ${verb} ${method}, input: ${input}`);
+      const entityName = this.model.name;
+      // ... (rest of variable setup, entityName, etc)
+      const kebabName = entityName
+        .replace(/([a-z])([A-Z])/g, '$1-$2')
+        .replace(/[\s_]+/g, '-')
+        .toLowerCase();
 
-            const actionBase = route.action || `${method.replace(/([a-z])([A-Z])/g, "$1-$2").toLowerCase()}-${kebabName}`;
-            const actionClassName = route.action
-                ? route.action.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('') + 'Action'
-                : `${method.charAt(0).toUpperCase() + method.slice(1)}${entityName}Action`;
+      const actionBase =
+        route.action || `${method.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()}-${kebabName}`;
+      const actionClassName = route.action
+        ? route.action
+            .split('-')
+            .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+            .join('') + 'Action'
+        : `${method.charAt(0).toUpperCase() + method.slice(1)}${entityName}Action`;
 
-            const actionImport = `@modules/${this.moduleName}/src/actions/${actionBase}`;
+      const actionImport = `@modules/${this.moduleName}/src/actions/${actionBase}`;
 
-            if (!imports.find(i => i.moduleSpecifier === actionImport)) {
-                imports.push({ moduleSpecifier: actionImport, namedImports: [actionClassName] });
-            }
+      if (!imports.find((i) => i.moduleSpecifier === actionImport)) {
+        imports.push({ moduleSpecifier: actionImport, namedImports: [actionClassName] });
+      }
 
-            const inputType = input || 'any';
-            let requestBodySchema = '{ type: "object" }';
+      const inputType = input || 'any';
+      let requestBodySchema = '{ type: "object" }';
 
-            // Resolve schemas for DTOs
-            if (input && input !== 'any' && (input.endsWith('DTO') || input.endsWith('Input'))) {
-                const sdkTypes = `@modules/${this.moduleName}/src/sdk/index`;
-                const existing = imports.find(i => i.moduleSpecifier === sdkTypes);
-                if (existing) {
-                    if (!existing.namedImports?.includes(input)) existing.namedImports?.push(input);
-                } else {
-                    imports.push({ moduleSpecifier: sdkTypes, namedImports: [input], isTypeOnly: true });
-                }
-                requestBodySchema = this.generateJsonSchema(input);
-            }
+      // Resolve schemas for DTOs
+      if (input && input !== 'any' && (input.endsWith('DTO') || input.endsWith('Input'))) {
+        const sdkTypes = `@modules/${this.moduleName}/src/sdk/index`;
+        const existing = imports.find((i) => i.moduleSpecifier === sdkTypes);
+        if (existing) {
+          if (!existing.namedImports?.includes(input)) existing.namedImports?.push(input);
+        } else {
+          imports.push({ moduleSpecifier: sdkTypes, namedImports: [input], isTypeOnly: true });
+        }
+        requestBodySchema = this.generateJsonSchema(input);
+      }
 
-            let responseSchema = '{ type: "object" }';
-            if (output && output !== 'any') {
-                // Try to resolve output type schema
-                // If it's a model
-                if (this.allModels.some(m => m.name === output.replace('[]', ''))) {
-                    const isList = output.endsWith('[]');
-                    const modelName = output.replace('[]', '');
-                    const schema = this.generateJsonSchema(modelName);
-                    if (isList) {
-                        responseSchema = `{ type: "array", items: ${schema} }`;
-                    } else {
-                        responseSchema = schema;
-                    }
-                } else if (output.endsWith('DTO') || output.endsWith('Response')) {
-                    // Try generated schema for DTO
-                    const sdkTypes = `@modules/${this.moduleName}/src/sdk/index`;
-                    const existing = imports.find(i => i.moduleSpecifier === sdkTypes);
-                    if (existing) {
-                        if (!existing.namedImports?.includes(output)) existing.namedImports?.push(output);
-                    } else {
-                        imports.push({ moduleSpecifier: sdkTypes, namedImports: [output], isTypeOnly: true });
-                    }
-                    responseSchema = this.generateJsonSchema(output);
-                }
-            }
+      let responseSchema = '{ type: "object" }';
+      if (output && output !== 'any') {
+        // Try to resolve output type schema
+        // If it's a model
+        if (this.allModels.some((m) => m.name === output.replace('[]', ''))) {
+          const isList = output.endsWith('[]');
+          const modelName = output.replace('[]', '');
+          const schema = this.generateJsonSchema(modelName);
+          if (isList) {
+            responseSchema = `{ type: "array", items: ${schema} }`;
+          } else {
+            responseSchema = schema;
+          }
+        } else if (output.endsWith('DTO') || output.endsWith('Response')) {
+          // Try generated schema for DTO
+          const sdkTypes = `@modules/${this.moduleName}/src/sdk/index`;
+          const existing = imports.find((i) => i.moduleSpecifier === sdkTypes);
+          if (existing) {
+            if (!existing.namedImports?.includes(output)) existing.namedImports?.push(output);
+          } else {
+            imports.push({ moduleSpecifier: sdkTypes, namedImports: [output], isTypeOnly: true });
+          }
+          responseSchema = this.generateJsonSchema(output);
+        }
+      }
 
-            variables.push({
-                name: verb,
-                declarationKind: 'const',
-                isExported: true,
-                initializer: `defineApi(async (context) => {
+      variables.push({
+        name: verb,
+        declarationKind: 'const',
+        isExported: true,
+        initializer: `defineApi(async (context) => {
         // 1. Body Parsing (Input)
         const body = ${verb === 'GET' ? '{}' : 'await context.request.json()'} as ${inputType};
         const query = Object.fromEntries(new URL(context.request.url).searchParams);
@@ -704,15 +755,19 @@ export class ApiBuilder extends BaseBuilder {
 
         return { success: true, data: filteredResult.data };
     }, {
-        summary: "${route.summary || ""}",
+        summary: "${route.summary || ''}",
         tags: ["${this.model.name}"],
-        ${verb !== 'GET' ? `requestBody: {
+        ${
+          verb !== 'GET'
+            ? `requestBody: {
             content: {
                 "application/json": {
                     schema: ${requestBodySchema}
                 }
             }
-        },` : ''}
+        },`
+            : ''
+        }
         responses: {
             200: {
                 description: "OK",
@@ -723,15 +778,14 @@ export class ApiBuilder extends BaseBuilder {
                 }
             }
         }${role === 'anonymous' ? ',\n        protected: false' : ''}
-    })`
-
-            });
-        }
-
-        return {
-            header: "// GENERATED CODE - DO NOT MODIFY",
-            imports,
-            variables
-        };
+    })`,
+      });
     }
+
+    return {
+      header: '// GENERATED CODE - DO NOT MODIFY',
+      imports,
+      variables,
+    };
+  }
 }

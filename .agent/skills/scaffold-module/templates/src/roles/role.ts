@@ -1,5 +1,5 @@
-import type { RolePolicy } from "@/lib/registries/role-registry";
-import type { APIContext } from "astro";
+import type { RolePolicy } from '@/lib/registries/role-registry';
+import type { APIContext } from 'astro';
 
 export class MemberRole implements RolePolicy {
   /**
@@ -15,7 +15,7 @@ export class MemberRole implements RolePolicy {
 
     // Example resource-level check
     if (data?.teamId && actor.activeTeamId !== data.teamId) {
-        throw new Error('Forbidden: Context mismatch');
+      throw new Error('Forbidden: Context mismatch');
     }
   }
 }

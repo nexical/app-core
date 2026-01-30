@@ -1,40 +1,32 @@
-import type { ServiceResponse } from "@/types/service";
-import type { LoginDTO, User } from "../sdk/types";
-import { db } from "@/lib/core/db";
-import bcrypt from "bcryptjs";
-import type { APIContext } from "astro";
+import type { ServiceResponse } from '@/types/service';
+import type { LoginDTO, User } from '../sdk/types';
+import { db } from '@/lib/core/db';
+import bcrypt from 'bcryptjs';
+import type { APIContext } from 'astro';
 
 export class LoginAuthAction {
-  public static async run(
-    input: LoginDTO,
-    context: APIContext,
-  ): Promise<ServiceResponse<User>> {
+  public static async run(input: LoginDTO, context: APIContext): Promise<ServiceResponse<User>> {
     const { email, password } = input;
 
     if (!email || !password) {
-      return { success: false, error: "user.action.login.missing_credentials" };
+      return { success: false, error: 'user.action.login.missing_credentials' };
     }
 
     const normalizedEmail = email.toLowerCase();
     const user = await db.user.findFirst({
       where: {
-        OR: [
-          { email: { equals: normalizedEmail, mode: "insensitive" } },
-          { username: email },
-        ],
+        OR: [{ email: { equals: normalizedEmail, mode: 'insensitive' } }, { username: email }],
       },
     });
 
-    if (!user || user.status === "INACTIVE" || user.status === "BANNED") {
-      return { success: false, error: "user.action.login.invalid_credentials" };
+    if (!user || user.status === 'INACTIVE' || user.status === 'BANNED') {
+      return { success: false, error: 'user.action.login.invalid_credentials' };
     }
 
-    const isValid = user.password
-      ? await bcrypt.compare(password, user.password)
-      : false;
+    const isValid = user.password ? await bcrypt.compare(password, user.password) : false;
 
     if (!isValid) {
-      return { success: false, error: "user.action.login.invalid_credentials" };
+      return { success: false, error: 'user.action.login.invalid_credentials' };
     }
 
     // Return user data (stripping sensitive if needed, but User type usually implies full model,

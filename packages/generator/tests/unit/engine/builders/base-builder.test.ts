@@ -5,34 +5,34 @@ import { Reconciler } from '@nexical/generator/engine/reconciler';
 import { FileDefinition } from '@nexical/generator/engine/types';
 
 class TestBuilder extends BaseBuilder {
-    protected getSchema(): FileDefinition {
-        return {
-            classes: [{ name: 'TestClass' }]
-        };
-    }
+  protected getSchema(): FileDefinition {
+    return {
+      classes: [{ name: 'TestClass' }],
+    };
+  }
 }
 
 describe('BaseBuilder', () => {
-    let project: Project;
-    let sourceFile: SourceFile;
-    let builder: TestBuilder;
+  let project: Project;
+  let sourceFile: SourceFile;
+  let builder: TestBuilder;
 
-    beforeEach(() => {
-        project = new Project({ useInMemoryFileSystem: true });
-        sourceFile = project.createSourceFile('test.ts', '');
-        builder = new TestBuilder();
-        vi.spyOn(Reconciler, 'reconcile');
-        vi.spyOn(Reconciler, 'validate');
-    });
+  beforeEach(() => {
+    project = new Project({ useInMemoryFileSystem: true });
+    sourceFile = project.createSourceFile('test.ts', '');
+    builder = new TestBuilder();
+    vi.spyOn(Reconciler, 'reconcile');
+    vi.spyOn(Reconciler, 'validate');
+  });
 
-    it('should call Reconciler.reconcile in ensure', () => {
-        builder.ensure(sourceFile);
-        expect(Reconciler.reconcile).toHaveBeenCalledWith(sourceFile, expect.any(Object));
-        expect(sourceFile.getClass('TestClass')).toBeDefined();
-    });
+  it('should call Reconciler.reconcile in ensure', () => {
+    builder.ensure(sourceFile);
+    expect(Reconciler.reconcile).toHaveBeenCalledWith(sourceFile, expect.any(Object));
+    expect(sourceFile.getClass('TestClass')).toBeDefined();
+  });
 
-    it('should call Reconciler.validate in validate', () => {
-        builder.validate(sourceFile);
-        expect(Reconciler.validate).toHaveBeenCalledWith(sourceFile, expect.any(Object));
-    });
+  it('should call Reconciler.validate in validate', () => {
+    builder.validate(sourceFile);
+    expect(Reconciler.validate).toHaveBeenCalledWith(sourceFile, expect.any(Object));
+  });
 });

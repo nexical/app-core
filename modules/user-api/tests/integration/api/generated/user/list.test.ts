@@ -1,11 +1,11 @@
 // GENERATED CODE - DO NOT MODIFY
-import { describe, it, expect, beforeEach } from "vitest";
-import { ApiClient } from "@tests/integration/lib/client";
-import { Factory } from "@tests/integration/lib/factory";
-import { TestServer } from "@tests/integration/lib/server";
+import { describe, it, expect, beforeEach } from 'vitest';
+import { ApiClient } from '@tests/integration/lib/client';
+import { Factory } from '@tests/integration/lib/factory';
+import { TestServer } from '@tests/integration/lib/server';
 
 // GENERATED CODE - DO NOT MODIFY
-const _test = describe("User API - List", () => {
+const _test = describe('User API - List', () => {
   let client: ApiClient;
 
   beforeEach(async () => {
@@ -13,11 +13,11 @@ const _test = describe("User API - List", () => {
   });
 
   // GET /api/user
-  describe("GET /api/user", () => {
+  describe('GET /api/user', () => {
     const baseData = { passwordUpdatedAt: new Date().toISOString() };
 
-    it("should allow admin to list users", async () => {
-      const actor = await client.as("user", { role: "ADMIN" });
+    it('should allow admin to list users', async () => {
+      const actor = await client.as('user', { role: 'ADMIN' });
 
       // Cleanup first to ensure clean state
       await Factory.prisma.user.deleteMany({
@@ -26,16 +26,16 @@ const _test = describe("User API - List", () => {
 
       // Seed data
       const suffix = Date.now();
-      await Factory.create("user", {
+      await Factory.create('user', {
         ...baseData,
-        email: "list_1_" + suffix + "@example.com",
+        email: 'list_1_' + suffix + '@example.com',
       });
-      await Factory.create("user", {
+      await Factory.create('user', {
         ...baseData,
-        email: "list_2_" + suffix + "@example.com",
+        email: 'list_2_' + suffix + '@example.com',
       });
 
-      const res = await client.get("/api/user");
+      const res = await client.get('/api/user');
 
       expect(res.status).toBe(200);
       expect(Array.isArray(res.body.data)).toBe(true);
@@ -43,8 +43,8 @@ const _test = describe("User API - List", () => {
       expect(res.body.meta).toBeDefined();
     });
 
-    it("should verify pagination metadata", async () => {
-      const actor = await client.as("user", { role: "ADMIN" });
+    it('should verify pagination metadata', async () => {
+      const actor = await client.as('user', { role: 'ADMIN' });
 
       // Cleanup and seed specific count
       await Factory.prisma.user.deleteMany({
@@ -62,7 +62,7 @@ const _test = describe("User API - List", () => {
       const toCreate = totalTarget - currentCount;
 
       for (let i = 0; i < toCreate; i++) {
-        const rec = await Factory.create("user", {
+        const rec = await Factory.create('user', {
           ...baseData,
           email: `page_${i}_${suffix}@example.com`,
         });
@@ -70,137 +70,129 @@ const _test = describe("User API - List", () => {
       }
 
       // Page 1
-      const res1 = await client.get("/api/user?take=5&skip=0");
+      const res1 = await client.get('/api/user?take=5&skip=0');
       expect(res1.status).toBe(200);
       expect(res1.body.data.length).toBe(5);
       expect(res1.body.meta.total).toBe(15);
 
       // Page 2
-      const res2 = await client.get("/api/user?take=5&skip=5");
+      const res2 = await client.get('/api/user?take=5&skip=5');
       expect(res2.status).toBe(200);
       expect(res2.body.data.length).toBe(5);
       expect(res2.body.data[0].id).not.toBe(res1.body.data[0].id);
     });
 
-    it("should filter by username", async () => {
+    it('should filter by username', async () => {
       // Wait to avoid collisions
       await new Promise((r) => setTimeout(r, 10));
       // Reuse getActorStatement to ensure correct actor context
-      const actor = await client.as("user", { role: "ADMIN" });
+      const actor = await client.as('user', { role: 'ADMIN' });
 
-      const val1 = "username_" + Date.now() + "_A";
+      const val1 = 'username_' + Date.now() + '_A';
       await new Promise((r) => setTimeout(r, 10));
-      const val2 = "username_" + Date.now() + "_B";
+      const val2 = 'username_' + Date.now() + '_B';
 
-      const relationSnippet = ""
-        .replace(/^, /, "")
-        .replace(/actor.id/g, "actor.id");
+      const relationSnippet = ''.replace(/^, /, '').replace(/actor.id/g, 'actor.id');
       const data1 = {
         ...baseData,
         username: val1,
-        email: "filter_a_" + Date.now() + "@example.com",
+        email: 'filter_a_' + Date.now() + '@example.com',
       };
       const data2 = {
         ...baseData,
         username: val2,
-        email: "filter_b_" + Date.now() + "@example.com",
+        email: 'filter_b_' + Date.now() + '@example.com',
       };
 
-      await Factory.create("user", { ...data1 });
-      await Factory.create("user", { ...data2 });
+      await Factory.create('user', { ...data1 });
+      await Factory.create('user', { ...data2 });
 
-      const res = await client.get("/api/user?username=" + val1);
+      const res = await client.get('/api/user?username=' + val1);
       expect(res.status).toBe(200);
       expect(res.body.data).toHaveLength(1);
       expect(res.body.data[0].username).toBe(val1);
     });
 
-    it("should filter by email", async () => {
+    it('should filter by email', async () => {
       // Wait to avoid collisions
       await new Promise((r) => setTimeout(r, 10));
       // Reuse getActorStatement to ensure correct actor context
-      const actor = await client.as("user", { role: "ADMIN" });
+      const actor = await client.as('user', { role: 'ADMIN' });
 
-      const val1 = "email_" + Date.now() + "_A@example.com";
+      const val1 = 'email_' + Date.now() + '_A@example.com';
       await new Promise((r) => setTimeout(r, 10));
-      const val2 = "email_" + Date.now() + "_B@example.com";
+      const val2 = 'email_' + Date.now() + '_B@example.com';
 
-      const relationSnippet = ""
-        .replace(/^, /, "")
-        .replace(/actor.id/g, "actor.id");
+      const relationSnippet = ''.replace(/^, /, '').replace(/actor.id/g, 'actor.id');
       const data1 = { ...baseData, email: val1 };
       const data2 = { ...baseData, email: val2 };
 
-      await Factory.create("user", { ...data1 });
-      await Factory.create("user", { ...data2 });
+      await Factory.create('user', { ...data1 });
+      await Factory.create('user', { ...data2 });
 
-      const res = await client.get("/api/user?email=" + val1);
+      const res = await client.get('/api/user?email=' + val1);
       expect(res.status).toBe(200);
       expect(res.body.data).toHaveLength(1);
       expect(res.body.data[0].email).toBe(val1);
     });
 
-    it("should filter by name", async () => {
+    it('should filter by name', async () => {
       // Wait to avoid collisions
       await new Promise((r) => setTimeout(r, 10));
       // Reuse getActorStatement to ensure correct actor context
-      const actor = await client.as("user", { role: "ADMIN" });
+      const actor = await client.as('user', { role: 'ADMIN' });
 
-      const val1 = "name_" + Date.now() + "_A";
+      const val1 = 'name_' + Date.now() + '_A';
       await new Promise((r) => setTimeout(r, 10));
-      const val2 = "name_" + Date.now() + "_B";
+      const val2 = 'name_' + Date.now() + '_B';
 
-      const relationSnippet = ""
-        .replace(/^, /, "")
-        .replace(/actor.id/g, "actor.id");
+      const relationSnippet = ''.replace(/^, /, '').replace(/actor.id/g, 'actor.id');
       const data1 = {
         ...baseData,
         name: val1,
-        email: "filter_a_" + Date.now() + "@example.com",
+        email: 'filter_a_' + Date.now() + '@example.com',
       };
       const data2 = {
         ...baseData,
         name: val2,
-        email: "filter_b_" + Date.now() + "@example.com",
+        email: 'filter_b_' + Date.now() + '@example.com',
       };
 
-      await Factory.create("user", { ...data1 });
-      await Factory.create("user", { ...data2 });
+      await Factory.create('user', { ...data1 });
+      await Factory.create('user', { ...data2 });
 
-      const res = await client.get("/api/user?name=" + val1);
+      const res = await client.get('/api/user?name=' + val1);
       expect(res.status).toBe(200);
       expect(res.body.data).toHaveLength(1);
       expect(res.body.data[0].name).toBe(val1);
     });
 
-    it("should filter by image", async () => {
+    it('should filter by image', async () => {
       // Wait to avoid collisions
       await new Promise((r) => setTimeout(r, 10));
       // Reuse getActorStatement to ensure correct actor context
-      const actor = await client.as("user", { role: "ADMIN" });
+      const actor = await client.as('user', { role: 'ADMIN' });
 
-      const val1 = "image_" + Date.now() + "_A";
+      const val1 = 'image_' + Date.now() + '_A';
       await new Promise((r) => setTimeout(r, 10));
-      const val2 = "image_" + Date.now() + "_B";
+      const val2 = 'image_' + Date.now() + '_B';
 
-      const relationSnippet = ""
-        .replace(/^, /, "")
-        .replace(/actor.id/g, "actor.id");
+      const relationSnippet = ''.replace(/^, /, '').replace(/actor.id/g, 'actor.id');
       const data1 = {
         ...baseData,
         image: val1,
-        email: "filter_a_" + Date.now() + "@example.com",
+        email: 'filter_a_' + Date.now() + '@example.com',
       };
       const data2 = {
         ...baseData,
         image: val2,
-        email: "filter_b_" + Date.now() + "@example.com",
+        email: 'filter_b_' + Date.now() + '@example.com',
       };
 
-      await Factory.create("user", { ...data1 });
-      await Factory.create("user", { ...data2 });
+      await Factory.create('user', { ...data1 });
+      await Factory.create('user', { ...data2 });
 
-      const res = await client.get("/api/user?image=" + val1);
+      const res = await client.get('/api/user?image=' + val1);
       expect(res.status).toBe(200);
       expect(res.body.data).toHaveLength(1);
       expect(res.body.data[0].image).toBe(val1);

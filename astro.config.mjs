@@ -5,7 +5,6 @@ import tailwindcss from '@tailwindcss/vite';
 
 import node from '@astrojs/node';
 
-
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import fs from 'node:fs';
@@ -33,53 +32,61 @@ for (const module of loadedModules) {
   if (config.vite) moduleViteConfig = defu(moduleViteConfig, config.vite);
 
   if (config.adapter) {
-    if (selectedAdapter) throw new Error(`Multiple modules provide an Astro Adapter! Conflict between ${module.name} and previous adapter.`);
+    if (selectedAdapter)
+      throw new Error(
+        `Multiple modules provide an Astro Adapter! Conflict between ${module.name} and previous adapter.`,
+      );
     selectedAdapter = config.adapter;
   }
 }
 
 // Resolve Final Adapter
 const isStatic = process.env.PUBLIC_SITE_MODE === 'static';
-const adapter = isStatic ? undefined : (selectedAdapter || node({ mode: 'standalone' }));
+const adapter = isStatic ? undefined : selectedAdapter || node({ mode: 'standalone' });
 
 // https://astro.build/config
 export default defineConfig({
   output: isStatic ? 'static' : 'server',
   integrations: [react(), modulePages(), moduleEmailTheme(), moduleStyles(), ...moduleIntegrations],
   devToolbar: {
-    enabled: process.env.ASTRO_DEV_TOOLBAR === 'true'
+    enabled: process.env.ASTRO_DEV_TOOLBAR === 'true',
   },
 
   vite: defu(moduleViteConfig, {
     plugins: [tailwindcss()],
     server: {
-      allowedHosts: process.env.ALLOWED_HOSTS ? process.env.ALLOWED_HOSTS.split(',') : ['web', 'localhost'],
+      allowedHosts: process.env.ALLOWED_HOSTS
+        ? process.env.ALLOWED_HOSTS.split(',')
+        : ['web', 'localhost'],
       watch: {
-        ignored: process.env.NODE_ENV === 'test' ? ['**/*'] : [
-          '**/.git/**',
-          '**/node_modules/**',
-          '**/dist/**',
-          '**/packages/**',
-          '**/.agent/**',
-          '**/scripts/**',
-          '**/tests/**',
-          '**/db/**',
-          '**/tmp/**',
-          '**/*.txt',
-          '**/*.log'
-        ]
-      }
+        ignored:
+          process.env.NODE_ENV === 'test'
+            ? ['**/*']
+            : [
+                '**/.git/**',
+                '**/node_modules/**',
+                '**/dist/**',
+                '**/packages/**',
+                '**/.agent/**',
+                '**/scripts/**',
+                '**/tests/**',
+                '**/db/**',
+                '**/tmp/**',
+                '**/*.txt',
+                '**/*.log',
+              ],
+      },
     },
     build: {
       chunkSizeWarningLimit: 3000,
       rollupOptions: {
-        external: [/^node:/, 'jiti']
-      }
+        external: [/^node:/, 'jiti'],
+      },
     },
     ssr: {
-      external: ['jiti']
-    }
+      external: ['jiti'],
+    },
   }),
 
-  adapter
+  adapter,
 });

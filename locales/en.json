@@ -1,30 +1,30 @@
 {
-    "core": {
-        "nav": {
-            "dashboard": "Dashboard"
-        },
-        "common": {
-            "warning": "Warning",
-            "cancel": "Cancel",
-            "close": "Close"
-        },
-        "components": {
-            "mode_toggle": {
-                "label": "Toggle theme"
-            },
-            "confirm_deletion": {
-                "title": "Delete {{itemType}}?",
-                "description": "This action cannot be undone. This will permanently delete the <0>{{itemName}}</0> {{itemType}} and remove all associated data.",
-                "warning": "If you delete this {{itemType}}, you will lose all work associated with it forever.",
-                "instruction": "Type <0>{{itemName}}</0> to confirm.",
-                "confirm": "Delete {{itemType}}"
-            }
-        },
-        "errors": {
-            "unauthorized": {
-                "title": "Unauthorized Access",
-                "description": "You do not have permission to view that page."
-            }
-        }
+  "core": {
+    "nav": {
+      "dashboard": "Dashboard"
+    },
+    "common": {
+      "warning": "Warning",
+      "cancel": "Cancel",
+      "close": "Close"
+    },
+    "components": {
+      "mode_toggle": {
+        "label": "Toggle theme"
+      },
+      "confirm_deletion": {
+        "title": "Delete {{itemType}}?",
+        "description": "This action cannot be undone. This will permanently delete the <0>{{itemName}}</0> {{itemType}} and remove all associated data.",
+        "warning": "If you delete this {{itemType}}, you will lose all work associated with it forever.",
+        "instruction": "Type <0>{{itemName}}</0> to confirm.",
+        "confirm": "Delete {{itemType}}"
+      }
+    },
+    "errors": {
+      "unauthorized": {
+        "title": "Unauthorized Access",
+        "description": "You do not have permission to view that page."
+      }
     }
+  }
 }

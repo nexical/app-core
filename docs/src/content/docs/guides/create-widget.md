@@ -8,12 +8,15 @@ sidebar:
 Registry components are the "LEGO blocks" of the Nexical interface. They allow modules to inject UI elements into the Shell without modifying core code.
 
 ## 1. Identify the Zone
+
 First, determine where your widget should appear. Common zones include:
-*   `nav-main`: The primary sidebar navigation.
-*   `header-end`: The right side of the global header.
-*   `dashboard-widgets`: The main dashboard area.
+
+- `nav-main`: The primary sidebar navigation.
+- `header-end`: The right side of the global header.
+- `dashboard-widgets`: The main dashboard area.
 
 ## 2. Create the Component
+
 Create a new file in your module's registry directory: `modules/{module}/src/registry/{zone}/{order}-{name}.tsx`.
 
 **Example:** `modules/crm/src/registry/nav-main/20-leads-link.tsx`
@@ -34,6 +37,7 @@ export default function LeadsLink() {
 The numeric prefix (`20-`) determines the render order.
 
 ## 3. Use Shared State (Optional)
+
 If your widget needs data (like the current user), use the `useNavData` hook.
 
 ```tsx
@@ -41,9 +45,9 @@ import { useNavData } from '@/lib/ui/nav-context';
 
 export default function UserGreeting() {
   const { context } = useNavData();
-  
+
   if (!context?.user) return null;
-  
+
   return <div>Hello, {context.user.name}</div>;
 }
 ```

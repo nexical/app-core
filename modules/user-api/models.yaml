@@ -45,18 +45,18 @@ models:
       id:
         type: String
         attributes:
-          - "@id"
-          - "@default(cuid())"
+          - '@id'
+          - '@default(cuid())'
       username:
         type: String
         isRequired: false
         attributes:
-          - "@unique"
+          - '@unique'
       email:
         type: String
         isRequired: false
         attributes:
-          - "@unique"
+          - '@unique'
       password:
         api: false
         private: true
@@ -65,7 +65,7 @@ models:
       passwordUpdatedAt:
         type: DateTime
         attributes:
-          - "@default(now())"
+          - '@default(now())'
       emailVerified:
         type: DateTime
         isRequired: false
@@ -78,11 +78,11 @@ models:
       role:
         type: SiteRole
         attributes:
-          - "@default(EMPLOYEE)"
+          - '@default(EMPLOYEE)'
       status:
         type: UserStatus
         attributes:
-          - "@default(ACTIVE)"
+          - '@default(ACTIVE)'
       accounts:
         api: false
         type: Account
@@ -90,11 +90,11 @@ models:
       createdAt:
         type: DateTime
         attributes:
-          - "@default(now())"
+          - '@default(now())'
       updatedAt:
         type: DateTime
         attributes:
-          - "@updatedAt"
+          - '@updatedAt'
       accessTokens:
         api: false
         private: true
@@ -109,14 +109,14 @@ models:
       id:
         type: String
         attributes:
-          - "@id"
-          - "@default(cuid())"
+          - '@id'
+          - '@default(cuid())'
       name:
         type: String
       hashedKey:
         type: String
         attributes:
-          - "@unique"
+          - '@unique'
       prefix:
         type: String
       lastUsedAt:
@@ -128,13 +128,13 @@ models:
       createdAt:
         type: DateTime
         attributes:
-          - "@default(now())"
+          - '@default(now())'
       userId:
         type: String
       user:
         type: User
         attributes:
-          - "@relation(fields: [userId], references: [id], onDelete: Cascade)"
+          - '@relation(fields: [userId], references: [id], onDelete: Cascade)'
 
   Account:
     api: false
@@ -142,8 +142,8 @@ models:
       id:
         type: String
         attributes:
-          - "@id"
-          - "@default(cuid())"
+          - '@id'
+          - '@default(cuid())'
       userId:
         type: String
       type:
@@ -176,18 +176,17 @@ models:
       createdAt:
         type: DateTime
         attributes:
-          - "@default(now())"
+          - '@default(now())'
       updatedAt:
         type: DateTime
         attributes:
-          - "@updatedAt"
+          - '@updatedAt'
       user:
         type: User
         attributes:
-          - "@relation(fields: [userId], references: [id], onDelete: Cascade)"
+          - '@relation(fields: [userId], references: [id], onDelete: Cascade)'
     attributes:
-      - "@@unique([provider, providerAccountId])"
-
+      - '@@unique([provider, providerAccountId])'
 
   VerificationToken:
     api: false
@@ -195,8 +194,8 @@ models:
       id:
         type: String
         attributes:
-          - "@id"
-          - "@default(cuid())"
+          - '@id'
+          - '@default(cuid())'
       identifier:
         type: String
       token:
@@ -204,7 +203,7 @@ models:
       expires:
         type: DateTime
     attributes:
-      - "@@unique([identifier, token])"
+      - '@@unique([identifier, token])'
 
   PasswordResetToken:
     api: false
@@ -212,22 +211,22 @@ models:
       id:
         type: String
         attributes:
-          - "@id"
-          - "@default(cuid())"
+          - '@id'
+          - '@default(cuid())'
       email:
         type: String
       token:
         type: String
         attributes:
-          - "@unique"
+          - '@unique'
       expires:
         type: DateTime
       createdAt:
         type: DateTime
         attributes:
-          - "@default(now())"
+          - '@default(now())'
     attributes:
-      - "@@index([email])"
+      - '@@index([email])'
 
   Invitation:
     api: false
@@ -235,28 +234,28 @@ models:
       id:
         type: String
         attributes:
-          - "@id"
-          - "@default(cuid())"
+          - '@id'
+          - '@default(cuid())'
       email:
         type: String
         attributes:
-          - "@unique"
+          - '@unique'
       token:
         type: String
         attributes:
-          - "@unique"
+          - '@unique'
       role:
         type: SiteRole
         attributes:
-          - "@default(EMPLOYEE)"
+          - '@default(EMPLOYEE)'
       expires:
         type: DateTime
       createdAt:
         type: DateTime
         attributes:
-          - "@default(now())"
+          - '@default(now())'
     attributes:
-      - "@@index([token])"
+      - '@@index([token])'
 
   CreateUserDTO:
     db: false
@@ -407,7 +406,6 @@ models:
       userId:
         type: String
         isRequired: false
-
 
   ListTokensDTO:
     db: false

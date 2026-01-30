@@ -3,42 +3,47 @@ import type { ApiClient } from './client';
 export type ActorProvider = (client: ApiClient, params: any) => Promise<any>;
 
 export class ActorRegistry {
-    private providers: Map<string, ActorProvider> = new Map();
-    private loaded = false;
+  private providers: Map<string, ActorProvider> = new Map();
+  private loaded = false;
 
-    async loadProviders() {
-        if (this.loaded) return;
+  async loadProviders() {
+    if (this.loaded) return;
 
-        // Dynamic import of all actors.ts files in modules
-        const modules = import.meta.glob([
-            '../../../modules/**/tests/integration/actors.ts',
-            '../../../modules/**/tests/integration/manual-actors.ts'
-        ], { eager: true });
+    // Dynamic import of all actors.ts files in modules
+    const modules = import.meta.glob(
+      [
+        '../../../modules/**/tests/integration/actors.ts',
+        '../../../modules/**/tests/integration/manual-actors.ts',
+      ],
+      { eager: true },
+    );
 
-        for (const path in modules) {
-            const mod = modules[path] as any;
-            if (mod.actors) {
-                for (const [key, provider] of Object.entries(mod.actors)) {
-                    this.register(key, provider as ActorProvider);
-                }
-            }
+    for (const path in modules) {
+      const mod = modules[path] as any;
+      if (mod.actors) {
+        for (const [key, provider] of Object.entries(mod.actors)) {
+          this.register(key, provider as ActorProvider);
         }
-
-        this.loaded = true;
+      }
     }
 
-    register(name: string, provider: ActorProvider) {
-        this.providers.set(name, provider);
-    }
+    this.loaded = true;
+  }
 
-    async getProvider(name: string): Promise<ActorProvider> {
-        await this.loadProviders();
-        const provider = this.providers.get(name);
-        if (!provider) {
-            throw new Error(`Actor provider "${name}" not found. Ensure it is exported in a module's actors.ts file.`);
-        }
-        return provider;
+  register(name: string, provider: ActorProvider) {
+    this.providers.set(name, provider);
+  }
+
+  async getProvider(name: string): Promise<ActorProvider> {
+    await this.loadProviders();
+    const provider = this.providers.get(name);
+    if (!provider) {
+      throw new Error(
+        `Actor provider "${name}" not found. Ensure it is exported in a module's actors.ts file.`,
+      );
     }
+    return provider;
+  }
 }
 
 export const Registry = new ActorRegistry();

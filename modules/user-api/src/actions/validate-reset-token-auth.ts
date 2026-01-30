@@ -1,10 +1,7 @@
-import { db } from "@/lib/core/db";
-import type { ServiceResponse } from "@/types/service";
-import type {
-  ValidateResetTokenDTO,
-  ValidateResetTokenResponseDTO,
-} from "../sdk/types";
-import type { APIContext } from "astro";
+import { db } from '@/lib/core/db';
+import type { ServiceResponse } from '@/types/service';
+import type { ValidateResetTokenDTO, ValidateResetTokenResponseDTO } from '../sdk/types';
+import type { APIContext } from 'astro';
 
 export const validateResetToken = async (
   input: ValidateResetTokenDTO,

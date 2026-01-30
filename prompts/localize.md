@@ -3,8 +3,8 @@
 **The Goal:**
 We are scrubbing the codebase of all hardcoded English strings.
 
-* **Current State:** `<h1>Welcome back, {name}</h1>` or `<input placeholder="Enter email" />`
-* **Required State:** `<h1>{t('user.welcome.title', { name })}</h1>` or `<input placeholder={t('user.auth.email_placeholder')} />`
+- **Current State:** `<h1>Welcome back, {name}</h1>` or `<input placeholder="Enter email" />`
+- **Required State:** `<h1>{t('user.welcome.title', { name })}</h1>` or `<input placeholder={t('user.auth.email_placeholder')} />`
 
 **Input Context:**
 <target_codebase>
@@ -27,31 +27,35 @@ You must scan the context files (looking specifically in the `src` directory for
 For **EVERY** instance of a hardcoded, user-facing string, you must:
 
 1. **Identify the Scope:** Is this a UI label? A button text? An error message? A placeholder?
-2. **Generate a Hierarchical Key:** Do not use flat keys. Use nested keys that represent the component or feature.  Look up to see if any relevant keys exist in the `{{ root_path }}locales/en.json` language file before creating new keys.
-* *Bad:* `"submit": "Submit"`
-* *Good:* `"auth.login.submit_btn": "Submit"`
+2. **Generate a Hierarchical Key:** Do not use flat keys. Use nested keys that represent the component or feature. Look up to see if any relevant keys exist in the `{{ root_path }}locales/en.json` language file before creating new keys.
+
+- _Bad:_ `"submit": "Submit"`
+- _Good:_ `"auth.login.submit_btn": "Submit"`
 
 3. **Update the Locale File:** Add the key-value pair to the `{{ root_path }}locales/en.json` file. Preserve existing keys; merge the new ones in.
 4. **Refactor the Component:**
-* Import `useTranslation` from `react-i18next`.
-* Initialize `const { t } = useTranslation();` inside the component.
-* Replace the string with `{t('your.new.key')}`.
 
-Also see the core i18n library in the `src/lib/i18n.ts` file for functions that deal with instances where the t() function must be passed in as a parameter, as is the case in some `src/lib` files.  Use the corresponding functions in that library in that case.
+- Import `useTranslation` from `react-i18next`.
+- Initialize `const { t } = useTranslation();` inside the component.
+- Replace the string with `{t('your.new.key')}`.
+
+Also see the core i18n library in the `src/lib/i18n.ts` file for functions that deal with instances where the t() function must be passed in as a parameter, as is the case in some `src/lib` files. Use the corresponding functions in that library in that case.
 
 **The Rules of Engagement:**
 
 1. **What to Extract:**
-* Text inside JSX tags: `<div>Hello</div>` -> `{t('...')}`
-* Attributes: `placeholder="Search"`, `title="Close"`, `alt="Logo"`.
-* Zod Error Messages: `z.string().min(5, "Too short")` -> `{ message: "auth.errors.too_short" }` (Note: Ensure the translation system handles backend errors, otherwise flag this for review).
-* Toast Messages: `toast.success("Profile updated")` -> `toast.success(t('...'))`.
+
+- Text inside JSX tags: `<div>Hello</div>` -> `{t('...')}`
+- Attributes: `placeholder="Search"`, `title="Close"`, `alt="Logo"`.
+- Zod Error Messages: `z.string().min(5, "Too short")` -> `{ message: "auth.errors.too_short" }` (Note: Ensure the translation system handles backend errors, otherwise flag this for review).
+- Toast Messages: `toast.success("Profile updated")` -> `toast.success(t('...'))`.
 
 2. **What to IGNORE:**
-* Console logs: `console.log("Fetching data...")`
-* HTML Class names or IDs: `div id="main-content"`
-* String literal types: `type Role = "admin" | "user";`
-* Database keys or API route strings.
+
+- Console logs: `console.log("Fetching data...")`
+- HTML Class names or IDs: `div id="main-content"`
+- String literal types: `type Role = "admin" | "user";`
+- Database keys or API route strings.
 
 3. **Interpolation:** If the string contains variables (`Hello {name}`), use i18next interpolation syntax (`Hello {{name}}`) and pass the variable in the `t` function.
 
@@ -60,7 +64,7 @@ Also see the core i18n library in the `src/lib/i18n.ts` file for functions that 
 **STEP 1: Detection**
 List every file that contains hardcoded strings.
 
-* File: `src/components/LoginForm.tsx` -> "Sign In", "Forgot Password?", "Email"
+- File: `src/components/LoginForm.tsx` -> "Sign In", "Forgot Password?", "Email"
 
 **STEP 2: The Refactor Plan**
 For each detected file, generate the **JSON Update** and the **Code Refactor**.
@@ -73,8 +77,8 @@ For each detected file, generate the **JSON Update** and the **Code Refactor**.
 {
   "auth": {
     "login": {
-       "title": "Sign In",
-       "forgot_password": "Forgot Password?"
+      "title": "Sign In",
+      "forgot_password": "Forgot Password?"
     }
   }
 }
@@ -90,11 +94,11 @@ export function LoginForm() {
 
   return (
     <div className="login-card">
-       {/* BEFORE: <h1>Sign In</h1> */}
-       <h1>{t('auth.login.title')}</h1>
-       
-       {/* BEFORE: <a href="...">Forgot Password?</a> */}
-       <a href="...">{t('auth.login.forgot_password')}</a>
+      {/* BEFORE: <h1>Sign In</h1> */}
+      <h1>{t('auth.login.title')}</h1>
+
+      {/* BEFORE: <a href="...">Forgot Password?</a> */}
+      <a href="...">{t('auth.login.forgot_password')}</a>
     </div>
   );
 }
@@ -103,8 +107,8 @@ export function LoginForm() {
 **STEP 3: Verification**
 Re-read the file.
 
-* Did you miss the `aria-label="Close modal"`? **Extract it.**
-* Did you miss the `toast.error("Failed")`? **Extract it.**
+- Did you miss the `aria-label="Close modal"`? **Extract it.**
+- Did you miss the `toast.error("Failed")`? **Extract it.**
 
 **Final Output Condition:**
 If you find NO files with hardcoded user strings, you must output exactly this string:

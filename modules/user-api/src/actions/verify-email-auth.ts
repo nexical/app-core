@@ -1,8 +1,8 @@
-import type { ServiceResponse } from "@/types/service";
-import type { VerifyEmailDTO } from "../sdk/types";
-import { db } from "@/lib/core/db";
-import { HookSystem } from "@/lib/modules/hooks";
-import type { APIContext } from "astro";
+import type { ServiceResponse } from '@/types/service';
+import type { VerifyEmailDTO } from '../sdk/types';
+import { db } from '@/lib/core/db';
+import { HookSystem } from '@/lib/modules/hooks';
+import type { APIContext } from 'astro';
 
 export class VerifyEmailAuthAction {
   public static async run(
@@ -16,14 +16,13 @@ export class VerifyEmailAuthAction {
         where: { token: tokenStr },
       });
       if (!token || new Date() > token.expires) {
-        return { success: false, error: "user.service.error.invalid_token" };
+        return { success: false, error: 'user.service.error.invalid_token' };
       }
 
       const user = await db.user.findUnique({
         where: { email: token.identifier },
       });
-      if (!user)
-        return { success: false, error: "user.service.error.user_not_found" };
+      if (!user) return { success: false, error: 'user.service.error.user_not_found' };
 
       await db.$transaction([
         db.user.update({
@@ -40,17 +39,17 @@ export class VerifyEmailAuthAction {
         }),
       ]);
 
-      await HookSystem.dispatch("auth.email.verified", {
+      await HookSystem.dispatch('auth.email.verified', {
         userId: user.id,
         email: user.email,
       });
 
       return { success: true, data: { userId: user.id, email: user.email } };
     } catch (error: unknown) {
-      console.error("Verify Email Error:", error);
+      console.error('Verify Email Error:', error);
       return {
         success: false,
-        error: "user.service.error.verify_email_failed",
+        error: 'user.service.error.verify_email_failed',
       };
     }
   }

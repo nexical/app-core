@@ -11,8 +11,8 @@ ProjectTask:
     id:
       type: String
       attributes:
-        - "@id"
-        - "@default(cuid())"
+        - '@id'
+        - '@default(cuid())'
     title:
       type: String
     projectId:
@@ -23,9 +23,9 @@ ProjectTask:
     createdAt:
       type: DateTime
       attributes:
-        - "@default(now())"
+        - '@default(now())'
   attributes:
-    - "@@index([projectId])"
+    - '@@index([projectId])'
 
 # Example: Core Extension
 # This adds a 'bio' field to the existing User model defined in core.

@@ -1,9 +1,9 @@
 // GENERATED CODE - DO NOT MODIFY
-import { defineApi } from "@/lib/api/api-docs";
-import { ApiGuard } from "@/lib/api/api-guard";
-import { HookSystem } from "@/lib/modules/hooks";
-import { ValidateResetTokenAuthAction } from "@modules/user-api/src/actions/validate-reset-token-auth";
-import type { ValidateResetTokenDTO } from "@modules/user-api/src/sdk";
+import { defineApi } from '@/lib/api/api-docs';
+import { ApiGuard } from '@/lib/api/api-guard';
+import { HookSystem } from '@/lib/modules/hooks';
+import { ValidateResetTokenAuthAction } from '@modules/user-api/src/actions/validate-reset-token-auth';
+import type { ValidateResetTokenDTO } from '@modules/user-api/src/sdk';
 export const POST = defineApi(
   async (context) => {
     // 1. Body Parsing (Input)
@@ -12,14 +12,14 @@ export const POST = defineApi(
 
     // 2. Hook: Filter Input
     const input: ValidateResetTokenDTO = await HookSystem.filter(
-      "auth.validateResetToken.input",
+      'auth.validateResetToken.input',
       body,
     );
 
     // 3. Security Check
     // Pass merged input
     const combinedInput = { ...context.params, ...query, ...input };
-    await ApiGuard.protect(context, "anonymous", combinedInput);
+    await ApiGuard.protect(context, 'anonymous', combinedInput);
 
     // Inject userId from context for protected routes
     const user = (context as any).user;
@@ -28,16 +28,10 @@ export const POST = defineApi(
     }
 
     // 4. Action Execution
-    const result = await ValidateResetTokenAuthAction.run(
-      combinedInput,
-      context,
-    );
+    const result = await ValidateResetTokenAuthAction.run(combinedInput, context);
 
     // 5. Hook: Filter Output
-    const filteredResult = await HookSystem.filter(
-      "auth.validateResetToken.output",
-      result,
-    );
+    const filteredResult = await HookSystem.filter('auth.validateResetToken.output', result);
 
     // 6. Response
     if (!filteredResult.success) {
@@ -49,33 +43,33 @@ export const POST = defineApi(
     return { success: true, data: filteredResult.data };
   },
   {
-    summary: "Validate reset token",
-    tags: ["Auth"],
+    summary: 'Validate reset token',
+    tags: ['Auth'],
     requestBody: {
       content: {
-        "application/json": {
+        'application/json': {
           schema: {
-            type: "object",
+            type: 'object',
             properties: {
-              token: { type: "string" },
+              token: { type: 'string' },
             },
-            required: ["token"],
+            required: ['token'],
           },
         },
       },
     },
     responses: {
       200: {
-        description: "OK",
+        description: 'OK',
         content: {
-          "application/json": {
+          'application/json': {
             schema: {
-              type: "object",
+              type: 'object',
               properties: {
-                valid: { type: "boolean" },
-                email: { type: "string" },
+                valid: { type: 'boolean' },
+                email: { type: 'string' },
               },
-              required: ["valid"],
+              required: ['valid'],
             },
           },
         },

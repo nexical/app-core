@@ -10,14 +10,15 @@ Unlike traditional scaffolding tools that use string templates (Handlebars, EJS)
 
 The core philosophy is simple: **Don't write code. Describe it.**
 
-Instead of writing imperative logic (`if file.exists() { append() }`), we define the *desired state* of a file as a JSON Schema (`FileDefinition`). A generic **Reconciler** engine then applies this state to the AST (Abstract Syntax Tree), handling all the complexity of finding, creating, or updating nodes.
+Instead of writing imperative logic (`if file.exists() { append() }`), we define the _desired state_ of a file as a JSON Schema (`FileDefinition`). A generic **Reconciler** engine then applies this state to the AST (Abstract Syntax Tree), handling all the complexity of finding, creating, or updating nodes.
 
 ### Benefits
+
 1.  **AI-Native**: LLMs excel at generating structured JSON. This library abstracts the complex `ts-morph` API into simple JSON objects.
 2.  **State Reconciliation**: The same schema is used for:
-    *   **Generation**: Creating new files.
-    *   **Auditing**: Detecting "Architectural Drift" (e.g., a dev removed a required `static` modifier).
-    *   **Fixing**: Automatically repairing drift while preserving custom logic.
+    - **Generation**: Creating new files.
+    - **Auditing**: Detecting "Architectural Drift" (e.g., a dev removed a required `static` modifier).
+    - **Fixing**: Automatically repairing drift while preserving custom logic.
 3.  **Stability**: "Lego Block" primitives ensure syntactically valid code generation every time.
 
 ---
@@ -41,23 +42,31 @@ packages/generator/
 ## 🛠️ Usage
 
 ### 1. Scaffold
+
 Creates the directory structure and configuration files (`module.def.yaml`, `models.yaml`).
+
 ```bash
 npx arc gen:api billing
 ```
 
 ### 2. Generate Code
+
 Reads `models.yaml` and uses the Declarative Engine to generate `Services`, `APIs`, and `SDKs`.
+
 ```bash
 npx arc gen:api billing
 ```
 
 ### 3. Audit for Drift
+
 Checks if the actual code matches the architectural schema. Reports issues without changing files.
+
 ```bash
 npx arc audit:api billing
 ```
-*Example Output:*
+
+_Example Output:_
+
 > ✖ [BillingService] Method 'create' is missing.
 > ✖ [BillingService] Method 'list' static modifier mismatch. Expected: true, Found: false.
 
@@ -66,6 +75,7 @@ npx arc audit:api billing
 ## 🤖 For AI Agents & Developers
 
 ### The Schema (`FileDefinition`)
+
 To generate code, you simply construct a JSON object matching the `FileDefinition` interface.
 
 ```typescript
@@ -92,27 +102,30 @@ export interface MethodConfig {
 ```
 
 ### Using the Reconciler
+
 The `Reconciler` class is your main entry point.
 
 ```typescript
-import { Reconciler } from "./engine/reconciler";
-import { FileDefinition } from "./engine/types";
+import { Reconciler } from './engine/reconciler';
+import { FileDefinition } from './engine/types';
 
 const schema: FileDefinition = {
-  imports: [
-    { moduleSpecifier: "@/lib/db", namedImports: ["db"] }
+  imports: [{ moduleSpecifier: '@/lib/db', namedImports: ['db'] }],
+  classes: [
+    {
+      name: 'UserService',
+      isExported: true,
+      methods: [
+        {
+          name: 'list',
+          isStatic: true,
+          isAsync: true,
+          returnType: 'Promise<User[]>',
+          statements: 'return db.user.findMany();',
+        },
+      ],
+    },
   ],
-  classes: [{
-    name: "UserService",
-    isExported: true,
-    methods: [{
-      name: "list",
-      isStatic: true,
-      isAsync: true,
-      returnType: "Promise<User[]>",
-      statements: "return db.user.findMany();"
-    }]
-  }]
 };
 
 // Apply the schema to a TypeScript SourceFile
@@ -130,6 +143,7 @@ if (!result.valid) {
 ## 🧩 Extending functionality
 
 To add new capabilities (e.g., Interfaces, Enums, Zod Schemas), you don't need to change the engine logic.
+
 1.  **Create a Primitive**: Implement `BasePrimitive<Node, Config>` in `src/engine/primitives`.
 2.  **Update Schema**: Add the new config type to `FileDefinition` in `src/engine/types.ts`.
 3.  **Update Reconciler**: Add one line to `Reconciler.reconcile` to handle the new primitive.

@@ -6,6 +6,7 @@ sidebar:
 ---
 
 ## Logger
+
 A structured logger that enforces consistent JSON formatting for better observability.
 
 ```ts
@@ -16,6 +17,7 @@ Logger.error('Failed to save file', error, { path: '/tmp/file' });
 ```
 
 ## Config
+
 A centralized configuration loader.
 
 ```ts
@@ -25,6 +27,7 @@ console.log(config.PUBLIC_SITE_URL);
 ```
 
 ## Service Locator
+
 For loose coupling between core services.
 
 ```ts

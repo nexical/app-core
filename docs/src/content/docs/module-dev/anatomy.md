@@ -27,18 +27,22 @@ modules/{name}/
 ```
 
 ## Middleware and Security
+
 Export a default object from `src/middleware.ts` to define security logic:
+
 ```ts
 export default {
-    publicRoutes: ['/login'],
-    onRequest: async (context, next) => {
-        // Custom logic
-        return next();
-    }
+  publicRoutes: ['/login'],
+  onRequest: async (context, next) => {
+    // Custom logic
+    return next();
+  },
 };
 ```
 
 ## Cross-Module Events
+
 Use the **Hook System** to decouple features.
-*   **Listen**: `HookSystem.on('user.registered', callback)`
-*   **Dispatch**: `HookSystem.dispatch('user.registered', data)`
+
+- **Listen**: `HookSystem.on('user.registered', callback)`
+- **Dispatch**: `HookSystem.dispatch('user.registered', data)`

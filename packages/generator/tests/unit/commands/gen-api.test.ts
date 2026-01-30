@@ -6,60 +6,60 @@ import fs from 'fs-extra';
 import { glob } from 'glob';
 
 vi.mock('@nexical/generator/lib/module-locator', () => ({
-    ModuleLocator: {
-        expand: vi.fn()
-    }
+  ModuleLocator: {
+    expand: vi.fn(),
+  },
 }));
 vi.mock('@nexical/generator/engine/api-module-generator', () => ({
-    ApiModuleGenerator: vi.fn().mockImplementation(function () {
-        return {
-            run: vi.fn().mockResolvedValue(undefined)
-        };
-    })
+  ApiModuleGenerator: vi.fn().mockImplementation(function () {
+    return {
+      run: vi.fn().mockResolvedValue(undefined),
+    };
+  }),
 }));
 vi.mock('fs-extra');
 vi.mock('glob', () => ({
-    glob: {
-        hasMagic: vi.fn().mockReturnValue(false)
-    }
+  glob: {
+    hasMagic: vi.fn().mockReturnValue(false),
+  },
 }));
 
 describe('GenApiCommand', () => {
-    let command: GenApiCommand;
+  let command: GenApiCommand;
 
-    beforeEach(() => {
-        vi.clearAllMocks();
-        command = new GenApiCommand();
+  beforeEach(() => {
+    vi.clearAllMocks();
+    command = new GenApiCommand();
+  });
+
+  it('should generate code for found modules', async () => {
+    vi.mocked(ModuleLocator.expand).mockResolvedValue(['test-api']);
+    vi.mocked(fs.existsSync).mockReturnValue(true);
+
+    await command.run('test-api');
+
+    expect(ApiModuleGenerator).toHaveBeenCalled();
+  });
+
+  it('should scaffold a new module if it does not exist', async () => {
+    vi.mocked(ModuleLocator.expand).mockResolvedValue(['new-api']);
+    vi.mocked(fs.existsSync).mockReturnValue(false);
+
+    await command.run('new-api');
+
+    expect(fs.writeJSON).toHaveBeenCalled(); // package.json, etc.
+  });
+
+  it('should handle generation errors by re-throwing', async () => {
+    vi.mocked(ModuleLocator.expand).mockResolvedValue(['test-api']);
+    vi.mocked(fs.existsSync).mockReturnValue(true);
+
+    vi.mocked(ApiModuleGenerator).mockImplementationOnce(function () {
+      return {
+        run: vi.fn().mockRejectedValue(new Error('Generation failed')),
+      } as any;
     });
 
-    it('should generate code for found modules', async () => {
-        vi.mocked(ModuleLocator.expand).mockResolvedValue(['test-api']);
-        vi.mocked(fs.existsSync).mockReturnValue(true);
-
-        await command.run('test-api');
-
-        expect(ApiModuleGenerator).toHaveBeenCalled();
-    });
-
-    it('should scaffold a new module if it does not exist', async () => {
-        vi.mocked(ModuleLocator.expand).mockResolvedValue(['new-api']);
-        vi.mocked(fs.existsSync).mockReturnValue(false);
-
-        await command.run('new-api');
-
-        expect(fs.writeJSON).toHaveBeenCalled(); // package.json, etc.
-    });
-
-    it('should handle generation errors by re-throwing', async () => {
-        vi.mocked(ModuleLocator.expand).mockResolvedValue(['test-api']);
-        vi.mocked(fs.existsSync).mockReturnValue(true);
-
-        vi.mocked(ApiModuleGenerator).mockImplementationOnce(function () {
-            return {
-                run: vi.fn().mockRejectedValue(new Error('Generation failed'))
-            } as any;
-        });
-
-        await expect(command.run('test-api')).rejects.toThrow('Generation failed');
-    });
+    await expect(command.run('test-api')).rejects.toThrow('Generation failed');
+  });
 });

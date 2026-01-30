@@ -4,5 +4,5 @@ import type { APIRoute } from 'astro';
 export const prerender = process.env.PUBLIC_SITE_MODE === 'static';
 
 export const GET: APIRoute = async (_ctx) => {
-    return new Response('OK');
+  return new Response('OK');
 };

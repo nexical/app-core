@@ -4,39 +4,35 @@ import { ActorTypeBuilder } from '@nexical/generator/engine/builders/actor-type-
 import { type ModelDef } from '@nexical/generator/engine/types';
 
 describe('ActorTypeBuilder', () => {
-    let project: Project;
-    let sourceFile: SourceFile;
+  let project: Project;
+  let sourceFile: SourceFile;
 
-    beforeEach(() => {
-        project = new Project({ useInMemoryFileSystem: true });
-        sourceFile = project.createSourceFile('test.ts', 'existing content');
-    });
+  beforeEach(() => {
+    project = new Project({ useInMemoryFileSystem: true });
+    sourceFile = project.createSourceFile('test.ts', 'existing content');
+  });
 
-    it('should clear file and generate global actor map', () => {
-        const models: ModelDef[] = [
-            { name: 'User', actor: { strategy: 'login' }, fields: {} }
-        ];
-        const builder = new ActorTypeBuilder(models);
+  it('should clear file and generate global actor map', () => {
+    const models: ModelDef[] = [{ name: 'User', actor: { strategy: 'login' }, fields: {} }];
+    const builder = new ActorTypeBuilder(models);
 
-        builder.ensure(sourceFile);
+    builder.ensure(sourceFile);
 
-        const text = sourceFile.getFullText();
-        expect(text).not.toContain('existing content');
-        // ts-morph uses double quotes for imports by default, but ActorTypeBuilder might be using single quotes for some internal parts
-        expect(text).toMatch(/import type \{ User \} from ".\/sdk\/types";/);
-        expect(text).toContain('namespace App');
-        expect(text).toContain('interface ActorMap');
-        expect(text).toContain("user: User & { type: 'user' };");
-    });
+    const text = sourceFile.getFullText();
+    expect(text).not.toContain('existing content');
+    // ts-morph uses double quotes for imports by default, but ActorTypeBuilder might be using single quotes for some internal parts
+    expect(text).toMatch(/import type \{ User \} from ".\/sdk\/types";/);
+    expect(text).toContain('namespace App');
+    expect(text).toContain('interface ActorMap');
+    expect(text).toContain("user: User & { type: 'user' };");
+  });
 
-    it('should generate empty schema if no actor models', () => {
-        const models: ModelDef[] = [
-            { name: 'Profile', fields: {} }
-        ];
-        const builder = new ActorTypeBuilder(models);
+  it('should generate empty schema if no actor models', () => {
+    const models: ModelDef[] = [{ name: 'Profile', fields: {} }];
+    const builder = new ActorTypeBuilder(models);
 
-        builder.ensure(sourceFile);
+    builder.ensure(sourceFile);
 
-        expect(sourceFile.getFullText().trim()).toBe('');
-    });
+    expect(sourceFile.getFullText().trim()).toBe('');
+  });
 });

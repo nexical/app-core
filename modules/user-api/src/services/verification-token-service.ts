@@ -1,10 +1,10 @@
 // GENERATED CODE - DO NOT MODIFY
-import { db } from "@/lib/core/db";
-import { Logger } from "@/lib/core/logger";
-import type { ServiceResponse } from "@/types/service";
-import { HookSystem } from "@/lib/modules/hooks";
-import type { VerificationToken, Prisma } from "@prisma/client";
-import type { ApiActor } from "@/lib/api/api-docs";
+import { db } from '@/lib/core/db';
+import { Logger } from '@/lib/core/logger';
+import type { ServiceResponse } from '@/types/service';
+import { HookSystem } from '@/lib/modules/hooks';
+import type { VerificationToken, Prisma } from '@prisma/client';
+import type { ApiActor } from '@/lib/api/api-docs';
 
 // GENERATED CODE - DO NOT MODIFY
 /** Service class for VerificationToken-related business logic. */
@@ -20,17 +20,14 @@ export class VerificationTokenService {
         db.verificationToken.count({ where }),
       ]);
 
-      const filteredData = await HookSystem.filter(
-        "verificationToken.list",
-        data,
-      );
+      const filteredData = await HookSystem.filter('verificationToken.list', data);
 
       return { success: true, data: filteredData, total };
     } catch (error) {
-      Logger.error("VerificationToken list Error", error);
+      Logger.error('VerificationToken list Error', error);
       return {
         success: false,
-        error: "verificationToken.service.error.list_failed",
+        error: 'verificationToken.service.error.list_failed',
       };
     }
   }
@@ -47,17 +44,17 @@ export class VerificationTokenService {
       if (!data)
         return {
           success: false,
-          error: "verificationToken.service.error.not_found",
+          error: 'verificationToken.service.error.not_found',
         };
 
-      const filtered = await HookSystem.filter("verificationToken.read", data);
+      const filtered = await HookSystem.filter('verificationToken.read', data);
 
       return { success: true, data: filtered };
     } catch (error) {
-      Logger.error("VerificationToken get Error", error);
+      Logger.error('VerificationToken get Error', error);
       return {
         success: false,
-        error: "verificationToken.service.error.get_failed",
+        error: 'verificationToken.service.error.get_failed',
       };
     }
   }
@@ -68,34 +65,28 @@ export class VerificationTokenService {
     actor?: ApiActor,
   ): Promise<ServiceResponse<VerificationToken>> {
     try {
-      const input = await HookSystem.filter(
-        "verificationToken.beforeCreate",
-        data,
-      );
+      const input = await HookSystem.filter('verificationToken.beforeCreate', data);
 
       const newItem = await db.$transaction(async (tx) => {
         const created = await tx.verificationToken.create({
           data: input as any,
           select,
         });
-        await HookSystem.dispatch("verificationToken.created", {
+        await HookSystem.dispatch('verificationToken.created', {
           id: created.id,
-          actorId: "system",
+          actorId: 'system',
         });
         return created;
       });
 
-      const filtered = await HookSystem.filter(
-        "verificationToken.read",
-        newItem,
-      );
+      const filtered = await HookSystem.filter('verificationToken.read', newItem);
 
       return { success: true, data: filtered };
     } catch (error) {
-      Logger.error("VerificationToken create Error", error);
+      Logger.error('VerificationToken create Error', error);
       return {
         success: false,
-        error: "verificationToken.service.error.create_failed",
+        error: 'verificationToken.service.error.create_failed',
       };
     }
   }
@@ -107,10 +98,7 @@ export class VerificationTokenService {
     actor?: ApiActor,
   ): Promise<ServiceResponse<VerificationToken>> {
     try {
-      const input = await HookSystem.filter(
-        "verificationToken.beforeUpdate",
-        data,
-      );
+      const input = await HookSystem.filter('verificationToken.beforeUpdate', data);
 
       const updatedItem = await db.$transaction(async (tx) => {
         const updated = await tx.verificationToken.update({
@@ -118,24 +106,21 @@ export class VerificationTokenService {
           data: input as any,
           select,
         });
-        await HookSystem.dispatch("verificationToken.updated", {
+        await HookSystem.dispatch('verificationToken.updated', {
           id,
           changes: Object.keys(input),
         });
         return updated;
       });
 
-      const filtered = await HookSystem.filter(
-        "verificationToken.read",
-        updatedItem,
-      );
+      const filtered = await HookSystem.filter('verificationToken.read', updatedItem);
 
       return { success: true, data: filtered };
     } catch (error) {
-      Logger.error("VerificationToken update Error", error);
+      Logger.error('VerificationToken update Error', error);
       return {
         success: false,
-        error: "verificationToken.service.error.update_failed",
+        error: 'verificationToken.service.error.update_failed',
       };
     }
   }
@@ -144,14 +129,14 @@ export class VerificationTokenService {
     try {
       await db.$transaction(async (tx) => {
         await tx.verificationToken.delete({ where: { id } });
-        await HookSystem.dispatch("verificationToken.deleted", { id });
+        await HookSystem.dispatch('verificationToken.deleted', { id });
       });
       return { success: true };
     } catch (error) {
-      Logger.error("VerificationToken delete Error", error);
+      Logger.error('VerificationToken delete Error', error);
       return {
         success: false,
-        error: "verificationToken.service.error.delete_failed",
+        error: 'verificationToken.service.error.delete_failed',
       };
     }
   }

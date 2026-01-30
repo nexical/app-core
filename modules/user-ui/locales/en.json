@@ -1,299 +1,299 @@
 {
-    "user": {
-        "welcome": "Welcome back",
-        "profile": "Profile",
-        "settings": {
-            "title": "User Settings",
-            "profile": {
-                "title": "Profile Information",
-                "description": "Keep your identity and contact information up to date.",
-                "name_label": "Name",
-                "username_label": "Username",
-                "email_label": "Email Address",
-                "save_button": "Update Profile",
-                "success_title": "Profile Updated",
-                "success_message": "Your profile information has been successfully updated.",
-                "error_title": "Update Failed",
-                "error_message": "An error occurred while updating your profile."
-            },
-            "validation": {
-                "email_invalid": "Please enter a valid email address"
-            }
+  "user": {
+    "welcome": "Welcome back",
+    "profile": "Profile",
+    "settings": {
+      "title": "User Settings",
+      "profile": {
+        "title": "Profile Information",
+        "description": "Keep your identity and contact information up to date.",
+        "name_label": "Name",
+        "username_label": "Username",
+        "email_label": "Email Address",
+        "save_button": "Update Profile",
+        "success_title": "Profile Updated",
+        "success_message": "Your profile information has been successfully updated.",
+        "error_title": "Update Failed",
+        "error_message": "An error occurred while updating your profile."
+      },
+      "validation": {
+        "email_invalid": "Please enter a valid email address"
+      }
+    },
+    "tokens": {
+      "meta_title": "API Tokens",
+      "title": "Personal Access Tokens",
+      "subtitle": "Manage tokens that access the API on your behalf.",
+      "create_button": "Create Token",
+      "create_dialog": {
+        "title": "Create Personal Access Token",
+        "description": "Create a token to access the API. You will only see it once."
+      },
+      "name_label": "Token Name",
+      "warning_copy": "Make sure to copy your personal access token now. You won't be able to see it again!",
+      "your_token": "Your Token",
+      "revoke_confirm": "Are you sure you want to revoke this token?",
+      "revoked_success": "Token revoked",
+      "table": {
+        "name": "Name",
+        "last_used": "Last Used",
+        "created": "Created"
+      },
+      "empty": "No active tokens found.",
+      "never": "Never"
+    },
+    "logout": "Log out",
+    "auth": {
+      "login": {
+        "title": "Welcome Back",
+        "description": "Enter your credentials to access your account.",
+        "identifier_label": "Username or Email",
+        "identifier_placeholder": "username or you@{{domain}}",
+        "password_label": "Password",
+        "forgot_password": "Forgot password?",
+        "submit_button": "Sign In",
+        "submitting_button": "Signing in...",
+        "register_text": "Don't have an account? ",
+        "register_link": "Register",
+        "error": {
+          "generic": "Login failed. Please try again.",
+          "invalid_credentials": "Invalid credentials.",
+          "account_deactivated": "Your account has been deactivated. Contact an administrator.",
+          "unverified_email": "Please verify your email address before logging in.",
+          "unexpected": "An unexpected error occurred. Please try again."
         },
-        "tokens": {
-            "meta_title": "API Tokens",
-            "title": "Personal Access Tokens",
-            "subtitle": "Manage tokens that access the API on your behalf.",
-            "create_button": "Create Token",
-            "create_dialog": {
-                "title": "Create Personal Access Token",
-                "description": "Create a token to access the API. You will only see it once."
-            },
-            "name_label": "Token Name",
-            "warning_copy": "Make sure to copy your personal access token now. You won't be able to see it again!",
-            "your_token": "Your Token",
-            "revoke_confirm": "Are you sure you want to revoke this token?",
-            "revoked_success": "Token revoked",
-            "table": {
-                "name": "Name",
-                "last_used": "Last Used",
-                "created": "Created"
-            },
-            "empty": "No active tokens found.",
-            "never": "Never"
-        },
-        "logout": "Log out",
-        "auth": {
-            "login": {
-                "title": "Welcome Back",
-                "description": "Enter your credentials to access your account.",
-                "identifier_label": "Username or Email",
-                "identifier_placeholder": "username or you@{{domain}}",
-                "password_label": "Password",
-                "forgot_password": "Forgot password?",
-                "submit_button": "Sign In",
-                "submitting_button": "Signing in...",
-                "register_text": "Don't have an account? ",
-                "register_link": "Register",
-                "error": {
-                    "generic": "Login failed. Please try again.",
-                    "invalid_credentials": "Invalid credentials.",
-                    "account_deactivated": "Your account has been deactivated. Contact an administrator.",
-                    "unverified_email": "Please verify your email address before logging in.",
-                    "unexpected": "An unexpected error occurred. Please try again."
-                },
-                "validation": {
-                    "identifier_required": "Username or email is required",
-                    "password_required": "Password is required"
-                }
-            },
-            "register": {
-                "title": "Create Account",
-                "description": "Enter your information to get started.",
-                "success_title": "Success!",
-                "success_description": "Verification email sent.",
-                "success_message": "Please check your inbox to verify your account.",
-                "proceed_to_login": "Proceed to Login",
-                "name_label": "Full Name",
-                "name_placeholder": "Adama Jensen",
-                "username_label": "Username",
-                "username_placeholder": "cool_user",
-                "email_label": "Email",
-                "email_placeholder": "email@{{domain}}",
-                "password_label": "Password",
-                "confirm_password_label": "Confirm Password",
-                "submit_button": "Create Account",
-                "submitting_button": "Creating Account...",
-                "signin_text": "Already have an account? ",
-                "signin_link": "Sign in",
-                "error": {
-                    "restricted": "Registration is restricted to invited users only.",
-                    "generic": "An error occurred during registration.",
-                    "unexpected": "An unexpected error occurred."
-                },
-                "validation": {
-                    "name_required": "Name is required",
-                    "username_min": "Username must be at least 3 characters",
-                    "username_regex": "Username must be alphanumeric or underscore",
-                    "email_invalid": "Invalid email address",
-                    "password_min": "Password must be at least 8 characters",
-                    "confirm_password_required": "Password confirmation is required",
-                    "passwords_mismatch": "Passwords do not match"
-                }
-            },
-            "forgot_password": {
-                "title": "Forgot Password",
-                "description": "Enter your email to receive a reset link.",
-                "success_title": "Check your email",
-                "success_description": "If an account exists, we've sent a password reset link.",
-                "return_to_login": "Return to Login",
-                "back_to_login": "Back to Login",
-                "email_label": "Email",
-                "email_placeholder": "email@{{domain}}",
-                "submit_button": "Send Reset Link",
-                "submitting_button": "Sending...",
-                "error": {
-                    "unexpected": "An unexpected error occurred."
-                },
-                "validation": {
-                    "email_invalid": "Invalid email address"
-                }
-            },
-            "reset_password": {
-                "title": "Reset Password",
-                "description": "Enter your new password below.",
-                "expired_title": "Link Expired",
-                "expired_message": "This password reset link is invalid or has expired.",
-                "request_new_link": "Request a new link",
-                "new_password_label": "New Password",
-                "confirm_password_label": "Confirm Password",
-                "submit_button": "Reset Password",
-                "submitting_button": "Resetting...",
-                "error": {
-                    "generic": "An error occurred.",
-                    "unexpected": "An unexpected error occurred."
-                },
-                "validation": {
-                    "password_min": "Password must be at least 8 characters",
-                    "confirm_password_required": "Password confirmation is required",
-                    "passwords_mismatch": "Passwords do not match"
-                }
-            }
-        },
-        "components": {
-            "password_input": {
-                "strength": {
-                    "too_weak": "Too weak",
-                    "weak": "Weak",
-                    "fair": "Fair",
-                    "good": "Good",
-                    "strong": "Strong"
-                },
-                "toggle": {
-                    "hide": "Hide password",
-                    "show": "Show password"
-                }
-            }
-        },
-        "pages": {
-            "verify_email": {
-                "title": "Verify Email",
-                "heading_verify": "Verify Your Email",
-                "message_sent": "We've sent a verification link to your email address. Please check your inbox and click the link to activate your account.",
-                "submessage": "Once verified, you will be able to access the dashboard.",
-                "title_token": "Verify Email",
-                "success_heading": "Email Verified!",
-                "success_message": "Your email has been successfully verified.",
-                "go_to_login": "Go to Login",
-                "failed_heading": "Verification Failed",
-                "failed_message_default": "The verification link is invalid or expired.",
-                "back_to_login": "Back to Login"
-            }
-        },
-        "admin": {
-            "nav": {
-                "admin": "Admin",
-                "users": "Users",
-                "settings": "Settings"
-            },
-            "page_title": "User Management - Admin",
-            "user_management": {
-                "title": "User Management",
-                "description": "Manage users and their permissions across the platform.",
-                "search_placeholder": "Search users...",
-                "table": {
-                    "name": "Name",
-                    "username": "Username",
-                    "email": "Email",
-                    "role": "Role",
-                    "status": "Status",
-                    "joined": "Joined",
-                    "actions": "Actions",
-                    "loading": "Loading users...",
-                    "empty": "No users found.",
-                    "na": "N/A"
-                },
-                "invite": {
-                    "button": "Invite User",
-                    "dialog": {
-                        "title": "Invite New User",
-                        "description": "Send an invitation email to a new user. They will receive a link to register.",
-                        "email_label": "Email Address",
-                        "email_placeholder": "colleague@{{domain}}",
-                        "role_label": "Role",
-                        "role_placeholder": "Select a role",
-                        "roles": {
-                            "employee": "Employee",
-                            "contractor": "Contractor",
-                            "admin": "Administrator"
-                        },
-                        "submit_button": "Send Invitation",
-                        "submitting_button": "Sending...",
-                        "success": "Invitation sent successfully!",
-                        "error": "Failed to invite user"
-                    }
-                },
-                "actions": {
-                    "open_menu": "Open menu",
-                    "label": "Actions",
-                    "copy_id": "Copy User ID",
-                    "edit_role": "Edit Role",
-                    "deactivate": "Deactivate User",
-                    "reactivate": "Reactivate User",
-                    "delete": "Delete User"
-                },
-                "delete": "Delete User",
-                "delete_permanently": "Delete Permanently",
-                "error": {
-                    "unexpected": "An unexpected error occurred."
-                }
-            },
-            "edit_role": {
-                "title": "Edit User Role",
-                "description": "Change the site-wide access level for this user.",
-                "role_label": "Role",
-                "role_placeholder": "Select a role",
-                "roles": {
-                    "admin": "Admin",
-                    "employee": "Employee",
-                    "contractor": "Contractor"
-                },
-                "cancel_button": "Cancel",
-                "submit_button": "Save Changes",
-                "submitting_button": "Saving..."
-            },
-            "error": {
-                "unexpected": "An unexpected error occurred."
-            }
-        },
-        "registry": {
-            "profile_form": {
-                "title": "Profile Settings",
-                "description": "Update your personal information.",
-                "section": {
-                    "identity": "Identity",
-                    "security": "Security",
-                    "danger_zone": "Danger Zone"
-                },
-                "label": {
-                    "display_name": "Display Name",
-                    "username": "Username",
-                    "email": "Email",
-                    "new_password": "New Password",
-                    "confirm_password": "Confirm New Password"
-                },
-                "placeholder": {
-                    "your_name": "Your Name",
-                    "username": "cool_user",
-                    "email": "Email",
-                    "password_blank": "Leave blank to keep current",
-                    "password_retype": "Retype new password"
-                },
-                "error": {
-                    "passwords_mismatch": "Passwords do not match",
-                    "unknown": "Unknown error",
-                    "delete_failed": "Failed to delete account",
-                    "email_mismatch": "Email does not match."
-                },
-                "success": "Profile updated successfully",
-                "button": {
-                    "save": "Save Changes",
-                    "delete": "Delete Account"
-                },
-                "danger": {
-                    "text": "Permanently delete your account and all associated data. This action cannot be undone.",
-                    "confirm_title": "Are you sure you want to delete your account? This cannot be undone.",
-                    "confirm_prompt": "Please type your email to confirm deletion:"
-                }
-            },
-            "user_menu": {
-                "settings": "Settings",
-                "admin_users": "User Management",
-                "logout": "Log out"
-            }
-        },
-        "common": {
-            "unknown": "Unknown User"
+        "validation": {
+          "identifier_required": "Username or email is required",
+          "password_required": "Password is required"
         }
+      },
+      "register": {
+        "title": "Create Account",
+        "description": "Enter your information to get started.",
+        "success_title": "Success!",
+        "success_description": "Verification email sent.",
+        "success_message": "Please check your inbox to verify your account.",
+        "proceed_to_login": "Proceed to Login",
+        "name_label": "Full Name",
+        "name_placeholder": "Adama Jensen",
+        "username_label": "Username",
+        "username_placeholder": "cool_user",
+        "email_label": "Email",
+        "email_placeholder": "email@{{domain}}",
+        "password_label": "Password",
+        "confirm_password_label": "Confirm Password",
+        "submit_button": "Create Account",
+        "submitting_button": "Creating Account...",
+        "signin_text": "Already have an account? ",
+        "signin_link": "Sign in",
+        "error": {
+          "restricted": "Registration is restricted to invited users only.",
+          "generic": "An error occurred during registration.",
+          "unexpected": "An unexpected error occurred."
+        },
+        "validation": {
+          "name_required": "Name is required",
+          "username_min": "Username must be at least 3 characters",
+          "username_regex": "Username must be alphanumeric or underscore",
+          "email_invalid": "Invalid email address",
+          "password_min": "Password must be at least 8 characters",
+          "confirm_password_required": "Password confirmation is required",
+          "passwords_mismatch": "Passwords do not match"
+        }
+      },
+      "forgot_password": {
+        "title": "Forgot Password",
+        "description": "Enter your email to receive a reset link.",
+        "success_title": "Check your email",
+        "success_description": "If an account exists, we've sent a password reset link.",
+        "return_to_login": "Return to Login",
+        "back_to_login": "Back to Login",
+        "email_label": "Email",
+        "email_placeholder": "email@{{domain}}",
+        "submit_button": "Send Reset Link",
+        "submitting_button": "Sending...",
+        "error": {
+          "unexpected": "An unexpected error occurred."
+        },
+        "validation": {
+          "email_invalid": "Invalid email address"
+        }
+      },
+      "reset_password": {
+        "title": "Reset Password",
+        "description": "Enter your new password below.",
+        "expired_title": "Link Expired",
+        "expired_message": "This password reset link is invalid or has expired.",
+        "request_new_link": "Request a new link",
+        "new_password_label": "New Password",
+        "confirm_password_label": "Confirm Password",
+        "submit_button": "Reset Password",
+        "submitting_button": "Resetting...",
+        "error": {
+          "generic": "An error occurred.",
+          "unexpected": "An unexpected error occurred."
+        },
+        "validation": {
+          "password_min": "Password must be at least 8 characters",
+          "confirm_password_required": "Password confirmation is required",
+          "passwords_mismatch": "Passwords do not match"
+        }
+      }
+    },
+    "components": {
+      "password_input": {
+        "strength": {
+          "too_weak": "Too weak",
+          "weak": "Weak",
+          "fair": "Fair",
+          "good": "Good",
+          "strong": "Strong"
+        },
+        "toggle": {
+          "hide": "Hide password",
+          "show": "Show password"
+        }
+      }
+    },
+    "pages": {
+      "verify_email": {
+        "title": "Verify Email",
+        "heading_verify": "Verify Your Email",
+        "message_sent": "We've sent a verification link to your email address. Please check your inbox and click the link to activate your account.",
+        "submessage": "Once verified, you will be able to access the dashboard.",
+        "title_token": "Verify Email",
+        "success_heading": "Email Verified!",
+        "success_message": "Your email has been successfully verified.",
+        "go_to_login": "Go to Login",
+        "failed_heading": "Verification Failed",
+        "failed_message_default": "The verification link is invalid or expired.",
+        "back_to_login": "Back to Login"
+      }
+    },
+    "admin": {
+      "nav": {
+        "admin": "Admin",
+        "users": "Users",
+        "settings": "Settings"
+      },
+      "page_title": "User Management - Admin",
+      "user_management": {
+        "title": "User Management",
+        "description": "Manage users and their permissions across the platform.",
+        "search_placeholder": "Search users...",
+        "table": {
+          "name": "Name",
+          "username": "Username",
+          "email": "Email",
+          "role": "Role",
+          "status": "Status",
+          "joined": "Joined",
+          "actions": "Actions",
+          "loading": "Loading users...",
+          "empty": "No users found.",
+          "na": "N/A"
+        },
+        "invite": {
+          "button": "Invite User",
+          "dialog": {
+            "title": "Invite New User",
+            "description": "Send an invitation email to a new user. They will receive a link to register.",
+            "email_label": "Email Address",
+            "email_placeholder": "colleague@{{domain}}",
+            "role_label": "Role",
+            "role_placeholder": "Select a role",
+            "roles": {
+              "employee": "Employee",
+              "contractor": "Contractor",
+              "admin": "Administrator"
+            },
+            "submit_button": "Send Invitation",
+            "submitting_button": "Sending...",
+            "success": "Invitation sent successfully!",
+            "error": "Failed to invite user"
+          }
+        },
+        "actions": {
+          "open_menu": "Open menu",
+          "label": "Actions",
+          "copy_id": "Copy User ID",
+          "edit_role": "Edit Role",
+          "deactivate": "Deactivate User",
+          "reactivate": "Reactivate User",
+          "delete": "Delete User"
+        },
+        "delete": "Delete User",
+        "delete_permanently": "Delete Permanently",
+        "error": {
+          "unexpected": "An unexpected error occurred."
+        }
+      },
+      "edit_role": {
+        "title": "Edit User Role",
+        "description": "Change the site-wide access level for this user.",
+        "role_label": "Role",
+        "role_placeholder": "Select a role",
+        "roles": {
+          "admin": "Admin",
+          "employee": "Employee",
+          "contractor": "Contractor"
+        },
+        "cancel_button": "Cancel",
+        "submit_button": "Save Changes",
+        "submitting_button": "Saving..."
+      },
+      "error": {
+        "unexpected": "An unexpected error occurred."
+      }
+    },
+    "registry": {
+      "profile_form": {
+        "title": "Profile Settings",
+        "description": "Update your personal information.",
+        "section": {
+          "identity": "Identity",
+          "security": "Security",
+          "danger_zone": "Danger Zone"
+        },
+        "label": {
+          "display_name": "Display Name",
+          "username": "Username",
+          "email": "Email",
+          "new_password": "New Password",
+          "confirm_password": "Confirm New Password"
+        },
+        "placeholder": {
+          "your_name": "Your Name",
+          "username": "cool_user",
+          "email": "Email",
+          "password_blank": "Leave blank to keep current",
+          "password_retype": "Retype new password"
+        },
+        "error": {
+          "passwords_mismatch": "Passwords do not match",
+          "unknown": "Unknown error",
+          "delete_failed": "Failed to delete account",
+          "email_mismatch": "Email does not match."
+        },
+        "success": "Profile updated successfully",
+        "button": {
+          "save": "Save Changes",
+          "delete": "Delete Account"
+        },
+        "danger": {
+          "text": "Permanently delete your account and all associated data. This action cannot be undone.",
+          "confirm_title": "Are you sure you want to delete your account? This cannot be undone.",
+          "confirm_prompt": "Please type your email to confirm deletion:"
+        }
+      },
+      "user_menu": {
+        "settings": "Settings",
+        "admin_users": "User Management",
+        "logout": "Log out"
+      }
+    },
+    "common": {
+      "unknown": "Unknown User"
     }
+  }
 }

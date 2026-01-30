@@ -1,9 +1,9 @@
 // GENERATED CODE - DO NOT MODIFY
-import { defineApi } from "@/lib/api/api-docs";
-import { ApiGuard } from "@/lib/api/api-guard";
-import { HookSystem } from "@/lib/modules/hooks";
-import { RequestPasswordResetAuthAction } from "@modules/user-api/src/actions/request-password-reset-auth";
-import type { RequestPasswordResetDTO } from "@modules/user-api/src/sdk";
+import { defineApi } from '@/lib/api/api-docs';
+import { ApiGuard } from '@/lib/api/api-guard';
+import { HookSystem } from '@/lib/modules/hooks';
+import { RequestPasswordResetAuthAction } from '@modules/user-api/src/actions/request-password-reset-auth';
+import type { RequestPasswordResetDTO } from '@modules/user-api/src/sdk';
 export const POST = defineApi(
   async (context) => {
     // 1. Body Parsing (Input)
@@ -12,14 +12,14 @@ export const POST = defineApi(
 
     // 2. Hook: Filter Input
     const input: RequestPasswordResetDTO = await HookSystem.filter(
-      "auth.requestPasswordReset.input",
+      'auth.requestPasswordReset.input',
       body,
     );
 
     // 3. Security Check
     // Pass merged input
     const combinedInput = { ...context.params, ...query, ...input };
-    await ApiGuard.protect(context, "anonymous", combinedInput);
+    await ApiGuard.protect(context, 'anonymous', combinedInput);
 
     // Inject userId from context for protected routes
     const user = (context as any).user;
@@ -28,16 +28,10 @@ export const POST = defineApi(
     }
 
     // 4. Action Execution
-    const result = await RequestPasswordResetAuthAction.run(
-      combinedInput,
-      context,
-    );
+    const result = await RequestPasswordResetAuthAction.run(combinedInput, context);
 
     // 5. Hook: Filter Output
-    const filteredResult = await HookSystem.filter(
-      "auth.requestPasswordReset.output",
-      result,
-    );
+    const filteredResult = await HookSystem.filter('auth.requestPasswordReset.output', result);
 
     // 6. Response
     if (!filteredResult.success) {
@@ -49,27 +43,27 @@ export const POST = defineApi(
     return { success: true, data: filteredResult.data };
   },
   {
-    summary: "Request password reset",
-    tags: ["Auth"],
+    summary: 'Request password reset',
+    tags: ['Auth'],
     requestBody: {
       content: {
-        "application/json": {
+        'application/json': {
           schema: {
-            type: "object",
+            type: 'object',
             properties: {
-              email: { type: "string" },
+              email: { type: 'string' },
             },
-            required: ["email"],
+            required: ['email'],
           },
         },
       },
     },
     responses: {
       200: {
-        description: "OK",
+        description: 'OK',
         content: {
-          "application/json": {
-            schema: { type: "object" },
+          'application/json': {
+            schema: { type: 'object' },
           },
         },
       },

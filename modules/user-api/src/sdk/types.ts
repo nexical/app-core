@@ -5,26 +5,26 @@ export type {
   VerificationToken,
   PasswordResetToken,
   Invitation,
-} from "@prisma/client";
+} from '@prisma/client';
 
 export const SiteRole = {
-  ADMIN: "ADMIN",
-  EMPLOYEE: "EMPLOYEE",
-  CONTRACTOR: "CONTRACTOR",
+  ADMIN: 'ADMIN',
+  EMPLOYEE: 'EMPLOYEE',
+  CONTRACTOR: 'CONTRACTOR',
 } as const;
 export type SiteRole = (typeof SiteRole)[keyof typeof SiteRole];
 
 export const UserStatus = {
-  ACTIVE: "ACTIVE",
-  INACTIVE: "INACTIVE",
-  BANNED: "BANNED",
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+  BANNED: 'BANNED',
 } as const;
 export type UserStatus = (typeof UserStatus)[keyof typeof UserStatus];
 
 export const UserMode = {
-  SINGLE: "SINGLE",
-  PUBLIC: "PUBLIC",
-  ADMIN: "ADMIN",
+  SINGLE: 'SINGLE',
+  PUBLIC: 'PUBLIC',
+  ADMIN: 'ADMIN',
 } as const;
 export type UserMode = (typeof UserMode)[keyof typeof UserMode];
 

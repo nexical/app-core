@@ -10,24 +10,23 @@ const mocks = vi.hoisted(() => {
     statSync: vi.fn(),
     mkdirSync: vi.fn(),
     writeFileSync: vi.fn(),
-    unlinkSync: vi.fn()
+    unlinkSync: vi.fn(),
   };
 });
 
 vi.mock('fs', () => {
   return {
     default: mocks,
-    ...mocks
+    ...mocks,
   };
 });
 
 vi.mock('node:fs', () => {
   return {
     default: mocks,
-    ...mocks
+    ...mocks,
   };
 });
-
 
 describe('ModelParser', () => {
   beforeEach(() => {
@@ -38,9 +37,9 @@ describe('ModelParser', () => {
     const raw = {
       models: {
         User: {
-          fields: { id: 'String' }
-        }
-      }
+          fields: { id: 'String' },
+        },
+      },
     };
     vi.mocked(fs.existsSync).mockReturnValue(true);
     vi.mocked(fs.readFileSync).mockReturnValue(JSON.stringify(raw)); // Yaml parser handles JSON too
@@ -82,13 +81,13 @@ models:
     expect(result.enums[0].members).toHaveLength(2);
 
     expect(result.models).toHaveLength(2);
-    const user = result.models.find(m => m.name === 'User');
+    const user = result.models.find((m) => m.name === 'User');
     expect(user).toBeDefined();
     expect(user?.fields.email.type).toBe('String');
     expect(user?.fields.status.isEnum).toBe(true);
     expect(user?.fields.status.enumValues).toEqual(['ACTIVE', 'INACTIVE']);
 
-    const post = result.models.find(m => m.name === 'Post');
+    const post = result.models.find((m) => m.name === 'Post');
     expect(post?.fields.author.isRelation).toBe(true);
     expect(post?.fields.author.relationTo).toBe('User');
   });
@@ -140,7 +139,7 @@ enums:
 
     const result = ModelParser.parse('models.yaml');
     expect(result.enums[0].members).toHaveLength(2);
-    expect(result.enums[0].members.some(m => m.name === 'HIGH')).toBe(true);
+    expect(result.enums[0].members.some((m) => m.name === 'HIGH')).toBe(true);
   });
 
   it('should handle diverse enum field values', () => {

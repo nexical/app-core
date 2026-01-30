@@ -6,17 +6,17 @@ import { BaseResource } from '@nexical/sdk-core';
 import type { __Entity__ } from '@prisma/client';
 
 export class __Entity__SDK extends BaseResource {
-    /**
-     * List all resources
-     */
-    async list() {
-        return this.request<__Entity__[]>('GET', '/__resource__');
-    }
+  /**
+   * List all resources
+   */
+  async list() {
+    return this.request<__Entity__[]>('GET', '/__resource__');
+  }
 
-    /**
-     * Create a resource
-     */
-    async create(data: { name: string }) {
-        return this.request<__Entity__>('POST', '/__resource__', data);
-    }
+  /**
+   * Create a resource
+   */
+  async create(data: { name: string }) {
+    return this.request<__Entity__>('POST', '/__resource__', data);
+  }
 }

@@ -9,41 +9,22 @@
     "tests/**/*",
     "packages/**/*"
   ],
-  "exclude": [
-    "dist",
-    "node_modules"
-  ],
+  "exclude": ["dist", "node_modules"],
   "compilerOptions": {
     "target": "ES2022",
-    "lib": [
-      "DOM",
-      "DOM.Iterable",
-      "ES2022"
-    ],
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "module": "ESNext",
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
     "jsxImportSource": "react",
     "baseUrl": ".",
     "paths": {
-      "@/*": [
-        "src/*"
-      ],
-      "@modules/*": [
-        "modules/*"
-      ],
-      "@tests/*": [
-        "tests/*"
-      ],
-      "@nexical/agent/*": [
-        "packages/agent/*"
-      ],
-      "@nexical/generator/*": [
-        "packages/generator/src/*"
-      ],
-      "@nexical/generator-tests/*": [
-        "packages/generator/tests/unit/*"
-      ]
+      "@/*": ["src/*"],
+      "@modules/*": ["modules/*"],
+      "@tests/*": ["tests/*"],
+      "@nexical/agent/*": ["packages/agent/*"],
+      "@nexical/generator/*": ["packages/generator/src/*"],
+      "@nexical/generator-tests/*": ["packages/generator/tests/unit/*"]
     },
     "esModuleInterop": true,
     "skipLibCheck": true

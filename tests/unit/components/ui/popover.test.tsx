@@ -5,21 +5,19 @@ import { describe, it, expect } from 'vitest';
 import { Popover, PopoverTrigger, PopoverContent, PopoverAnchor } from '@/components/ui/popover';
 
 describe('Popover', () => {
-    it('should show content when trigger is clicked', async () => {
-        render(
-            <Popover>
-                <PopoverAnchor>Anchor</PopoverAnchor>
-                <PopoverTrigger>Open Popover</PopoverTrigger>
-                <PopoverContent className="custom-pop">
-                    Popover Content
-                </PopoverContent>
-            </Popover>
-        );
+  it('should show content when trigger is clicked', async () => {
+    render(
+      <Popover>
+        <PopoverAnchor>Anchor</PopoverAnchor>
+        <PopoverTrigger>Open Popover</PopoverTrigger>
+        <PopoverContent className="custom-pop">Popover Content</PopoverContent>
+      </Popover>,
+    );
 
-        const trigger = screen.getByText('Open Popover');
-        fireEvent.click(trigger);
+    const trigger = screen.getByText('Open Popover');
+    fireEvent.click(trigger);
 
-        expect(await screen.findByText('Popover Content')).toBeDefined();
-        expect(document.querySelector('.custom-pop')).toBeDefined();
-    });
+    expect(await screen.findByText('Popover Content')).toBeDefined();
+    expect(document.querySelector('.custom-pop')).toBeDefined();
+  });
 });

@@ -1,9 +1,9 @@
 // GENERATED CODE - DO NOT MODIFY
-import { defineApi } from "@/lib/api/api-docs";
-import { ApiGuard } from "@/lib/api/api-guard";
-import { HookSystem } from "@/lib/modules/hooks";
-import { VerifyEmailAuthAction } from "@modules/user-api/src/actions/verify-email-auth";
-import type { VerifyEmailDTO } from "@modules/user-api/src/sdk";
+import { defineApi } from '@/lib/api/api-docs';
+import { ApiGuard } from '@/lib/api/api-guard';
+import { HookSystem } from '@/lib/modules/hooks';
+import { VerifyEmailAuthAction } from '@modules/user-api/src/actions/verify-email-auth';
+import type { VerifyEmailDTO } from '@modules/user-api/src/sdk';
 export const POST = defineApi(
   async (context) => {
     // 1. Body Parsing (Input)
@@ -11,15 +11,12 @@ export const POST = defineApi(
     const query = Object.fromEntries(new URL(context.request.url).searchParams);
 
     // 2. Hook: Filter Input
-    const input: VerifyEmailDTO = await HookSystem.filter(
-      "auth.verifyEmail.input",
-      body,
-    );
+    const input: VerifyEmailDTO = await HookSystem.filter('auth.verifyEmail.input', body);
 
     // 3. Security Check
     // Pass merged input
     const combinedInput = { ...context.params, ...query, ...input };
-    await ApiGuard.protect(context, "anonymous", combinedInput);
+    await ApiGuard.protect(context, 'anonymous', combinedInput);
 
     // Inject userId from context for protected routes
     const user = (context as any).user;
@@ -31,10 +28,7 @@ export const POST = defineApi(
     const result = await VerifyEmailAuthAction.run(combinedInput, context);
 
     // 5. Hook: Filter Output
-    const filteredResult = await HookSystem.filter(
-      "auth.verifyEmail.output",
-      result,
-    );
+    const filteredResult = await HookSystem.filter('auth.verifyEmail.output', result);
 
     // 6. Response
     if (!filteredResult.success) {
@@ -46,27 +40,27 @@ export const POST = defineApi(
     return { success: true, data: filteredResult.data };
   },
   {
-    summary: "Verify email address",
-    tags: ["Auth"],
+    summary: 'Verify email address',
+    tags: ['Auth'],
     requestBody: {
       content: {
-        "application/json": {
+        'application/json': {
           schema: {
-            type: "object",
+            type: 'object',
             properties: {
-              token: { type: "string" },
+              token: { type: 'string' },
             },
-            required: ["token"],
+            required: ['token'],
           },
         },
       },
     },
     responses: {
       200: {
-        description: "OK",
+        description: 'OK',
         content: {
-          "application/json": {
-            schema: { type: "object" },
+          'application/json': {
+            schema: { type: 'object' },
           },
         },
       },

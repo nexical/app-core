@@ -4,9 +4,9 @@ import { EntityOpsService } from '../services/entity-ops-service';
 
 /**
  * AGENT JOB PROCESSOR TEMPLATE
- * 
+ *
  * LOCATION: modules/{name}/src/agent/
- * 
+ *
  * STRICT RULES:
  * 1. NEVER import 'db' or 'prisma' here. Use Services or context.api.
  * 2. MUST define a 'public static jobType' string. (NOT an instance property).
@@ -33,12 +33,12 @@ export class EntitySyncProcessor extends JobProcessor<{ entityId: string }> {
    * Core processing logic.
    */
   public async process(
-    job: AgentJob<{ entityId: string }>, 
-    context: AgentContext
+    job: AgentJob<{ entityId: string }>,
+    context: AgentContext,
   ): Promise<AgentResult | void> {
     // CRITICAL: Use job.payload, not job.data
     const { entityId } = job.payload;
-    
+
     // Use context.logger for job-specific logging
     context.logger.info(`Starting sync for entity: ${entityId}`);
 
@@ -48,7 +48,7 @@ export class EntitySyncProcessor extends JobProcessor<{ entityId: string }> {
     // 1. Data Retrieval (via Service)
     // We call the service method which accepts an actor.
     const entityResult = await EntityOpsService.getById(entityId, systemActor);
-    
+
     if (!entityResult.success || !entityResult.data) {
       throw new Error(`Entity ${entityId} not found for sync.`);
     }
@@ -58,22 +58,22 @@ export class EntitySyncProcessor extends JobProcessor<{ entityId: string }> {
     const otherData = await context.api.otherModule.getData.query({ id: entityId });
 
     if (!otherData.success) {
-      return { 
-        success: false, 
-        error: `Failed to fetch data from other module: ${otherData.error}` 
+      return {
+        success: false,
+        error: `Failed to fetch data from other module: ${otherData.error}`,
       };
     }
 
     // 3. Update (via Service)
     const updateResult = await EntityOpsService.update(
-        entityId, 
-        { syncedAt: new Date() }, 
-        systemActor
+      entityId,
+      { syncedAt: new Date() },
+      systemActor,
     );
 
-    return { 
-        success: updateResult.success, 
-        data: updateResult.data 
+    return {
+      success: updateResult.success,
+      data: updateResult.data,
     };
   }
 }

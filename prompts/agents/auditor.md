@@ -30,25 +30,25 @@ Focus on:
 6. Helper/Utils usage.
 
 4.  **Analyze File Headers**: Check files for `// GENERATED CODE - DO NOT MODIFY`.
-    *   If present, explicitly tag the file object with `"generated": true`.
-    *   If a directory contains mostly generated files, note this pattern.
+    - If present, explicitly tag the file object with `"generated": true`.
+    - If a directory contains mostly generated files, note this pattern.
 
-5.  **Output JSON**: Write the *Canon* to `{{ output_file }}`.
-Structure:
-{
-  "patterns": [
+5.  **Output JSON**: Write the _Canon_ to `{{ output_file }}`.
+    Structure:
     {
-      "name": "Pattern Name",
-      "description": "Description of the pattern",
-      "example": "Code snippet or file path example",
-      "rule": "Strict rule description"
+    "patterns": [
+    {
+    "name": "Pattern Name",
+    "description": "Description of the pattern",
+    "example": "Code snippet or file path example",
+    "rule": "Strict rule description"
     }
-  ],
-  "structure": {
+    ],
+    "structure": {
     "directories": ["list", "of", "important", "dirs"],
     "files": ["naming-convention-*.ts"]
-  }
-}
+    }
+    }
 
 Use the `write_to_file` tool to save the JSON.
 </task>

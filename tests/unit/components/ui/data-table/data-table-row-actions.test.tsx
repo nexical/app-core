@@ -5,29 +5,29 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { DataTableRowActions } from '../../../../../src/components/ui/data-table/data-table-row-actions';
 
 describe('DataTableRowActions', () => {
-    let rowMock: any;
+  let rowMock: any;
 
-    beforeEach(() => {
-        rowMock = {
-            getValue: vi.fn(),
-        };
-    });
+  beforeEach(() => {
+    rowMock = {
+      getValue: vi.fn(),
+    };
+  });
 
-    afterEach(() => {
-        cleanup();
-    });
+  afterEach(() => {
+    cleanup();
+  });
 
-    it('should render menu trigger', () => {
-        render(<DataTableRowActions row={rowMock} />);
-        expect(screen.getByText('Open menu')).toBeDefined();
-    });
+  it('should render menu trigger', () => {
+    render(<DataTableRowActions row={rowMock} />);
+    expect(screen.getByText('Open menu')).toBeDefined();
+  });
 
-    it('should show actions on click', () => {
-        render(<DataTableRowActions row={rowMock} />);
-        const button = screen.getByRole('button');
-        fireEvent.click(button);
+  it('should show actions on click', () => {
+    render(<DataTableRowActions row={rowMock} />);
+    const button = screen.getByRole('button');
+    fireEvent.click(button);
 
-        // Radix menu items
-        // expect(screen.getByText('Edit')).toBeDefined();
-    });
+    // Radix menu items
+    // expect(screen.getByText('Edit')).toBeDefined();
+  });
 });

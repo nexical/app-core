@@ -1,8 +1,8 @@
 /**
  * Storage Provider Pattern
- * 
+ *
  * Location: src/lib/core/storage/
- * 
+ *
  * Rules:
  * 1. Define the interface in 'interface.ts'.
  * 2. Implementations (Local, S3, R2) in separate files (e.g., local.ts).
@@ -11,9 +11,9 @@
 
 // --- File: src/lib/core/storage/interface.ts ---
 export interface StorageProvider {
-    upload(key: string, content: Buffer | string | Uint8Array, mimeType: string): Promise<string>;
-    getDownloadUrl(key: string): Promise<string>;
-    delete(key: string): Promise<void>;
+  upload(key: string, content: Buffer | string | Uint8Array, mimeType: string): Promise<string>;
+  getDownloadUrl(key: string): Promise<string>;
+  delete(key: string): Promise<void>;
 }
 
 // --- Example Implementation: src/lib/core/storage/local.ts ---

@@ -1,10 +1,10 @@
 // GENERATED CODE - DO NOT MODIFY
-import { describe, it, expect, beforeEach } from "vitest";
-import { ApiClient } from "@tests/integration/lib/client";
-import { Factory } from "@tests/integration/lib/factory";
-import { TestServer } from "@tests/integration/lib/server";
+import { describe, it, expect, beforeEach } from 'vitest';
+import { ApiClient } from '@tests/integration/lib/client';
+import { Factory } from '@tests/integration/lib/factory';
+import { TestServer } from '@tests/integration/lib/server';
 
-const _test = describe("User API - Delete", () => {
+const _test = describe('User API - Delete', () => {
   let client: ApiClient;
 
   beforeEach(async () => {
@@ -12,9 +12,9 @@ const _test = describe("User API - Delete", () => {
   });
 
   // DELETE /api/user/[id]
-  describe("DELETE /api/user/[id]", () => {
-    it("should delete user", async () => {
-      const actor = await client.as("user", { role: "ADMIN" });
+  describe('DELETE /api/user/[id]', () => {
+    it('should delete user', async () => {
+      const actor = await client.as('user', { role: 'ADMIN' });
 
       const target = actor;
 

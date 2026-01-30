@@ -1,25 +1,25 @@
-import { type VariableStatementConfig } from "../../types";
-import { StatementPrimitive } from "./statement-primitive";
+import { type VariableStatementConfig } from '../../types';
+import { StatementPrimitive } from './statement-primitive';
 
 export class VariableStatementPrimitive extends StatementPrimitive<any, VariableStatementConfig> {
-    generate(): string {
-        // e.g. "const name: Type = init;"
-        const parts: string[] = [];
-        // Kind
-        parts.push(this.config.declarationKind);
+  generate(): string {
+    // e.g. "const name: Type = init;"
+    const parts: string[] = [];
+    // Kind
+    parts.push(this.config.declarationKind);
 
-        const declarations = this.config.declarations.map(d => {
-            let decl = d.name;
-            if (d.type) {
-                decl += `: ${d.type}`;
-            }
-            if (d.initializer) {
-                decl += ` = ${d.initializer}`;
-            }
-            return decl;
-        });
+    const declarations = this.config.declarations.map((d) => {
+      let decl = d.name;
+      if (d.type) {
+        decl += `: ${d.type}`;
+      }
+      if (d.initializer) {
+        decl += ` = ${d.initializer}`;
+      }
+      return decl;
+    });
 
-        parts.push(declarations.join(', '));
-        return parts.join(' ') + ';';
-    }
+    parts.push(declarations.join(', '));
+    return parts.join(' ') + ';';
+  }
 }

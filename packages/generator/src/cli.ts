@@ -11,51 +11,53 @@ const __dirname = path.dirname(__filename);
 // Exported for testing/programmatic usage
 export const program = new Command();
 
-program
-    .name('arc')
-    .description('ArcNexus Generator CLI')
-    .version('0.0.1');
+program.name('arc').description('ArcNexus Generator CLI').version('0.0.1');
 
 async function registerCommands() {
-    const commandsDir = path.join(__dirname, 'commands');
+  const commandsDir = path.join(__dirname, 'commands');
 
-    // Recursive function to find command files
-    async function scanDir(dir: string) {
-        if (!fs.existsSync(dir)) return;
+  // Recursive function to find command files
+  async function scanDir(dir: string) {
+    if (!fs.existsSync(dir)) return;
 
-        const entries = fs.readdirSync(dir, { withFileTypes: true });
+    const entries = fs.readdirSync(dir, { withFileTypes: true });
 
-        for (const entry of entries) {
-            const fullPath = path.join(dir, entry.name);
+    for (const entry of entries) {
+      const fullPath = path.join(dir, entry.name);
 
-            if (entry.isDirectory()) {
-                await scanDir(fullPath);
-            } else if (entry.isFile() && (entry.name.endsWith('.ts') || entry.name.endsWith('.js')) && entry.name !== 'base.ts' && !entry.name.endsWith('.d.ts')) {
-                try {
-                    const module = await import(fullPath);
-                    // Assumes the command class is the default export
-                    if (module.default && typeof module.default === 'function') {
-                        const commandInstance = new module.default();
-                        if (commandInstance.getCommand) {
-                            program.addCommand(commandInstance.getCommand());
-                        }
-                    }
-                } catch (error) {
-                    console.error(chalk.red(`Failed to load command from ${entry.name}:`), error);
-                }
+      if (entry.isDirectory()) {
+        await scanDir(fullPath);
+      } else if (
+        entry.isFile() &&
+        (entry.name.endsWith('.ts') || entry.name.endsWith('.js')) &&
+        entry.name !== 'base.ts' &&
+        !entry.name.endsWith('.d.ts')
+      ) {
+        try {
+          const module = await import(fullPath);
+          // Assumes the command class is the default export
+          if (module.default && typeof module.default === 'function') {
+            const commandInstance = new module.default();
+            if (commandInstance.getCommand) {
+              program.addCommand(commandInstance.getCommand());
             }
+          }
+        } catch (error) {
+          console.error(chalk.red(`Failed to load command from ${entry.name}:`), error);
         }
+      }
     }
+  }
 
-    await scanDir(commandsDir);
+  await scanDir(commandsDir);
 }
 
 export async function main() {
-    try {
-        await registerCommands();
-        await program.parseAsync(process.argv);
-    } catch (error) {
-        console.error(chalk.red('Unexpected error:'), error);
-        process.exit(1);
-    }
+  try {
+    await registerCommands();
+    await program.parseAsync(process.argv);
+  } catch (error) {
+    console.error(chalk.red('Unexpected error:'), error);
+    process.exit(1);
+  }
 }

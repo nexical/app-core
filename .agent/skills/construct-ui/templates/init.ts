@@ -6,16 +6,15 @@ import { FooterRegistry } from '@/lib/registries/footer-registry';
 
 /**
  * Module Initialization Template
- * 
+ *
  * Rules:
  * - Naming: async function init{ModuleName}Module()
  * - Registers Shells, Head items, and Footers.
  * - Must include an immediate call at the bottom.
  */
 export async function init__Name__Module() {
-    
-    // 1. Register Module-Specific Shells
-    /*
+  // 1. Register Module-Specific Shells
+  /*
     ShellRegistry.register(
         '__name__-shell', 
         MyShell, 
@@ -23,15 +22,15 @@ export async function init__Name__Module() {
     );
     */
 
-    // 2. Register Global Head Items
-    HeadRegistry.register({
-        tag: 'meta',
-        props: { name: 'module-__name__-active', content: 'true' },
-        key: 'module-__name__'
-    });
+  // 2. Register Global Head Items
+  HeadRegistry.register({
+    tag: 'meta',
+    props: { name: 'module-__name__-active', content: 'true' },
+    key: 'module-__name__',
+  });
 
-    // 3. Register Contextual Footers
-    /*
+  // 3. Register Contextual Footers
+  /*
     FooterRegistry.register(
         '__name__-footer', 
         MyFooter, 

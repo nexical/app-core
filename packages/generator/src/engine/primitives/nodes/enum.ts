@@ -1,57 +1,58 @@
-import { SourceFile, EnumDeclaration, ModuleDeclaration } from "ts-morph";
-import { BasePrimitive } from "../core/base-primitive";
-import { type EnumConfig } from "../../types";
-import { type ValidationResult } from "../contracts";
+import { SourceFile, EnumDeclaration, ModuleDeclaration } from 'ts-morph';
+import { BasePrimitive } from '../core/base-primitive';
+import { type EnumConfig } from '../../types';
+import { type ValidationResult } from '../contracts';
 
 export class EnumPrimitive extends BasePrimitive<EnumDeclaration, EnumConfig> {
+  find(parent: SourceFile | ModuleDeclaration) {
+    return parent.getEnum(this.config.name);
+  }
 
-    find(parent: SourceFile | ModuleDeclaration) {
-        return parent.getEnum(this.config.name);
-    }
+  create(parent: SourceFile | ModuleDeclaration): EnumDeclaration {
+    return parent.addEnum({
+      name: this.config.name,
+      isExported: this.config.isExported,
+      members: this.config.members.map((m) => ({
+        name: m.name,
+        value: m.value,
+      })),
+    });
+  }
 
-    create(parent: SourceFile | ModuleDeclaration): EnumDeclaration {
-        return parent.addEnum({
-            name: this.config.name,
-            isExported: this.config.isExported,
-            members: this.config.members.map(m => ({
-                name: m.name,
-                value: m.value
-            }))
+  update(node: EnumDeclaration) {
+    this.config.members.forEach((memberConfig) => {
+      const member = node.getMember(memberConfig.name);
+      if (member) {
+        // Update value if different
+        if (member.getValue() !== memberConfig.value) {
+          member.setValue(memberConfig.value);
+        }
+      } else {
+        // Add new member
+        node.addMember({
+          name: memberConfig.name,
+          value: memberConfig.value,
         });
-    }
+      }
+    });
+  }
 
-    update(node: EnumDeclaration) {
-        this.config.members.forEach(memberConfig => {
-            const member = node.getMember(memberConfig.name);
-            if (member) {
-                // Update value if different
-                if (member.getValue() !== memberConfig.value) {
-                    member.setValue(memberConfig.value);
-                }
-            } else {
-                // Add new member
-                node.addMember({
-                    name: memberConfig.name,
-                    value: memberConfig.value
-                });
-            }
-        });
-    }
+  validate(node: EnumDeclaration): ValidationResult {
+    const issues: string[] = [];
 
-    validate(node: EnumDeclaration): ValidationResult {
-        const issues: string[] = [];
+    this.config.members.forEach((m) => {
+      const member = node.getMember(m.name);
+      if (!member) {
+        issues.push(`Enum '${this.config.name}' missing member '${m.name}'`);
+      } else {
+        if (member.getValue() !== m.value) {
+          issues.push(
+            `Enum '${this.config.name}' member '${m.name}' value mismatch. Expected: ${m.value}, Found: ${member.getValue()}`,
+          );
+        }
+      }
+    });
 
-        this.config.members.forEach(m => {
-            const member = node.getMember(m.name);
-            if (!member) {
-                issues.push(`Enum '${this.config.name}' missing member '${m.name}'`);
-            } else {
-                if (member.getValue() !== m.value) {
-                    issues.push(`Enum '${this.config.name}' member '${m.name}' value mismatch. Expected: ${m.value}, Found: ${member.getValue()}`);
-                }
-            }
-        });
-
-        return { valid: issues.length === 0, issues };
-    }
+    return { valid: issues.length === 0, issues };
+  }
 }

@@ -4,18 +4,18 @@ import UserProfileForm from '@modules/user-ui/src/registry/details-panel/10-user
 import { NavProvider } from '@/lib/ui/nav-context';
 
 const mockUser = {
-    id: '1',
-    name: 'Test User',
-    email: 'test@example.com',
+  id: '1',
+  name: 'Test User',
+  email: 'test@example.com',
 };
 
 test('renders user profile form with user data', () => {
-    render(
-        <NavProvider value={{ context: { user: mockUser }, workspaces: [] }}>
-            <UserProfileForm props={{}} />
-        </NavProvider>
-    );
+  render(
+    <NavProvider value={{ context: { user: mockUser }, workspaces: [] }}>
+      <UserProfileForm props={{}} />
+    </NavProvider>,
+  );
 
-    expect(screen.getByDisplayValue('Test User')).toBeDefined();
-    expect(screen.getByDisplayValue('test@example.com')).toBeDefined();
+  expect(screen.getByDisplayValue('Test User')).toBeDefined();
+  expect(screen.getByDisplayValue('test@example.com')).toBeDefined();
 });

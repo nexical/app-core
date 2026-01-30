@@ -5,44 +5,44 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { DataTableToolbar } from '../../../../../src/components/ui/data-table/data-table-toolbar';
 
 describe('DataTableToolbar', () => {
-    let tableMock: any;
+  let tableMock: any;
 
-    beforeEach(() => {
-        tableMock = {
-            getState: vi.fn().mockReturnValue({
-                columnFilters: []
-            }),
-            getColumn: vi.fn().mockReturnValue({
-                getFilterValue: vi.fn().mockReturnValue(''),
-                setFilterValue: vi.fn(),
-            }),
-            resetColumnFilters: vi.fn(),
-            getAllColumns: vi.fn().mockReturnValue([]),
-        };
-    });
+  beforeEach(() => {
+    tableMock = {
+      getState: vi.fn().mockReturnValue({
+        columnFilters: [],
+      }),
+      getColumn: vi.fn().mockReturnValue({
+        getFilterValue: vi.fn().mockReturnValue(''),
+        setFilterValue: vi.fn(),
+      }),
+      resetColumnFilters: vi.fn(),
+      getAllColumns: vi.fn().mockReturnValue([]),
+    };
+  });
 
-    afterEach(() => {
-        cleanup();
-    });
+  afterEach(() => {
+    cleanup();
+  });
 
-    it('should render input and handle filtering', () => {
-        render(<DataTableToolbar table={tableMock} />);
+  it('should render input and handle filtering', () => {
+    render(<DataTableToolbar table={tableMock} />);
 
-        const input = screen.getByPlaceholderText('Filter...');
-        fireEvent.change(input, { target: { value: 'test' } });
+    const input = screen.getByPlaceholderText('Filter...');
+    fireEvent.change(input, { target: { value: 'test' } });
 
-        expect(tableMock.getColumn).toHaveBeenCalledWith('name');
-        expect(tableMock.getColumn('name').setFilterValue).toHaveBeenCalledWith('test');
-    });
+    expect(tableMock.getColumn).toHaveBeenCalledWith('name');
+    expect(tableMock.getColumn('name').setFilterValue).toHaveBeenCalledWith('test');
+  });
 
-    it('should show reset button when filtered', () => {
-        tableMock.getState.mockReturnValue({ columnFilters: [{ id: 'name', value: 'test' }] });
-        render(<DataTableToolbar table={tableMock} />);
+  it('should show reset button when filtered', () => {
+    tableMock.getState.mockReturnValue({ columnFilters: [{ id: 'name', value: 'test' }] });
+    render(<DataTableToolbar table={tableMock} />);
 
-        const resetButton = screen.getByText('Reset');
-        expect(resetButton).toBeDefined();
+    const resetButton = screen.getByText('Reset');
+    expect(resetButton).toBeDefined();
 
-        fireEvent.click(resetButton);
-        expect(tableMock.resetColumnFilters).toHaveBeenCalled();
-    });
+    fireEvent.click(resetButton);
+    expect(tableMock.resetColumnFilters).toHaveBeenCalled();
+  });
 });

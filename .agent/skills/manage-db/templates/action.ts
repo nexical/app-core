@@ -6,9 +6,9 @@ import type { ServiceResponse } from '@/types/service';
 /**
  * ACTION TEMPLATE: Orchestration Layer
  * Actions handle validation and multi-service workflows.
- * 
+ *
  * LOCATION: modules/{name}/src/actions/
- * 
+ *
  * STRICT RULES:
  * 1. NEVER import 'db' or 'prisma' here. Use Services.
  * 2. ALWAYS define a 'static schema' for input validation.
@@ -32,7 +32,7 @@ export class SyncEntityAction {
    */
   static async run(
     input: unknown, // Use unknown to force validation
-    context: APIContext
+    context: APIContext,
   ): Promise<ServiceResponse<unknown>> {
     // 1. MANDATORY VALIDATION
     // This ensures we catch malformed input immediately.

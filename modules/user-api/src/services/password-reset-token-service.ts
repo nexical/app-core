@@ -1,10 +1,10 @@
 // GENERATED CODE - DO NOT MODIFY
-import { db } from "@/lib/core/db";
-import { Logger } from "@/lib/core/logger";
-import type { ServiceResponse } from "@/types/service";
-import { HookSystem } from "@/lib/modules/hooks";
-import type { PasswordResetToken, Prisma } from "@prisma/client";
-import type { ApiActor } from "@/lib/api/api-docs";
+import { db } from '@/lib/core/db';
+import { Logger } from '@/lib/core/logger';
+import type { ServiceResponse } from '@/types/service';
+import { HookSystem } from '@/lib/modules/hooks';
+import type { PasswordResetToken, Prisma } from '@prisma/client';
+import type { ApiActor } from '@/lib/api/api-docs';
 
 // GENERATED CODE - DO NOT MODIFY
 /** Service class for PasswordResetToken-related business logic. */
@@ -20,17 +20,14 @@ export class PasswordResetTokenService {
         db.passwordResetToken.count({ where }),
       ]);
 
-      const filteredData = await HookSystem.filter(
-        "passwordResetToken.list",
-        data,
-      );
+      const filteredData = await HookSystem.filter('passwordResetToken.list', data);
 
       return { success: true, data: filteredData, total };
     } catch (error) {
-      Logger.error("PasswordResetToken list Error", error);
+      Logger.error('PasswordResetToken list Error', error);
       return {
         success: false,
-        error: "passwordResetToken.service.error.list_failed",
+        error: 'passwordResetToken.service.error.list_failed',
       };
     }
   }
@@ -47,17 +44,17 @@ export class PasswordResetTokenService {
       if (!data)
         return {
           success: false,
-          error: "passwordResetToken.service.error.not_found",
+          error: 'passwordResetToken.service.error.not_found',
         };
 
-      const filtered = await HookSystem.filter("passwordResetToken.read", data);
+      const filtered = await HookSystem.filter('passwordResetToken.read', data);
 
       return { success: true, data: filtered };
     } catch (error) {
-      Logger.error("PasswordResetToken get Error", error);
+      Logger.error('PasswordResetToken get Error', error);
       return {
         success: false,
-        error: "passwordResetToken.service.error.get_failed",
+        error: 'passwordResetToken.service.error.get_failed',
       };
     }
   }
@@ -68,34 +65,28 @@ export class PasswordResetTokenService {
     actor?: ApiActor,
   ): Promise<ServiceResponse<PasswordResetToken>> {
     try {
-      const input = await HookSystem.filter(
-        "passwordResetToken.beforeCreate",
-        data,
-      );
+      const input = await HookSystem.filter('passwordResetToken.beforeCreate', data);
 
       const newItem = await db.$transaction(async (tx) => {
         const created = await tx.passwordResetToken.create({
           data: input as any,
           select,
         });
-        await HookSystem.dispatch("passwordResetToken.created", {
+        await HookSystem.dispatch('passwordResetToken.created', {
           id: created.id,
-          actorId: "system",
+          actorId: 'system',
         });
         return created;
       });
 
-      const filtered = await HookSystem.filter(
-        "passwordResetToken.read",
-        newItem,
-      );
+      const filtered = await HookSystem.filter('passwordResetToken.read', newItem);
 
       return { success: true, data: filtered };
     } catch (error) {
-      Logger.error("PasswordResetToken create Error", error);
+      Logger.error('PasswordResetToken create Error', error);
       return {
         success: false,
-        error: "passwordResetToken.service.error.create_failed",
+        error: 'passwordResetToken.service.error.create_failed',
       };
     }
   }
@@ -107,10 +98,7 @@ export class PasswordResetTokenService {
     actor?: ApiActor,
   ): Promise<ServiceResponse<PasswordResetToken>> {
     try {
-      const input = await HookSystem.filter(
-        "passwordResetToken.beforeUpdate",
-        data,
-      );
+      const input = await HookSystem.filter('passwordResetToken.beforeUpdate', data);
 
       const updatedItem = await db.$transaction(async (tx) => {
         const updated = await tx.passwordResetToken.update({
@@ -118,24 +106,21 @@ export class PasswordResetTokenService {
           data: input as any,
           select,
         });
-        await HookSystem.dispatch("passwordResetToken.updated", {
+        await HookSystem.dispatch('passwordResetToken.updated', {
           id,
           changes: Object.keys(input),
         });
         return updated;
       });
 
-      const filtered = await HookSystem.filter(
-        "passwordResetToken.read",
-        updatedItem,
-      );
+      const filtered = await HookSystem.filter('passwordResetToken.read', updatedItem);
 
       return { success: true, data: filtered };
     } catch (error) {
-      Logger.error("PasswordResetToken update Error", error);
+      Logger.error('PasswordResetToken update Error', error);
       return {
         success: false,
-        error: "passwordResetToken.service.error.update_failed",
+        error: 'passwordResetToken.service.error.update_failed',
       };
     }
   }
@@ -144,14 +129,14 @@ export class PasswordResetTokenService {
     try {
       await db.$transaction(async (tx) => {
         await tx.passwordResetToken.delete({ where: { id } });
-        await HookSystem.dispatch("passwordResetToken.deleted", { id });
+        await HookSystem.dispatch('passwordResetToken.deleted', { id });
       });
       return { success: true };
     } catch (error) {
-      Logger.error("PasswordResetToken delete Error", error);
+      Logger.error('PasswordResetToken delete Error', error);
       return {
         success: false,
-        error: "passwordResetToken.service.error.delete_failed",
+        error: 'passwordResetToken.service.error.delete_failed',
       };
     }
   }

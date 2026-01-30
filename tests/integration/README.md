@@ -19,10 +19,12 @@ This directory contains the Integration Testing Framework for ArcNexus. This fra
 ## How to Write Integration Tests
 
 ### 1. Create a Test File
+
 Create a file in `tests/integration/api/` (or strictly `tests/integration` subfolders).
 Example: `tests/integration/api/teams.test.ts`.
 
 ### 2. Import Utilities
+
 ```typescript
 import { describe, it, expect } from 'vitest';
 import { ApiClient } from '@tests/integration/lib/client';
@@ -31,6 +33,7 @@ import { TestServer } from '@tests/integration/lib/server';
 ```
 
 ### 3. Use `ApiClient` with Actors (Recommended)
+
 Instantiate the client with the server URL. Use the fluent `.as()` API to create and authenticate as various actor types (Users, Teams/Tokens, etc.) defined across your modules.
 
 ```typescript
@@ -51,9 +54,9 @@ expect(bobRes.status).toBe(403);
 
 The `.as(type, params)` system is modular: it discovers "actor providers" defined in each module's `tests/integration/actors.ts` file.
 
-
 ### 4. Use `DataFactory` for Setup
-Use `Factory` to create the state you need *before* the API call. The factory dynamically loads definitions from each module's `tests/integration/factory.ts`.
+
+Use `Factory` to create the state you need _before_ the API call. The factory dynamically loads definitions from each module's `tests/integration/factory.ts`.
 
 ```typescript
 import { hashPassword } from '@/modules/user/tests/integration/factory';
@@ -61,24 +64,25 @@ import { hashPassword } from '@/modules/user/tests/integration/factory';
 // Create a user directly in DB
 // Note: hashPassword is imported from the user module factory, not the core Factory
 const user = await Factory.create('user', {
-    email: 'test@example.com',
-    password: hashPassword('password'),
-    name: 'Test User'
+  email: 'test@example.com',
+  password: hashPassword('password'),
+  name: 'Test User',
 });
 
 // Create a team owned by that user
 const team = await Factory.create('team', {
-    name: 'Integration Team',
-    members: {
-        create: {
-            userId: user.id,
-            role: 'OWNER'
-        }
-    }
+  name: 'Integration Team',
+  members: {
+    create: {
+      userId: user.id,
+      role: 'OWNER',
+    },
+  },
 });
 ```
 
 ### 5. Run the Tests
+
 Tests run via Vitest using the integration config.
 
 ```bash
@@ -103,19 +107,19 @@ The framework is designed to be modular. Each module can define its own factory 
 import crypto from 'node:crypto';
 
 export const factories = {
-    // Corresponds to 'myModel' in Factory.create('myModel', ...)
-    myModel: (index: number) => {
-        return {
-            name: `Default Name ${index}`,
-            slug: `slug-${crypto.randomUUID()}`,
-            // ... other default fields
-        };
-    }
+  // Corresponds to 'myModel' in Factory.create('myModel', ...)
+  myModel: (index: number) => {
+    return {
+      name: `Default Name ${index}`,
+      slug: `slug-${crypto.randomUUID()}`,
+      // ... other default fields
+    };
+  },
 };
 
 // You can also export helper functions specific to your module
 export function myHelper() {
-    // ...
+  // ...
 }
 ```
 
@@ -133,14 +137,14 @@ Just like the `DataFactory`, the `ApiClient` uses a discovery mechanism to load 
 ```typescript
 // modules/team/tests/integration/actors.ts
 export const actors = {
-    // client.as('team', { teamId: '...' })
-    team: async (client: ApiClient, params: any) => {
-        const team = params.team || await Factory.create('team', params);
-        // Custom logic to authenticate as this team (e.g. use an API Key)
-        const key = await createKey(team.id); 
-        client.useToken(key.raw);
-        return team;
-    }
+  // client.as('team', { teamId: '...' })
+  team: async (client: ApiClient, params: any) => {
+    const team = params.team || (await Factory.create('team', params));
+    // Custom logic to authenticate as this team (e.g. use an API Key)
+    const key = await createKey(team.id);
+    client.useToken(key.raw);
+    return team;
+  },
 };
 ```
 
@@ -155,31 +159,29 @@ export const actors = {
 
 ```typescript
 it('should logout successfully', async () => {
-    // 1. Authenticate as actor
-    await client.as('user', { email: 'alice@example.com' });
+  // 1. Authenticate as actor
+  await client.as('user', { email: 'alice@example.com' });
 
-    // 2. Action
-    const res = await client.post('/api/logout');
+  // 2. Action
+  const res = await client.post('/api/logout');
 
-    // 3. Assertion
-    expect(res.status).toBe(200);
+  // 3. Assertion
+  expect(res.status).toBe(200);
 });
 ```
 
 ```typescript
 it('should list teams for authenticated user', async () => {
-    // 1. Authenticate as a user with a team membership
-    const team = await Factory.create('team', { name: 'My Team' });
-    await client.as('user', { 
-        teams: { create: { teamId: team.id, role: 'OWNER' } } 
-    });
+  // 1. Authenticate as a user with a team membership
+  const team = await Factory.create('team', { name: 'My Team' });
+  await client.as('user', {
+    teams: { create: { teamId: team.id, role: 'OWNER' } },
+  });
 
-    // 2. Action
-    const res = await client.get('/api/teams');
+  // 2. Action
+  const res = await client.get('/api/teams');
 
-    // 3. Verify
-    expect(res.body).toEqual(expect.arrayContaining([
-        expect.objectContaining({ name: 'My Team' })
-    ]));
+  // 3. Verify
+  expect(res.body).toEqual(expect.arrayContaining([expect.objectContaining({ name: 'My Team' })]));
 });
 ```

@@ -14,28 +14,35 @@ The Nexical styling system is a **Semantic Abstraction Layer** built on top of T
 3.  **Theme Modules**: Customize by overriding CSS variables, not utility classes.
 
 ## CSS Variable Reference
+
 Themes control the look by modifying properties like:
-*   `--primary`: Core brand color.
-*   `--background`: Main page background.
-*   `--surface-panel`: Card background.
+
+- `--primary`: Core brand color.
+- `--background`: Main page background.
+- `--surface-panel`: Card background.
 
 ## Utility Class Vocabulary
+
 AI Models and Developers must use these standardized utilities:
 
 ### Typography
-*   `text-heading-xl`: Main titles.
-*   `text-body`: Standard text.
-*   `text-subtle`: Muted metadata.
+
+- `text-heading-xl`: Main titles.
+- `text-body`: Standard text.
+- `text-subtle`: Muted metadata.
 
 ### Surfaces
-*   `surface-panel`: Standard card/panel.
-*   `container-page-content`: Main content wrapper.
+
+- `surface-panel`: Standard card/panel.
+- `container-page-content`: Main content wrapper.
 
 ### Actions
-*   `btn-primary`: Main CTA.
-*   `btn-ghost`: Minimal interaction.
-*   `btn-icon`: Standard icon button.
+
+- `btn-primary`: Main CTA.
+- `btn-ghost`: Minimal interaction.
+- `btn-icon`: Standard icon button.
 
 ### Feedback
-*   `feedback-error-card`: Error alerts.
-*   `badge-primary`: Important indicators.
+
+- `feedback-error-card`: Error alerts.
+- `badge-primary`: Important indicators.

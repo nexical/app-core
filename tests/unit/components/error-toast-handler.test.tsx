@@ -1,4 +1,3 @@
-
 /** @vitest-environment jsdom */
 import React from 'react';
 import { render } from '@testing-library/react';
@@ -8,51 +7,51 @@ import { toast } from 'sonner';
 
 // Mock dependencies
 vi.mock('sonner', () => ({
-    toast: {
-        error: vi.fn(),
-    },
+  toast: {
+    error: vi.fn(),
+  },
 }));
 
 vi.mock('react-i18next', () => ({
-    useTranslation: () => ({ t: (key: string) => key }),
+  useTranslation: () => ({ t: (key: string) => key }),
 }));
 
 describe('ErrorToastHandler', () => {
-    const originalLocation = window.location;
+  const originalLocation = window.location;
 
-    beforeEach(() => {
-        vi.clearAllMocks();
-        // Mock window.location
-        Object.defineProperty(window, 'location', {
-            value: {
-                search: '',
-            },
-            writable: true,
-        });
-        window.history.replaceState = vi.fn();
+  beforeEach(() => {
+    vi.clearAllMocks();
+    // Mock window.location
+    Object.defineProperty(window, 'location', {
+      value: {
+        search: '',
+      },
+      writable: true,
     });
+    window.history.replaceState = vi.fn();
+  });
 
-    afterEach(() => {
-        Object.defineProperty(window, 'location', {
-            value: originalLocation,
-            writable: true,
-        });
+  afterEach(() => {
+    Object.defineProperty(window, 'location', {
+      value: originalLocation,
+      writable: true,
     });
+  });
 
-    it('should show toast on unauthorized error', () => {
-        window.location.search = '?error=unauthorized';
-        render(<ErrorToastHandler />);
+  it('should show toast on unauthorized error', () => {
+    window.location.search = '?error=unauthorized';
+    render(<ErrorToastHandler />);
 
-        expect(toast.error).toHaveBeenCalledWith('core.errors.unauthorized.title', {
-            description: 'core.errors.unauthorized.description',
-        });
-        expect(window.history.replaceState).toHaveBeenCalledWith({}, '', '/');
+    expect(toast.error).toHaveBeenCalledWith('core.errors.unauthorized.title', {
+      description: 'core.errors.unauthorized.description',
     });
+    expect(window.history.replaceState).toHaveBeenCalledWith({}, '', '/');
+  });
 
-    it('should not show toast if error param is missing or different', () => {
-        window.location.search = '?error=other';
-        render(<ErrorToastHandler />);
+  it('should not show toast if error param is missing or different', () => {
+    window.location.search = '?error=other';
+    render(<ErrorToastHandler />);
 
-        expect(toast.error).not.toHaveBeenCalled();
-    });
+    expect(toast.error).not.toHaveBeenCalled();
+  });
 });

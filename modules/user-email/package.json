@@ -1,9 +1,9 @@
 {
-    "name": "@modules/user-email",
-    "version": "0.1.0",
-    "type": "module",
-    "private": true,
-    "exports": {
-        "./*": "./src/*"
-    }
+  "name": "@modules/user-email",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "exports": {
+    "./*": "./src/*"
+  }
 }

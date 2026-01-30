@@ -1,8 +1,8 @@
-import type { ServiceResponse } from "@/types/service";
-import type { RequestPasswordResetDTO } from "../sdk/types";
-import { db } from "@/lib/core/db";
-import { HookSystem } from "@/lib/modules/hooks";
-import type { APIContext } from "astro";
+import type { ServiceResponse } from '@/types/service';
+import type { RequestPasswordResetDTO } from '../sdk/types';
+import { db } from '@/lib/core/db';
+import { HookSystem } from '@/lib/modules/hooks';
+import type { APIContext } from 'astro';
 
 export class RequestPasswordResetAuthAction {
   public static async run(
@@ -24,7 +24,7 @@ export class RequestPasswordResetAuthAction {
         });
 
         // Dispatch event for email sending
-        await HookSystem.dispatch("auth.password_reset_requested", {
+        await HookSystem.dispatch('auth.password_reset_requested', {
           email: normalizedEmail,
           token,
         });
@@ -32,7 +32,7 @@ export class RequestPasswordResetAuthAction {
       // Always return success to prevent Email Enumeration
       return { success: true, data: {} };
     } catch (error) {
-      console.error("Request Password Reset Error:", error);
+      console.error('Request Password Reset Error:', error);
       // Still return success for security
       return { success: true, data: {} };
     }

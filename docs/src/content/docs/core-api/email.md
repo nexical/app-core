@@ -8,9 +8,11 @@ sidebar:
 The Email System decouples the intent to send an email from the actual template implementation.
 
 ## EmailRegistry
+
 Modules register React components to handle specific email "intents" (e.g., `user:welcome`).
 
 ### Registering a Template
+
 ```ts
 // modules/user/src/emails/init.ts
 import { EmailRegistry } from '@/lib/email/email-registry';
@@ -20,6 +22,7 @@ EmailRegistry.register('user:welcome', WelcomeEmail);
 ```
 
 ### Sending an Email
+
 The sender renders the template by ID.
 
 ```ts

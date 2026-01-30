@@ -1,9 +1,9 @@
-import { type ThrowStatementConfig } from "../../types";
+import { type ThrowStatementConfig } from '../../types';
 
 export class ThrowStatementPrimitive {
-    constructor(private config: ThrowStatementConfig) { }
+  constructor(private config: ThrowStatementConfig) {}
 
-    generate(): string {
-        return `throw ${this.config.expression};`;
-    }
+  generate(): string {
+    return `throw ${this.config.expression};`;
+  }
 }

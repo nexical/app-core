@@ -1,9 +1,9 @@
-import type { ServiceResponse } from "@/types/service";
-import type { ResetPasswordDTO } from "../sdk/types";
-import { db } from "@/lib/core/db";
-import { HookSystem } from "@/lib/modules/hooks";
-import bcrypt from "bcryptjs";
-import type { APIContext } from "astro";
+import type { ServiceResponse } from '@/types/service';
+import type { ResetPasswordDTO } from '../sdk/types';
+import { db } from '@/lib/core/db';
+import { HookSystem } from '@/lib/modules/hooks';
+import bcrypt from 'bcryptjs';
+import type { APIContext } from 'astro';
 
 export class ResetPasswordAuthAction {
   public static async run(
@@ -18,21 +18,17 @@ export class ResetPasswordAuthAction {
         where: { token },
       });
       if (!resetToken || new Date() > resetToken.expires) {
-        return { success: false, error: "user.service.error.invalid_token" };
+        return { success: false, error: 'user.service.error.invalid_token' };
       }
 
       const user = await db.user.findUnique({
         where: { email: resetToken.email },
       });
-      if (!user)
-        return { success: false, error: "user.service.error.user_not_found" };
+      if (!user) return { success: false, error: 'user.service.error.user_not_found' };
 
       // Delegate hashing to hooks
       const inputData = { password: newPassword };
-      const processedData = await HookSystem.filter(
-        "user.beforeUpdate",
-        inputData,
-      );
+      const processedData = await HookSystem.filter('user.beforeUpdate', inputData);
       // processedData.password is now hashed
 
       await db.$transaction([
@@ -46,16 +42,16 @@ export class ResetPasswordAuthAction {
         db.passwordResetToken.delete({ where: { id: resetToken.id } }),
       ]);
 
-      await HookSystem.dispatch("auth.password_reset_completed", {
+      await HookSystem.dispatch('auth.password_reset_completed', {
         userId: user.id,
       });
 
       return { success: true, data: { userId: user.id } };
     } catch (error: unknown) {
-      console.error("Reset Password Service Error:", error);
+      console.error('Reset Password Service Error:', error);
       return {
         success: false,
-        error: "user.service.error.reset_password_failed",
+        error: 'user.service.error.reset_password_failed',
       };
     }
   }

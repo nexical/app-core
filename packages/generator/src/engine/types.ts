@@ -1,65 +1,65 @@
-import { Scope } from "ts-morph";
+import { Scope } from 'ts-morph';
 
 export interface ModelField {
-    type: string;
-    isRequired: boolean;
-    isList: boolean;
-    attributes: string[];
-    api: boolean; // Default: true
-    private?: boolean;
-    isEnum?: boolean;
-    enumValues?: string[];
-    isRelation?: boolean;
-    relationTo?: string;
+  type: string;
+  isRequired: boolean;
+  isList: boolean;
+  attributes: string[];
+  api: boolean; // Default: true
+  private?: boolean;
+  isEnum?: boolean;
+  enumValues?: string[];
+  isRelation?: boolean;
+  relationTo?: string;
 }
 
 export interface ActorConfig {
-    name?: string; // e.g. 'user' or 'team-api-key'
-    prefix?: string; // e.g. 'sk_user_'
-    strategy: 'login' | 'api-key' | 'bearer';
-    fields?: Record<string, string>;
-    validStatus?: string;
+  name?: string; // e.g. 'user' or 'team-api-key'
+  prefix?: string; // e.g. 'sk_user_'
+  strategy: 'login' | 'api-key' | 'bearer';
+  fields?: Record<string, string>;
+  validStatus?: string;
 }
 
 export interface ModelDef {
-    name: string;
-    api: boolean; // Default: true
-    db?: boolean; // Default: true (false means Virtual Model / No Prisma)
-    default?: boolean; // Default: false
-    extended?: boolean; // Default: false (true means this model is owned by another module)
-    actor?: ActorConfig;
-    fields: Record<string, ModelField>;
-    role?: string | Record<string, string>; // Role configuration (string = globally, or map of action -> role)
-    test?: {
-        actor?: string;
-    };
-    isExported?: boolean;
+  name: string;
+  api: boolean; // Default: true
+  db?: boolean; // Default: true (false means Virtual Model / No Prisma)
+  default?: boolean; // Default: false
+  extended?: boolean; // Default: false (true means this model is owned by another module)
+  actor?: ActorConfig;
+  fields: Record<string, ModelField>;
+  role?: string | Record<string, string>; // Role configuration (string = globally, or map of action -> role)
+  test?: {
+    actor?: string;
+  };
+  isExported?: boolean;
 }
 
 export interface TestRoleConfig {
-    [key: string]: Record<string, string | number | boolean>; // e.g. admin: { role: 'ADMIN' }
+  [key: string]: Record<string, string | number | boolean>; // e.g. admin: { role: 'ADMIN' }
 }
 
 export interface GlobalConfig {
-    test?: {
-        roles?: TestRoleConfig;
-    };
+  test?: {
+    roles?: TestRoleConfig;
+  };
 }
 
 export interface ModuleMetadata {
-    name: string;
-    description?: string;
+  name: string;
+  description?: string;
 }
 
 export interface CustomRoute {
-    method: string;
-    path: string;
-    verb: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
-    summary?: string;
-    input?: string;
-    output?: string;
-    role?: string; // Role required (default: 'member' typically handled by builder)
-    action?: string; // Optional custom action file path/name
+  method: string;
+  path: string;
+  verb: 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
+  summary?: string;
+  input?: string;
+  output?: string;
+  role?: string; // Role required (default: 'member' typically handled by builder)
+  action?: string; // Optional custom action file path/name
 }
 
 // --- Statement Configurations ---
@@ -67,234 +67,239 @@ export interface CustomRoute {
 // --- Statement Configurations ---
 
 export interface BaseStatementConfig {
-    isDefault?: boolean; // If true, generator will not overwrite if user has modified matching statement
+  isDefault?: boolean; // If true, generator will not overwrite if user has modified matching statement
 }
 
 export interface VariableStatementConfig extends BaseStatementConfig {
-    kind: 'variable';
-    declarationKind: 'const' | 'let' | 'var';
-    declarations: {
-        name: string;
-        type?: string;
-        initializer?: string; // string or potentially ExpressionConfig later
-    }[];
+  kind: 'variable';
+  declarationKind: 'const' | 'let' | 'var';
+  declarations: {
+    name: string;
+    type?: string;
+    initializer?: string; // string or potentially ExpressionConfig later
+  }[];
 }
 
 export interface ReturnStatementConfig extends BaseStatementConfig {
-    kind: 'return';
-    expression: string | JsxElementConfig;
+  kind: 'return';
+  expression: string | JsxElementConfig;
 }
 
 export interface ExpressionStatementConfig extends BaseStatementConfig {
-    kind: 'expression';
-    expression: string;
+  kind: 'expression';
+  expression: string;
 }
 
 export interface IfStatementConfig extends BaseStatementConfig {
-    kind: 'if';
-    condition: string;
-    then: StatementConfig[] | StatementConfig; // Recursive
-    else?: StatementConfig[] | StatementConfig;
+  kind: 'if';
+  condition: string;
+  then: StatementConfig[] | StatementConfig; // Recursive
+  else?: StatementConfig[] | StatementConfig;
 }
 
 export interface ThrowStatementConfig extends BaseStatementConfig {
-    kind: 'throw';
-    expression: string;
+  kind: 'throw';
+  expression: string;
 }
 
 // TODO: TryCatch is complex, adding placeholder without recursion for now to sync with Primitives later if needed
-// Or I can skip TryCatch for Permissions as we primarily need IF/THROW. 
+// Or I can skip TryCatch for Permissions as we primarily need IF/THROW.
 // User mentioned Try primitive.
 export interface TryStatementConfig extends BaseStatementConfig {
-    kind: 'try';
+  kind: 'try';
+  block: StatementConfig[];
+  catchClause?: {
+    variableName?: string;
     block: StatementConfig[];
-    catchClause?: {
-        variableName?: string;
-        block: StatementConfig[];
-    };
-    finallyBlock?: StatementConfig[];
+  };
+  finallyBlock?: StatementConfig[];
 }
-
 
 // --- JSX Configurations ---
 
 export interface JsxAttributeConfig {
-    name: string;
-    value?: string | JsxExpressionConfig; // string literal or { expr }
+  name: string;
+  value?: string | JsxExpressionConfig; // string literal or { expr }
 }
 
 export interface JsxExpressionConfig {
-    kind: 'expression';
-    expression: string;
+  kind: 'expression';
+  expression: string;
 }
 
 export interface JsxElementConfig extends BaseStatementConfig {
-    kind: 'jsx';
-    tagName: string;
-    attributes?: JsxAttributeConfig[];
-    children?: (string | JsxElementConfig | JsxExpressionConfig)[];
-    selfClosing?: boolean;
+  kind: 'jsx';
+  tagName: string;
+  attributes?: JsxAttributeConfig[];
+  children?: (string | JsxElementConfig | JsxExpressionConfig)[];
+  selfClosing?: boolean;
 }
 
 export type StatementConfig =
-    | string // Legacy/Raw string support
-    | VariableStatementConfig
-    | ReturnStatementConfig
-    | ExpressionStatementConfig
-    | IfStatementConfig
-    | ThrowStatementConfig
-    | TryStatementConfig
-    | JsxElementConfig; // Allow valid JSX as a statement
+  | string // Legacy/Raw string support
+  | VariableStatementConfig
+  | ReturnStatementConfig
+  | ExpressionStatementConfig
+  | IfStatementConfig
+  | ThrowStatementConfig
+  | TryStatementConfig
+  | JsxElementConfig; // Allow valid JSX as a statement
 
 // --- Primitive Configurations ---
 
 export interface DecoratorConfig {
-    name: string;
-    arguments?: string[];
+  name: string;
+  arguments?: string[];
 }
 
 export interface MethodConfig {
-    name: string;
-    isStatic?: boolean;
-    isAsync?: boolean;
-    returnType?: string;
-    parameters?: { name: string; type: string; optional?: boolean; decorators?: DecoratorConfig[] }[];
-    statements?: StatementConfig[];
-    scope?: Scope;
-    overwriteBody?: boolean;
-    decorators?: DecoratorConfig[];
-    docs?: string[];
+  name: string;
+  isStatic?: boolean;
+  isAsync?: boolean;
+  returnType?: string;
+  parameters?: { name: string; type: string; optional?: boolean; decorators?: DecoratorConfig[] }[];
+  statements?: StatementConfig[];
+  scope?: Scope;
+  overwriteBody?: boolean;
+  decorators?: DecoratorConfig[];
+  docs?: string[];
 }
 
 export interface ClassConfig {
-    name: string;
-    isExported?: boolean;
-    isAbstract?: boolean;
-    extends?: string;
-    implements?: string[];
-    decorators?: DecoratorConfig[];
-    docs?: string[];
+  name: string;
+  isExported?: boolean;
+  isAbstract?: boolean;
+  extends?: string;
+  implements?: string[];
+  decorators?: DecoratorConfig[];
+  docs?: string[];
 }
 
 export interface ImportConfig {
-    moduleSpecifier: string;
-    defaultImport?: string;
-    namedImports?: string[];
-    isTypeOnly?: boolean;
+  moduleSpecifier: string;
+  defaultImport?: string;
+  namedImports?: string[];
+  isTypeOnly?: boolean;
 }
 
 export interface ExportConfig {
-    moduleSpecifier?: string;
-    exportClause?: string | string[];
-    isTypeOnly?: boolean;
+  moduleSpecifier?: string;
+  exportClause?: string | string[];
+  isTypeOnly?: boolean;
 }
 
 // --- Declarative Schema ---
 
 export interface PropertyConfig {
-    name: string;
-    type: string;
-    optional?: boolean;
-    readonly?: boolean;
-    isStatic?: boolean;
-    initializer?: string;
-    scope?: Scope;
-    decorators?: DecoratorConfig[];
-    docs?: string[];
+  name: string;
+  type: string;
+  optional?: boolean;
+  readonly?: boolean;
+  isStatic?: boolean;
+  initializer?: string;
+  scope?: Scope;
+  decorators?: DecoratorConfig[];
+  docs?: string[];
 }
 
 export interface AccessorConfig {
-    name: string;
-    kind: 'get' | 'set';
-    scope?: Scope;
-    isStatic?: boolean;
-    returnType?: string; // for get
-    parameters?: { name: string; type: string; decorators?: DecoratorConfig[] }[]; // for set
-    statements?: StatementConfig[];
-    decorators?: DecoratorConfig[];
-    docs?: string[];
+  name: string;
+  kind: 'get' | 'set';
+  scope?: Scope;
+  isStatic?: boolean;
+  returnType?: string; // for get
+  parameters?: { name: string; type: string; decorators?: DecoratorConfig[] }[]; // for set
+  statements?: StatementConfig[];
+  decorators?: DecoratorConfig[];
+  docs?: string[];
 }
 
 export interface ConstructorConfig {
-    parameters?: { name: string; type: string; optional?: boolean; scope?: Scope; decorators?: DecoratorConfig[] }[];
-    statements?: StatementConfig[];
+  parameters?: {
+    name: string;
+    type: string;
+    optional?: boolean;
+    scope?: Scope;
+    decorators?: DecoratorConfig[];
+  }[];
+  statements?: StatementConfig[];
 }
 
 export interface InterfaceConfig {
-    name: string;
-    isExported?: boolean;
-    extends?: string[];
-    properties?: PropertyConfig[];
+  name: string;
+  isExported?: boolean;
+  extends?: string[];
+  properties?: PropertyConfig[];
 }
 
 export interface ClassDefinition extends ClassConfig {
-    methods?: MethodConfig[];
-    properties?: PropertyConfig[];
-    constructorDef?: ConstructorConfig;
-    accessors?: AccessorConfig[];
+  methods?: MethodConfig[];
+  properties?: PropertyConfig[];
+  constructorDef?: ConstructorConfig;
+  accessors?: AccessorConfig[];
 }
 
 export interface EnumMemberConfig {
-    name: string;
-    value: string | number;
+  name: string;
+  value: string | number;
 }
 
 export interface EnumConfig {
-    name: string;
-    isExported?: boolean;
-    members: EnumMemberConfig[];
+  name: string;
+  isExported?: boolean;
+  members: EnumMemberConfig[];
 }
 
 export interface FunctionConfig {
-    name: string;
-    isExported?: boolean;
-    isAsync?: boolean;
-    returnType?: string;
-    parameters?: { name: string; type: string; optional?: boolean }[];
-    statements?: StatementConfig[];
-    overwriteBody?: boolean;
+  name: string;
+  isExported?: boolean;
+  isAsync?: boolean;
+  returnType?: string;
+  parameters?: { name: string; type: string; optional?: boolean }[];
+  statements?: StatementConfig[];
+  overwriteBody?: boolean;
 }
 
 export interface TypeConfig {
-    name: string;
-    isExported?: boolean;
-    type: string;
+  name: string;
+  isExported?: boolean;
+  type: string;
 }
 
 export interface VariableConfig {
-    name: string;
-    type?: string;
-    initializer?: string;
-    declarationKind?: 'const' | 'let' | 'var';
-    isExported?: boolean;
+  name: string;
+  type?: string;
+  initializer?: string;
+  declarationKind?: 'const' | 'let' | 'var';
+  isExported?: boolean;
 }
 
 export interface ModuleConfig {
-    name: string;
-    isExported?: boolean;
-    isDeclaration?: boolean;
-    statements?: (string | StatementConfig)[];
-    imports?: ImportConfig[];
-    classes?: ClassDefinition[];
-    interfaces?: InterfaceConfig[];
-    enums?: EnumConfig[];
-    functions?: FunctionConfig[];
-    types?: TypeConfig[];
-    variables?: VariableConfig[];
-    modules?: ModuleConfig[]; // Recursive
-    exports?: ExportConfig[];
+  name: string;
+  isExported?: boolean;
+  isDeclaration?: boolean;
+  statements?: (string | StatementConfig)[];
+  imports?: ImportConfig[];
+  classes?: ClassDefinition[];
+  interfaces?: InterfaceConfig[];
+  enums?: EnumConfig[];
+  functions?: FunctionConfig[];
+  types?: TypeConfig[];
+  variables?: VariableConfig[];
+  modules?: ModuleConfig[]; // Recursive
+  exports?: ExportConfig[];
 }
 
 export interface FileDefinition {
-    header?: string;
-    imports?: ImportConfig[];
-    exports?: ExportConfig[];
-    statements?: (string | StatementConfig)[]; // Added raw statements support
-    classes?: ClassDefinition[];
-    interfaces?: InterfaceConfig[];
-    enums?: EnumConfig[];
-    functions?: FunctionConfig[];
-    types?: TypeConfig[];
-    variables?: VariableConfig[];
-    modules?: ModuleConfig[];
+  header?: string;
+  imports?: ImportConfig[];
+  exports?: ExportConfig[];
+  statements?: (string | StatementConfig)[]; // Added raw statements support
+  classes?: ClassDefinition[];
+  interfaces?: InterfaceConfig[];
+  enums?: EnumConfig[];
+  functions?: FunctionConfig[];
+  types?: TypeConfig[];
+  variables?: VariableConfig[];
+  modules?: ModuleConfig[];
 }

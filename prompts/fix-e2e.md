@@ -25,16 +25,17 @@ Currently, tests are failing. You will fix them.
 
 1. Execute `npm run test:e2e`.
 2. Analyze the Console Output **carefully**.
-* **Timeout?** (Did the page not load? Database lock?)
-* **Selector Not Found?** (Did the class name change? Is it hidden behind a modal?)
-* **Assertion Error?** (Expected "Welcome", got "Login"?)
+
+- **Timeout?** (Did the page not load? Database lock?)
+- **Selector Not Found?** (Did the class name change? Is it hidden behind a modal?)
+- **Assertion Error?** (Expected "Welcome", got "Login"?)
 
 **PHASE 2: The Fix**
 For every failure, perform one of these actions:
 
-* **Action A (Fix Implementation):** The feature is actually broken. (e.g., The "Submit" button doesn't submit). Go to `{{ root_path }}src/` and fix the bug.
-* **Action B (Fix Selectors):** The test relies on unstable classes (`.div > .span`). Refactor the test to use accessible locators (`getByRole`, `getByLabel`) or `data-testid` attributes.
-* **Action C (Fix Async/Timing):** The test is flaky. Add `await expect(...).toBeVisible()` to wait for hydration/animations before clicking.
+- **Action A (Fix Implementation):** The feature is actually broken. (e.g., The "Submit" button doesn't submit). Go to `{{ root_path }}src/` and fix the bug.
+- **Action B (Fix Selectors):** The test relies on unstable classes (`.div > .span`). Refactor the test to use accessible locators (`getByRole`, `getByLabel`) or `data-testid` attributes.
+- **Action C (Fix Async/Timing):** The test is flaky. Add `await expect(...).toBeVisible()` to wait for hydration/animations before clicking.
 
 **PHASE 3: Verification**
 
@@ -47,7 +48,7 @@ Once all individual files pass, run the full suite `npm run test:e2e` one last t
 
 **Your Output Constraints:**
 
-* If you encounter a failure you cannot fix after 3 attempts, STOP and ask the user for specific guidance on that one feature. Do not silently skip it.
+- If you encounter a failure you cannot fix after 3 attempts, STOP and ask the user for specific guidance on that one feature. Do not silently skip it.
 
 **Start the Protocol.**
 

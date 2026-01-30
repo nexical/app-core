@@ -43,9 +43,10 @@ The `SKILL.md` is the entrypoint for the localized skill.
 The Global Docs are the Single Source of Truth for the System.
 
 Identify instances where:
+
 1. Access patterns in the Codebase Canon violate rules in the Global Docs (Drift).
-3. The Skill Documentation violates usage found in the Canon OR Global Docs.
-4. The Skill Documentation instructs the user to manually create/edit files that are marked as `"generated": true` in the Canon.
+2. The Skill Documentation violates usage found in the Canon OR Global Docs.
+3. The Skill Documentation instructs the user to manually create/edit files that are marked as `"generated": true` in the Canon.
 
 **GENERATOR COMPLIANCE**:
 The `packages/generator` project owns specific files (e.g. `src/sdk/*`, `src/actions/*`, `test/integration/api/generated/*`).
@@ -57,19 +58,22 @@ Generate a "Drift Report" in Markdown format and WRITE IT to `{{ output_file }}`
 # Drift Report
 
 ## Violations
-*   [Severity: High/Medium/Low] Description of the violation.
-    *   *Source*: (SKILL.md | {{ arch_file }} | {{ modules_file }} | templates/...)
-    *   *Doc says / Code has*: "..."
-    *   *Canon Rule*: "..."
-*   [Severity: CRITICAL] Documentation instructs manual edit of GENERATED file.
-    *   *File*: `src/actions/foo-action.ts` (Example)
-    *   *Correct Approach*: "Define operation in `models.yaml` or `api.yaml`."
+
+- [Severity: High/Medium/Low] Description of the violation.
+  - _Source_: (SKILL.md | {{ arch_file }} | {{ modules_file }} | templates/...)
+  - _Doc says / Code has_: "..."
+  - _Canon Rule_: "..."
+- [Severity: CRITICAL] Documentation instructs manual edit of GENERATED file.
+  - _File_: `src/actions/foo-action.ts` (Example)
+  - _Correct Approach_: "Define operation in `models.yaml` or `api.yaml`."
 
 ## Missing Patterns (Gaps)
-*   Description of patterns found in Canon but missing in `SKILL.md` or missing a corresponding template/example.
+
+- Description of patterns found in Canon but missing in `SKILL.md` or missing a corresponding template/example.
 
 ## Recommendations
-*   Specific instructions on how to rewrite the `SKILL.md`.
-*   Specific instructions on how to update `{{ arch_file }}` or `{{ modules_file }}` if they are outdated.
-*   Specific instructions on what templates/examples to create or update in `{{ skill_dir }}`.
-</task>
+
+- Specific instructions on how to rewrite the `SKILL.md`.
+- Specific instructions on how to update `{{ arch_file }}` or `{{ modules_file }}` if they are outdated.
+- Specific instructions on what templates/examples to create or update in `{{ skill_dir }}`.
+  </task>

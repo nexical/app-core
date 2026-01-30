@@ -1,692 +1,691 @@
-@import "tailwindcss";
-@import "./theme.css";
+@import 'tailwindcss';
+@import './theme.css';
 
 @layer base {
-    * {
-        @apply border-border;
-    }
+  * {
+    @apply border-border;
+  }
 }
 
 @layer components {
-
-    /*
+  /*
     Theme Contract: Layout Variables
     Modules can override these variables to resize the application structure.
     */
 
-
-    /*
+  /*
     LEGACY SHELL CLASSES (Partially Semantic)
     */
-    .shell-root {
-        @apply flex h-screen overflow-hidden shell-bg-root;
-    }
+  .shell-root {
+    @apply flex h-screen overflow-hidden shell-bg-root;
+  }
 
-    .shell-sidebar {
-        @apply flex flex-col relative shrink-0 shell-sidebar-base;
-        width: var(--sidebar-width);
-        z-index: 20;
-        overflow: visible;
-        /* CRITICAL: Ensure drag handles outside the box are reachable */
-        /* Ensure drag handle sits above main content */
-    }
+  .shell-sidebar {
+    @apply flex flex-col relative shrink-0 shell-sidebar-base;
+    width: var(--sidebar-width);
+    z-index: 20;
+    overflow: visible;
+    /* CRITICAL: Ensure drag handles outside the box are reachable */
+    /* Ensure drag handle sits above main content */
+  }
 
-    .shell-sidebar-header {
-        @apply flex items-center px-header border-divider-b font-semibold text-lg relative;
-        height: var(--header-height);
-    }
+  .shell-sidebar-header {
+    @apply flex items-center px-header border-divider-b font-semibold text-lg relative;
+    height: var(--header-height);
+  }
 
-    .shell-sidebar-nav {
-        @apply space-y-nav px-sidebar relative flex flex-col;
-    }
+  .shell-sidebar-nav {
+    @apply space-y-nav px-sidebar relative flex flex-col;
+  }
 
-    .shell-sidebar-footer {
-        @apply p-container-base border-divider-t text-meta text-center relative;
-    }
+  .shell-sidebar-footer {
+    @apply p-container-base border-divider-t text-meta text-center relative;
+  }
 
-    .shell-main {
-        @apply flex flex-col flex-1 min-w-0 overflow-hidden relative;
-    }
+  .shell-main {
+    @apply flex flex-col flex-1 min-w-0 overflow-hidden relative;
+  }
 
-    .shell-header {
-        @apply flex items-center justify-between px-header-outer shrink-0 container-header;
-        height: var(--header-height);
-    }
+  .shell-header {
+    @apply flex items-center justify-between px-header-outer shrink-0 container-header;
+    height: var(--header-height);
+  }
 
-    .shell-header-start {
-        @apply flex items-center gap-md;
-    }
+  .shell-header-start {
+    @apply flex items-center gap-md;
+  }
 
-    .shell-header-end {
-        @apply flex items-center gap-md;
-    }
+  .shell-header-end {
+    @apply flex items-center gap-md;
+  }
 
-    .shell-content {
-        @apply p-container-md max-w-5xl mx-auto w-full relative;
-    }
+  .shell-content {
+    @apply p-container-md max-w-5xl mx-auto w-full relative;
+  }
 
-    /*
+  /*
     BUTTON COMPONENT
     */
-    .btn-base {
-        @apply btn-base;
-    }
+  .btn-base {
+    @apply btn-base;
+  }
 
-    .btn-default {
-        @apply btn-primary;
-    }
+  .btn-default {
+    @apply btn-primary;
+  }
 
-    .btn-destructive {
-        @apply btn-danger;
-    }
+  .btn-destructive {
+    @apply btn-danger;
+  }
 
-    .btn-outline {
-        @apply btn-secondary shadow-md;
-    }
+  .btn-outline {
+    @apply btn-secondary shadow-md;
+  }
 
-    .btn-outline:hover {
-        @apply shadow-lg;
-    }
+  .btn-outline:hover {
+    @apply shadow-lg;
+  }
 
-    .btn-secondary {
-        @apply btn-secondary;
-    }
+  .btn-secondary {
+    @apply btn-secondary;
+  }
 
-    .btn-ghost {
-        @apply transition-all duration-300 hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50;
-    }
+  .btn-ghost {
+    @apply transition-all duration-300 hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50;
+  }
 
-    .btn-ghost:hover {
-        @apply backdrop-blur-md shadow-lg;
-    }
+  .btn-ghost:hover {
+    @apply backdrop-blur-md shadow-lg;
+  }
 
-    .btn-link {
-        @apply text-link;
-    }
+  .btn-link {
+    @apply text-link;
+  }
 
-    .btn-size-default {
-        @apply btn-dims-default has-[>svg]:px-btn-icon;
-    }
+  .btn-size-default {
+    @apply btn-dims-default has-[>svg]:px-btn-icon;
+  }
 
-    .btn-size-sm {
-        @apply btn-dims-sm shape-rounded-md gap-1.5 has-[>svg]:px-btn-icon-sm;
-    }
+  .btn-size-sm {
+    @apply btn-dims-sm shape-rounded-md gap-1.5 has-[>svg]:px-btn-icon-sm;
+  }
 
-    .btn-size-lg {
-        @apply btn-dims-lg shape-rounded-md has-[>svg]:px-btn-icon-lg;
-    }
+  .btn-size-lg {
+    @apply btn-dims-lg shape-rounded-md has-[>svg]:px-btn-icon-lg;
+  }
 
-    .btn-size-icon {
-        @apply size-15;
-    }
+  .btn-size-icon {
+    @apply size-15;
+  }
 
-    .btn-size-icon-sm {
-        @apply icon-lg;
-    }
+  .btn-size-icon-sm {
+    @apply icon-lg;
+  }
 
-    .btn-size-icon-lg {
-        @apply icon-xl;
-    }
+  .btn-size-icon-lg {
+    @apply icon-xl;
+  }
 
-    /*
+  /*
     BASICS (Label, Badge, Avatar)
     */
-    .label-base {
-        @apply input-label;
-    }
+  .label-base {
+    @apply input-label;
+  }
 
-    .badge-base {
-        @apply badge-base;
-    }
+  .badge-base {
+    @apply badge-base;
+  }
 
-    .badge-default {
-        @apply badge-primary;
-    }
+  .badge-default {
+    @apply badge-primary;
+  }
 
-    .badge-secondary {
-        @apply badge-secondary;
-    }
+  .badge-secondary {
+    @apply badge-secondary;
+  }
 
-    .badge-destructive {
-        @apply badge-base bg-destructive text-destructive-foreground;
-    }
+  .badge-destructive {
+    @apply badge-base bg-destructive text-destructive-foreground;
+  }
 
-    .badge-outline {
-        @apply badge-outline;
-    }
+  .badge-outline {
+    @apply badge-outline;
+  }
 
-    .avatar-base {
-        @apply relative flex avatar-md shrink-0 overflow-hidden shape-rounded-full;
-    }
+  .avatar-base {
+    @apply relative flex avatar-md shrink-0 overflow-hidden shape-rounded-full;
+  }
 
-    .avatar-image {
-        @apply aspect-square h-full w-full;
-    }
+  .avatar-image {
+    @apply aspect-square h-full w-full;
+  }
 
-    .avatar-fallback {
-        @apply flex h-full w-full items-center justify-center shape-rounded-full bg-muted;
-    }
+  .avatar-fallback {
+    @apply flex h-full w-full items-center justify-center shape-rounded-full bg-muted;
+  }
 
-    /*
+  /*
     FORMS (Input, Textarea, Select)
     */
-    .input-base {
-        @apply input-field;
-    }
+  .input-base {
+    @apply input-field;
+  }
 
-    .textarea-base {
-        @apply flex min-h-textarea w-full shape-rounded-md border border-input bg-transparent px-input-base py-input-base text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm;
-    }
+  .textarea-base {
+    @apply flex min-h-textarea w-full shape-rounded-md border border-input bg-transparent px-input-base py-input-base text-base shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm;
+  }
 
-    .select-trigger {
-        @apply input-field flex items-center justify-between whitespace-nowrap [&>span]:line-clamp-1;
-    }
+  .select-trigger {
+    @apply input-field flex items-center justify-between whitespace-nowrap [&>span]:line-clamp-1;
+  }
 
-    .select-content {
-        @apply relative z-50 max-h-select-content min-w-select-trigger overflow-hidden rounded-md border text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95;
-        @apply bg-popover border-border;
-        /* Force opaque background, and darker than standard for contrast */
-        background-color: var(--color-background);
-        @apply dark:bg-black/95;
-    }
+  .select-content {
+    @apply relative z-50 max-h-select-content min-w-select-trigger overflow-hidden rounded-md border text-popover-foreground shadow-md data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95;
+    @apply bg-popover border-border;
+    /* Force opaque background, and darker than standard for contrast */
+    background-color: var(--color-background);
+    @apply dark:bg-black/95;
+  }
 
-    .select-label {
-        @apply px-select-label text-sm font-semibold;
-    }
+  .select-label {
+    @apply px-select-label text-sm font-semibold;
+  }
 
-    .select-item {
-        @apply relative flex w-full cursor-default select-none items-center rounded-sm px-select-label text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50;
-        @apply hover:bg-accent/50 transition-colors;
-        /* Added hover effect */
-    }
+  .select-item {
+    @apply relative flex w-full cursor-default select-none items-center rounded-sm px-select-label text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50;
+    @apply hover:bg-accent/50 transition-colors;
+    /* Added hover effect */
+  }
 
-    .select-separator {
-        @apply mx-separator my-separator h-px bg-muted;
-    }
+  .select-separator {
+    @apply mx-separator my-separator h-px bg-muted;
+  }
 
-    .select-scroll-button {
-        @apply flex cursor-default items-center justify-center py-input-sm;
-    }
+  .select-scroll-button {
+    @apply flex cursor-default items-center justify-center py-input-sm;
+  }
 
-    /*
+  /*
     SURFACE COMPONENTS (Card, Alert, Table)
     */
-    .card-base {
-        @apply surface-panel flex flex-col gap-lg rounded-xl p-container-md shadow-sm;
-    }
+  .card-base {
+    @apply surface-panel flex flex-col gap-lg rounded-xl p-container-md shadow-sm;
+  }
 
-    /* ... (rest of card) ... */
+  /* ... (rest of card) ... */
 
-    /*
+  /*
     OVERLAY COMPONENTS
     */
-    .dialog-overlay {
-        @apply fixed inset-0 z-50 bg-black/95 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0;
-    }
+  .dialog-overlay {
+    @apply fixed inset-0 z-50 bg-black/95 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0;
+  }
 
-    .dialog-content {
-        @apply surface-panel data-[state=open]:animate-in data-[state=closed]:animate-out fixed z-50 grid w-full gap-md shadow-lg duration-200 top-0 left-0 h-[100dvh] max-w-none rounded-none border-0 p-container-base md:w-dialog-lg md:h-auto md:top-[50%] md:left-[50%] md:translate-x-[-50%] md:translate-y-[-50%] md:rounded-lg md:p-container-md overflow-y-auto content-start;
-    }
+  .dialog-content {
+    @apply surface-panel data-[state=open]:animate-in data-[state=closed]:animate-out fixed z-50 grid w-full gap-md shadow-lg duration-200 top-0 left-0 h-[100dvh] max-w-none rounded-none border-0 p-container-base md:w-dialog-lg md:h-auto md:top-[50%] md:left-[50%] md:translate-x-[-50%] md:translate-y-[-50%] md:rounded-lg md:p-container-md overflow-y-auto content-start;
+  }
 
-    .dialog-header {
-        @apply flex flex-col space-y-1.5 text-center sm:text-left;
-    }
+  .dialog-header {
+    @apply flex flex-col space-y-1.5 text-center sm:text-left;
+  }
 
-    .dialog-footer {
-        @apply flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2;
-    }
+  .dialog-footer {
+    @apply flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2;
+  }
 
-    .dialog-title {
-        @apply text-heading-lg;
-    }
+  .dialog-title {
+    @apply text-heading-lg;
+  }
 
-    .dialog-description {
-        @apply text-subtle;
-    }
+  .dialog-description {
+    @apply text-subtle;
+  }
 
-    /* FIX: Dialog Close Button Centering */
-    .dialog-close {
-        /* FIXED: Use ghost button style for cleaner look */
-        @apply ring-offset-background focus:ring-ring absolute shape-rounded-md opacity-70 transition-opacity focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0;
-        /* Ghost hover effect */
-        @apply hover:bg-accent hover:text-accent-foreground;
-        @apply icon-2xl;
+  /* FIX: Dialog Close Button Centering */
+  .dialog-close {
+    /* FIXED: Use ghost button style for cleaner look */
+    @apply ring-offset-background focus:ring-ring absolute shape-rounded-md opacity-70 transition-opacity focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0;
+    /* Ghost hover effect */
+    @apply hover:bg-accent hover:text-accent-foreground;
+    @apply icon-2xl;
 
-        /* Dialogs might not use header-height var the same way, but keeping top-4 is standard for modal dialogs. 
+    /* Dialogs might not use header-height var the same way, but keeping top-4 is standard for modal dialogs. 
            However, let's make it consistent with the "ghost" style. 
            For modal dialogs, top-4 right-4 is usually correct as they have padding. 
            I will ONLY update the style to match the ghost look, but keep position standard for dialogs unless requested. 
            Wait, user said "mobile shell sheet-close". I will apply the style updates to be safe. */
-        @apply top-4 right-4;
+    @apply top-4 right-4;
 
-        /* Centering Fix */
-        @apply flex items-center justify-center;
+    /* Centering Fix */
+    @apply flex items-center justify-center;
 
-        /* Removed aggressive red hover */
-    }
+    /* Removed aggressive red hover */
+  }
 
-    .dialog-close-icon {
-        @apply icon-sm;
-    }
+  .dialog-close-icon {
+    @apply icon-sm;
+  }
 
-    .sheet-content {
-        @apply surface-panel data-[state=open]:animate-in data-[state=closed]:animate-out fixed z-50 flex flex-col gap-md shadow-lg transition ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-500;
-    }
+  .sheet-content {
+    @apply surface-panel data-[state=open]:animate-in data-[state=closed]:animate-out fixed z-50 flex flex-col gap-md shadow-lg transition ease-in-out data-[state=closed]:duration-300 data-[state=open]:duration-500;
+  }
 
-    .dropdown-content {
-        @apply z-50 min-w-select-trigger overflow-hidden rounded-md border text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2;
-        @apply bg-popover shadow-md p-1;
-        /* Removed surface-panel to ensure opacity */
-        background-color: var(--popover);
-    }
+  .dropdown-content {
+    @apply z-50 min-w-select-trigger overflow-hidden rounded-md border text-popover-foreground data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2;
+    @apply bg-popover shadow-md p-1;
+    /* Removed surface-panel to ensure opacity */
+    background-color: var(--popover);
+  }
 
-    .popover-content {
-        @apply z-50 w-72 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2;
-        background-color: var(--popover);
-    }
+  .popover-content {
+    @apply z-50 w-72 rounded-md border bg-popover p-4 text-popover-foreground shadow-md outline-none data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2;
+    background-color: var(--popover);
+  }
 
-    .dropdown-inset {
-        @apply pl-8;
-        /* Justified as purely alignment logic? Or define .align-inset-left? Leaving for now as it aligns with dropdown/select structure */
-    }
+  .dropdown-inset {
+    @apply pl-8;
+    /* Justified as purely alignment logic? Or define .align-inset-left? Leaving for now as it aligns with dropdown/select structure */
+  }
 
-    .dropdown-sub-trigger-icon {
-        @apply ml-auto;
-    }
+  .dropdown-sub-trigger-icon {
+    @apply ml-auto;
+  }
 
-    .dropdown-indicator {
-        @apply absolute left-2 flex size-3.5 items-center justify-center;
-    }
+  .dropdown-indicator {
+    @apply absolute left-2 flex size-3.5 items-center justify-center;
+  }
 
-    .dropdown-indicator-check {
-        @apply icon-sm;
-    }
+  .dropdown-indicator-check {
+    @apply icon-sm;
+  }
 
-    .dropdown-indicator-circle {
-        @apply size-indicator fill-current;
-    }
+  .dropdown-indicator-circle {
+    @apply size-indicator fill-current;
+  }
 
-    /* Select Component */
-    .select-icon {
-        @apply icon-sm opacity-50;
-    }
+  /* Select Component */
+  .select-icon {
+    @apply icon-sm opacity-50;
+  }
 
-    .select-viewport {}
+  .select-viewport {
+  }
 
-    .select-viewport {
-        @apply p-container-xxs;
-    }
+  .select-viewport {
+    @apply p-container-xxs;
+  }
 
-    .select-item-indicator-wrapper {
-        @apply absolute right-2 flex size-3.5 items-center justify-center;
-    }
+  .select-item-indicator-wrapper {
+    @apply absolute right-2 flex size-3.5 items-center justify-center;
+  }
 
-    .select-item-indicator {
-        @apply icon-sm;
-    }
+  .select-item-indicator {
+    @apply icon-sm;
+  }
 
-    .select-scroll-icon {
-        @apply icon-sm;
-    }
+  .select-scroll-icon {
+    @apply icon-sm;
+  }
 
-    .select-content-popper {
-        @apply data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1;
-    }
+  .select-content-popper {
+    @apply data-[side=bottom]:translate-y-1 data-[side=left]:-translate-x-1 data-[side=right]:translate-x-1 data-[side=top]:-translate-y-1;
+  }
 
-    .select-viewport-popper {
-        @apply h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)] scroll-my-select;
-    }
+  .select-viewport-popper {
+    @apply h-[var(--radix-select-trigger-height)] w-full min-w-[var(--radix-select-trigger-width)] scroll-my-select;
+  }
 
-    /* Drawer Component */
-    .drawer-overlay {
-        @apply fixed inset-0 z-50 bg-black/95;
-    }
+  /* Drawer Component */
+  .drawer-overlay {
+    @apply fixed inset-0 z-50 bg-black/95;
+  }
 
-    .drawer-content {
-        @apply fixed z-50 flex h-auto flex-col border bg-background text-foreground;
-    }
+  .drawer-content {
+    @apply fixed z-50 flex h-auto flex-col border bg-background text-foreground;
+  }
 
-    .drawer-content-top {
-        @apply inset-x-0 drawer-top-base;
-    }
+  .drawer-content-top {
+    @apply inset-x-0 drawer-top-base;
+  }
 
-    .drawer-content-bottom {
-        @apply inset-x-0 drawer-bottom-base;
-    }
+  .drawer-content-bottom {
+    @apply inset-x-0 drawer-bottom-base;
+  }
 
-    .drawer-content-right {
-        @apply inset-y-0 right-0 w-3/4 border-l sm:max-w-sm;
-    }
+  .drawer-content-right {
+    @apply inset-y-0 right-0 w-3/4 border-l sm:max-w-sm;
+  }
 
-    .drawer-content-left {
-        @apply inset-y-0 left-0 w-3/4 border-r sm:max-w-sm;
-    }
+  .drawer-content-left {
+    @apply inset-y-0 left-0 w-3/4 border-r sm:max-w-sm;
+  }
 
-    .drawer-handle {
-        @apply drawer-handle-base group-data-[vaul-drawer-direction=bottom]/drawer-content:block;
-    }
+  .drawer-handle {
+    @apply drawer-handle-base group-data-[vaul-drawer-direction=bottom]/drawer-content:block;
+  }
 
-    .drawer-header {
-        @apply grid gap-btn-icon p-container-base text-center sm:text-left;
-    }
+  .drawer-header {
+    @apply grid gap-btn-icon p-container-base text-center sm:text-left;
+  }
 
-    .drawer-footer {
-        @apply mt-auto flex flex-col gap-sm p-container-base;
-    }
+  .drawer-footer {
+    @apply mt-auto flex flex-col gap-sm p-container-base;
+  }
 
-    .drawer-title {
-        @apply text-lg font-semibold leading-none tracking-tight;
-    }
+  .drawer-title {
+    @apply text-lg font-semibold leading-none tracking-tight;
+  }
 
-    .drawer-description {
-        @apply text-sm text-muted-foreground;
-    }
+  .drawer-description {
+    @apply text-sm text-muted-foreground;
+  }
 
-    /* Sheet Component */
-    .sheet-overlay {
-        @apply fixed inset-0 z-50 bg-black/95;
-    }
+  /* Sheet Component */
+  .sheet-overlay {
+    @apply fixed inset-0 z-50 bg-black/95;
+  }
 
-    .sheet-close {
-        /* FIXED: Use ghost button style for cleaner look */
-        @apply absolute shape-rounded-md opacity-70 transition-opacity disabled:pointer-events-none border-0 shadow-none outline-none;
-        /* Ghost hover effect */
-        @apply hover:bg-accent hover:text-accent-foreground hover:opacity-100;
-        @apply icon-2xl;
+  .sheet-close {
+    /* FIXED: Use ghost button style for cleaner look */
+    @apply absolute shape-rounded-md opacity-70 transition-opacity disabled:pointer-events-none border-0 shadow-none outline-none;
+    /* Ghost hover effect */
+    @apply hover:bg-accent hover:text-accent-foreground hover:opacity-100;
+    @apply icon-2xl;
 
-        /* Remove focus ring */
-        @apply focus:ring-0 focus:outline-hidden;
+    /* Remove focus ring */
+    @apply focus:ring-0 focus:outline-hidden;
 
-        /* FIXED: Center vertically based on header height */
-        top: calc(var(--header-height) / 2);
-        transform: translateY(-50%);
-        right: 1rem;
+    /* FIXED: Center vertically based on header height */
+    top: calc(var(--header-height) / 2);
+    transform: translateY(-50%);
+    right: 1rem;
 
-        /* Centering Fix */
-        @apply flex items-center justify-center;
-    }
+    /* Centering Fix */
+    @apply flex items-center justify-center;
+  }
 
-    .sheet-content-right {
-        @apply data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right inset-y-0 right-0 h-full w-3/4 border-l sm:max-w-sm;
-    }
+  .sheet-content-right {
+    @apply data-[state=closed]:slide-out-to-right data-[state=open]:slide-in-from-right inset-y-0 right-0 h-full w-3/4 border-l sm:max-w-sm;
+  }
 
-    .sheet-content-left {
-        @apply data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left inset-y-0 left-0 h-full w-3/4 border-r sm:max-w-sm;
-    }
+  .sheet-content-left {
+    @apply data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left inset-y-0 left-0 h-full w-3/4 border-r sm:max-w-sm;
+  }
 
-    .sheet-content-top {
-        @apply data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top inset-x-0 top-0 h-auto border-b;
-    }
+  .sheet-content-top {
+    @apply data-[state=closed]:slide-out-to-top data-[state=open]:slide-in-from-top inset-x-0 top-0 h-auto border-b;
+  }
 
-    .sheet-content-bottom {
-        @apply data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom inset-x-0 bottom-0 h-auto border-t;
-    }
+  .sheet-content-bottom {
+    @apply data-[state=closed]:slide-out-to-bottom data-[state=open]:slide-in-from-bottom inset-x-0 bottom-0 h-auto border-t;
+  }
 
-    .sheet-header {
-        @apply flex flex-col space-y-2 text-center sm:text-left;
-    }
+  .sheet-header {
+    @apply flex flex-col space-y-2 text-center sm:text-left;
+  }
 
-    .sheet-footer {
-        @apply flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2;
-    }
+  .sheet-footer {
+    @apply flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2;
+  }
 
-    .sheet-title {
-        @apply text-lg font-semibold text-foreground;
-    }
+  .sheet-title {
+    @apply text-lg font-semibold text-foreground;
+  }
 
-    .sheet-description {
-        @apply text-sm text-muted-foreground;
-    }
+  .sheet-description {
+    @apply text-sm text-muted-foreground;
+  }
 
-    .sheet-close-icon {
-        @apply icon-sm;
-    }
+  .sheet-close-icon {
+    @apply icon-sm;
+  }
 
-    .sheet-sr-only {
-        @apply sr-only;
-    }
+  .sheet-sr-only {
+    @apply sr-only;
+  }
 
-    /* ScrollArea Component */
-    .scroll-area-viewport {
-        @apply focus-visible:ring-ring/50 size-full rounded-[inherit] transition-all outline-none focus-visible:ring-[3px] focus-visible:outline-1;
-    }
+  /* ScrollArea Component */
+  .scroll-area-viewport {
+    @apply focus-visible:ring-ring/50 size-full rounded-[inherit] transition-all outline-none focus-visible:ring-[3px] focus-visible:outline-1;
+  }
 
-    .scroll-bar {
-        @apply flex touch-none p-px transition-colors select-none;
-    }
+  .scroll-bar {
+    @apply flex touch-none p-px transition-colors select-none;
+  }
 
-    .scroll-bar-vertical {
-        @apply h-full w-2.5 border-l border-transparent-l;
-    }
+  .scroll-bar-vertical {
+    @apply h-full w-2.5 border-l border-transparent-l;
+  }
 
-    .scroll-bar-horizontal {
-        @apply h-2.5 flex-col border-t border-transparent-t;
-    }
+  .scroll-bar-horizontal {
+    @apply h-2.5 flex-col border-t border-transparent-t;
+  }
 
-    .scroll-thumb {
-        @apply bg-border relative flex-1 rounded-full;
-    }
+  .scroll-thumb {
+    @apply bg-border relative flex-1 rounded-full;
+  }
 
-    /* Toast Component */
-    .toast-base {
-        @apply toast-root;
-    }
+  /* Toast Component */
+  .toast-base {
+    @apply toast-root;
+  }
 
-    .toast-description {
-        @apply group-[.toast]:text-muted-foreground;
-    }
+  .toast-description {
+    @apply group-[.toast]:text-muted-foreground;
+  }
 
-    .toast-action {
-        @apply toast-btn-primary;
-    }
+  .toast-action {
+    @apply toast-btn-primary;
+  }
 
-    .toast-cancel {
-        @apply toast-btn-cancel;
-    }
+  .toast-cancel {
+    @apply toast-btn-cancel;
+  }
 
-    /* Strict Shell Clean-up: Final Additions */
-    .shell-mobile-root {
-        @apply flex flex-col min-h-screen bg-background relative overflow-hidden;
-    }
+  /* Strict Shell Clean-up: Final Additions */
+  .shell-mobile-root {
+    @apply flex flex-col min-h-screen bg-background relative overflow-hidden;
+  }
 
-    .shell-mobile-header {
-        @apply fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 h-[var(--header-height)];
-        /* Clean header: transparent/matching background */
-        background: transparent;
-    }
+  .shell-mobile-header {
+    @apply fixed top-0 left-0 right-0 z-40 flex items-center justify-between px-4 h-[var(--header-height)];
+    /* Clean header: transparent/matching background */
+    background: transparent;
+  }
 
-    .shell-mobile-menu-btn {
-        @apply flex items-center justify-center p-2 rounded-md text-foreground transition-colors;
-        min-width: 48px;
-        min-height: 48px;
-    }
+  .shell-mobile-menu-btn {
+    @apply flex items-center justify-center p-2 rounded-md text-foreground transition-colors;
+    min-width: 48px;
+    min-height: 48px;
+  }
 
-    .shell-mobile-menu-btn:hover {
-        background-color: var(--accent) !important;
-        color: var(--accent-foreground) !important;
-    }
+  .shell-mobile-menu-btn:hover {
+    background-color: var(--accent) !important;
+    color: var(--accent-foreground) !important;
+  }
 
-    .shell-mobile-menu-icon {
-        @apply icon-xl;
-        /* Ensure high contrast stroke if needed, usually text-foreground handles it */
-    }
+  .shell-mobile-menu-icon {
+    @apply icon-xl;
+    /* Ensure high contrast stroke if needed, usually text-foreground handles it */
+  }
 
-    .shell-mobile-main {
-        @apply flex-1 pt-[var(--header-height)] px-4 pb-0 overflow-y-auto;
-    }
+  .shell-mobile-main {
+    @apply flex-1 pt-[var(--header-height)] px-4 pb-0 overflow-y-auto;
+  }
 
-    .shell-mobile-nav-scroll {
-        @apply flex-1 overflow-y-auto p-4;
-    }
+  .shell-mobile-nav-scroll {
+    @apply flex-1 overflow-y-auto p-4;
+  }
 
-    .shell-mobile-nav-footer {
-        @apply p-4 border-t border-border flex items-center justify-between bg-muted/20 backdrop-blur-sm pb-8;
-        /* Added pb-8 for requested gap */
-    }
+  .shell-mobile-nav-footer {
+    @apply p-4 border-t border-border flex items-center justify-between bg-muted/20 backdrop-blur-sm pb-8;
+    /* Added pb-8 for requested gap */
+  }
 
-    /* Deprecated: Mobile Bottom Zone (Removed sticky bar) 
+  /* Deprecated: Mobile Bottom Zone (Removed sticky bar) 
        .shell-mobile-bottom { ... } 
     */
 
-    /* Full Screen Sheets for Mobile */
-    .sheet-mobile-full {
-        @apply fixed inset-0 z-50 bg-background flex flex-col data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 transition-transform duration-300 rounded-none;
-        /* Ensure it covers everything and has NO rounded corners */
-        width: 100vw !important;
-        max-width: 100vw !important;
-        height: 100dvh !important;
-        border: none !important;
-    }
+  /* Full Screen Sheets for Mobile */
+  .sheet-mobile-full {
+    @apply fixed inset-0 z-50 bg-background flex flex-col data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 transition-transform duration-300 rounded-none;
+    /* Ensure it covers everything and has NO rounded corners */
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: 100dvh !important;
+    border: none !important;
+  }
 
-    .shell-sidebar-nav {
-        @apply flex-1 py-sidebar space-y-nav;
-    }
+  .shell-sidebar-nav {
+    @apply flex-1 py-sidebar space-y-nav;
+  }
 
-    .shell-content-scroll {
-        @apply flex-1;
-    }
+  .shell-content-scroll {
+    @apply flex-1;
+  }
 
-    .shell-details-panel {
-        @apply surface-panel border-l relative flex flex-col shrink-0 w-full md:w-sidebar-details shadow-2xl animate-in slide-in-from-right duration-300 h-full overflow-hidden;
-        /* Sandwich Layout: Removed 'fixed inset-y-0 right-0 z-[60]' to allow it to push content */
-    }
+  .shell-details-panel {
+    @apply surface-panel border-l relative flex flex-col shrink-0 w-full md:w-sidebar-details shadow-2xl animate-in slide-in-from-right duration-300 h-full overflow-hidden;
+    /* Sandwich Layout: Removed 'fixed inset-y-0 right-0 z-[60]' to allow it to push content */
+  }
 
-    .shell-details-header {
-        @apply flex items-center justify-between p-container-base border-divider-b shrink-0;
-        /* Padding to prevent overlap with absolute close button */
-        @apply pr-12;
-        height: var(--header-height);
-    }
+  .shell-details-header {
+    @apply flex items-center justify-between p-container-base border-divider-b shrink-0;
+    /* Padding to prevent overlap with absolute close button */
+    @apply pr-12;
+    height: var(--header-height);
+  }
 
-    /* Standard Sheet Header for Mobile Nav */
-    .shell-nav-header {
-        @apply flex items-center gap-3 p-4 border-b border-border;
-        /* Padding to prevent overlap with absolute close button */
-        @apply pr-12;
-        height: var(--header-height);
-    }
+  /* Standard Sheet Header for Mobile Nav */
+  .shell-nav-header {
+    @apply flex items-center gap-3 p-4 border-b border-border;
+    /* Padding to prevent overlap with absolute close button */
+    @apply pr-12;
+    height: var(--header-height);
+  }
 
-    .shell-details-close {
-        @apply p-2 rounded-full hover:bg-accent transition-colors relative;
-        min-width: 44px;
-        min-height: 44px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
+  .shell-details-close {
+    @apply p-2 rounded-full hover:bg-accent transition-colors relative;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
 
-    /* Ensure icon inside is centered */
-    .shell-details-close svg {
-        @apply absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2;
-    }
+  /* Ensure icon inside is centered */
+  .shell-details-close svg {
+    @apply absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2;
+  }
 
-    .shell-details-scroll {
-        @apply flex-1 p-container-base min-h-0 overflow-hidden px-10;
-    }
+  .shell-details-scroll {
+    @apply flex-1 p-container-base min-h-0 overflow-hidden px-10;
+  }
 
-    .app-body {
-        @apply min-h-screen bg-background font-sans antialiased text-foreground;
-    }
+  .app-body {
+    @apply min-h-screen bg-background font-sans antialiased text-foreground;
+  }
 
-    /* Confirm Deletion Dialog */
-    .confirm-dialog-content {
-        @apply surface-panel sm:max-w-[425px];
-    }
+  /* Confirm Deletion Dialog */
+  .confirm-dialog-content {
+    @apply surface-panel sm:max-w-[425px];
+  }
 
-    .confirm-dialog-icon {
-        @apply icon-sm;
-    }
+  .confirm-dialog-icon {
+    @apply icon-sm;
+  }
 
-    .confirm-highlight {
-        @apply text-highlight;
-    }
+  .confirm-highlight {
+    @apply text-highlight;
+  }
 
-    .confirm-code {
-        @apply text-code;
-    }
+  .confirm-code {
+    @apply text-code;
+  }
 
-    .confirm-input {
-        @apply input-field font-mono;
-    }
+  .confirm-input {
+    @apply input-field font-mono;
+  }
 
-    .confirm-button-icon {
-        @apply mr-2 icon-sm;
-    }
+  .confirm-button-icon {
+    @apply mr-2 icon-sm;
+  }
 
-    .confirm-loader {
-        @apply mr-2 icon-sm animate-spin;
-    }
+  .confirm-loader {
+    @apply mr-2 icon-sm animate-spin;
+  }
 
-    .confirm-body {
-        @apply space-y-content py-sidebar;
-    }
+  .confirm-body {
+    @apply space-y-content py-sidebar;
+  }
 
-    .confirm-input-wrapper {
-        @apply space-y-2;
-    }
+  .confirm-input-wrapper {
+    @apply space-y-2;
+  }
 
-    .confirm-instruction {
-        @apply text-sm;
-    }
+  .confirm-instruction {
+    @apply text-sm;
+  }
 
-    /*
+  /*
     Mode Toggle
     */
-    button.mode-toggle-button {
-        @apply shape-rounded-full size-9 relative;
-        display: grid !important;
-        place-items: center !important;
-    }
+  button.mode-toggle-button {
+    @apply shape-rounded-full size-9 relative;
+    display: grid !important;
+    place-items: center !important;
+  }
 
-    .mode-toggle-icon-sun {
-        @apply h-[1.2rem] w-[1.2rem] transition-all;
-        grid-area: 1 / 1;
-        transform: rotate(0) scale(1);
-        opacity: 1;
-        color: currentColor;
-    }
+  .mode-toggle-icon-sun {
+    @apply h-[1.2rem] w-[1.2rem] transition-all;
+    grid-area: 1 / 1;
+    transform: rotate(0) scale(1);
+    opacity: 1;
+    color: currentColor;
+  }
 
-    .dark .mode-toggle-icon-sun {
-        transform: rotate(-90deg) scale(0);
-        opacity: 0;
-    }
+  .dark .mode-toggle-icon-sun {
+    transform: rotate(-90deg) scale(0);
+    opacity: 0;
+  }
 
-    .mode-toggle-icon-moon {
-        @apply h-[1.2rem] w-[1.2rem] transition-all;
-        grid-area: 1 / 1;
-        transform: rotate(90deg) scale(0);
-        opacity: 0;
-        color: currentColor;
-    }
+  .mode-toggle-icon-moon {
+    @apply h-[1.2rem] w-[1.2rem] transition-all;
+    grid-area: 1 / 1;
+    transform: rotate(90deg) scale(0);
+    opacity: 0;
+    color: currentColor;
+  }
 
-    .dark .mode-toggle-icon-moon {
-        transform: rotate(0) scale(1);
-        opacity: 1;
-    }
+  .dark .mode-toggle-icon-moon {
+    transform: rotate(0) scale(1);
+    opacity: 1;
+  }
 
-    .mode-toggle-label-sr-only {
-        @apply sr-only;
-    }
+  .mode-toggle-label-sr-only {
+    @apply sr-only;
+  }
 
-    /*
+  /*
     Dashboard Navigation Item
     */
-    .nav-dashboard-button {
-        @apply w-full justify-start;
-    }
+  .nav-dashboard-button {
+    @apply w-full justify-start;
+  }
 
-    .nav-dashboard-icon {
-        @apply mr-2 icon-sm;
-    }
+  .nav-dashboard-icon {
+    @apply mr-2 icon-sm;
+  }
 
-    /*
+  /*
     Language Selector
     */
-    .language-select-trigger {
-        @apply w-lang-select;
-    }
+  .language-select-trigger {
+    @apply w-lang-select;
+  }
 
-    .language-select-icon {
-        @apply mr-2 icon-sm;
-    }
+  .language-select-icon {
+    @apply mr-2 icon-sm;
+  }
 }

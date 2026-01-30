@@ -1,13 +1,13 @@
 {
-    "name": "@nexical/sdk-core",
-    "version": "0.1.0",
-    "type": "module",
-    "main": "src/index.ts",
-    "scripts": {
-        "build": "echo 'No build step, using tsx/source directly in monorepo'"
-    },
-    "dependencies": {},
-    "devDependencies": {
-        "typescript": "^5.9.3"
-    }
+  "name": "@nexical/sdk-core",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "echo 'No build step, using tsx/source directly in monorepo'"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "typescript": "^5.9.3"
+  }
 }

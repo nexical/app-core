@@ -13,69 +13,71 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const PROMPTS_DIR = path.join(__dirname, '../prompts');
 
-
 // Helper to run Gemini with a specific model
 // Returns 0 on success, or throws error if failed (unless it's a 429)
 // If it's a 429, returns { retry: true }
 interface GeminiResult {
-    code: number;
-    shouldRetry: boolean;
+  code: number;
+  shouldRetry: boolean;
 }
 
 function runGemini(model: string, input: string): Promise<GeminiResult> {
-    return new Promise((resolve) => {
-        console.log(`[Agent] Attempting with model: \x1b[36m${model}\x1b[0m...`);
+  return new Promise((resolve) => {
+    console.log(`[Agent] Attempting with model: \x1b[36m${model}\x1b[0m...`);
 
-        // [DEP0190] Fix: Pass arguments as part of the command string when shell: true
-        const start = Date.now();
-        const child = spawn(`gemini --yolo --model ${model}`, {
-            shell: true,
-            stdio: ['pipe', 'inherit', 'pipe'] // Pipe stderr to check for 429
-        });
-
-        // Capture stderr for error analysis
-        let stderrData = '';
-        child.stderr?.on('data', (data) => {
-            const chunk = data.toString();
-            process.stderr.write(chunk); // Passthrough to user
-            stderrData += chunk;
-        });
-
-        child.stdin.write(input);
-        child.stdin.end();
-
-        child.on('close', (code) => {
-            const duration = Date.now() - start;
-            const exitCode = code ?? 1;
-
-            // Check for capacity exhaustion
-            const isExhausted = stderrData.includes('429') ||
-                stderrData.includes('exhausted your capacity') ||
-                stderrData.includes('ResourceExhausted');
-
-            if (exitCode !== 0 && isExhausted) {
-                console.warn(`[Agent] \u26A0\ufe0f Model ${model} exhausted (429). Duration: ${duration}ms`);
-                resolve({ code: exitCode, shouldRetry: true });
-            } else {
-                resolve({ code: exitCode, shouldRetry: false });
-            }
-        });
-
-        child.on('error', (err) => {
-            console.error(`[Agent] Failed to spawn Gemini (${model}):`, err);
-            resolve({ code: 1, shouldRetry: false });
-        });
+    // [DEP0190] Fix: Pass arguments as part of the command string when shell: true
+    const start = Date.now();
+    const child = spawn(`gemini --yolo --model ${model}`, {
+      shell: true,
+      stdio: ['pipe', 'inherit', 'pipe'], // Pipe stderr to check for 429
     });
+
+    // Capture stderr for error analysis
+    let stderrData = '';
+    child.stderr?.on('data', (data) => {
+      const chunk = data.toString();
+      process.stderr.write(chunk); // Passthrough to user
+      stderrData += chunk;
+    });
+
+    child.stdin.write(input);
+    child.stdin.end();
+
+    child.on('close', (code) => {
+      const duration = Date.now() - start;
+      const exitCode = code ?? 1;
+
+      // Check for capacity exhaustion
+      const isExhausted =
+        stderrData.includes('429') ||
+        stderrData.includes('exhausted your capacity') ||
+        stderrData.includes('ResourceExhausted');
+
+      if (exitCode !== 0 && isExhausted) {
+        console.warn(
+          `[Agent] \u26A0\ufe0f Model ${model} exhausted (429). Duration: ${duration}ms`,
+        );
+        resolve({ code: exitCode, shouldRetry: true });
+      } else {
+        resolve({ code: exitCode, shouldRetry: false });
+      }
+    });
+
+    child.on('error', (err) => {
+      console.error(`[Agent] Failed to spawn Gemini (${model}):`, err);
+      resolve({ code: 1, shouldRetry: false });
+    });
+  });
 }
 
 async function main() {
-    // Parse args
-    const argv = minimist(process.argv.slice(2));
-    const promptName = argv._[0];
+  // Parse args
+  const argv = minimist(process.argv.slice(2));
+  const promptName = argv._[0];
 
-    // Help / Usage
-    if (!promptName || argv.help || argv.h) {
-        console.log(`
+  // Help / Usage
+  if (!promptName || argv.help || argv.h) {
+    console.log(`
 Usage: npx prompt <prompt-name> [options]
 
 Arguments:
@@ -88,117 +90,123 @@ Options:
 Examples:
   npx prompt auditor --target=src/foo.ts
 `);
-        process.exit(0);
-    }
+    process.exit(0);
+  }
 
-    // Resolve prompt file
-    const promptFile = path.join(PROMPTS_DIR, promptName.endsWith('.md') ? promptName : `${promptName}.md`);
+  // Resolve prompt file
+  const promptFile = path.join(
+    PROMPTS_DIR,
+    promptName.endsWith('.md') ? promptName : `${promptName}.md`,
+  );
 
+  try {
+    await fs.access(promptFile);
+  } catch (error) {
+    console.error(`Error: Prompt file not found: ${promptFile}`);
+    process.exit(1);
+  }
+
+  // Configure Nunjucks
+  const env = new nunjucks.Environment(new nunjucks.FileSystemLoader(PROMPTS_DIR), {
+    autoescape: false,
+    trimBlocks: true,
+    lstripBlocks: true,
+  });
+
+  // Helper: context(path) -> runs repomix
+  env.addGlobal('context', (targetPath: string) => {
     try {
-        await fs.access(promptFile);
+      console.log(`[Context] Analyzing codebase at: ${targetPath}`);
+      const output = execSync(
+        `npx -y repomix --stdout --quiet --style xml --include "${targetPath}/**/*" --ignore "**/node_modules,**/dist"`,
+        { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'inherit'] },
+      );
+      return `<CODEBASE_CONTEXT path="${targetPath}">\n${output}\n</CODEBASE_CONTEXT>`;
     } catch (error) {
-        console.error(`Error: Prompt file not found: ${promptFile}`);
-        process.exit(1);
+      console.error(`[Context] Error running repomix on ${targetPath}`);
+      return `[Error generating context for ${targetPath}]`;
     }
+  });
 
-    // Configure Nunjucks
-    const env = new nunjucks.Environment(new nunjucks.FileSystemLoader(PROMPTS_DIR), {
-        autoescape: false,
-        trimBlocks: true,
-        lstripBlocks: true
-    });
-
-    // Helper: context(path) -> runs repomix
-    env.addGlobal('context', (targetPath: string) => {
-        try {
-            console.log(`[Context] Analyzing codebase at: ${targetPath}`);
-            const output = execSync(
-                `npx -y repomix --stdout --quiet --style xml --include "${targetPath}/**/*" --ignore "**/node_modules,**/dist"`,
-                { encoding: 'utf-8', stdio: ['ignore', 'pipe', 'inherit'] }
-            );
-            return `<CODEBASE_CONTEXT path="${targetPath}">\n${output}\n</CODEBASE_CONTEXT>`;
-        } catch (error) {
-            console.error(`[Context] Error running repomix on ${targetPath}`);
-            return `[Error generating context for ${targetPath}]`;
-        }
-    });
-
-    // Helper: read(path) -> reads local file
-    env.addGlobal('read', (relativePath: string) => {
-        try {
-            const resolvedPath = path.resolve(process.cwd(), relativePath);
-            const content = readFileSync(resolvedPath, 'utf-8');
-            return content;
-        } catch (error) {
-            console.error(`[Read] Error reading file: ${relativePath}`);
-            return `[Error reading file ${relativePath}]`;
-        }
-    });
-
-    // Read template content
-    let templateContent: string;
+  // Helper: read(path) -> reads local file
+  env.addGlobal('read', (relativePath: string) => {
     try {
-        templateContent = await fs.readFile(promptFile, 'utf-8');
+      const resolvedPath = path.resolve(process.cwd(), relativePath);
+      const content = readFileSync(resolvedPath, 'utf-8');
+      return content;
     } catch (error) {
-        console.error(`Error reading prompt file: ${error}`);
-        process.exit(1);
+      console.error(`[Read] Error reading file: ${relativePath}`);
+      return `[Error reading file ${relativePath}]`;
+    }
+  });
+
+  // Read template content
+  let templateContent: string;
+  try {
+    templateContent = await fs.readFile(promptFile, 'utf-8');
+  } catch (error) {
+    console.error(`Error reading prompt file: ${error}`);
+    process.exit(1);
+  }
+
+  // Render template
+  console.log(`[Render] Rendering template with variables:`, JSON.stringify(argv, null, 2));
+  const renderedPrompt = env.renderString(templateContent, {
+    ...argv,
+  });
+
+  // Buffer to file
+  const tempFile = path.join(os.tmpdir(), '.temp_prompt_active.md');
+  await fs.writeFile(tempFile, renderedPrompt, 'utf-8');
+  console.log(`[Buffer] Wrote active prompt to ${tempFile}`);
+
+  // Parse models
+  const defaultModel = 'gemini-3-flash-preview,gemini-3-pro-preview';
+  const modelsArg = argv.models || defaultModel;
+  const models = modelsArg
+    .split(',')
+    .map((m: string) => m.trim())
+    .filter(Boolean);
+
+  console.log(`[Agent] Model rotation strategy: [${models.join(', ')}]`);
+
+  let finalCode = 1;
+  let success = false;
+
+  for (const model of models) {
+    const result = await runGemini(model, renderedPrompt);
+
+    if (result.code === 0) {
+      finalCode = 0;
+      success = true;
+      break;
     }
 
-    // Render template
-    console.log(`[Render] Rendering template with variables:`, JSON.stringify(argv, null, 2));
-    const renderedPrompt = env.renderString(templateContent, {
-        ...argv
-    });
-
-    // Buffer to file
-    const tempFile = path.join(os.tmpdir(), '.temp_prompt_active.md');
-    await fs.writeFile(tempFile, renderedPrompt, 'utf-8');
-    console.log(`[Buffer] Wrote active prompt to ${tempFile}`);
-
-    // Parse models
-    const defaultModel = 'gemini-3-flash-preview,gemini-3-pro-preview';
-    const modelsArg = argv.models || defaultModel;
-    const models = modelsArg.split(',').map((m: string) => m.trim()).filter(Boolean);
-
-    console.log(`[Agent] Model rotation strategy: [${models.join(', ')}]`);
-
-    let finalCode = 1;
-    let success = false;
-
-    for (const model of models) {
-        const result = await runGemini(model, renderedPrompt);
-
-        if (result.code === 0) {
-            finalCode = 0;
-            success = true;
-            break;
-        }
-
-        if (result.shouldRetry) {
-            console.log(`[Agent] Switching to next model...`);
-            continue; // Try next model
-        } else {
-            // Non-retriable error
-            finalCode = result.code;
-            break;
-        }
+    if (result.shouldRetry) {
+      console.log(`[Agent] Switching to next model...`);
+      continue; // Try next model
+    } else {
+      // Non-retriable error
+      finalCode = result.code;
+      break;
     }
+  }
 
-    if (!success && finalCode !== 0) {
-        console.error(`[Agent] \u274C All attempts failed.`);
-    }
+  if (!success && finalCode !== 0) {
+    console.error(`[Agent] \u274C All attempts failed.`);
+  }
 
-    try {
-        await fs.unlink(tempFile);
-        console.log(`[Cleanup] Removed active prompt file`);
-    } catch (e) {
-        // ignore cleanup errors
-    }
+  try {
+    await fs.unlink(tempFile);
+    console.log(`[Cleanup] Removed active prompt file`);
+  } catch (e) {
+    // ignore cleanup errors
+  }
 
-    process.exit(finalCode);
+  process.exit(finalCode);
 }
 
 main().catch((error) => {
-    console.error(error);
-    process.exit(1);
+  console.error(error);
+  process.exit(1);
 });

@@ -1,11 +1,11 @@
-import type { ServiceResponse } from "@/types/service";
-import type { InviteUserDTO, Invitation } from "../sdk/types";
-import { db } from "@/lib/core/db";
-import { HookSystem } from "@/lib/modules/hooks";
-import { SiteRole } from "@modules/user-api/src/sdk";
+import type { ServiceResponse } from '@/types/service';
+import type { InviteUserDTO, Invitation } from '../sdk/types';
+import { db } from '@/lib/core/db';
+import { HookSystem } from '@/lib/modules/hooks';
+import { SiteRole } from '@modules/user-api/src/sdk';
 
-import { getTranslation } from "@/lib/core/i18n";
-import type { APIContext } from "astro";
+import { getTranslation } from '@/lib/core/i18n';
+import type { APIContext } from 'astro';
 
 export class InviteUserAuthAction {
   public static async run(
@@ -20,7 +20,7 @@ export class InviteUserAuthAction {
       where: { email: normalizedEmail },
     });
     if (existingUser) {
-      return { success: false, error: "user.service.error.user_exists" };
+      return { success: false, error: 'user.service.error.user_exists' };
     }
 
     const token = crypto.randomUUID();
@@ -43,7 +43,7 @@ export class InviteUserAuthAction {
       });
 
       // Dispatch event to trigger email
-      await HookSystem.dispatch("invitation.created", {
+      await HookSystem.dispatch('invitation.created', {
         id: invitation.id,
         email: invitation.email,
         token: invitation.token,
@@ -52,8 +52,8 @@ export class InviteUserAuthAction {
 
       return { success: true, data: invitation as unknown as Invitation };
     } catch (error: unknown) {
-      console.error("Invite Error:", error);
-      return { success: false, error: "user.service.error.invite_failed" };
+      console.error('Invite Error:', error);
+      return { success: false, error: 'user.service.error.invite_failed' };
     }
   }
 }

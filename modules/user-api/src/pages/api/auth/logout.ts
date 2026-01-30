@@ -1,9 +1,9 @@
 // GENERATED CODE - DO NOT MODIFY
-import { defineApi } from "@/lib/api/api-docs";
-import { ApiGuard } from "@/lib/api/api-guard";
-import { HookSystem } from "@/lib/modules/hooks";
-import { LogoutAuthAction } from "@modules/user-api/src/actions/logout-auth";
-import type { LogoutDTO } from "@modules/user-api/src/sdk";
+import { defineApi } from '@/lib/api/api-docs';
+import { ApiGuard } from '@/lib/api/api-guard';
+import { HookSystem } from '@/lib/modules/hooks';
+import { LogoutAuthAction } from '@modules/user-api/src/actions/logout-auth';
+import type { LogoutDTO } from '@modules/user-api/src/sdk';
 export const POST = defineApi(
   async (context) => {
     // 1. Body Parsing (Input)
@@ -11,12 +11,12 @@ export const POST = defineApi(
     const query = Object.fromEntries(new URL(context.request.url).searchParams);
 
     // 2. Hook: Filter Input
-    const input: LogoutDTO = await HookSystem.filter("auth.logout.input", body);
+    const input: LogoutDTO = await HookSystem.filter('auth.logout.input', body);
 
     // 3. Security Check
     // Pass merged input
     const combinedInput = { ...context.params, ...query, ...input };
-    await ApiGuard.protect(context, "member", combinedInput);
+    await ApiGuard.protect(context, 'member', combinedInput);
 
     // Inject userId from context for protected routes
     const user = (context as any).user;
@@ -28,10 +28,7 @@ export const POST = defineApi(
     const result = await LogoutAuthAction.run(combinedInput, context);
 
     // 5. Hook: Filter Output
-    const filteredResult = await HookSystem.filter(
-      "auth.logout.output",
-      result,
-    );
+    const filteredResult = await HookSystem.filter('auth.logout.output', result);
 
     // 6. Response
     if (!filteredResult.success) {
@@ -43,13 +40,13 @@ export const POST = defineApi(
     return { success: true, data: filteredResult.data };
   },
   {
-    summary: "Logout user",
-    tags: ["Auth"],
+    summary: 'Logout user',
+    tags: ['Auth'],
     requestBody: {
       content: {
-        "application/json": {
+        'application/json': {
           schema: {
-            type: "object",
+            type: 'object',
             properties: {},
           },
         },
@@ -57,10 +54,10 @@ export const POST = defineApi(
     },
     responses: {
       200: {
-        description: "OK",
+        description: 'OK',
         content: {
-          "application/json": {
-            schema: { type: "object" },
+          'application/json': {
+            schema: { type: 'object' },
           },
         },
       },

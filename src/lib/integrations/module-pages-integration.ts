@@ -12,51 +12,55 @@ import { ModuleDiscovery } from '../modules/module-discovery';
  * It supports both `.astro` pages and `.ts` API endpoints.
  */
 export default (): AstroIntegration => {
-    return {
-        name: 'module-pages-integration',
-        hooks: {
-            'astro:config:setup': async ({ injectRoute }) => {
-                const modules = await ModuleDiscovery.loadModules();
+  return {
+    name: 'module-pages-integration',
+    hooks: {
+      'astro:config:setup': async ({ injectRoute }) => {
+        const modules = await ModuleDiscovery.loadModules();
 
-                for (const module of modules) {
-                    const modulePagesDir = path.join(module.path, 'src/pages');
+        for (const module of modules) {
+          const modulePagesDir = path.join(module.path, 'src/pages');
 
-                    if (fs.existsSync(modulePagesDir) && fs.statSync(modulePagesDir).isDirectory()) {
-                        // Recursive function to find all page files
-                        const scanPages = (dir: string, baseRoute: string) => {
-                            const files = fs.readdirSync(dir);
+          if (fs.existsSync(modulePagesDir) && fs.statSync(modulePagesDir).isDirectory()) {
+            // Recursive function to find all page files
+            const scanPages = (dir: string, baseRoute: string) => {
+              const files = fs.readdirSync(dir);
 
-                            for (const file of files) {
-                                const filePath = path.join(dir, file);
-                                const stat = fs.statSync(filePath);
+              for (const file of files) {
+                const filePath = path.join(dir, file);
+                const stat = fs.statSync(filePath);
 
-                                if (stat.isDirectory()) {
-                                    scanPages(filePath, `${baseRoute}/${file}`);
-                                } else if (file.endsWith('.astro') || file.endsWith('.ts') || file.endsWith('.js')) {
-                                    // Construct the route pattern
-                                    // Remove file extension
-                                    let routePattern = `${baseRoute}/${file.replace(/\.(astro|ts|js)$/, '')}`;
+                if (stat.isDirectory()) {
+                  scanPages(filePath, `${baseRoute}/${file}`);
+                } else if (
+                  file.endsWith('.astro') ||
+                  file.endsWith('.ts') ||
+                  file.endsWith('.js')
+                ) {
+                  // Construct the route pattern
+                  // Remove file extension
+                  let routePattern = `${baseRoute}/${file.replace(/\.(astro|ts|js)$/, '')}`;
 
-                                    // Handle index routes
-                                    if (routePattern.endsWith('/index')) {
-                                        routePattern = routePattern.replace('/index', '') || '/';
-                                    }
+                  // Handle index routes
+                  if (routePattern.endsWith('/index')) {
+                    routePattern = routePattern.replace('/index', '') || '/';
+                  }
 
-                                    // Handled above: routePattern starts with / because baseRoute or initial separator
-                                    injectRoute({
-                                        pattern: routePattern,
-                                        entrypoint: filePath,
-                                    });
-                                    console.log(`[module-pages] Injected route: ${routePattern} from ${module.name}`);
-                                }
-                            }
-                        };
-
-                        // Start scanning from the module's pages directory
-                        scanPages(modulePagesDir, '');
-                    }
+                  // Handled above: routePattern starts with / because baseRoute or initial separator
+                  injectRoute({
+                    pattern: routePattern,
+                    entrypoint: filePath,
+                  });
+                  console.log(`[module-pages] Injected route: ${routePattern} from ${module.name}`);
                 }
-            },
-        },
-    };
+              }
+            };
+
+            // Start scanning from the module's pages directory
+            scanPages(modulePagesDir, '');
+          }
+        }
+      },
+    },
+  };
 };

@@ -18,7 +18,6 @@ hero:
     - text: AI Context
       link: /app-core/llms.txt
       icon: document
-
 ---
 
 import { Card, CardGrid } from '@astrojs/starlight/components';
@@ -26,16 +25,20 @@ import { Card, CardGrid } from '@astrojs/starlight/components';
 ## Next Generation Architecture
 
 <CardGrid stagger>
-	<Card title="The Shell & Registry" icon="puzzle">
-		A strict separation between the **Shell** (OS) and **Registry** (User Space) allows for infinite extensibility without conflicts.
-	</Card>
-	<Card title="Modular Monolith" icon="rocket">
-		Develop features in isolated modules, but compile them into a single high-performance application.
-	</Card>
-	<Card title="Additive Schema" icon="setting">
-		Define database models in your module. The system merges them into a unified Prisma schema automatically.
-	</Card>
-	<Card title="Type-Safe SDK" icon="open-book">
-		Every module generates a fully typed SDK. Consume any feature from anywhere with full autocomplete.
-	</Card>
+  <Card title="The Shell & Registry" icon="puzzle">
+    A strict separation between the **Shell** (OS) and **Registry** (User Space) allows for infinite
+    extensibility without conflicts.
+  </Card>
+  <Card title="Modular Monolith" icon="rocket">
+    Develop features in isolated modules, but compile them into a single high-performance
+    application.
+  </Card>
+  <Card title="Additive Schema" icon="setting">
+    Define database models in your module. The system merges them into a unified Prisma schema
+    automatically.
+  </Card>
+  <Card title="Type-Safe SDK" icon="open-book">
+    Every module generates a fully typed SDK. Consume any feature from anywhere with full
+    autocomplete.
+  </Card>
 </CardGrid>

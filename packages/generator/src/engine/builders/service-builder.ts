@@ -1,47 +1,52 @@
-import { SourceFile } from "ts-morph";
-import { type ModelDef, type FileDefinition, type MethodConfig, type ClassDefinition } from "../types";
-import { Reconciler } from "../reconciler";
-import { BaseBuilder } from "./base-builder";
+import { SourceFile } from 'ts-morph';
+import {
+  type ModelDef,
+  type FileDefinition,
+  type MethodConfig,
+  type ClassDefinition,
+} from '../types';
+import { Reconciler } from '../reconciler';
+import { BaseBuilder } from './base-builder';
 
 export class ServiceBuilder extends BaseBuilder {
-    constructor(
-        private model: ModelDef,
-        private enableDelete: boolean = true
-    ) {
-        super();
-    }
+  constructor(
+    private model: ModelDef,
+    private enableDelete: boolean = true,
+  ) {
+    super();
+  }
 
-    protected getSchema(node?: any): FileDefinition {
-        const entityName = this.model.name;
-        const serviceName = `${entityName}Service`;
-        const lowerEntity = entityName.charAt(0).toLowerCase() + entityName.slice(1);
+  protected getSchema(node?: any): FileDefinition {
+    const entityName = this.model.name;
+    const serviceName = `${entityName}Service`;
+    const lowerEntity = entityName.charAt(0).toLowerCase() + entityName.slice(1);
 
-        const getClass = (n: any) => n && 'getClass' in n ? n.getClass(serviceName) : null;
-        const getExistingStatements = (n: any, methodName: string) => {
-            const cls = getClass(n);
-            const method = cls?.getMethod(methodName) || cls?.getStaticMethod(methodName);
-            return method ? [method.getBodyText() || ""] : undefined;
-        };
+    const getClass = (n: any) => (n && 'getClass' in n ? n.getClass(serviceName) : null);
+    const getExistingStatements = (n: any, methodName: string) => {
+      const cls = getClass(n);
+      const method = cls?.getMethod(methodName) || cls?.getStaticMethod(methodName);
+      return method ? [method.getBodyText() || ''] : undefined;
+    };
 
-        // Helper to generate standard error block uses Logger
-        const errorBlock = (action: string) => `
+    // Helper to generate standard error block uses Logger
+    const errorBlock = (action: string) => `
                         Logger.error("${entityName} ${action} Error", error);
                         return { success: false, error: "${lowerEntity}.service.error.${action}_failed" };
                     `;
 
-        const methods: MethodConfig[] = [
-            // LIST
-            {
-                name: "list",
-                isStatic: true,
-                isAsync: true,
-                returnType: `Promise<ServiceResponse<${entityName}[]>>`,
-                parameters: [
-                    { name: "params", type: `Prisma.${entityName}FindManyArgs`, optional: true },
-                    { name: "actor", type: "ApiActor", optional: true }
-                ],
-                statements: getExistingStatements(node, 'list') || [
-                    `try {
+    const methods: MethodConfig[] = [
+      // LIST
+      {
+        name: 'list',
+        isStatic: true,
+        isAsync: true,
+        returnType: `Promise<ServiceResponse<${entityName}[]>>`,
+        parameters: [
+          { name: 'params', type: `Prisma.${entityName}FindManyArgs`, optional: true },
+          { name: 'actor', type: 'ApiActor', optional: true },
+        ],
+        statements: getExistingStatements(node, 'list') || [
+          `try {
                         let { where, take, skip, orderBy, select } = params || {};
                         
                         // Allow hooks to modify the query parameters (e.g. for scoping)
@@ -63,21 +68,21 @@ export class ServiceBuilder extends BaseBuilder {
                         return { success: true, data: filteredData, total };
                     } catch (error) {
                         ${errorBlock('list')}
-                    }`
-                ]
-            },
-            // GET
-            {
-                name: "get",
-                isStatic: true,
-                isAsync: true,
-                returnType: `Promise<ServiceResponse<${entityName} | null>>`,
-                parameters: [
-                    { name: "id", type: "string" },
-                    { name: "select", type: `Prisma.${entityName}Select`, optional: true }
-                ],
-                statements: getExistingStatements(node, 'get') || [
-                    `try {
+                    }`,
+        ],
+      },
+      // GET
+      {
+        name: 'get',
+        isStatic: true,
+        isAsync: true,
+        returnType: `Promise<ServiceResponse<${entityName} | null>>`,
+        parameters: [
+          { name: 'id', type: 'string' },
+          { name: 'select', type: `Prisma.${entityName}Select`, optional: true },
+        ],
+        statements: getExistingStatements(node, 'get') || [
+          `try {
                         const data = await db.${lowerEntity}.findUnique({ where: { id }, select });
                         if (!data) return { success: false, error: "${lowerEntity}.service.error.not_found" };
                         
@@ -86,22 +91,22 @@ export class ServiceBuilder extends BaseBuilder {
                         return { success: true, data: filtered };
                     } catch (error) {
                         ${errorBlock('get')}
-                    }`
-                ]
-            },
-            // CREATE
-            {
-                name: "create",
-                isStatic: true,
-                isAsync: true,
-                returnType: `Promise<ServiceResponse<${entityName}>>`,
-                parameters: [
-                    { name: "data", type: `Prisma.${entityName}CreateInput` },
-                    { name: "select", type: `Prisma.${entityName}Select`, optional: true },
-                    { name: "actor", type: "ApiActor", optional: true }
-                ],
-                statements: getExistingStatements(node, 'create') || [
-                    `try {
+                    }`,
+        ],
+      },
+      // CREATE
+      {
+        name: 'create',
+        isStatic: true,
+        isAsync: true,
+        returnType: `Promise<ServiceResponse<${entityName}>>`,
+        parameters: [
+          { name: 'data', type: `Prisma.${entityName}CreateInput` },
+          { name: 'select', type: `Prisma.${entityName}Select`, optional: true },
+          { name: 'actor', type: 'ApiActor', optional: true },
+        ],
+        statements: getExistingStatements(node, 'create') || [
+          `try {
                         // Pass actor context to hooks for security/authorship validation
                         const input = await HookSystem.filter('${lowerEntity}.beforeCreate', data, { actor });
                         
@@ -116,23 +121,23 @@ export class ServiceBuilder extends BaseBuilder {
                         return { success: true, data: filtered };
                     } catch (error) {
                         ${errorBlock('create')}
-                    }`
-                ]
-            },
-            // UPDATE
-            {
-                name: "update",
-                isStatic: true,
-                isAsync: true,
-                returnType: `Promise<ServiceResponse<${entityName}>>`,
-                parameters: [
-                    { name: "id", type: "string" },
-                    { name: "data", type: `Prisma.${entityName}UpdateInput` },
-                    { name: "select", type: `Prisma.${entityName}Select`, optional: true },
-                    { name: "actor", type: "ApiActor", optional: true }
-                ],
-                statements: getExistingStatements(node, 'update') || [
-                    `try {
+                    }`,
+        ],
+      },
+      // UPDATE
+      {
+        name: 'update',
+        isStatic: true,
+        isAsync: true,
+        returnType: `Promise<ServiceResponse<${entityName}>>`,
+        parameters: [
+          { name: 'id', type: 'string' },
+          { name: 'data', type: `Prisma.${entityName}UpdateInput` },
+          { name: 'select', type: `Prisma.${entityName}Select`, optional: true },
+          { name: 'actor', type: 'ApiActor', optional: true },
+        ],
+        statements: getExistingStatements(node, 'update') || [
+          `try {
                         const input = await HookSystem.filter('${lowerEntity}.beforeUpdate', data, { actor, id });
                         
                         const updatedItem = await db.$transaction(async (tx) => {
@@ -150,18 +155,20 @@ export class ServiceBuilder extends BaseBuilder {
                         return { success: true, data: filtered };
                     } catch (error) {
                         ${errorBlock('update')}
-                    }`
-                ]
-            },
-            // DELETE
-            ...(this.enableDelete ? [{
-                name: "delete",
-                isStatic: true,
-                isAsync: true,
-                returnType: `Promise<ServiceResponse<void>>`,
-                parameters: [{ name: "id", type: "string" }],
-                statements: getExistingStatements(node, 'delete') || [
-                    `try {
+                    }`,
+        ],
+      },
+      // DELETE
+      ...(this.enableDelete
+        ? [
+            {
+              name: 'delete',
+              isStatic: true,
+              isAsync: true,
+              returnType: `Promise<ServiceResponse<void>>`,
+              parameters: [{ name: 'id', type: 'string' }],
+              statements: getExistingStatements(node, 'delete') || [
+                `try {
                         await db.$transaction(async (tx) => {
                             await tx.${lowerEntity}.delete({ where: { id } });
                             await HookSystem.dispatch('${lowerEntity}.deleted', { id });
@@ -169,41 +176,45 @@ export class ServiceBuilder extends BaseBuilder {
                         return { success: true };
                     } catch (error) {
                         ${errorBlock('delete')}
-                    }`
-                ]
-            }] : [{
-                name: "delete",
-                isStatic: true,
-                isAsync: true,
-                returnType: `Promise<ServiceResponse<void>>`,
-                parameters: [{ name: "id", type: "string" }],
-                statements: [
-                    `return { success: false, error: "${lowerEntity}.service.error.unsafe_delete_blocked" };`,
-                    `// TODO: This resource has unsafe relations. Use the generated Delete${entityName}Action for manual cleanup.`
-                ]
-            }])
-        ];
+                    }`,
+              ],
+            },
+          ]
+        : [
+            {
+              name: 'delete',
+              isStatic: true,
+              isAsync: true,
+              returnType: `Promise<ServiceResponse<void>>`,
+              parameters: [{ name: 'id', type: 'string' }],
+              statements: [
+                `return { success: false, error: "${lowerEntity}.service.error.unsafe_delete_blocked" };`,
+                `// TODO: This resource has unsafe relations. Use the generated Delete${entityName}Action for manual cleanup.`,
+              ],
+            },
+          ]),
+    ];
 
-        const serviceClass: ClassDefinition = {
-            name: serviceName,
-            isExported: true,
-            methods: methods,
-            docs: [`Service class for ${entityName}-related business logic.`]
-        };
+    const serviceClass: ClassDefinition = {
+      name: serviceName,
+      isExported: true,
+      methods: methods,
+      docs: [`Service class for ${entityName}-related business logic.`],
+    };
 
-        const imports = [
-            { moduleSpecifier: "@/lib/core/db", namedImports: ["db"] },
-            { moduleSpecifier: "@/lib/core/logger", namedImports: ["Logger"] },
-            { moduleSpecifier: "@/types/service", namedImports: ["ServiceResponse"], isTypeOnly: true },
-            { moduleSpecifier: "@/lib/modules/hooks", namedImports: ["HookSystem"] },
-            { moduleSpecifier: "@prisma/client", namedImports: [entityName, "Prisma"], isTypeOnly: true },
-            { moduleSpecifier: "@/lib/api/api-docs", namedImports: ["ApiActor"], isTypeOnly: true }
-        ];
+    const imports = [
+      { moduleSpecifier: '@/lib/core/db', namedImports: ['db'] },
+      { moduleSpecifier: '@/lib/core/logger', namedImports: ['Logger'] },
+      { moduleSpecifier: '@/types/service', namedImports: ['ServiceResponse'], isTypeOnly: true },
+      { moduleSpecifier: '@/lib/modules/hooks', namedImports: ['HookSystem'] },
+      { moduleSpecifier: '@prisma/client', namedImports: [entityName, 'Prisma'], isTypeOnly: true },
+      { moduleSpecifier: '@/lib/api/api-docs', namedImports: ['ApiActor'], isTypeOnly: true },
+    ];
 
-        return {
-            header: "// GENERATED CODE - DO NOT MODIFY",
-            imports: imports,
-            classes: [serviceClass]
-        };
-    }
+    return {
+      header: '// GENERATED CODE - DO NOT MODIFY',
+      imports: imports,
+      classes: [serviceClass],
+    };
+  }
 }

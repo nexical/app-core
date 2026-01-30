@@ -14,7 +14,6 @@
     "astro": "astro",
     "build": "npm run setup && astro build",
     "core:check": "npx tsx scripts/sentinel.ts check",
-    "docgap": "docgap",
     "core:accept": "npx tsx scripts/sentinel.ts accept",
     "db:destroy": "docker compose -f compose.db.yml down --volumes",
     "db:down": "docker compose -f compose.db.yml down",
@@ -25,14 +24,17 @@
     "db:studio": "npx prisma studio",
     "db:up": "docker compose -f compose.db.yml up -d",
     "db:validate": "npx prisma validate",
+    "dev:agent": "npm run gen:agent && npm run dev --workspace=@app-core/agent",
     "dev": "npm run setup && npm run db:up && astro dev",
     "docker:destroy": "docker compose down --volumes --remove-orphans",
     "docker:down": "docker compose down --remove-orphans",
     "docker:up": "docker compose up",
     "docker:start": "docker compose up -d",
+    "format": "prettier --write .",
     "gen:sdk": "npx tsx scripts/generate-sdk.ts",
     "gen:agent": "npx tsx scripts/generate-agent-registry.ts",
-    "dev:agent": "npm run gen:agent && npm run dev --workspace=@app-core/agent",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "postinstall": "npm run build --workspace=@nexical/generator",
     "prepare": "husky",
     "preview": "npm run db:up && astro preview",
@@ -48,10 +50,7 @@
     "test:e2e:ui": "npx playwright test --ui",
     "test:integration": "npx vitest run -c vitest.integration.config.ts",
     "test:unit": "npx vitest run -c vitest.unit.config.ts",
-    "test": "npm run test:unit && npm run test:integration && npm run test:agents && npm run test:e2e",
-    "format": "prettier --write .",
-    "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "test": "npm run test:unit && npm run test:integration && npm run test:agents && npm run test:e2e"
   },
   "lint-staged": {
     "**/*": [

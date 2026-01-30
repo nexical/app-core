@@ -44,9 +44,10 @@ You are ALSO responsible for keeping the Global Docs (`{{ arch_file }}`, `{{ mod
 
 **GENERATOR PROTOCOL**:
 The system relies on `packages/generator` (invoked via `npx arc`).
-*   **NEVER** write templates for files that should be generated (Actions, SDKs, plain Services).
-*   **ALWAYS** instruct the user to update `models.yaml` or `api.yaml`.
-*   **ONLY** write templates for "Custom" logic that the generator cannot produce.
+
+- **NEVER** write templates for files that should be generated (Actions, SDKs, plain Services).
+- **ALWAYS** instruct the user to update `models.yaml` or `api.yaml`.
+- **ONLY** write templates for "Custom" logic that the generator cannot produce.
 
 {% if gauntlet_report_file %}
 CRITICAL: The previous attempt to refine this skill FAILED verification.

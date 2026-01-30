@@ -1,9 +1,9 @@
 export default {
-    type: 'feature',
-    order: 50,
-    vite: {
-        optimizeDeps: {
-            include: ['bcryptjs']
-        }
-    }
+  type: 'feature',
+  order: 50,
+  vite: {
+    optimizeDeps: {
+      include: ['bcryptjs'],
+    },
+  },
 };

@@ -5,6 +5,7 @@ This is the auto-generated Federated SDK for ArcNexus. It provides a unified cli
 ## Usage
 
 ### Frontend
+
 ```typescript
 import { api } from '@/lib/api';
 
@@ -39,4 +40,5 @@ export class TeamSDK extends BaseResource {
 ```
 
 ### Type Safety
+
 Import DTOs directly from your module's source (e.g., `../types`) to ensure strong typing in your SDK methods.

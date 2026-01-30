@@ -1,6 +1,6 @@
-import { Factory } from "@tests/integration/lib/factory";
-import type { ApiClient } from "@tests/integration/lib/client";
-import crypto from "node:crypto";
+import { Factory } from '@tests/integration/lib/factory';
+import type { ApiClient } from '@tests/integration/lib/client';
+import crypto from 'node:crypto';
 
 export const actors = {
   user: async (client: ApiClient, params: any = {}) => {
@@ -20,21 +20,21 @@ export const actors = {
       const factoryParams = { ...params };
       if (params.strategy) delete factoryParams.strategy;
       if (params.password) delete factoryParams.password;
-      actor = await Factory.create("user", factoryParams);
+      actor = await Factory.create('user', factoryParams);
     }
 
     const rawKey = `ne_pat_${Date.now()}`;
     let dbKey = rawKey;
 
     // Auto-hash: Field implies hashing, so we hash the raw key at runtime
-    dbKey = crypto.createHash("sha256").update(rawKey).digest("hex");
+    dbKey = crypto.createHash('sha256').update(rawKey).digest('hex');
 
     // Create Token
-    await Factory.create("personalAccessToken", {
+    await Factory.create('personalAccessToken', {
       user: { connect: { id: actor.id } },
-      name: "Test Token",
+      name: 'Test Token',
       hashedKey: dbKey,
-      prefix: "ne_pat_",
+      prefix: 'ne_pat_',
     });
 
     client.useToken(rawKey);

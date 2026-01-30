@@ -15,6 +15,7 @@ The Integration Testing Framework is designed for robust API testing with effici
 ## Writing Tests
 
 ### 1. Structure
+
 Tests live in `tests/integration/api/`.
 
 ```ts
@@ -25,6 +26,7 @@ import { TestServer } from '@tests/integration/lib/server';
 ```
 
 ### 2. The `ApiClient` & Actors
+
 Use the `.as()` method to switch contexts fluently.
 
 ```ts
@@ -38,14 +40,15 @@ expect(response.status).toBe(200);
 ```
 
 ### 3. The `DataFactory`
+
 Use `Factory` to create state directly in the DB.
 
 ```ts
 const team = await Factory.create('team', {
-    name: 'Integration Team',
-    members: {
-        create: { userId: user.id, role: 'OWNER' }
-    }
+  name: 'Integration Team',
+  members: {
+    create: { userId: user.id, role: 'OWNER' },
+  },
 });
 ```
 
