@@ -46,6 +46,7 @@ export default getViteConfig({
                 'modules/**/services/**',
                 'modules/**/sdk/**',
                 'packages/sdk/**',
+                '**/index.ts',
                 '**/middleware.ts',
                 '**/server-init.ts',
                 'src/init.ts'
