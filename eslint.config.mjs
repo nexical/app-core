@@ -56,10 +56,7 @@ export default tseslint.config(
   // Custom rules override
   {
     rules: {
-      '@typescript-eslint/no-unused-vars': [
-        'error',
-        { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
-      ],
+      '@typescript-eslint/no-unused-vars': ['error', { args: 'none', varsIgnorePattern: '^_' }],
       '@typescript-eslint/no-explicit-any': 'warn', // Downgrade to warning for now as codebase has some anys
       'no-console': ['warn', { allow: ['warn', 'error', 'info'] }],
     },
