@@ -34,7 +34,8 @@ async function registerCommands() {
         !entry.name.endsWith('.d.ts')
       ) {
         try {
-          const module = await import(fullPath);
+          // Use file:// protocol for absolute paths in ESM imports on Windows/Linux
+          const module = await import(`file://${fullPath}`);
           // Assumes the command class is the default export
           if (module.default && typeof module.default === 'function') {
             const commandInstance = new module.default();

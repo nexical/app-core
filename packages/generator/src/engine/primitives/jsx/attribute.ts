@@ -1,4 +1,4 @@
-import { type JsxAttributeConfig } from '../../types';
+import { type JsxAttributeConfig } from '../../types.js';
 
 export class JsxAttributePrimitive {
   constructor(private config: JsxAttributeConfig) {}

@@ -74,7 +74,7 @@ export class ApiBuilder extends BaseBuilder {
               validator += 'string().datetime()';
               break;
             case 'Json':
-              validator += 'any()';
+              validator += 'unknown()';
               break;
             default:
               validator += 'string()';
@@ -273,7 +273,7 @@ export class ApiBuilder extends BaseBuilder {
 
     const select = ${selectObject};
     
-    const actor = context.locals?.actor || (context as unknown as { user: unknown }).user;
+    const actor = context.locals.actor;
     const result = await ${serviceName}.list({ where, take, skip, orderBy, select }, actor);
 
     if (!result.success) {
@@ -323,7 +323,7 @@ export class ApiBuilder extends BaseBuilder {
     
     const validated = schema.parse(body);
     const select = ${selectObject};
-    const actor = context.locals?.actor || (context as unknown as { user: unknown }).user;
+    const actor = context.locals.actor;
 
     const result = await ${serviceName}.create(validated, select, actor);
 
@@ -437,7 +437,7 @@ export class ApiBuilder extends BaseBuilder {
     await ApiGuard.protect(context, '${getRole}', { ...context.params }, result.data);
 
     // Analytics Hook
-    const actor = context.locals?.actor || (context as unknown as { user: { id?: string } }).user;
+    const actor = context.locals.actor;
     await HookSystem.dispatch('${entityName.charAt(0).toLowerCase() + entityName.slice(1)}.viewed', { id, actorId: actor?.id || 'anonymous' });
 
     return { success: true, data: result.data };
@@ -486,7 +486,7 @@ export class ApiBuilder extends BaseBuilder {
     const schema = ${zodSchema};
     const validated = schema.parse(body);
     const select = ${selectObject};
-    const actor = context.locals?.actor || (context as unknown as { user: unknown }).user;
+    const actor = context.locals.actor;
 
     const result = await ${serviceName}.update(id, validated, select, actor);
 
@@ -677,11 +677,11 @@ export class ApiBuilder extends BaseBuilder {
         imports.push({ moduleSpecifier: actionImport, namedImports: [actionClassName] });
       }
 
-      const inputType = input || 'any';
+      const inputType = input || 'unknown';
       let requestBodySchema = '{ type: "object" }';
 
       // Resolve schemas for DTOs
-      if (input && input !== 'any' && (input.endsWith('DTO') || input.endsWith('Input'))) {
+      if (input && input !== 'unknown' && (input.endsWith('DTO') || input.endsWith('Input'))) {
         const sdkTypes = `@modules/${this.moduleName}/src/sdk/index`;
         const existing = imports.find((i) => i.moduleSpecifier === sdkTypes);
         if (existing) {
@@ -693,7 +693,7 @@ export class ApiBuilder extends BaseBuilder {
       }
 
       let responseSchema = '{ type: "object" }';
-      if (output && output !== 'any') {
+      if (output && output !== 'unknown') {
         // Try to resolve output type schema
         // If it's a model
         if (this.allModels.some((m) => m.name === output.replace('[]', ''))) {
@@ -736,7 +736,7 @@ export class ApiBuilder extends BaseBuilder {
         await ApiGuard.protect(context, '${role || 'member'}', combinedInput);
 
         // Inject userId from context for protected routes
-        const user = (context as unknown as { user: { id: string } }).user;
+        const user = context.locals.actor;
         if (user && user.id) {
             Object.assign(combinedInput, { userId: user.id });
         }

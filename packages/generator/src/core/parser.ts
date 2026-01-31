@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import yaml from 'yaml';
-import { PlatformDefinitionSchema, type PlatformDefinition } from '../schema';
+import { PlatformDefinitionSchema, type PlatformDefinition } from '../schema.js';
 
 export class PlatformParser {
   static parseFile(filePath: string): PlatformDefinition {

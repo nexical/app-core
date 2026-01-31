@@ -1,12 +1,12 @@
-import { BaseCommand } from '../base';
+import { BaseCommand } from '../base.js';
 import chalk from 'chalk';
 import fs from 'fs-extra';
 import path from 'path';
-import { ApiModuleGenerator } from '../../engine/api-module-generator';
-import { ModuleLocator } from '../../lib/module-locator';
+import { ApiModuleGenerator } from '../../engine/api-module-generator.js';
+import { ModuleLocator } from '../../lib/module-locator.js';
 import { glob } from 'glob';
 
-export class GenApiCommand extends BaseCommand {
+export default class GenApiCommand extends BaseCommand {
   constructor() {
     super({
       name: 'gen:api',

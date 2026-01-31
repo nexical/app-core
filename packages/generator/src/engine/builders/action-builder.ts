@@ -66,7 +66,6 @@ export class ActionBuilder extends BaseBuilder {
           'string',
           'number',
           'boolean',
-          'any',
           'void',
           'unknown',
           'never',

@@ -29,7 +29,7 @@ import { type ModelDef, type CustomRoute } from '../../engine/types.js';
 import { ModuleLocator } from '../../lib/module-locator.js';
 import { type BaseBuilder } from '../../engine/builders/base-builder.js';
 
-export class AuditApiCommand extends BaseCommand {
+export default class AuditApiCommand extends BaseCommand {
   constructor() {
     super({
       name: 'audit:api',

@@ -1,18 +1,18 @@
-import { ModuleGenerator } from './module-generator';
-import { ModelParser } from './model-parser';
-import { ServiceBuilder } from './builders/service-builder';
-import { ApiBuilder } from './builders/api-builder';
-import { SdkBuilder } from './builders/sdk-builder';
-import { SdkIndexBuilder } from './builders/sdk-index-builder';
-import { InitBuilder } from './builders/init-builder';
-import { TestBuilder } from './builders/test-builder';
-import { ActionBuilder } from './builders/action-builder';
-import { TypeBuilder } from './builders/type-builder';
-import { FactoryBuilder } from './builders/factory-builder';
-import { ActorBuilder } from './builders/actor-builder';
-import { ActorTypeBuilder } from './builders/actor-type-builder';
-import { MiddlewareBuilder } from './builders/middleware-builder';
-import { type CustomRoute, type ModelDef } from './types';
+import { ModuleGenerator } from './module-generator.js';
+import { ModelParser } from './model-parser.js';
+import { ServiceBuilder } from './builders/service-builder.js';
+import { ApiBuilder } from './builders/api-builder.js';
+import { SdkBuilder } from './builders/sdk-builder.js';
+import { SdkIndexBuilder } from './builders/sdk-index-builder.js';
+import { InitBuilder } from './builders/init-builder.js';
+import { TestBuilder } from './builders/test-builder.js';
+import { ActionBuilder } from './builders/action-builder.js';
+import { TypeBuilder } from './builders/type-builder.js';
+import { FactoryBuilder } from './builders/factory-builder.js';
+import { ActorBuilder } from './builders/actor-builder.js';
+import { ActorTypeBuilder } from './builders/actor-type-builder.js';
+import { MiddlewareBuilder } from './builders/middleware-builder.js';
+import { type CustomRoute, type ModelDef } from './types.js';
 import path from 'node:path';
 import fs from 'node:fs';
 import { parse } from 'yaml';
@@ -96,9 +96,11 @@ export class ApiModuleGenerator extends ModuleGenerator {
                   .join('') + 'Action'
               : `${route.method.charAt(0).toUpperCase() + route.method.slice(1)}${name}Action`;
 
-            new ActionBuilder(actionName, route.input || 'any', route.output || 'any').ensure(
-              actionFile,
-            );
+            new ActionBuilder(
+              actionName,
+              route.input || 'unknown',
+              route.output || 'unknown',
+            ).ensure(actionFile);
           }
         }
 
@@ -214,7 +216,7 @@ export class ApiModuleGenerator extends ModuleGenerator {
                 .join('') + 'Action'
             : `${route.method.charAt(0).toUpperCase() + route.method.slice(1)}${entityName}Action`;
 
-          new ActionBuilder(actionName, route.input || 'any', route.output || 'any').ensure(
+          new ActionBuilder(actionName, route.input || 'unknown', route.output || 'unknown').ensure(
             actionFile,
           );
         }

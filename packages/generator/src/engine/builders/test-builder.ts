@@ -1,7 +1,6 @@
 import {
   type ModelDef,
   type FileDefinition,
-  type VariableConfig,
   type TestRoleConfig,
   type NodeContainer,
 } from '../types.js';
@@ -149,21 +148,6 @@ export class TestBuilder extends BaseBuilder {
         break;
     }
 
-    const testSuite: VariableConfig = {
-      name: '_test',
-      declarationKind: 'const',
-      isExported: false,
-      initializer: `describe('${entityName} API - ${this.operation.charAt(0).toUpperCase() + this.operation.slice(1)}', () => {
-    let client: ApiClient;
-
-    beforeEach(async () => {
-        client = new ApiClient(TestServer.getUrl());
-    });
-
-    ${testBody}
-})`,
-    };
-
     return {
       header: '// GENERATED CODE - DO NOT MODIFY',
       imports: [
@@ -172,7 +156,18 @@ export class TestBuilder extends BaseBuilder {
         { moduleSpecifier: '@tests/integration/lib/factory', namedImports: ['Factory'] },
         { moduleSpecifier: '@tests/integration/lib/server', namedImports: ['TestServer'] },
       ],
-      variables: [testSuite],
+      variables: [],
+      statements: [
+        `describe('${entityName} API - ${this.operation.charAt(0).toUpperCase() + this.operation.slice(1)}', () => {
+    let client: ApiClient;
+
+    beforeEach(async () => {
+        client = new ApiClient(TestServer.getUrl());
+    });
+
+    ${testBody}
+})`,
+      ],
     };
   }
 
@@ -239,17 +234,17 @@ export class TestBuilder extends BaseBuilder {
 
     if (requiredFKs.length > 0 || actorRelationField) {
       const setups = requiredFKs.map((fk, i) => {
-        const varName = `${fk.model.charAt(0).toLowerCase() + fk.model.slice(1)}_${i}`;
+        const varName = `${fk.model.charAt(0).toLowerCase() + fk.model.slice(1)}_${i} `;
         const extras =
           fk.model === 'Job'
             ? ', actorId: (typeof actor !== "undefined" ? actor.id : undefined)'
             : '';
-        return `const ${varName} = await Factory.create('${fk.model.charAt(0).toLowerCase() + fk.model.slice(1)}', {${extras.replace(/^, /, '')}});`;
+        return `const ${varName} = await Factory.create('${fk.model.charAt(0).toLowerCase() + fk.model.slice(1)}', { ${extras.replace(/^, /, '')}}); `;
       });
       dependencySetup = setups.join('\n            ');
 
       const overrides = requiredFKs.map((fk, i) => {
-        const varName = `${fk.model.charAt(0).toLowerCase() + fk.model.slice(1)}_${i}`;
+        const varName = `${fk.model.charAt(0).toLowerCase() + fk.model.slice(1)}_${i} `;
         return `${fk.field}: ${varName}.id`;
       });
 
@@ -260,24 +255,24 @@ export class TestBuilder extends BaseBuilder {
       const overridesString = overrides.join(',\n                ');
 
       payloadConstruction = `const payload = {
-                ...${JSON.stringify(mockData).replace(/"__DATE_NOW__"/g, 'new Date().toISOString()')},
+  ...${JSON.stringify(mockData).replace(/"__DATE_NOW__"/g, 'new Date().toISOString()')},
                 ${overridesString}
-            };`;
+            }; `;
     }
 
     return `
-    // POST /api/${kebabEntity}
-    describe('POST /api/${kebabEntity}', () => {
-        it('should allow ${this.getRole('create')} to create ${camelEntity}', async () => {
+// POST /api/${kebabEntity}
+describe('POST /api/${kebabEntity}', () => {
+  it('should allow ${this.getRole('create')} to create ${camelEntity}', async () => {
             ${this.getActorStatement('create')}
             
             ${dependencySetup}
             ${payloadConstruction}
 
-            const res = await client.post('/api/${kebabEntity}', payload);
+    const res = await client.post('/api/${kebabEntity}', payload);
 
-            expect(res.status).toBe(201);
-            expect(res.body.data).toBeDefined();
+    expect(res.status).toBe(201);
+    expect(res.body.data).toBeDefined();
             ${Object.keys(mockData)
               .filter((k) => k !== 'id')
               .map((k) => {
@@ -292,20 +287,20 @@ export class TestBuilder extends BaseBuilder {
               })
               .join('\n            ')}
 
-            const created = await Factory.prisma.${camelEntity}.findUnique({
-                where: { id: res.body.data.id }
-            });
-            expect(created).toBeDefined();
-        });
+    const created = await Factory.prisma.${camelEntity}.findUnique({
+      where: { id: res.body.data.id }
+    });
+    expect(created).toBeDefined();
+  });
 
-        it('should forbid non-admin/unauthorized users', async () => {
+  it('should forbid non-admin/unauthorized users', async () => {
             ${this.getNegativeActorStatement('create')}
             ${dependencySetup ? dependencySetup : ''}
             ${payloadConstruction}
-            const res = await client.post('/api/${kebabEntity}', payload);
-            expect([401, 403, 404]).toContain(res.status);
-        });
-    });`;
+    const res = await client.post('/api/${kebabEntity}', payload);
+    expect([401, 403, 404]).toContain(res.status);
+  });
+}); `;
   }
 
   private findActorForeignKey(): string | null {
@@ -321,7 +316,7 @@ export class TestBuilder extends BaseBuilder {
             }
           }
         }
-        if (this.model.fields[`${name}Id`]) return `${name}Id`;
+        if (this.model.fields[`${name} Id`]) return `${name} Id`;
       }
     }
     return null;
@@ -359,29 +354,31 @@ export class TestBuilder extends BaseBuilder {
         }
 
         return `
-        it('should filter by ${field}', async () => {
-            // Wait to avoid collisions
-            await new Promise(r => setTimeout(r, 10));
+it('should filter by ${field}', async () => {
+  // Wait to avoid collisions
+  await new Promise(r => setTimeout(r, 10));
             // Reuse getActorStatement to ensure correct actor context
             ${this.getActorStatement('list')}
             ${this.model.test?.actor === 'user' && this.model.role && typeof this.model.role === 'object' && this.model.role.list !== 'admin' ? `// Note: Ensure role allows filtering if restricted` : ''}
 
-            const val1 = '${field}_' + Date.now() + '_A${field === 'email' ? '@example.com' : ''}';
-            await new Promise(r => setTimeout(r, 10));
-            const val2 = '${field}_' + Date.now() + '_B${field === 'email' ? '@example.com' : ''}';
-            
-            const relationSnippet = ${JSON.stringify(this.getActorRelationSnippet())}.replace(/^, /, '').replace(/actor.id/g, 'actor.id');
-            const data1 = { ...baseData, ${field}: val1${uniqueInjectionA} };
-            const data2 = { ...baseData, ${field}: val2${uniqueInjectionB} };
-            
-            await Factory.create('${camelEntity}', { ...data1${this.getActorRelationSnippet()} });
-            await Factory.create('${camelEntity}', { ...data2${this.getActorRelationSnippet()} });
+  const val1 = '${field}_' + Date.now() + '_A${field === 'email' ? '@example.com' : ''}';
+  await new Promise(r => setTimeout(r, 10));
+  const val2 = '${field}_' + Date.now() + '_B${field === 'email' ? '@example.com' : ''}';
 
-            const res = await client.get('/api/${kebabEntity}?${field}=' + val1);
-            expect(res.status).toBe(200);
-            expect(res.body.data).toHaveLength(1);
-            expect(res.body.data[0].${field}).toBe(val1);
-        });`;
+  const relationSnippet = ${JSON.stringify(
+    this.getActorRelationSnippet(),
+  )}.replace(/^, /, '').replace(/actor.id/g, 'actor.id');
+const data1 = { ...baseData, ${field}: val1${uniqueInjectionA} };
+const data2 = { ...baseData, ${field}: val2${uniqueInjectionB} };
+
+await Factory.create('${camelEntity}', { ...data1${this.getActorRelationSnippet()} });
+await Factory.create('${camelEntity}', { ...data2${this.getActorRelationSnippet()} });
+
+const res = await client.get('/api/${kebabEntity}?${field}=' + val1);
+expect(res.status).toBe(200);
+expect(res.body.data).toHaveLength(1);
+expect(res.body.data[0].${field}).toBe(val1);
+        }); `;
       })
       .join('\n');
 
@@ -393,27 +390,30 @@ export class TestBuilder extends BaseBuilder {
     let cleanupClause = '';
     if (shouldPreserve) {
       if (isActorModel) {
-        cleanupClause = `await Factory.prisma.${camelEntity}.deleteMany({ where: { id: { not: actor.id } } });`;
+        cleanupClause = `await Factory.prisma.${camelEntity}.deleteMany({ where: { id: { not: actor.id } } }); `;
       } else {
-        cleanupClause = `await Factory.prisma.${camelEntity}.deleteMany({ where: { ${actorFK}: { not: actor.id } } });`;
+        cleanupClause = `await Factory.prisma.${camelEntity}.deleteMany({ where: { ${actorFK}: { not: actor.id } } }); `;
       }
     } else {
-      cleanupClause = `await Factory.prisma.${camelEntity}.deleteMany();`;
+      cleanupClause = `await Factory.prisma.${camelEntity}.deleteMany(); `;
     }
 
     return `
-    // GET /api/${kebabEntity}
-    describe('GET /api/${kebabEntity}', () => {
-        const baseData = ${JSON.stringify(mockData).replace(/"__DATE_NOW__"/g, 'new Date().toISOString()')};
+// GET /api/${kebabEntity}
+describe('GET /api/${kebabEntity}', () => {
+  const baseData = ${JSON.stringify(mockData).replace(
+    /"__DATE_NOW__"/g,
+    'new Date().toISOString()',
+  )};
 
-        it('should allow ${this.getRole('list')} to list ${camelEntity}s', async () => {
+it('should allow ${this.getRole('list')} to list ${camelEntity}s', async () => {
              ${this.getActorStatement('list')}
-             
+
              // Cleanup first to ensure clean state
              ${cleanupClause}
 
-            // Seed data
-            const suffix = Date.now();
+  // Seed data
+  const suffix = Date.now();
             ${(() => {
               const unique = this.getUniqueField();
               const rel = this.getActorRelationSnippet();
@@ -426,24 +426,24 @@ export class TestBuilder extends BaseBuilder {
             await Factory.create('${camelEntity}', { ...baseData${rel} });`;
             })()}
 
-            const res = await client.get('/api/${kebabEntity}');
+  const res = await client.get('/api/${kebabEntity}');
 
-            expect(res.status).toBe(200);
-            expect(Array.isArray(res.body.data)).toBe(true);
-            expect(res.body.data.length).toBeGreaterThanOrEqual(2);
-            expect(res.body.meta).toBeDefined();
-        });
+  expect(res.status).toBe(200);
+  expect(Array.isArray(res.body.data)).toBe(true);
+  expect(res.body.data.length).toBeGreaterThanOrEqual(2);
+  expect(res.body.meta).toBeDefined();
+});
 
-        it('should verify pagination metadata', async () => {
+it('should verify pagination metadata', async () => {
             ${this.getActorStatement('list')}
-            
+
             // Cleanup and seed specific count
             ${cleanupClause}
-            
-            const suffix = Date.now();
-            const createdIds: string[] = [];
-            const totalTarget = 15;
-            let currentCount = 0;
+
+  const suffix = Date.now();
+  const createdIds: string[] = [];
+  const totalTarget = 15;
+  let currentCount = 0;
             ${(() => {
               if (cleanupClause.includes('where')) {
                 const field = isActorModel ? 'id' : this.findActorForeignKey() || 'userId';
@@ -451,10 +451,10 @@ export class TestBuilder extends BaseBuilder {
               }
               return '';
             })()}
-            
-            const toCreate = totalTarget - currentCount;
 
-            for (let i = 0; i < toCreate; i++) {
+  const toCreate = totalTarget - currentCount;
+
+  for (let i = 0; i < toCreate; i++) {
                 ${(() => {
                   const unique = this.getUniqueField();
                   const rel = this.getActorRelationSnippet();
@@ -466,23 +466,23 @@ export class TestBuilder extends BaseBuilder {
                   return `const rec = await Factory.create('${camelEntity}', { ...baseData${rel} });
                         createdIds.push(rec.id);`;
                 })()}
-            }
+  }
 
-            // Page 1
-            const res1 = await client.get('/api/${kebabEntity}?take=5&skip=0');
-            expect(res1.status).toBe(200);
-            expect(res1.body.data.length).toBe(5);
-            expect(res1.body.meta.total).toBe(15);
+  // Page 1
+  const res1 = await client.get('/api/${kebabEntity}?take=5&skip=0');
+  expect(res1.status).toBe(200);
+  expect(res1.body.data.length).toBe(5);
+  expect(res1.body.meta.total).toBe(15);
 
-            // Page 2
-            const res2 = await client.get('/api/${kebabEntity}?take=5&skip=5');
-            expect(res2.status).toBe(200);
-            expect(res2.body.data.length).toBe(5);
-            expect(res2.body.data[0].id).not.toBe(res1.body.data[0].id);
-        });
+  // Page 2
+  const res2 = await client.get('/api/${kebabEntity}?take=5&skip=5');
+  expect(res2.status).toBe(200);
+  expect(res2.body.data.length).toBe(5);
+  expect(res2.body.data[0].id).not.toBe(res1.body.data[0].id);
+});
 
         ${filterTests}
-    });`;
+    }); `;
   }
 
   private generateGetTests(
@@ -499,43 +499,43 @@ export class TestBuilder extends BaseBuilder {
 
     if (!isActorModel && requiredFKs.length > 0) {
       const setups = requiredFKs.map((fk, i) => {
-        const varName = `${fk.model.charAt(0).toLowerCase() + fk.model.slice(1)}_${i}`;
+        const varName = `${fk.model.charAt(0).toLowerCase() + fk.model.slice(1)}_${i} `;
         const extras =
           fk.model === 'Job'
             ? ', actorId: (typeof actor !== "undefined" ? actor.id : undefined)'
             : '';
-        return `const ${varName} = await Factory.create('${fk.model.charAt(0).toLowerCase() + fk.model.slice(1)}', {${extras.replace(/^, /, '')}});`;
+        return `const ${varName} = await Factory.create('${fk.model.charAt(0).toLowerCase() + fk.model.slice(1)}', { ${extras.replace(/^, /, '')}}); `;
       });
       dependencySetup = setups.join('\n            ');
 
       overrides = requiredFKs
         .map((fk, i) => {
-          const varName = `${fk.model.charAt(0).toLowerCase() + fk.model.slice(1)}_${i}`;
+          const varName = `${fk.model.charAt(0).toLowerCase() + fk.model.slice(1)}_${i} `;
           const relationName = fk.field.endsWith('Id') ? fk.field.slice(0, -2) : fk.field;
-          return `${relationName}: { connect: { id: ${varName}.id } }`;
+          return `${relationName}: { connect: { id: ${varName}.id } } `;
         })
         .join(', ');
-      if (overrides) overrides = `, ${overrides}`;
+      if (overrides) overrides = `, ${overrides} `;
     }
 
     let setupSnippet = '';
     if (isActorModel) {
-      setupSnippet = `const target = actor;`;
+      setupSnippet = `const target = actor; `;
     } else {
       setupSnippet = `
             ${dependencySetup}
-            const target = await Factory.create('${camelEntity}', { ...${JSON.stringify(mockData).replace(/"__DATE_NOW__"/g, 'new Date().toISOString()')}${this.getActorRelationSnippet()}${overrides} });`;
+const target = await Factory.create('${camelEntity}', { ...${JSON.stringify(mockData).replace(/"__DATE_NOW__"/g, 'new Date().toISOString()')}${this.getActorRelationSnippet()}${overrides} }); `;
     }
 
     return `
-    // GET /api/${kebabEntity}/[id]
-    describe('GET /api/${kebabEntity}/[id]', () => {
-        it('should retrieve a specific ${camelEntity}', async () => {
+// GET /api/${kebabEntity}/[id]
+describe('GET /api/${kebabEntity}/[id]', () => {
+  it('should retrieve a specific ${camelEntity}', async () => {
             ${this.getActorStatement('get')}
             
             ${setupSnippet}
 
-            const res = await client.get(\`/api/${kebabEntity}/\${target.id}\`);
+    const res = await client.get(\`/api/${kebabEntity}/\${target.id}\`);
 
             expect(res.status).toBe(200);
             expect(res.body.id).toBe(target.id);
