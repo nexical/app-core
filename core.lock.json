@@ -45,7 +45,7 @@
   "packages/generator/src/engine/builders/sdk-builder.ts": "2eb158d09c10cf687edc9053bbca81f7667b3d6d25ad386e38fbb9c745bbe7b4",
   "packages/generator/src/engine/builders/sdk-index-builder.ts": "914eef60ef58d9794c176d12eab949edfaed0afc00d3624e28c1d36acaf5fb73",
   "packages/generator/src/engine/builders/service-builder.ts": "4aaf10bfccd9d7c41d2d459889564fbba53b21e8ac74924935c648984c0ca9fc",
-  "packages/generator/src/engine/builders/test-builder.ts": "3cdc8302457b82ebb7c37248192e3290bbaa97f380607df9b9af83e8c5006074",
+  "packages/generator/src/engine/builders/test-builder.ts": "b0ff09c29632dea99c02828b631d70188ac6eb9656fe46c44277c892c54e3898",
   "packages/generator/src/engine/builders/type-builder.ts": "6ec37b033ab823bef20011587373bf76710b87c6f10e6430020c308678b7eeb0",
   "packages/generator/src/engine/errors.ts": "14649a4b2ad1cfe1745af7b0e10636b20a6185be275d0f337accbd5b8dff9895",
   "packages/generator/src/engine/model-parser.ts": "d378eac8f1f9fbeea43d1027d2c174a1eabe5d5c3d5737d1a9e6ad6da3fa54e0",
