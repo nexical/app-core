@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Project } from 'ts-morph';
-import { TypeBuilder } from '@nexical/generator/engine/builders/type-builder';
+import { TypeBuilder } from '../../../../src/engine/builders/type-builder';
 import { type ModelDef, type EnumConfig } from '../../../../src/engine/types';
 
 describe('TypeBuilder', () => {
@@ -9,8 +9,9 @@ describe('TypeBuilder', () => {
       {
         name: 'VirtualUser',
         db: false,
+        api: true,
         fields: {
-          name: { type: 'String', isRequired: true },
+          name: { type: 'String', isRequired: true, isList: false, attributes: [], api: true },
         },
       },
     ];

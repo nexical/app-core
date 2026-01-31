@@ -7,6 +7,7 @@ import {
   type NodeContainer,
 } from '../types.js';
 import { BaseBuilder } from './base-builder.js';
+import { TemplateLoader } from '../../utils/template-loader.js';
 
 export class ApiBuilder extends BaseBuilder {
   constructor(
@@ -253,41 +254,7 @@ export class ApiBuilder extends BaseBuilder {
     const variables: VariableConfig[] = [];
 
     if (listRole !== 'none') {
-      variables.push({
-        name: 'GET',
-        declarationKind: 'const',
-        isExported: true,
-        initializer: `defineApi(async (context) => {
-    const filterOptions = {
-        fields: {
-            ${filterFields}
-        },
-        searchFields: [${searchFields}]
-    } as const;
-
-    const { where, take, skip, orderBy } = parseQuery(new URL(context.request.url).searchParams, filterOptions);
-    
-    // Security Check
-    // Pass query params as input to role check
-    await ApiGuard.protect(context, '${listRole}', { ...context.params, where, take, skip, orderBy });
-
-    const select = ${selectObject};
-    
-    const actor = context.locals.actor;
-    const result = await ${serviceName}.list({ where, take, skip, orderBy, select }, actor);
-
-    if (!result.success) {
-        return new Response(JSON.stringify({ error: result.error }), { status: 500 });
-    }
-
-    const data = result.data || [];
-    const total = result.total || 0;
-
-    // Analytics Hook
-    await HookSystem.dispatch('${entityName.charAt(0).toLowerCase() + entityName.slice(1)}.list.viewed', { count: data.length, actorId: actor?.id || 'anonymous' });
-
-    return { success: true, data, meta: { total } };
-}, {
+      const listDocs = `{
     summary: "List ${entityName}s",
     tags: ["${entityName}"],
     parameters: [
@@ -303,36 +270,27 @@ export class ApiBuilder extends BaseBuilder {
             }
         }
     }${listRole === 'anonymous' ? ',\n    protected: false' : ''}
-})`,
+}`;
+
+      variables.push({
+        name: 'GET',
+        declarationKind: 'const',
+        isExported: true,
+        initializer: TemplateLoader.load('api/collection/list.tsf', {
+          filterFields,
+          searchFields,
+          listRole,
+          selectObject,
+          serviceName,
+          entityName,
+          lowerEntity: entityName.charAt(0).toLowerCase() + entityName.slice(1),
+          docs: listDocs,
+        }),
       });
     }
 
     if (createRole !== 'none') {
-      variables.push({
-        name: 'POST',
-        declarationKind: 'const',
-        isExported: true,
-        initializer: `defineApi(async (context) => {
-    const body = await context.request.json();
-    
-    // Security Check
-    await ApiGuard.protect(context, '${createRole}', { ...context.params, ...body });
-
-    // Zod Validation
-    const schema = ${zodSchema};
-    
-    const validated = schema.parse(body);
-    const select = ${selectObject};
-    const actor = context.locals.actor;
-
-    const result = await ${serviceName}.create(validated, select, actor);
-
-    if (!result.success) {
-        return new Response(JSON.stringify({ error: result.error }), { status: 400 });
-    }
-
-    return new Response(JSON.stringify({ success: true, data: result.data }), { status: 201 });
-}, {
+      const createDocs = `{
     summary: "Create ${entityName}",
     tags: ["${entityName}"],
     requestBody: {
@@ -357,7 +315,20 @@ export class ApiBuilder extends BaseBuilder {
             }
         }
     }${createRole === 'anonymous' ? ',\n    protected: false' : ''}
-})`,
+}`;
+
+      variables.push({
+        name: 'POST',
+        declarationKind: 'const',
+        isExported: true,
+        initializer: TemplateLoader.load('api/collection/create.tsf', {
+          createRole,
+          zodSchema,
+          selectObject,
+          serviceName,
+          entityName,
+          docs: createDocs,
+        }),
       });
     }
 
@@ -415,33 +386,7 @@ export class ApiBuilder extends BaseBuilder {
     const variables: VariableConfig[] = [];
 
     if (getRole !== 'none') {
-      variables.push({
-        name: 'GET',
-        declarationKind: 'const',
-        isExported: true,
-        initializer: `defineApi(async (context) => {
-    const { id } = context.params;
-    if (!id) return new Response(null, { status: 404 });
-    
-    // Pre-check
-    await ApiGuard.protect(context, '${getRole}', { ...context.params });
-    
-    const select = ${selectObject};
-    const result = await ${serviceName}.get(id, select);
-
-    if (!result.success || !result.data) {
-        return new Response(null, { status: 404 });
-    }
-
-    // Post-check (Data ownership)
-    await ApiGuard.protect(context, '${getRole}', { ...context.params }, result.data);
-
-    // Analytics Hook
-    const actor = context.locals.actor;
-    await HookSystem.dispatch('${entityName.charAt(0).toLowerCase() + entityName.slice(1)}.viewed', { id, actorId: actor?.id || 'anonymous' });
-
-    return { success: true, data: result.data };
-}, {
+      const getDocs = `{
     summary: "Get ${entityName}",
     tags: ["${entityName}"],
     parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
@@ -455,47 +400,24 @@ export class ApiBuilder extends BaseBuilder {
             }
         }
     }${getRole === 'anonymous' ? ',\n    protected: false' : ''}
-})`,
+}`;
+
+      variables.push({
+        name: 'GET',
+        declarationKind: 'const',
+        isExported: true,
+        initializer: TemplateLoader.load('api/individual/get.tsf', {
+          getRole,
+          selectObject,
+          serviceName,
+          entityName,
+          docs: getDocs,
+        }),
       });
     }
 
     if (updateRole !== 'none') {
-      variables.push({
-        name: 'PUT',
-        declarationKind: 'const',
-        isExported: true,
-        initializer: `defineApi(async (context) => {
-    const { id } = context.params;
-    if (!id) return new Response(null, { status: 404 });
-
-    const body = await context.request.json();
-    
-    // Pre-check
-    await ApiGuard.protect(context, '${updateRole}', { ...context.params, ...body });
-    
-    // Fetch for Post-check ownership
-    const existing = await ${serviceName}.get(id);
-    if (!existing.success || !existing.data) {
-        return new Response(null, { status: 404 });
-    }
-    
-    // Post-check
-    await ApiGuard.protect(context, '${updateRole}', { ...context.params, ...body }, existing.data);
-
-    // Zod Validation
-    const schema = ${zodSchema};
-    const validated = schema.parse(body);
-    const select = ${selectObject};
-    const actor = context.locals.actor;
-
-    const result = await ${serviceName}.update(id, validated, select, actor);
-
-    if (!result.success) {
-        return new Response(JSON.stringify({ error: result.error }), { status: 400 });
-    }
-
-    return { success: true, data: result.data };
-}, {
+      const updateDocs = `{
     summary: "Update ${entityName}",
     tags: ["${entityName}"],
     parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
@@ -516,39 +438,25 @@ export class ApiBuilder extends BaseBuilder {
             }
         }
     }${updateRole === 'anonymous' ? ',\n    protected: false' : ''}
-})`, // Line 303 end of getIndividualSchema logic replacement
+}`;
+
+      variables.push({
+        name: 'PUT',
+        declarationKind: 'const',
+        isExported: true,
+        initializer: TemplateLoader.load('api/individual/update.tsf', {
+          updateRole,
+          zodSchema,
+          selectObject,
+          serviceName,
+          entityName,
+          docs: updateDocs,
+        }),
       });
     }
 
     if (deleteRole !== 'none') {
-      variables.push({
-        name: 'DELETE',
-        declarationKind: 'const',
-        isExported: true,
-        initializer: `defineApi(async (context) => {
-    const { id } = context.params;
-    if (!id) return new Response(null, { status: 404 });
-
-    // Pre-check
-    await ApiGuard.protect(context, '${deleteRole}', { ...context.params });
-
-    // Fetch for Post-check ownership
-    const existing = await ${serviceName}.get(id);
-    if (!existing.success || !existing.data) {
-        return new Response(null, { status: 404 });
-    }
-    
-    // Post-check
-    await ApiGuard.protect(context, '${deleteRole}', { ...context.params }, existing.data);
-
-    const result = await ${serviceName}.delete(id);
-
-    if (!result.success) {
-        return new Response(JSON.stringify({ error: result.error }), { status: 400 });
-    }
-
-    return { success: true };
-}, {
+      const deleteDocs = `{
     summary: "Delete ${entityName}",
     tags: ["${entityName}"],
     parameters: [{ name: "id", in: "path", required: true, schema: { type: "string" } }],
@@ -567,7 +475,18 @@ export class ApiBuilder extends BaseBuilder {
             }
         }
     }${deleteRole === 'anonymous' ? ',\n    protected: false' : ''}
-})`,
+}`;
+
+      variables.push({
+        name: 'DELETE',
+        declarationKind: 'const',
+        isExported: true,
+        initializer: TemplateLoader.load('api/individual/delete.tsf', {
+          deleteRole,
+          serviceName,
+          entityName,
+          docs: deleteDocs,
+        }),
       });
     }
 
@@ -718,66 +637,46 @@ export class ApiBuilder extends BaseBuilder {
         }
       }
 
+      const customDocs = `{
+    summary: "${route.summary || ''}",
+    tags: ["${this.model.name}"],
+    ${
+      verb !== 'GET'
+        ? `requestBody: {
+        content: {
+            "application/json": {
+                schema: ${requestBodySchema}
+            }
+        }
+    },`
+        : ''
+    }
+    responses: {
+        200: {
+            description: "OK",
+            content: {
+                "application/json": {
+                    schema: ${responseSchema}
+                }
+            }
+        }
+    }${role === 'anonymous' ? ',\n        protected: false' : ''}
+}`;
+
       variables.push({
         name: verb,
         declarationKind: 'const',
         isExported: true,
-        initializer: `defineApi(async (context) => {
-        // 1. Body Parsing (Input)
-        const body = ${verb === 'GET' ? '{}' : 'await context.request.json()'} as ${inputType};
-        const query = Object.fromEntries(new URL(context.request.url).searchParams);
-
-        // 2. Hook: Filter Input
-        const input: ${inputType} = await HookSystem.filter('${entityName.charAt(0).toLowerCase() + entityName.slice(1)}.${method}.input', body);
-
-        // 3. Security Check
-        // Pass merged input
-        const combinedInput = { ...context.params, ...query, ...input };
-        await ApiGuard.protect(context, '${role || 'member'}', combinedInput);
-
-        // Inject userId from context for protected routes
-        const user = context.locals.actor;
-        if (user && user.id) {
-            Object.assign(combinedInput, { userId: user.id });
-        }
-
-        // 4. Action Execution
-        const result = await ${actionClassName}.run(combinedInput, context);
-        
-        // 5. Hook: Filter Output
-        const filteredResult = await HookSystem.filter('${entityName.charAt(0).toLowerCase() + entityName.slice(1)}.${method}.output', result);
-
-        // 6. Response
-        if (!filteredResult.success) {
-            return new Response(JSON.stringify({ error: filteredResult.error }), { status: 400 });
-        }
-
-        return { success: true, data: filteredResult.data };
-    }, {
-        summary: "${route.summary || ''}",
-        tags: ["${this.model.name}"],
-        ${
-          verb !== 'GET'
-            ? `requestBody: {
-            content: {
-                "application/json": {
-                    schema: ${requestBodySchema}
-                }
-            }
-        },`
-            : ''
-        }
-        responses: {
-            200: {
-                description: "OK",
-                content: {
-                    "application/json": {
-                        schema: ${responseSchema}
-                    }
-                }
-            }
-        }${role === 'anonymous' ? ',\n        protected: false' : ''}
-    })`,
+        initializer: TemplateLoader.load('api/custom/handler.tsf', {
+          verb: verb,
+          inputType,
+          entityName: this.model.name,
+          lowerEntity: this.model.name.charAt(0).toLowerCase() + this.model.name.slice(1),
+          method,
+          role: role || 'member',
+          actionClassName,
+          docs: customDocs,
+        }),
       });
     }
 

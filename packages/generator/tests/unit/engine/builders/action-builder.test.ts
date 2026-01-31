@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { Project, SourceFile } from 'ts-morph';
-import { ActionBuilder } from '@nexical/generator/engine/builders/action-builder';
+import { ActionBuilder } from '../../../../src/engine/builders/action-builder.js';
 
 describe('ActionBuilder', () => {
   let project: Project;
@@ -11,7 +11,7 @@ describe('ActionBuilder', () => {
     sourceFile = project.createSourceFile('test.ts', '');
   });
 
-  it('should generate a new action class', () => {
+  it('should generate a new action class with default fragment', () => {
     const builder = new ActionBuilder('CreateUser', 'CreateUserInput', 'User');
     builder.ensure(sourceFile);
 
@@ -24,6 +24,11 @@ describe('ActionBuilder', () => {
     expect(runMethod?.isAsync()).toBe(true);
     expect(runMethod?.getReturnType().getText()).toBe('Promise<ServiceResponse<User>>');
     expect(runMethod?.getParameters()[0].getType().getText()).toBe('CreateUserInput');
+
+    // Verify Fragment Content (Interpolated)
+    expect(runMethod?.getBodyText()).toContain(
+      'return { success: true, data: {} as unknown as User };',
+    );
   });
 
   it('should preserve existing functionality', () => {

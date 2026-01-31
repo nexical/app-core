@@ -6,6 +6,7 @@ import {
   type NodeContainer,
 } from '../types.js';
 import { BaseBuilder } from './base-builder.js';
+import { TemplateLoader } from '../../utils/template-loader.js';
 
 export class ActionBuilder extends BaseBuilder {
   constructor(
@@ -48,8 +49,7 @@ export class ActionBuilder extends BaseBuilder {
         { name: 'context', type: 'APIContext' },
       ],
       statements: existingStatements || [
-        // Default stub implementation
-        `return { success: true, data: {} as unknown as ${this.outputType} };`,
+        TemplateLoader.load('action/run.tsf', { outputType: this.outputType }),
       ],
     };
 

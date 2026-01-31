@@ -1,0 +1,41 @@
+/** @fragment-contract
+ * @description Test Template for Get Operation
+ * @input {string} kebabEntity
+ * @input {string} camelEntity
+ * @input {string} actorStatement
+ * @input {string} setupSnippet
+ */
+import { fragment } from '@nexical/generator';
+
+declare const kebabEntity: string;
+declare const camelEntity: string;
+declare const actorStatement: any;
+declare const setupSnippet: any;
+
+export default fragment/* ts */`
+// GET /api/${kebabEntity}/[id]
+describe('GET /api/${kebabEntity}/[id]', () => {
+  it('should retrieve a specific ${camelEntity}', async () => {
+    ${actorStatement}
+            
+    ${setupSnippet}
+
+    const res = await client.get(\`/api/${kebabEntity}/\${target.id}\`);
+
+    expect(res.status).toBe(200);
+    expect(res.body.id).toBe(target.id);
+  });
+
+  it('should return 404 for missing id', async () => {
+    // Note: getActorStatement call for 'get' where isUsed=false
+    // We can rely on the passed actorStatement if it fits, or we might need a separate 'cleanActorStatement' input
+    // In builder: this.getActorStatement('get') vs this.getActorStatement('get', !!rel)
+    // We'll trust the builder to provide a generic enough one or reuse logic?
+    // Actually the builder generated separate strings. We might need 'negativeActorStatement' here too if strict.
+    // For now, let's reuse actorStatement, assuming it declares 'actor'.
+    ${actorStatement}
+    const res = await client.get('/api/${kebabEntity}/missing-id-123');
+    expect(res.status).toBe(404);
+  });
+});
+`;

@@ -1,8 +1,6 @@
 {
   "extends": "../../tsconfig.json",
   "compilerOptions": {
-    "outDir": "./dist",
-    "rootDir": "./src",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "target": "ES2022",
@@ -10,10 +8,13 @@
     "declaration": true,
     "composite": true,
     "skipLibCheck": true,
-    "noEmit": false,
+    "noEmit": true,
     "allowImportingTsExtensions": false,
-    "types": ["node"]
+    "types": ["node"],
+    "paths": {
+      "@nexical/generator": ["./src/index.ts"]
+    }
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "templates/**/*"],
   "exclude": ["node_modules", "dist"]
 }

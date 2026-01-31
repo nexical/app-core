@@ -8,6 +8,7 @@ import {
   type ImportConfig,
 } from '../types.js';
 import { BaseBuilder } from './base-builder.js';
+import { TemplateLoader } from '../../utils/template-loader.js';
 
 export class SdkIndexBuilder extends BaseBuilder {
   constructor(
@@ -60,14 +61,13 @@ export class SdkIndexBuilder extends BaseBuilder {
       scope: Scope.Public,
     }));
 
+    const initStatements = otherModels
+      .map((m) => `this.${this.toCamelCase(m.name)} = new Base${m.name}SDK(client);`)
+      .join('\n');
+
     const constructorConfig: ConstructorConfig = {
       parameters: [{ name: 'client', type: 'ApiClient' }],
-      statements: [
-        `super(client);`,
-        ...otherModels.map(
-          (m) => `this.${this.toCamelCase(m.name)} = new Base${m.name}SDK(client);`,
-        ),
-      ],
+      statements: [TemplateLoader.load('sdk/index-constructor.tsf', { initStatements })],
     };
 
     const sdkClass: ClassDefinition = {

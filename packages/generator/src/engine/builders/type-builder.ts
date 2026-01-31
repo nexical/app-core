@@ -5,10 +5,10 @@ import {
   type EnumConfig,
   type NodeContainer,
   type ImportConfig,
-  type VariableConfig,
-  type TypeConfig,
+  type StatementConfig,
 } from '../types.js';
 import { BaseBuilder } from './base-builder.js';
+import { TemplateLoader } from '../../utils/template-loader.js';
 
 export class TypeBuilder extends BaseBuilder {
   constructor(
@@ -26,25 +26,15 @@ export class TypeBuilder extends BaseBuilder {
     const imports: ImportConfig[] = [];
     const exportsConfig = [];
 
-    const enumVariables: VariableConfig[] = [];
-    const enumTypes: TypeConfig[] = [];
-
+    const statements: (string | StatementConfig)[] = [];
     for (const enumDef of this.enums) {
-      // 1. Generate const object
-      const initializerBody = enumDef.members.map((m) => `    ${m.name}: '${m.value}'`).join(',\n');
-      enumVariables.push({
-        name: enumDef.name,
-        declarationKind: 'const',
-        isExported: true,
-        initializer: `{\n${initializerBody}\n} as const`,
-      });
-
-      // 2. Generate Type
-      enumTypes.push({
-        name: enumDef.name,
-        isExported: true,
-        type: `(typeof ${enumDef.name})[keyof typeof ${enumDef.name}]`,
-      });
+      const members = enumDef.members.map((m) => `    ${m.name}: '${m.value}'`).join(',\n');
+      statements.push(
+        TemplateLoader.load('type/enum.tsf', {
+          enumName: enumDef.name,
+          members,
+        }),
+      );
     }
 
     if (dbModels.length > 0) {
@@ -97,8 +87,7 @@ export class TypeBuilder extends BaseBuilder {
       imports: imports,
       exports: exportsConfig,
       interfaces: interfaces,
-      variables: enumVariables,
-      types: enumTypes,
+      statements: statements,
     };
   }
 }

@@ -1,6 +1,11 @@
-import { Scope, SourceFile, ModuleDeclaration } from 'ts-morph';
+import { Scope, SourceFile, ModuleDeclaration, Project, Statement } from 'ts-morph';
 
 export type NodeContainer = SourceFile | ModuleDeclaration;
+
+export interface ParsedStatement {
+  raw: string;
+  getNodes(project: Project): Statement[];
+}
 
 export interface ModelField {
   type: string;
@@ -139,6 +144,7 @@ export interface JsxElementConfig extends BaseStatementConfig {
 
 export type StatementConfig =
   | string // Legacy/Raw string support
+  | ParsedStatement
   | VariableStatementConfig
   | ReturnStatementConfig
   | ExpressionStatementConfig
@@ -272,7 +278,7 @@ export interface TypeConfig {
 export interface VariableConfig {
   name: string;
   type?: string;
-  initializer?: string;
+  initializer?: string | ParsedStatement;
   declarationKind?: 'const' | 'let' | 'var';
   isExported?: boolean;
 }

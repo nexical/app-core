@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { Project } from 'ts-morph';
-import { MiddlewareBuilder } from '@nexical/generator/engine/builders/middleware-builder';
+import { MiddlewareBuilder } from '../../../../src/engine/builders/middleware-builder';
 import { type ModelDef } from '../../../../src/engine/types';
 
 describe('MiddlewareBuilder', () => {
@@ -9,8 +9,9 @@ describe('MiddlewareBuilder', () => {
       {
         name: 'User',
         db: true,
-        fields: { id: { type: 'Int', isRequired: true } },
-        actor: { name: 'user', prefix: 'sk_user' },
+        api: true,
+        fields: { id: { type: 'Int', isRequired: true, isList: false, attributes: [], api: true } },
+        actor: { name: 'user', prefix: 'sk_user', strategy: 'bearer' },
       },
     ];
 

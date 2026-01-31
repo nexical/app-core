@@ -1,12 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { Project } from 'ts-morph';
-import { TestBuilder } from '@nexical/generator/engine/builders/test-builder';
+import { TestBuilder } from '../../../../src/engine/builders/test-builder';
 import { type ModelDef } from '../../../../src/engine/types';
 
 describe('TestBuilder', () => {
   const userModel: ModelDef = {
     name: 'User',
     db: true,
+    api: true,
     fields: {
       id: {
         type: 'String',
@@ -30,6 +31,7 @@ describe('TestBuilder', () => {
   const postModel: ModelDef = {
     name: 'Post',
     db: true,
+    api: true,
     fields: {
       id: {
         type: 'Int',
@@ -55,6 +57,7 @@ describe('TestBuilder', () => {
   const restrictedModel: ModelDef = {
     name: 'AdminDoc',
     db: true,
+    api: true,
     fields: {
       id: { type: 'Int', isRequired: true, isList: false, api: true, attributes: ['@id'] },
       content: { type: 'String', isRequired: true, isList: false, api: true, attributes: [] },

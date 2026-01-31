@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { Project, SourceFile } from 'ts-morph';
-import { SdkIndexBuilder } from '@nexical/generator/engine/builders/sdk-index-builder';
-import { type ModelDef } from '@nexical/generator/engine/types';
+import { SdkIndexBuilder } from '../../../../src/engine/builders/sdk-index-builder';
+import { type ModelDef } from '../../../../src/engine/types';
 
 describe('SdkIndexBuilder', () => {
   let project: Project;

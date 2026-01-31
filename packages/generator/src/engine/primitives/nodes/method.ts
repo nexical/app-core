@@ -4,6 +4,8 @@ import {
   type MethodDeclarationStructure,
   type OptionalKind,
   MethodDeclaration,
+  Node,
+  Statement,
 } from 'ts-morph';
 import { BasePrimitive } from '../core/base-primitive.js';
 import { DecoratorPrimitive } from './decorator.js';
@@ -223,6 +225,8 @@ export class MethodPrimitive extends BasePrimitive<MethodDeclaration, MethodConf
       return;
     }
 
+    const project = node.getProject();
+
     for (const stmtConfig of this.config.statements) {
       if (typeof stmtConfig === 'string') {
         const normalizedConfig = Normalizer.normalize(stmtConfig);
@@ -231,6 +235,28 @@ export class MethodPrimitive extends BasePrimitive<MethodDeclaration, MethodConf
         node.addStatements(stmtConfig);
         continue;
       }
+
+      if (stmtConfig && typeof stmtConfig === 'object' && 'getNodes' in stmtConfig) {
+        const newStatements = stmtConfig.getNodes(project);
+
+        for (const newStmt of newStatements) {
+          const match = this.findStructuralMatch(node.getStatements(), newStmt);
+
+          if (match) {
+            // Found structural match - Preserve user changes (Phase 1)
+            continue;
+          } else {
+            node.addStatements(newStmt.getText());
+          }
+        }
+
+        // Clean up temp file
+        if (newStatements.length > 0) {
+          newStatements[0].getSourceFile().delete();
+        }
+        continue;
+      }
+
       // Logic for other statement types (reused conceptually from FunctionPrimitive)
       // Ideally we extract this to a shared 'StatementReconciler' but for now duplication is safer than major refactor
 
@@ -240,5 +266,40 @@ export class MethodPrimitive extends BasePrimitive<MethodDeclaration, MethodConf
 
       // Reuse logic if we copy-paste significantly, but for now simple string append is key requirement
     }
+  }
+
+  private findStructuralMatch(existing: Statement[], target: Statement): Statement | undefined {
+    const kind = target.getKind();
+    return existing.find((s) => {
+      if (s.getKind() !== kind) return false;
+
+      // Variable Matching (by name)
+      if (Node.isVariableStatement(s) && Node.isVariableStatement(target)) {
+        const sName = s.getDeclarationList().getDeclarations()[0]?.getName();
+        const tName = target.getDeclarationList().getDeclarations()[0]?.getName();
+        return sName === tName;
+      }
+
+      // If Matching (by condition)
+      if (Node.isIfStatement(s) && Node.isIfStatement(target)) {
+        return (
+          Normalizer.normalize(s.getExpression().getText()) ===
+          Normalizer.normalize(target.getExpression().getText())
+        );
+      }
+
+      // Return Matching (assume singleton or simple match)
+      if (Node.isReturnStatement(s) && Node.isReturnStatement(target)) {
+        return true;
+      }
+
+      // TryStatement Matching
+      if (Node.isTryStatement(s) && Node.isTryStatement(target)) {
+        return true;
+      }
+
+      // Default: Text Match
+      return Normalizer.normalize(s.getText()) === Normalizer.normalize(target.getText());
+    });
   }
 }

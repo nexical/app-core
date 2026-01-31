@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { Project, SourceFile } from 'ts-morph';
-import { InitBuilder } from '@nexical/generator/engine/builders/init-builder';
+import { InitBuilder } from '../../../../src/engine/builders/init-builder';
 
 describe('InitBuilder', () => {
   let project: Project;

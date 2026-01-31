@@ -5,6 +5,7 @@ import {
   type FunctionConfig,
 } from '../types.js';
 import { BaseBuilder } from './base-builder.js';
+import { TemplateLoader } from '../../utils/template-loader.js';
 import { SourceFile, ModuleDeclaration } from 'ts-morph';
 
 export class MiddlewareBuilder extends BaseBuilder {
@@ -35,19 +36,15 @@ export class MiddlewareBuilder extends BaseBuilder {
       const tokenModel = model.actor.fields?.tokenModel || modelName;
       const keyField = model.actor.fields?.keyField || 'hashedKey';
 
-      // If tokenModel is different, we need to find the relation back to the actor
-      // If key field involves hashing, hash the token first
       const needsHashing = keyField.includes('hash');
       const tokenValueVar = needsHashing ? 'hashedToken' : 'token';
       const hashLogic = needsHashing
-        ? `
-            const hashedToken = crypto.createHash('sha256').update(token).digest('hex');`
+        ? `const hashedToken = crypto.createHash('sha256').update(token).digest('hex');`
         : '';
 
-      let lookupLogic = '';
+      let relationField = '';
       if (tokenModel !== modelName) {
         const tokenModelDef = this.models.find((m) => m.name === tokenModel);
-        let relationField = '';
         if (tokenModelDef) {
           const relationEntry = Object.entries(tokenModelDef.fields).find(
             ([_, f]) => f.type === model.name,
@@ -56,38 +53,30 @@ export class MiddlewareBuilder extends BaseBuilder {
             relationField = relationEntry[0];
           }
         }
-
         if (!relationField) {
           relationField = modelName.toLowerCase();
         }
-
-        lookupLogic = `${hashLogic}
-            const tokenEntity = await db.${tokenModel.charAt(0).toLowerCase() + tokenModel.slice(1)}.findFirst({
-                where: { ${keyField}: ${tokenValueVar} },
-                include: { ${relationField}: true }
-            });
-            
-            const entity = tokenEntity?.${relationField};`;
-      } else {
-        // Direct lookup
-        lookupLogic = `${hashLogic}
-            const entity = await db.${modelName}.findFirst({
-                where: { ${keyField}: ${tokenValueVar} }
-            });`;
       }
 
-      const template = `
-    if (authHeader?.startsWith("Bearer ${prefix}")) {
-        const token = authHeader.substring(7);
-        ${lookupLogic}
-            
-        if (entity) {
-            context.locals.actor = { ...entity, type: '${name}' };
-            context.locals.actorType = '${name}';
-            return next();
-        }
-    }`;
-      authLogic += template;
+      const includeClause = relationField ? `, \n    include: { ${relationField}: true }` : '';
+      const assignment = relationField
+        ? `const entity = tokenEntity?.${relationField};`
+        : `const entity = tokenEntity;`;
+
+      const lookupLogic = TemplateLoader.load('middleware/lookup.tsf', {
+        hashLogic,
+        dbModel: tokenModel.charAt(0).toLowerCase() + tokenModel.slice(1),
+        keyField,
+        tokenValueVar,
+        includeClause,
+        assignment,
+      });
+
+      authLogic += TemplateLoader.load('middleware/auth.tsf', {
+        prefix,
+        lookupLogic: lookupLogic.raw,
+        name: name || 'actor',
+      }).raw;
     }
 
     // Scan for actor with validStatus or login strategy to implement Bouncer Pattern
@@ -110,22 +99,10 @@ export class MiddlewareBuilder extends BaseBuilder {
         ? `!actorCheck || actorCheck.status !== '${validStatus}'`
         : `!actorCheck || actorCheck.status === 'BANNED' || actorCheck.status === 'INACTIVE'`;
 
-      sessionCheck = `
-            if (context.locals.actor && context.locals.actorType === '${modelName}') {
-                const actorCheck = await db.${modelName}.findUnique({
-                    where: { id: context.locals.actor.id },
-                    select: { status: true }
-                });
-
-                if (${statusCheck}) {
-                    context.locals.actor = undefined;
-                    return new Response(JSON.stringify({ error: "Session revoked" }), { 
-                        status: 403,
-                        headers: { "Content-Type": "application/json" }
-                    });
-                }
-                return next();
-            }`;
+      sessionCheck = TemplateLoader.load('middleware/bouncer.tsf', {
+        modelName,
+        statusCheck,
+      }).raw;
     }
 
     const onRequest: FunctionConfig = {

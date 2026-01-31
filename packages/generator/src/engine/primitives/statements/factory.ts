@@ -1,4 +1,5 @@
-import { type StatementConfig } from '../../types.js';
+import { Project, Statement } from 'ts-morph';
+import { type StatementConfig, type ParsedStatement } from '../../types.js';
 import { VariableStatementPrimitive } from './variable.js';
 import { ReturnStatementPrimitive } from './return.js';
 import { ExpressionStatementPrimitive } from './expression.js';
@@ -6,10 +7,31 @@ import { JsxElementPrimitive } from '../jsx/element.js';
 import { IfStatementPrimitive } from './if.js';
 import { ThrowStatementPrimitive } from './throw.js';
 
+export { type ParsedStatement };
+
+export function ts(strings: TemplateStringsArray, ...values: unknown[]): ParsedStatement {
+  const raw = strings.reduce((acc, str, i) => {
+    return acc + str + (values[i] !== undefined ? values[i] : '');
+  }, '');
+
+  return {
+    raw,
+    getNodes(project: Project): Statement[] {
+      const fileName = `__temp_fragment_${Date.now()}_${Math.random().toString(36).substring(7)}.ts`;
+      const sourceFile = project.createSourceFile(fileName, raw, { overwrite: true });
+      return sourceFile.getStatements();
+    },
+  };
+}
+
 export class StatementFactory {
   static generate(config: StatementConfig): string {
     if (typeof config === 'string') {
       return config;
+    }
+
+    if ('getNodes' in config) {
+      return config.raw;
     }
 
     switch (config.kind) {

@@ -1,6 +1,11 @@
 import { SourceFile, StatementedNode, Node } from 'ts-morph';
 import { GeneratorError } from './errors.js';
-import { type FileDefinition, type NodeContainer } from './types.js';
+import {
+  type FileDefinition,
+  type NodeContainer,
+  type StatementConfig,
+  type ParsedStatement,
+} from './types.js';
 import { ImportPrimitive } from './primitives/core/import-manager.js';
 import { ExportPrimitive } from './primitives/core/export-manager.js';
 import { ClassPrimitive } from './primitives/nodes/class.js';
@@ -98,11 +103,17 @@ export class Reconciler {
 
       // 9. Handle Raw Statements (Explicitly added for flexibility)
       if ('statements' in definition && Array.isArray(definition.statements)) {
-        const stmts = definition.statements as string[];
+        const rawStatements = (definition.statements as (string | StatementConfig)[]).map((s) => {
+          if (typeof s === 'string') return s;
+          if ('raw' in s) return (s as ParsedStatement).raw;
+          return ''; // Or handle other structural configs if needed
+        });
+
         if ('addStatements' in sourceFile) {
           const existingText = Normalizer.normalize((sourceFile as unknown as Node).getFullText());
+
           // Filter out statements that already exist perfectly in the file
-          const uniqueStmts = stmts.filter(
+          const uniqueStmts = rawStatements.filter(
             (stmt) => !existingText.includes(Normalizer.normalize(stmt)),
           );
 

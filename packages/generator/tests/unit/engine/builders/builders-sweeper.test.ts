@@ -1,13 +1,14 @@
 import { describe, it, expect } from 'vitest';
-import { FactoryBuilder } from '@nexical/generator/engine/builders/factory-builder';
-import { TestBuilder } from '@nexical/generator/engine/builders/test-builder';
-import { type ModelDef } from '@nexical/generator/engine/types';
+import { FactoryBuilder } from '../../../../src/engine/builders/factory-builder';
+import { TestBuilder } from '../../../../src/engine/builders/test-builder';
+import { type ModelDef, type ParsedStatement } from '../../../../src/engine/types';
 
 describe('Builders Sweeper', () => {
   describe('FactoryBuilder Edge Cases', () => {
     it('should handle boolean, datetime, enums, list types, and password', () => {
       const model: ModelDef = {
         name: 'ComplexModel',
+        api: true,
         fields: {
           id: { type: 'String', isRequired: true },
           isActive: { type: 'boolean', isRequired: true },
@@ -22,9 +23,13 @@ describe('Builders Sweeper', () => {
 
       const builder = new FactoryBuilder([model]);
       const file = (
-        builder as unknown as { getSchema: () => { variables: { initializer: string }[] } }
+        builder as unknown as {
+          getSchema: () => { variables: { initializer: string | ParsedStatement }[] };
+        }
       ).getSchema();
-      const content = file.variables?.[0].initializer || '';
+      const initializer = file.variables?.[0].initializer;
+      const content =
+        typeof initializer === 'string' ? initializer : (initializer as ParsedStatement)?.raw || '';
 
       expect(content).toContain('isActive: true');
       expect(content).toContain('bornAt: new Date()'); // Changed expectation
@@ -39,6 +44,7 @@ describe('Builders Sweeper', () => {
   describe('TestBuilder Edge Cases', () => {
     const baseModel: ModelDef = {
       name: 'TestModel',
+      api: true,
       fields: { id: { type: 'String', isRequired: true } },
       test: { actor: 'User' },
     } as unknown as ModelDef;
@@ -73,7 +79,7 @@ describe('Builders Sweeper', () => {
     });
 
     it('should throw if actor is missing', () => {
-      const model: ModelDef = { name: 'NoActor', fields: {} } as unknown as ModelDef;
+      const model: ModelDef = { name: 'NoActor', api: true, fields: {} } as unknown as ModelDef;
       const builder = new TestBuilder(model, 'mod', 'create');
       expect(() => (builder as unknown as { getSchema: () => void }).getSchema()).toThrow(
         'missing required',
@@ -84,6 +90,7 @@ describe('Builders Sweeper', () => {
       // Case 1: Recursive - Self reference check
       const teamModel: ModelDef = {
         name: 'Team',
+        api: true,
         fields: { id: { type: 'String', isRequired: true } },
         test: { actor: 'Team' },
       } as unknown as ModelDef;
@@ -97,6 +104,7 @@ describe('Builders Sweeper', () => {
       // Case 2: Explicit Actor Type Field match
       const jobModel: ModelDef = {
         name: 'Job',
+        api: true,
         fields: {
           id: { type: 'String', isRequired: true },
           manager: { type: 'Manager', isRequired: true }, // Matches actor 'Manager'
@@ -112,6 +120,7 @@ describe('Builders Sweeper', () => {
       // Case 3: userId
       const postModel: ModelDef = {
         name: 'Post',
+        api: true,
         fields: {
           id: { type: 'String', isRequired: true },
           userId: { type: 'String', isRequired: true },
@@ -127,6 +136,7 @@ describe('Builders Sweeper', () => {
     it('should find actor Foreign Key via regex', () => {
       const model: ModelDef = {
         name: 'UserSession', // Must contain "Session" to trigger auth resource logic
+        api: true,
         fields: {
           id: { type: 'String', isRequired: true },
           owner: {
@@ -151,6 +161,7 @@ describe('Builders Sweeper', () => {
     it('should handle public role', () => {
       const model: ModelDef = {
         name: 'PublicResource',
+        api: true,
         fields: { id: { type: 'String', isRequired: true } },
         role: 'public', // Short string format
         test: { actor: 'User' },
@@ -166,6 +177,7 @@ describe('Builders Sweeper', () => {
     it('should select unique field for filtering', () => {
       const model: ModelDef = {
         name: 'UniqueResource',
+        api: true,
         fields: {
           id: { type: 'String', isRequired: true },
           email: { type: 'String', isRequired: true, attributes: ['@unique'] },
@@ -189,6 +201,7 @@ describe('Builders Sweeper', () => {
     it('should skip db:false models', () => {
       const model: ModelDef = {
         name: 'Ignored',
+        api: true,
         db: false,
         fields: { id: { type: 'String', isRequired: true } },
       } as unknown as ModelDef;
@@ -196,8 +209,11 @@ describe('Builders Sweeper', () => {
       const file = (
         builder as unknown as { getSchema: () => { variables: { initializer: string }[] } }
       ).getSchema();
+      const initializer = file.variables[0].initializer;
+      const content =
+        typeof initializer === 'string' ? initializer : (initializer as ParsedStatement)?.raw || '';
       // Should have empty factories variable initializer (or just empty object)
-      expect(file.variables[0].initializer.replace(/\s/g, '')).toBe('{}');
+      expect(content.replace(/\s/g, '')).toBe('{}');
     });
   });
 });

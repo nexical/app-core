@@ -1,5 +1,6 @@
 import { type FileDefinition, type FunctionConfig, type NodeContainer } from '../types.js';
 import { BaseBuilder } from './base-builder.js';
+import { TemplateLoader } from '../../utils/template-loader.js';
 
 export class InitBuilder extends BaseBuilder {
   constructor(private type: 'server' | 'client') {
@@ -21,33 +22,7 @@ export class InitBuilder extends BaseBuilder {
       isAsync: true,
       overwriteBody: true,
       parameters: [],
-      statements: [
-        `// 1. Auto-discover and Register Roles from src/roles/`,
-        `const roleModules = import.meta.glob("./roles/*.ts", { eager: true });`,
-        `for (const path in roleModules) {`,
-        `    const mod = roleModules[path] as { [key: string]: unknown };`,
-        `    const roleName = path.split("/").pop()?.replace(".ts", "");`,
-        `    if (!roleName) continue;`,
-        `    `,
-        `    // Find the first exported class that looks like a RolePolicy (has check method)`,
-        `    for (const key in mod) {`,
-        `        const Exported = mod[key];`,
-        `        if (typeof Exported === "function" && Exported.prototype && Exported.prototype.check) {`,
-        `            roleRegistry.register(roleName, new Exported());`,
-        `            break;`,
-        `        }`,
-        `    }`,
-        `}`,
-        ``,
-        `// 2. Auto-load all Hook definitions from src/hooks/`,
-        `const hookModules = import.meta.glob("./hooks/*.ts", { eager: true });`,
-        `for (const path in hookModules) {`,
-        `    const mod = hookModules[path] as { init?: () => Promise<void> | void };`,
-        `    if (typeof mod.init === "function") {`,
-        `        await mod.init();`,
-        `    }`,
-        `}`,
-      ],
+      statements: [TemplateLoader.load('init/server.tsf')],
     };
 
     return {
@@ -66,7 +41,7 @@ export class InitBuilder extends BaseBuilder {
       isAsync: true,
       overwriteBody: true,
       parameters: [],
-      statements: [`console.info("[Client] Initializing module...");`],
+      statements: [TemplateLoader.load('init/client.tsf')],
     };
 
     return {

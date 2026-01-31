@@ -25,7 +25,7 @@ export class VariablePrimitive extends BasePrimitive<VariableStatement, Variable
         {
           name: this.config.name,
           type: this.config.type,
-          initializer: this.config.initializer,
+          initializer: this.getInitializerText(this.config.initializer),
         },
       ],
     });
@@ -48,9 +48,16 @@ export class VariablePrimitive extends BasePrimitive<VariableStatement, Variable
       decl.setType(this.config.type);
     }
 
-    if (this.config.initializer && decl.getInitializer()?.getText() !== this.config.initializer) {
-      decl.setInitializer(this.config.initializer);
+    const initText = this.getInitializerText(this.config.initializer);
+    if (initText && decl.getInitializer()?.getText() !== initText) {
+      decl.setInitializer(initText);
     }
+  }
+
+  private getInitializerText(initializer?: string | { raw: string }): string | undefined {
+    if (!initializer) return undefined;
+    if (typeof initializer === 'string') return initializer;
+    return initializer.raw;
   }
 
   validate(node: VariableStatement): ValidationResult {

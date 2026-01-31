@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { Project, SourceFile } from 'ts-morph';
-import { ActorTypeBuilder } from '@nexical/generator/engine/builders/actor-type-builder';
-import { type ModelDef } from '@nexical/generator/engine/types';
+import { ActorTypeBuilder } from '../../../../src/engine/builders/actor-type-builder';
+import { type ModelDef } from '../../../../src/engine/types';
 
 describe('ActorTypeBuilder', () => {
   let project: Project;
@@ -13,7 +13,9 @@ describe('ActorTypeBuilder', () => {
   });
 
   it('should clear file and generate global actor map', () => {
-    const models: ModelDef[] = [{ name: 'User', actor: { strategy: 'login' }, fields: {} }];
+    const models: ModelDef[] = [
+      { name: 'User', actor: { strategy: 'login' }, fields: {}, api: true },
+    ];
     const builder = new ActorTypeBuilder(models);
 
     builder.ensure(sourceFile);
@@ -28,7 +30,7 @@ describe('ActorTypeBuilder', () => {
   });
 
   it('should generate empty schema if no actor models', () => {
-    const models: ModelDef[] = [{ name: 'Profile', fields: {} }];
+    const models: ModelDef[] = [{ name: 'Profile', fields: {}, api: true }];
     const builder = new ActorTypeBuilder(models);
 
     builder.ensure(sourceFile);

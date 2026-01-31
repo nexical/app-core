@@ -8,3 +8,5 @@ export * from './engine/model-parser.js';
 export * from './engine/reconciler.js';
 export * from './utils/formatter.js';
 export * from './utils/normalizer.js';
+export * from './utils/fragment-tag.js';
+export { ts } from './engine/primitives/statements/factory.js';

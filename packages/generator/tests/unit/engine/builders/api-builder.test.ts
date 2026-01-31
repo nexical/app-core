@@ -1,11 +1,8 @@
-/* eslint-disable */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { Project, SourceFile } from 'ts-morph';
-import ts from 'typescript';
-import { ZodSchemaGenerator } from '@nexical/generator/ast-builders/schema-gen';
-import { type PlatformDefinition } from '@nexical/generator/schema';
-import { ApiBuilder } from '@nexical/generator/engine/builders/api-builder';
-import { type ModelDef } from '@nexical/generator/engine/types';
+// import { ZodSchemaGenerator } from '@nexical/generator/ast-builders/schema-gen'; // TODO: Locate this
+import { ApiBuilder } from '../../../../src/engine/builders/api-builder.js';
+import { type ModelDef } from '../../../../src/engine/types.js';
 
 describe('ApiBuilder', () => {
   let project: Project;
@@ -52,9 +49,9 @@ describe('ApiBuilder', () => {
     expect(text).toContain('export const GET = defineApi');
     expect(text).toContain('export const PUT = defineApi');
     expect(text).toContain('export const DELETE = defineApi');
-    expect(text).toContain('UserService.get(id, select)');
+    expect(text).toContain('UserService.get(id, select, actor)');
     expect(text).toContain('UserService.update(id, validated, select, actor)');
-    expect(text).toContain('UserService.delete(id)');
+    expect(text).toContain('UserService.delete(id, actor)');
   });
 
   it('should generate custom schema for actions', () => {

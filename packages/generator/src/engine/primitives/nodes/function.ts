@@ -126,10 +126,21 @@ export class FunctionPrimitive extends BasePrimitive<FunctionDeclaration, Functi
         continue;
       }
 
+      if (stmtConfig && typeof stmtConfig === 'object' && 'getNodes' in stmtConfig) {
+        const nodes = stmtConfig.getNodes(node.getProject());
+        for (const n of nodes) {
+          node.addStatements(n.getText());
+        }
+        if (nodes.length > 0) nodes[0].getSourceFile().delete();
+        continue;
+      }
+
       if ((stmtConfig as { isDefault?: boolean }).isDefault === false) {
         // Force overwrite/insert logic here if we wanted to enforce "system" statements
         // For now, let's focus on preserving "default" ones
       }
+
+      if (!('kind' in stmtConfig)) continue;
 
       if (stmtConfig.kind === 'variable') {
         const varName = stmtConfig.declarations[0]?.name;
