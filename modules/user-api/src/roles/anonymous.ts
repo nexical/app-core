@@ -15,6 +15,6 @@ export class IsAnonymous implements RolePolicy {
   }
 
   async redirect(context: AstroGlobal | APIContext) {
-    return (context as any).redirect('/');
+    return (context as APIContext).redirect('/');
   }
 }

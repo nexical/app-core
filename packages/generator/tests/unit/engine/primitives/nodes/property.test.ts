@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { createTestProject } from '@nexical/generator-tests/helpers/test-project';
 import { PropertyPrimitive } from '@nexical/generator/engine/primitives/nodes/property';
-import { Scope } from 'ts-morph';
+import { Scope, PropertyDeclaration } from 'ts-morph';
 
 describe('PropertyPrimitive', () => {
   it('should create a new property (class)', () => {
@@ -116,7 +116,7 @@ describe('PropertyPrimitive', () => {
       initializer: '"other"',
     });
 
-    const result = primitive.validate(propNode as any);
+    const result = primitive.validate(propNode as PropertyDeclaration);
     expect(result.valid).toBe(false);
     expect(result.issues.some((i) => i.includes('static modifier mismatch'))).toBe(true);
     expect(result.issues.some((i) => i.includes('initializer mismatch'))).toBe(true);
@@ -182,7 +182,7 @@ describe('PropertyPrimitive', () => {
     });
 
     const result = primitive.validate(propNode);
-    if (!result.valid) console.log('Validation issues:', result.issues);
+    if (!result.valid) console.error('Validation issues:', result.issues);
     expect(result.valid).toBe(true);
   });
 });

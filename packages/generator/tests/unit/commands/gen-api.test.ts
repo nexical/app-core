@@ -56,7 +56,7 @@ describe('GenApiCommand', () => {
     vi.mocked(ApiModuleGenerator).mockImplementationOnce(function () {
       return {
         run: vi.fn().mockRejectedValue(new Error('Generation failed')),
-      } as any;
+      } as unknown as ApiModuleGenerator;
     });
 
     await expect(command.run('test-api')).rejects.toThrow('Generation failed');

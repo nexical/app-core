@@ -12,7 +12,7 @@ class TestCommand extends BaseCommand {
   async run(val: string): Promise<void> {
     if (val === 'fail') throw new Error('Simulated failure');
     if (val === 'string-fail') throw 'String error';
-    console.log(`Ran with ${val}`);
+    console.info(`Ran with ${val}`);
   }
 }
 
@@ -27,7 +27,7 @@ describe('BaseCommand', () => {
     originalExit = process.exit;
     originalEnv = { ...process.env };
     process.exit = vi.fn() as unknown as typeof process.exit;
-    vi.spyOn(console, 'log').mockImplementation(() => {});
+    vi.spyOn(console, 'info').mockImplementation(() => {});
     vi.spyOn(console, 'error').mockImplementation(() => {});
   });
 
@@ -46,7 +46,7 @@ describe('BaseCommand', () => {
   it('should handle successful run via parseAsync', async () => {
     const cmd = command.getCommand();
     await cmd.parseAsync(['node', 'test.js', 'val']);
-    expect(console.log).toHaveBeenCalledWith('Ran with val');
+    expect(console.info).toHaveBeenCalledWith('Ran with val');
   });
 
   it('should handle command failure and log error', async () => {

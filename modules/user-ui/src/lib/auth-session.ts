@@ -13,8 +13,9 @@ export async function getSession(request: Request) {
     const data = await response.json();
     if (!data || !Object.keys(data).length) return null;
     return data;
-  } catch (e: any) {
-    console.error('[AuthSession] getSession failed:', e.message);
+  } catch (e: unknown) {
+    const error = e as Error;
+    console.error('[AuthSession] getSession failed:', error.message);
     return null;
   }
 }

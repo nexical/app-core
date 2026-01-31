@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { Project, SourceFile } from 'ts-morph';
 import { Reconciler } from '@nexical/generator/engine/reconciler';
-import type { FileDefinition } from '@nexical/generator/engine/types';
+import type { FileDefinition, PropertyConfig } from '@nexical/generator/engine/types';
 
 describe('Reconciler', () => {
   let project: Project;
@@ -127,7 +127,7 @@ describe('Reconciler', () => {
 
   it('should handle errors in reconcile', () => {
     const definition: FileDefinition = {
-      classes: [{ name: 'TestClass', properties: [null as unknown as any] }],
+      classes: [{ name: 'TestClass', properties: [null as unknown as PropertyConfig] }],
     };
 
     expect(() => Reconciler.reconcile(sourceFile, definition)).toThrow(/Failed to reconcile file/);

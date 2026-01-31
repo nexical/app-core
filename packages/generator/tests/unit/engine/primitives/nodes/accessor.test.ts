@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { Project, SourceFile, Scope } from 'ts-morph';
+import { Project, SourceFile, Scope, GetAccessorDeclaration } from 'ts-morph';
 import { AccessorPrimitive } from '@nexical/generator/engine/primitives/nodes/accessor';
 
 describe('AccessorPrimitive', () => {
@@ -144,7 +144,7 @@ describe('AccessorPrimitive', () => {
 
   it('should validate correctly', () => {
     const classNode = sourceFile.getClass('TestClass');
-    const getterNode = classNode?.addGetAccessor({ name: 'test' }) as any;
+    const getterNode = classNode?.addGetAccessor({ name: 'test' }) as GetAccessorDeclaration;
 
     const primitive = new AccessorPrimitive({
       name: 'test',
@@ -161,7 +161,7 @@ describe('AccessorPrimitive', () => {
 
   it('should validate kind mismatch', () => {
     const classNode = sourceFile.getClass('TestClass');
-    const getterNode = classNode?.addGetAccessor({ name: 'test' }) as any;
+    const getterNode = classNode?.addGetAccessor({ name: 'test' }) as GetAccessorDeclaration;
 
     const primitive = new AccessorPrimitive({
       name: 'test',
@@ -175,7 +175,7 @@ describe('AccessorPrimitive', () => {
 
   it('should validate missing validation details', () => {
     const classNode = sourceFile.getClass('TestClass');
-    const getterNode = classNode?.addGetAccessor({ name: 'test' }) as any;
+    const getterNode = classNode?.addGetAccessor({ name: 'test' }) as GetAccessorDeclaration;
 
     const primitive = new AccessorPrimitive({
       name: 'test',

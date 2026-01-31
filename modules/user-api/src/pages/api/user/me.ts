@@ -75,7 +75,7 @@ export const GET = defineApi(
     const query = Object.fromEntries(new URL(context.request.url).searchParams);
 
     // 2. Hook: Filter Input
-    const input: any = await HookSystem.filter('user.getMe.input', body);
+    const input = await HookSystem.filter('user.getMe.input', body);
 
     // 3. Security Check
     // Pass merged input

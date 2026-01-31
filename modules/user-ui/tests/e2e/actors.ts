@@ -3,7 +3,15 @@ import { hashPassword } from '@modules/user-api/tests/integration/factory';
 import type { Actor } from '@tests/e2e/lib/actor';
 
 export const actors = {
-  user: async (actor: Actor, params: any = {}) => {
+  user: async (
+    actor: Actor,
+    params: Record<string, unknown> & {
+      email?: string;
+      password?: string;
+      role?: string;
+      status?: string;
+    } = {},
+  ) => {
     const password = params.password || 'Password123!';
 
     // 1. Get or Create User via Factory (Direct DB Access)

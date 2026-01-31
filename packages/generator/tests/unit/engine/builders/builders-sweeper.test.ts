@@ -59,6 +59,7 @@ describe('Builders Sweeper', () => {
     it('should use roleConfig for actor options', () => {
       const builder = new TestBuilder(baseModel, 'mod', 'create', {
         member: { headers: { 'X-Custom': 'val' } },
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
       const file = (
         builder as unknown as { getSchema: () => { variables: { initializer: string }[] } }

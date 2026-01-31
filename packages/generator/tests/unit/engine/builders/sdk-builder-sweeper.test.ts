@@ -3,23 +3,27 @@ import { SdkBuilder } from '@nexical/generator/engine/builders/sdk-builder';
 import {
   type ModelDef,
   type CustomRoute,
-  type ClassDefinition,
+  type FileDefinition,
+  type ImportConfig,
 } from '@nexical/generator/engine/types';
 
 describe('SdkBuilder Sweeper', () => {
-  const getMethods = (file: any) => {
-    const cls = file.classes?.[0] as ClassDefinition;
+  const getMethods = (file: FileDefinition) => {
+    const cls = file.classes?.[0];
     return cls?.methods?.map((m) => m.name) || [];
   };
 
   it('should generate full CRUD for string role', () => {
     const model: ModelDef = {
       name: 'User',
-      fields: { id: { type: 'String', isRequired: true } },
+      api: true,
+      fields: {
+        id: { type: 'String', isRequired: true, isList: false, attributes: [], api: true },
+      },
       role: 'member', // String config
     };
     const builder = new SdkBuilder(model);
-    const file = (builder as any).getSchema();
+    const file = (builder as unknown as { getSchema: () => FileDefinition }).getSchema();
 
     const methods = getMethods(file);
     expect(methods).toContain('list');
@@ -32,7 +36,10 @@ describe('SdkBuilder Sweeper', () => {
   it('should respect role object configuration (hide methods)', () => {
     const model: ModelDef = {
       name: 'ReadOnly',
-      fields: { id: { type: 'String', isRequired: true } },
+      api: true,
+      fields: {
+        id: { type: 'String', isRequired: true, isList: false, attributes: [], api: true },
+      },
       role: {
         list: 'public',
         get: 'public',
@@ -42,7 +49,7 @@ describe('SdkBuilder Sweeper', () => {
       },
     };
     const builder = new SdkBuilder(model);
-    const file = (builder as any).getSchema();
+    const file = (builder as unknown as { getSchema: () => FileDefinition }).getSchema();
 
     const methods = getMethods(file);
     expect(methods).toContain('list');
@@ -55,11 +62,12 @@ describe('SdkBuilder Sweeper', () => {
   it('should skip CRUD for virtual models (db: false)', () => {
     const model: ModelDef = {
       name: 'Virtual',
+      api: true,
       db: false,
       fields: {},
     };
     const builder = new SdkBuilder(model);
-    const file = (builder as any).getSchema();
+    const file = (builder as unknown as { getSchema: () => FileDefinition }).getSchema();
 
     const methods = getMethods(file);
     expect(methods).toHaveLength(0);
@@ -68,7 +76,10 @@ describe('SdkBuilder Sweeper', () => {
   it('should generate custom routes with params and types', () => {
     const model: ModelDef = {
       name: 'Process',
-      fields: { id: { type: 'String', isRequired: true } },
+      api: true,
+      fields: {
+        id: { type: 'String', isRequired: true, isList: false, attributes: [], api: true },
+      },
     };
     const routes: CustomRoute[] = [
       {
@@ -87,7 +98,7 @@ describe('SdkBuilder Sweeper', () => {
     ];
 
     const builder = new SdkBuilder(model, routes);
-    const file = (builder as any).getSchema();
+    const file = (builder as unknown as { getSchema: () => FileDefinition }).getSchema();
     const methods = getMethods(file);
 
     // Check methods exist
@@ -95,20 +106,17 @@ describe('SdkBuilder Sweeper', () => {
     expect(methods).toContain('getStatus');
 
     // Check imports for custom types
-    const typeImport = file.imports?.find((i: any) => i.moduleSpecifier === './types');
+    const typeImport = file.imports?.find((i: ImportConfig) => i.moduleSpecifier === './types');
     expect(typeImport).toBeDefined();
     // Should include 'ActionInput', 'StatusEnum'.
     // Should NOT include 'Process' (Entity type handled separately) or 'any'.
     expect(typeImport?.namedImports).toContain('ActionInput');
     expect(typeImport?.namedImports).toContain('StatusEnum');
 
-    // Process is entity name, so it might be in namedImports too depending on logic (lines 158-160)
-    // But lines 166-167 exclude it from 'otherTypes'.
-
     // Verify path param replacement logic
     const cls = file.classes?.[0];
     const runMethod = cls?.methods?.find((m) => m.name === 'runAction');
-    const statement = runMethod?.statements?.[0] || '';
+    const statement = (runMethod?.statements?.[0] as string) || '';
     // Expect template literal with ${actionId} and resolved endpoint 'process'
     expect(statement).toContain('`/process/run/${actionId}`');
   });

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { AuditApiCommand } from '@nexical/generator/commands/audit/api';
 import { ModuleLocator } from '@nexical/generator/lib/module-locator';
@@ -85,12 +86,12 @@ describe('AuditApiCommand', () => {
       // Setup path-aware existsSync to hit specific branches
       vi.spyOn(fs, 'existsSync').mockReturnValue(true);
 
-      vi.spyOn(fs, 'readdirSync').mockImplementation((p: unknown) => {
+      vi.spyOn(fs, 'readdirSync').mockImplementation(((p: unknown) => {
         const pathStr = String(p);
-        if (pathStr.includes('src/roles')) return ['admin.ts'] as unknown as any;
-        if (pathStr.endsWith('modules')) return ['test-api'] as unknown as any;
-        return [] as unknown as any;
-      });
+        if (pathStr.includes('src/roles')) return ['admin.ts'];
+        if (pathStr.endsWith('modules')) return ['test-api'];
+        return [];
+      }) as any);
 
       vi.spyOn(fs, 'readFileSync').mockImplementation((p: unknown) => {
         const pathStr = String(p);
@@ -109,9 +110,19 @@ describe('AuditApiCommand', () => {
       });
 
       vi.spyOn(ModelParser, 'parse').mockReturnValue({
-        models: [{ name: 'User', db: false, api: true, fields: { id: 'String' } }],
+        models: [
+          {
+            name: 'User',
+            db: false,
+            api: true,
+            fields: {
+              id: { type: 'String', isRequired: true, isList: false, attributes: [], api: true },
+            },
+          },
+        ],
         enums: [],
-      } as unknown as any); // Keep ModelParser mock as any if complex
+        config: {},
+      } as any);
 
       // Mock Project and SourceFile
       const addFileSpy = vi.spyOn(Project.prototype, 'addSourceFileAtPath').mockReturnValue({
@@ -119,7 +130,7 @@ describe('AuditApiCommand', () => {
         getInterfaces: () => [],
         getEnums: () => [],
         getFunctions: () => [],
-      } as unknown as any);
+      } as any);
 
       const issues = await (
         command as unknown as { auditModule: (m: string, v: boolean) => Promise<string[]> }
@@ -175,9 +186,19 @@ describe('AuditApiCommand', () => {
       });
 
       vi.spyOn(ModelParser, 'parse').mockReturnValue({
-        models: [{ name: 'Post', db: true, api: true, fields: { title: 'String' } }],
+        models: [
+          {
+            name: 'Post',
+            db: true,
+            api: true,
+            fields: {
+              title: { type: 'String', isRequired: true, isList: false, attributes: [], api: true },
+            },
+          },
+        ],
         enums: [],
-      } as unknown as any);
+        config: {},
+      } as any);
 
       // Mock Project and SourceFile
       vi.spyOn(Project.prototype, 'addSourceFileAtPath').mockReturnValue({
@@ -185,7 +206,7 @@ describe('AuditApiCommand', () => {
         getInterfaces: () => [],
         getEnums: () => [],
         getFunctions: () => [],
-      } as unknown as any);
+      } as any);
 
       const issues = await (
         command as unknown as { auditModule: (m: string, v: boolean) => Promise<string[]> }

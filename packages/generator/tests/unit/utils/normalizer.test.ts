@@ -30,7 +30,7 @@ describe('Normalizer', () => {
 
     it('should handle empty input', () => {
       expect(Normalizer.normalizeType('')).toBe('');
-      expect(Normalizer.normalizeType(null as any)).toBe('');
+      expect(Normalizer.normalizeType(null as unknown as string)).toBe('');
     });
   });
 });

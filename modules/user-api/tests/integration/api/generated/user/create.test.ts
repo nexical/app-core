@@ -34,8 +34,8 @@ const _test = describe('User API - Create', () => {
     });
 
     it('should forbid non-admin/unauthorized users', async () => {
-      (client as any).bearerToken = 'invalid-token';
-      const _actor = undefined as any;
+      client.useToken('invalid-token');
+      const _actor = undefined;
 
       const payload = {
         passwordUpdatedAt: new Date().toISOString(),

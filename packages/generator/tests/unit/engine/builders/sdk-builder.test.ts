@@ -48,7 +48,6 @@ describe('SdkBuilder', () => {
     builder.ensure(sourceFile);
 
     const text = sourceFile.getFullText();
-    console.log('SdkBuilder Output:', text);
     expect(text).toContain('public async resetPassword(data: ResetPasswordInput)');
     expect(text).toMatch(/this\._request\('POST', `\/user\/reset-password`, data\);/);
     expect(text).toMatch(/import type \{.*User,.*ResetPasswordInput.*\} from "\.\/types";/);

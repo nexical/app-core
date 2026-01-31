@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { PlatformParser } from '@nexical/generator/core/parser';
 import fs from 'fs';
@@ -29,7 +30,7 @@ describe('PlatformParser', () => {
     vi.mocked(PlatformDefinitionSchema.safeParse).mockReturnValue({
       success: true,
       data: {},
-    } as unknown as any);
+    } as any);
   });
 
   it('should throw error if file does not exist', () => {
@@ -45,7 +46,7 @@ describe('PlatformParser', () => {
     vi.mocked(PlatformDefinitionSchema.safeParse).mockReturnValue({
       success: true,
       data: mockYaml,
-    } as unknown as any);
+    } as any);
 
     const result = PlatformParser.parseFile('valid.yaml');
     expect(result).toEqual(mockYaml);
@@ -59,7 +60,7 @@ describe('PlatformParser', () => {
     vi.mocked(PlatformDefinitionSchema.safeParse).mockReturnValue({
       success: false,
       error: { issues: [] },
-    } as unknown as any);
+    } as any);
 
     expect(() => PlatformParser.parseFile('invalid.yaml')).toThrow('Schema validation failed');
   });
@@ -72,7 +73,7 @@ describe('PlatformParser', () => {
     vi.mocked(PlatformDefinitionSchema.safeParse).mockReturnValue({
       success: true,
       data: mockYaml,
-    } as unknown as any);
+    } as any);
 
     PlatformParser.parseModule('/path/to/module');
     expect(fs.existsSync).toHaveBeenCalledWith(expect.stringContaining('models.yaml'));
