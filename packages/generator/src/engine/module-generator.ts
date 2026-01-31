@@ -3,16 +3,19 @@ import { Project, SourceFile } from 'ts-morph';
 import path from 'node:path';
 import fs from 'node:fs';
 import { Formatter } from '../utils/formatter.js';
+import { BaseCommand, logger } from '@nexical/cli-core';
 
 export abstract class ModuleGenerator {
   protected project: Project;
   protected modulePath: string;
   protected moduleName: string;
   protected generatedFiles: Set<string> = new Set();
+  protected command?: BaseCommand;
 
-  constructor(modulePath: string) {
+  constructor(modulePath: string, context?: { command?: BaseCommand }) {
     this.modulePath = path.resolve(modulePath);
     this.moduleName = path.basename(this.modulePath);
+    this.command = context?.command;
     this.project = new Project({
       // tsConfigFilePath: path.join(process.cwd(), "tsconfig.json"),
       // skipAddingFilesFromTsConfig: true
@@ -40,21 +43,21 @@ export abstract class ModuleGenerator {
 
     let file = this.project.getSourceFile(absolutePath);
     if (file && !this.generatedFiles.has(file.getFilePath())) {
-      console.log(`[ModuleGenerator] [CACHE_EVICT] ${absolutePath}`);
+      logger.debug(`[ModuleGenerator] [CACHE_EVICT] ${absolutePath}`);
       this.project.removeSourceFile(file);
       file = undefined;
     }
 
     if (fs.existsSync(absolutePath)) {
-      console.log(`[ModuleGenerator] [LOAD] ${absolutePath}`);
+      logger.debug(`[ModuleGenerator] [LOAD] ${absolutePath}`);
       file = this.project.addSourceFileAtPath(absolutePath);
     } else {
-      console.log(`[ModuleGenerator] [CREATE] ${absolutePath}`);
+      logger.debug(`[ModuleGenerator] [CREATE] ${absolutePath}`);
       file = this.project.createSourceFile(absolutePath, '', { overwrite: true });
     }
 
     const finalizedPath = file.getFilePath();
-    console.log(`[ModuleGenerator] [ADD_SET] ${finalizedPath}`);
+    logger.debug(`[ModuleGenerator] [ADD_SET] ${finalizedPath}`);
     this.generatedFiles.add(finalizedPath);
     return file;
   }
@@ -83,12 +86,12 @@ export abstract class ModuleGenerator {
           if (content.includes('// GENERATED CODE - DO NOT MODIFY')) {
             shouldDelete = true;
           } else {
-            console.log(`[ModuleGenerator] [PRESERVE_MANUAL] ${fullPath}`);
+            logger.debug(`[ModuleGenerator] [PRESERVE_MANUAL] ${fullPath}`);
           }
         }
 
         if (shouldDelete) {
-          console.log(`[ModuleGenerator] [DELETE] ${fullPath}`);
+          logger.debug(`[ModuleGenerator] [DELETE] ${fullPath}`);
           fs.unlinkSync(fullPath);
         }
       }
@@ -96,7 +99,7 @@ export abstract class ModuleGenerator {
   }
 
   protected async saveAll(): Promise<void> {
-    console.log(
+    logger.debug(
       `[ModuleGenerator] [SAVE_ALL] Total project files: ${this.project.getSourceFiles().length}`,
     );
 
@@ -105,12 +108,12 @@ export abstract class ModuleGenerator {
       const inSet = this.generatedFiles.has(filePath);
       const forgotten = (file as unknown as { wasForgotten(): boolean }).wasForgotten?.() || false;
 
-      console.log(
+      logger.debug(
         `[ModuleGenerator] [PROJECT_FILE] ${filePath} | IN_SET: ${inSet} | FORGOTTEN: ${forgotten}`,
       );
 
       if (inSet) {
-        console.log(`[ModuleGenerator] [SAVE] ${filePath}`);
+        logger.debug(`[ModuleGenerator] [SAVE] ${filePath}`);
 
         // Get the text from ts-morph
         const content = file.getFullText();
@@ -121,14 +124,14 @@ export abstract class ModuleGenerator {
         // Write to disk manually
         fs.writeFileSync(filePath, formatted);
       } else {
-        console.log(`[ModuleGenerator] [SAVE_SKIP] ${filePath}`);
+        logger.debug(`[ModuleGenerator] [SAVE_SKIP] ${filePath}`);
       }
     }
 
     // Also check if any files in set are NOT in project
     for (const setPath of this.generatedFiles) {
       if (!this.project.getSourceFile(setPath)) {
-        console.log(`[ModuleGenerator] [MISSING_FROM_PROJECT] ${setPath}`);
+        logger.debug(`[ModuleGenerator] [MISSING_FROM_PROJECT] ${setPath}`);
       }
     }
   }

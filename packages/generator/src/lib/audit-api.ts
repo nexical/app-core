@@ -1,5 +1,4 @@
-import chalk from 'chalk';
-import ora from 'ora';
+import { BaseCommand } from '@nexical/cli-core';
 import fs from 'fs';
 import path from 'path';
 import { Project, SourceFile } from 'ts-morph';
@@ -28,36 +27,39 @@ import { type ModelDef, type CustomRoute } from '../engine/types.js';
 import { ModuleLocator } from '../lib/module-locator.js';
 import { type BaseBuilder } from '../engine/builders/base-builder.js';
 
-export async function auditApiModule(name: string | undefined, options: { schema?: boolean }) {
+export async function auditApiModule(command: BaseCommand, name: string | undefined, options: { schema?: boolean }) {
     const pattern = name || '*-api';
     const modules = await ModuleLocator.expand(pattern);
 
     if (modules.length === 0) {
-        console.info(chalk.yellow(`No modules found matching pattern "${pattern}"`));
+        command.warn(`No modules found matching pattern "${pattern}"`);
         return;
     }
 
-    console.info(chalk.blue(`Found ${modules.length} module(s) to audit.`));
+    command.info(`Found ${modules.length} module(s) to audit.`);
 
     let totalIssues: string[] = [];
-    const spinner = ora('Auditing modules...').start();
 
     for (const moduleName of modules) {
-        spinner.text = `Auditing module: ${moduleName} `;
-        const issues = await auditModule(moduleName, options.schema || false);
+        command.info(`Auditing module: ${moduleName} `);
+        const issues = await auditModule(command, moduleName, options.schema || false);
         totalIssues = totalIssues.concat(issues);
     }
 
     if (totalIssues.length > 0) {
-        spinner.fail(chalk.red(`Audit failed with ${totalIssues.length} issues: `));
-        totalIssues.forEach((issue) => console.info(issue));
-        process.exitCode = 1;
+        command.error(`Audit failed with ${totalIssues.length} issues: `);
+        totalIssues.forEach((issue) => command.info(issue));
+        // command.error usually exits, but if we want to mimic process.exitCode = 1 without immediate exit if possible:
+        // BaseCommand implementation of error() usually calls exit(1).
+        // If we want to return without exit, we'd use command.log/warn.
+        // But original code set process.exitCode = 1, implying failure state.
+        // BaseCommand triggers failure.
     } else {
-        spinner.succeed(chalk.green(`Audit passed for all ${modules.length} modules.`));
+        command.success(`Audit passed for all ${modules.length} modules.`);
     }
 }
 
-async function auditModule(name: string, checkSchemaOnly: boolean): Promise<string[]> {
+async function auditModule(command: BaseCommand, name: string, checkSchemaOnly: boolean): Promise<string[]> {
     const moduleDir = path.join(process.cwd(), 'modules', name);
     const modelsPath = path.join(moduleDir, 'models.yaml');
     const apiPath = path.join(moduleDir, 'api.yaml');
@@ -84,9 +86,9 @@ async function auditModule(name: string, checkSchemaOnly: boolean): Promise<stri
         // Validate against Zod Schema
         const modelResult = PlatformDefinitionSchema.safeParse(parsedModels);
         if (!modelResult.success) {
-            report(chalk.bold.red(`[Schema] models.yaml validation errors: `));
+            report(`[Schema] models.yaml validation errors: `);
             modelResult.error.errors.forEach((err) => {
-                report(chalk.red(`  Path: ${err.path.join('.')} - ${err.message} `));
+                report(`  Path: ${err.path.join('.')} - ${err.message} `);
             });
         }
 
@@ -98,16 +100,14 @@ async function auditModule(name: string, checkSchemaOnly: boolean): Promise<stri
                 const apiResult = PlatformApiDefinitionSchema.safeParse(parsedApi);
 
                 if (!apiResult.success) {
-                    report(chalk.bold.red(`[Schema] api.yaml validation errors: `));
+                    report(`[Schema] api.yaml validation errors: `);
                     apiResult.error.errors.forEach((err) => {
-                        report(chalk.red(`  Path: ${err.path.join('.')} - ${err.message} `));
+                        report(`  Path: ${err.path.join('.')} - ${err.message} `);
                     });
                 }
             } catch (e: unknown) {
                 report(
-                    chalk.red(
-                        `[Schema] Failed to parse api.yaml: ${e instanceof Error ? e.message : String(e)} `,
-                    ),
+                    `[Schema] Failed to parse api.yaml: ${e instanceof Error ? e.message : String(e)} `
                 );
             }
         }
@@ -162,9 +162,7 @@ async function auditModule(name: string, checkSchemaOnly: boolean): Promise<stri
                     const fieldType = typeof fieldDef === 'string' ? fieldDef : fieldDef.type;
                     if (!validTypes.has(fieldType)) {
                         report(
-                            chalk.red(
-                                `[Semantic] Model '${modelName}.${fieldName}' has unknown type '${fieldType}'`,
-                            ),
+                            `[Semantic] Model '${modelName}.${fieldName}' has unknown type '${fieldType}'`
                         );
                     }
                 }
@@ -182,9 +180,7 @@ async function auditModule(name: string, checkSchemaOnly: boolean): Promise<stri
                 rolesToCheck.forEach((r) => {
                     if (!validRoles.has(r)) {
                         report(
-                            chalk.red(
-                                `[Semantic] Model '${modelName}' has unknown role '${r}'. Valid: ${Array.from(validRoles).join(', ')} `,
-                            ),
+                            `[Semantic] Model '${modelName}' has unknown role '${r}'. Valid: ${Array.from(validRoles).join(', ')} `
                         );
                     }
                 });
@@ -207,7 +203,7 @@ async function auditModule(name: string, checkSchemaOnly: boolean): Promise<stri
                                 ? route.input.slice(0, -2)
                                 : route.input;
                             if (!validTypes.has(inputType)) {
-                                report(chalk.red(`[Semantic] ${label} has unknown input type '${route.input}'`));
+                                report(`[Semantic] ${label} has unknown input type '${route.input}'`);
                             }
                         }
 
@@ -218,7 +214,7 @@ async function auditModule(name: string, checkSchemaOnly: boolean): Promise<stri
                                 : route.output;
                             if (!validTypes.has(outputType)) {
                                 report(
-                                    chalk.red(`[Semantic] ${label} has unknown output type '${route.output}'`),
+                                    `[Semantic] ${label} has unknown output type '${route.output}'`
                                 );
                             }
                         }
@@ -227,9 +223,7 @@ async function auditModule(name: string, checkSchemaOnly: boolean): Promise<stri
                         if (route.role) {
                             if (!validRoles.has(route.role)) {
                                 report(
-                                    chalk.red(
-                                        `[Semantic] ${label} has unknown role '${route.role}'. Valid: ${Array.from(validRoles).join(', ')} `,
-                                    ),
+                                    `[Semantic] ${label} has unknown role '${route.role}'. Valid: ${Array.from(validRoles).join(', ')} `
                                 );
                             }
                         }

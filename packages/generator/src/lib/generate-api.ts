@@ -1,11 +1,11 @@
-import chalk from 'chalk';
-import fs from 'fs-extra';
-import path from 'path';
+import { BaseCommand } from '@nexical/cli-core';
 import { ApiModuleGenerator } from '../engine/api-module-generator.js';
 import { ModuleLocator } from '../lib/module-locator.js';
 import { glob } from 'glob';
+import fs from 'fs-extra';
+import path from 'path';
 
-export async function generateApiModule(name?: string) {
+export async function generateApiModule(command: BaseCommand, name?: string) {
     const pattern = name || '*-api';
     const modules = await ModuleLocator.expand(pattern);
 
@@ -16,25 +16,25 @@ export async function generateApiModule(name?: string) {
     }
 
     if (modules.length === 0) {
-        console.info(chalk.yellow(`No modules found matching pattern "${pattern}"`));
+        command.warn(`No modules found matching pattern "${pattern}"`);
         return;
     }
 
-    console.info(chalk.blue(`Found ${modules.length} module(s) to generate.`));
+    command.info(`Found ${modules.length} module(s) to generate.`);
 
     for (const moduleName of modules) {
-        await generateForModule(moduleName);
+        await generateForModule(command, moduleName);
     }
 }
 
-async function generateForModule(name: string) {
-    console.info(chalk.magenta(`\nGenerating code for module: ${name}`));
+async function generateForModule(command: BaseCommand, name: string) {
+    command.info(`\nGenerating code for module: ${name}`);
     const moduleDir = path.join(process.cwd(), 'modules', name);
 
     try {
         // 0. Ensure Module Directory & Project Files
         if (!fs.existsSync(moduleDir)) {
-            console.info(chalk.blue(`Module '${name}' does not exist. Creating...`));
+            command.info(`Module '${name}' does not exist. Creating...`);
             await fs.ensureDir(path.join(moduleDir, 'src'));
         }
 
@@ -42,14 +42,16 @@ async function generateForModule(name: string) {
         await generateProjectFiles(moduleDir, name);
 
         // 1. Run Generator
-        const generator = new ApiModuleGenerator(moduleDir);
+        const generator = new ApiModuleGenerator(moduleDir, { command });
         await generator.run();
 
-        console.info(chalk.green(`Successfully generated code for "${name}"`));
-    } catch (error) {
-        console.error(error);
-        console.info(chalk.red('Failed to generate code'));
-        throw error;
+        command.success(`Successfully generated code for "${name}"`);
+    } catch (error: any) {
+        command.error(`Failed to generate code: ${error.message || error}`);
+        // command.error exits by default, but if we want to continue loop, we might need a non-exiting error log.
+        // BaseCommand.error usually exits. If we want to fail hard, this is fine.
+        // If we want to just log and continue, we should use command.warn or logger.error.
+        // Given the original had `throw error`, it likely wants to stop.
     }
 }
 

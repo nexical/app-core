@@ -26,6 +26,6 @@ export default class GenApiCommand extends BaseCommand {
     // async run(options: any) { const directory = options.directory; ... }
     // So yes, args are merged into options.
 
-    await generateApiModule(options.name);
+    await generateApiModule(this, options.name);
   }
 }

@@ -23,6 +23,6 @@ export default class AuditApiCommand extends BaseCommand {
   };
 
   async run(options: any) {
-    await auditApiModule(options.name, { schema: options.schema });
+    await auditApiModule(this, options.name, { schema: options.schema });
   }
 }
