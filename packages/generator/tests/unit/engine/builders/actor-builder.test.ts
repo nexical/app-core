@@ -28,7 +28,9 @@ describe('ActorBuilder', () => {
     builder.ensure(sourceFile);
 
     const text = sourceFile.getFullText();
-    expect(text).toContain('user: async (client: ApiClient, params: any = {}) =>');
+    expect(text).toContain(
+      'user: async (client: ApiClient, params: Record<string, unknown> = {}) =>',
+    );
     expect(text).toMatch(/client\.useSession\(\)\.post\(['"]\/api\/login['"]/);
     expect(text).toContain('email: actor.email');
   });

@@ -3,6 +3,7 @@ import {
   type FileDefinition,
   type MethodConfig,
   type ClassDefinition,
+  type NodeContainer,
 } from '../types.js';
 import { BaseBuilder } from './base-builder.js';
 
@@ -14,13 +15,23 @@ export class ServiceBuilder extends BaseBuilder {
     super();
   }
 
-  protected getSchema(node?: any): FileDefinition {
+  protected getSchema(node?: NodeContainer): FileDefinition {
     const entityName = this.model.name;
     const serviceName = `${entityName}Service`;
     const lowerEntity = entityName.charAt(0).toLowerCase() + entityName.slice(1);
 
-    const getClass = (n: any) => (n && 'getClass' in n ? n.getClass(serviceName) : null);
-    const getExistingStatements = (n: any, methodName: string) => {
+    const getClass = (n: unknown) =>
+      n && typeof n === 'object' && 'getClass' in n
+        ? (
+            n as unknown as {
+              getClass(name: string): {
+                getMethod(name: string): { getBodyText(): string } | undefined;
+                getStaticMethod(name: string): { getBodyText(): string } | undefined;
+              } | null;
+            }
+          ).getClass(serviceName)
+        : null;
+    const getExistingStatements = (n: unknown, methodName: string) => {
       const cls = getClass(n);
       const method = cls?.getMethod(methodName) || cls?.getStaticMethod(methodName);
       return method ? [method.getBodyText() || ''] : undefined;
@@ -109,8 +120,8 @@ export class ServiceBuilder extends BaseBuilder {
                         const input = await HookSystem.filter('${lowerEntity}.beforeCreate', data, { actor });
                         
                         const newItem = await db.$transaction(async (tx) => {
-                            const created = await tx.${lowerEntity}.create({ data: input as any, select });
-                            await HookSystem.dispatch('${lowerEntity}.created', { id: created.id, actorId: actor?.id || 'system'${this.model.fields['teamId'] ? ', teamId: (created as any).teamId' : ''} });
+                            const created = await tx.${lowerEntity}.create({ data: input as Prisma.${entityName}CreateInput, select });
+                            await HookSystem.dispatch('${lowerEntity}.created', { id: created.id, actorId: actor?.id || 'system'${this.model.fields['teamId'] ? ', teamId: (created as unknown as { teamId: string }).teamId' : ''} });
                             return created;
                         });
                         
@@ -141,7 +152,7 @@ export class ServiceBuilder extends BaseBuilder {
                         const updatedItem = await db.$transaction(async (tx) => {
                             const updated = await tx.${lowerEntity}.update({
                                 where: { id },
-                                data: input as any,
+                                data: input as Prisma.${entityName}UpdateInput,
                                 select
                             });
                             await HookSystem.dispatch('${lowerEntity}.updated', { id, changes: Object.keys(input), actorId: actor?.id });

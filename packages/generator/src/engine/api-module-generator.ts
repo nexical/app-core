@@ -24,7 +24,7 @@ export class ApiModuleGenerator extends ModuleGenerator {
 
     const { models, enums, config } = ModelParser.parse(modelsYamlPath);
     if (models.length === 0) {
-      console.log('No models found in models.yaml. Skipping generation.');
+      console.info('No models found in models.yaml. Skipping generation.');
       return;
     }
 
@@ -143,7 +143,7 @@ export class ApiModuleGenerator extends ModuleGenerator {
     // 3. Virtual Resources
     const virtualModels: ModelDef[] = [];
     for (const [entityName, routes] of Object.entries(customRoutes)) {
-      console.log(
+      console.info(
         'Checking virtual model:',
         entityName,
         'Processed:',
@@ -173,7 +173,7 @@ export class ApiModuleGenerator extends ModuleGenerator {
           !route.verb &&
           ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'].includes(route.method?.toUpperCase())
         ) {
-          route.verb = route.method.toUpperCase() as any;
+          route.verb = route.method.toUpperCase() as CustomRoute['verb'];
         }
         if (!route.verb) route.verb = 'POST';
 

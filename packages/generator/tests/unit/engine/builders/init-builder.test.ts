@@ -28,6 +28,6 @@ describe('InitBuilder', () => {
 
     const text = sourceFile.getFullText();
     expect(text).toContain('export async function init');
-    expect(text).toContain('console.log("[Client] Initializing module...");');
+    expect(text).toContain('console.info("[Client] Initializing module...");');
   });
 });

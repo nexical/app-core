@@ -57,7 +57,7 @@ ${persistentMapping}
   await fs.mkdir(path.dirname(outputPath), { recursive: true });
 
   await fs.writeFile(outputPath, content);
-  console.log(`Generated Agent registry at ${outputPath}`);
+  console.info(`Generated Agent registry at ${outputPath}`);
 }
 
 generate().catch(console.error);

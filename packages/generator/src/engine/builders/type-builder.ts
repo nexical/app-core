@@ -3,6 +3,10 @@ import {
   type FileDefinition,
   type InterfaceConfig,
   type EnumConfig,
+  type NodeContainer,
+  type ImportConfig,
+  type VariableConfig,
+  type TypeConfig,
 } from '../types.js';
 import { BaseBuilder } from './base-builder.js';
 
@@ -14,22 +18,19 @@ export class TypeBuilder extends BaseBuilder {
     super();
   }
 
-  protected getSchema(node?: any): FileDefinition {
-    // ... existing logic ...
+  protected getSchema(node?: NodeContainer): FileDefinition {
     const dbModels = this.models.filter((m) => m.db);
     const virtualModels = this.models.filter((m) => !m.db);
 
     const interfaces: InterfaceConfig[] = [];
-
-    const imports: any[] = [];
+    const imports: ImportConfig[] = [];
     const exportsConfig = [];
 
-    const enumVariables: any[] = [];
-    const enumTypes: any[] = [];
+    const enumVariables: VariableConfig[] = [];
+    const enumTypes: TypeConfig[] = [];
 
     for (const enumDef of this.enums) {
       // 1. Generate const object
-      // export const SiteRole = { ADMIN: 'ADMIN', ... } as const;
       const initializerBody = enumDef.members.map((m) => `    ${m.name}: '${m.value}'`).join(',\n');
       enumVariables.push({
         name: enumDef.name,
@@ -39,7 +40,6 @@ export class TypeBuilder extends BaseBuilder {
       });
 
       // 2. Generate Type
-      // export type SiteRole = (typeof SiteRole)[keyof typeof SiteRole];
       enumTypes.push({
         name: enumDef.name,
         isExported: true,
@@ -65,7 +65,7 @@ export class TypeBuilder extends BaseBuilder {
         if (type === 'Float') type = 'number';
         if (type === 'Boolean') type = 'boolean';
         if (type === 'DateTime') type = 'Date';
-        if (type === 'Json') type = 'any';
+        if (type === 'Json') type = 'unknown';
 
         if (field.isList) type = `${type}[]`;
 

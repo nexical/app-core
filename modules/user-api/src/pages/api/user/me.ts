@@ -21,7 +21,7 @@ export const DELETE = defineApi(
     await ApiGuard.protect(context, 'member', combinedInput);
 
     // Inject userId from context for protected routes
-    const user = (context as any).user;
+    const user = context.locals?.actor;
     if (user && user.id) {
       Object.assign(combinedInput, { userId: user.id });
     }
@@ -71,7 +71,7 @@ export const DELETE = defineApi(
 export const GET = defineApi(
   async (context) => {
     // 1. Body Parsing (Input)
-    const body = {} as any;
+    const body: Record<string, unknown> = {};
     const query = Object.fromEntries(new URL(context.request.url).searchParams);
 
     // 2. Hook: Filter Input
@@ -83,7 +83,7 @@ export const GET = defineApi(
     await ApiGuard.protect(context, 'member', combinedInput);
 
     // Inject userId from context for protected routes
-    const user = (context as any).user;
+    const user = context.locals?.actor;
     if (user && user.id) {
       Object.assign(combinedInput, { userId: user.id });
     }
@@ -150,7 +150,7 @@ export const PUT = defineApi(
     await ApiGuard.protect(context, 'member', combinedInput);
 
     // Inject userId from context for protected routes
-    const user = (context as any).user;
+    const user = context.locals?.actor;
     if (user && user.id) {
       Object.assign(combinedInput, { userId: user.id });
     }

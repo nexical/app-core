@@ -29,6 +29,7 @@ export class ValidateResetTokenAuthAction {
     input: ValidateResetTokenDTO,
     context: APIContext,
   ): Promise<ServiceResponse<ValidateResetTokenResponseDTO>> {
-    return { success: true, data: {} as any };
+    const data = await validateResetToken(input);
+    return { success: true, data };
   }
 }

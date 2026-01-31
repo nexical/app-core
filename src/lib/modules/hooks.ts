@@ -5,7 +5,7 @@
 export class HookSystem {
   private static listeners = new Map<
     string,
-    ((data: any, context?: any) => any | Promise<any>)[]
+    ((data: unknown, context?: unknown) => unknown | Promise<unknown>)[]
   >();
 
   /**
@@ -13,14 +13,17 @@ export class HookSystem {
    * @param event - The event name.
    * @param handler - The function to call. Can return modified data for filters.
    */
-  static on<T, C = any>(
+  static on<T, C = unknown>(
     event: string,
     handler: (data: T, context?: C) => void | T | Promise<void | T>,
   ): void {
     if (!this.listeners.has(event)) {
       this.listeners.set(event, []);
     }
-    this.listeners.get(event)?.push(handler);
+    // We cast the handler to the generic unknown signature for storage
+    this.listeners
+      .get(event)
+      ?.push(handler as unknown as (data: unknown, context?: unknown) => unknown);
   }
 
   /**
@@ -29,7 +32,7 @@ export class HookSystem {
    * @param data - The data payload.
    * @param context - Optional context.
    */
-  static async dispatch<T, C = any>(event: string, data: T, context?: C): Promise<void> {
+  static async dispatch<T, C = unknown>(event: string, data: T, context?: C): Promise<void> {
     const handlers = this.listeners.get(event);
     if (!handlers || handlers.length === 0) return;
 
@@ -52,7 +55,7 @@ export class HookSystem {
    * @param context - Optional context to pass to filters.
    * @returns The final modified data.
    */
-  static async filter<T, C = any>(event: string, initialData: T, context?: C): Promise<T> {
+  static async filter<T, C = unknown>(event: string, initialData: T, context?: C): Promise<T> {
     const handlers = this.listeners.get(event);
     if (!handlers || handlers.length === 0) {
       return initialData;

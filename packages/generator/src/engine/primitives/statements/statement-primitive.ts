@@ -1,15 +1,14 @@
 import { type StatementConfig } from '../../types.js';
 
-// StatementPrimitive is slightly different from BasePrimitive.
-// It might not manage a *single* node forever if we don't have IDs.
-// But we want to implement standard create/update logic.
-
+/**
+ * Base class for statement primitives.
+ * Generates string representations of statements based on configuration.
+ */
 export abstract class StatementPrimitive<TConfig extends StatementConfig = StatementConfig> {
   constructor(protected config: TConfig) {}
 
-  // Convert config to writer function or structure string
-  abstract generate(): string; // For now we might generate text to insert?
-  // Or we use ts-morph specific structures if available (VariableStatementStructure)
-
-  // We can also have an 'apply' method that takes a Block/Body and adds it.
+  /**
+   * Generates a string representation of the statement.
+   */
+  abstract generate(): string;
 }

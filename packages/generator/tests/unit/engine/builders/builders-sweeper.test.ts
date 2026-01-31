@@ -18,10 +18,12 @@ describe('Builders Sweeper', () => {
           tags: { type: 'String', isRequired: true, isList: true },
           password: { type: 'String', isRequired: true },
         },
-      };
+      } as unknown as ModelDef;
 
       const builder = new FactoryBuilder([model]);
-      const file = (builder as any).getSchema();
+      const file = (
+        builder as unknown as { getSchema: () => { variables: { initializer: string }[] } }
+      ).getSchema();
       const content = file.variables?.[0].initializer || '';
 
       expect(content).toContain('isActive: true');
@@ -39,24 +41,28 @@ describe('Builders Sweeper', () => {
       name: 'TestModel',
       fields: { id: { type: 'String', isRequired: true } },
       test: { actor: 'User' },
-    };
+    } as unknown as ModelDef;
 
     it('should use role object configuration', () => {
       const model: ModelDef = {
         ...baseModel,
         role: { create: 'admin' }, // Object role config
-      };
+      } as unknown as ModelDef;
       const builder = new TestBuilder(model, 'mod', 'create');
       // Just verifying it runs without error and internal logic holds
-      const file = (builder as any).getSchema();
+      const file = (
+        builder as unknown as { getSchema: () => { variables: { initializer: string }[] } }
+      ).getSchema();
       expect(file).toBeDefined();
     });
 
     it('should use roleConfig for actor options', () => {
       const builder = new TestBuilder(baseModel, 'mod', 'create', {
         member: { headers: { 'X-Custom': 'val' } },
-      });
-      const file = (builder as any).getSchema();
+      } as any);
+      const file = (
+        builder as unknown as { getSchema: () => { variables: { initializer: string }[] } }
+      ).getSchema();
       const content = file.variables?.[0].initializer || '';
 
       // Expect generated content (note: keys might be unquoted due to naive replacement in builder)
@@ -66,9 +72,11 @@ describe('Builders Sweeper', () => {
     });
 
     it('should throw if actor is missing', () => {
-      const model: ModelDef = { name: 'NoActor', fields: {} };
+      const model: ModelDef = { name: 'NoActor', fields: {} } as unknown as ModelDef;
       const builder = new TestBuilder(model, 'mod', 'create');
-      expect(() => (builder as any).getSchema()).toThrow('missing required');
+      expect(() => (builder as unknown as { getSchema: () => void }).getSchema()).toThrow(
+        'missing required',
+      );
     });
 
     it('should handle getActorRelationSnippet edge cases', () => {
@@ -77,9 +85,11 @@ describe('Builders Sweeper', () => {
         name: 'Team',
         fields: { id: { type: 'String', isRequired: true } },
         test: { actor: 'Team' },
-      };
+      } as unknown as ModelDef;
       const b1 = new TestBuilder(teamModel, 'mod', 'create');
-      const c1 = (b1 as any).getSchema().variables?.[0].initializer || '';
+      const c1 =
+        (b1 as unknown as { getSchema: () => { variables: { initializer: string }[] } }).getSchema()
+          .variables?.[0].initializer || '';
       // Expect NOT to have actor override in payload for self-model?
       // Actually `generateCreateTests` checks `actorRelationField`.
       expect(c1).not.toContain('actorId: (actor ?');
@@ -92,9 +102,11 @@ describe('Builders Sweeper', () => {
           manager: { type: 'Manager', isRequired: true }, // Matches actor 'Manager'
         },
         test: { actor: 'Manager' },
-      };
+      } as unknown as ModelDef;
       const b2 = new TestBuilder(jobModel, 'mod', 'create');
-      const c2 = (b2 as any).getSchema().variables?.[0].initializer || '';
+      const c2 =
+        (b2 as unknown as { getSchema: () => { variables: { initializer: string }[] } }).getSchema()
+          .variables?.[0].initializer || '';
       // For CREATE, it generates: manager: (actor ? actor.id : undefined)
       expect(c2).toContain('manager: (actor ? actor.id : undefined)');
 
@@ -106,9 +118,11 @@ describe('Builders Sweeper', () => {
           userId: { type: 'String', isRequired: true },
         },
         test: { actor: 'User' },
-      };
+      } as unknown as ModelDef;
       const b3 = new TestBuilder(postModel, 'mod', 'create');
-      const c3 = (b3 as any).getSchema().variables?.[0].initializer || '';
+      const c3 =
+        (b3 as unknown as { getSchema: () => { variables: { initializer: string }[] } }).getSchema()
+          .variables?.[0].initializer || '';
       expect(c3).toContain('userId: (actor ? actor.id : undefined)');
     });
 
@@ -126,10 +140,12 @@ describe('Builders Sweeper', () => {
           ownerId: { type: 'String', isRequired: true },
         },
         test: { actor: 'User' },
-      };
+      } as unknown as ModelDef;
 
       const builder = new TestBuilder(model, 'mod', 'list');
-      const file = (builder as any).getSchema();
+      const file = (
+        builder as unknown as { getSchema: () => { variables: { initializer: string }[] } }
+      ).getSchema();
       const content = file.variables?.[0].initializer || '';
 
       expect(content).toContain('ownerId: { not: actor.id }');
@@ -141,9 +157,11 @@ describe('Builders Sweeper', () => {
         fields: { id: { type: 'String', isRequired: true } },
         role: 'public', // Short string format
         test: { actor: 'User' },
-      };
+      } as unknown as ModelDef;
       const builder = new TestBuilder(model, 'mod', 'create');
-      const file = (builder as any).getSchema();
+      const file = (
+        builder as unknown as { getSchema: () => { variables: { initializer: string }[] } }
+      ).getSchema();
       const content = file.variables?.[0].initializer || '';
 
       expect(content).toContain('Public access - no auth required');
@@ -158,10 +176,12 @@ describe('Builders Sweeper', () => {
           other: { type: 'String', isRequired: true },
         },
         test: { actor: 'User' },
-      };
+      } as unknown as ModelDef;
       // List operation triggers valid filter generation
       const builder = new TestBuilder(model, 'mod', 'list');
-      const file = (builder as any).getSchema();
+      const file = (
+        builder as unknown as { getSchema: () => { variables: { initializer: string }[] } }
+      ).getSchema();
       const content = file.variables?.[0].initializer || '';
 
       // filter by 'other', creating 'email' unique values
@@ -176,9 +196,11 @@ describe('Builders Sweeper', () => {
         name: 'Ignored',
         db: false,
         fields: { id: { type: 'String', isRequired: true } },
-      };
+      } as unknown as ModelDef;
       const builder = new FactoryBuilder([model]);
-      const file = (builder as any).getSchema();
+      const file = (
+        builder as unknown as { getSchema: () => { variables: { initializer: string }[] } }
+      ).getSchema();
       // Should have empty factories variable initializer (or just empty object)
       expect(file.variables[0].initializer.replace(/\s/g, '')).toBe('{}');
     });

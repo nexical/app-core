@@ -88,7 +88,7 @@ export class ImportPrimitive extends BasePrimitive<ImportDeclaration, ImportConf
         existingNamed.forEach((ni) => {
           const sym = ni.getText().replace(/^type\s+/, '');
           if (targetSymbols.includes(sym)) {
-            console.log(
+            console.info(
               `[ImportPrimitive] Removing duplicate symbol '${sym}' from ${normalizedExisting} (moving to ${normalizedTarget})`,
             );
             ni.remove();

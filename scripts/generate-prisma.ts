@@ -27,8 +27,8 @@ interface PrismaEnum {
 }
 
 interface PrismaSchema {
-  datasource?: Record<string, any>;
-  generator?: Record<string, Record<string, any>>;
+  datasource?: Record<string, unknown>;
+  generator?: Record<string, Record<string, unknown>>;
   models?: Record<string, PrismaModel>;
   enums?: Record<string, PrismaEnum>;
 }
@@ -42,7 +42,7 @@ function mergeSchemas(target: PrismaSchema, source: PrismaSchema) {
     target.models = target.models || {};
     for (const [name, model] of Object.entries(source.models)) {
       // Skip Virtual Models (DTOs)
-      if ((model as any).db === false) continue;
+      if (model.db === false) continue;
 
       if (!target.models[name]) {
         target.models[name] = model;
@@ -167,7 +167,7 @@ async function main() {
   // 1. Read Core
   const coreYamlPath = path.join(prismaDir, 'models.yaml');
   if (fs.existsSync(coreYamlPath)) {
-    console.log(`Loading core schema: ${coreYamlPath}`);
+    console.info(`Loading core schema: ${coreYamlPath}`);
     const content = fs.readFileSync(coreYamlPath, 'utf8');
     const parsed = yaml.parse(content);
     mergeSchemas(combinedSchema, parsed);
@@ -179,7 +179,7 @@ async function main() {
     for (const mod of modules) {
       const modYamlPath = path.join(modulesDir, mod, 'models.yaml');
       if (fs.existsSync(modYamlPath)) {
-        console.log(`Loading module schema: ${mod} (${modYamlPath})`);
+        console.info(`Loading module schema: ${mod} (${modYamlPath})`);
         const content = fs.readFileSync(modYamlPath, 'utf8');
         const parsed = yaml.parse(content);
         mergeSchemas(combinedSchema, parsed);
@@ -191,7 +191,7 @@ async function main() {
   const psl = generatePrismaFile(combinedSchema);
   const outputPath = path.join(prismaDir, 'schema.prisma');
   fs.writeFileSync(outputPath, psl);
-  console.log(`Generated ${outputPath}`);
+  console.info(`Generated ${outputPath}`);
 }
 
 main().catch(console.error);

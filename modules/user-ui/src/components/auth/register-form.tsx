@@ -96,8 +96,9 @@ export function RegisterForm() {
 
       if (result.success) {
         setSuccess(true);
-        if ((result as any).teamId) {
-          setRegisteredTeamId((result as any).teamId);
+        const data = result as { teamId?: string };
+        if (data.teamId) {
+          setRegisteredTeamId(data.teamId);
         }
       } else {
         setServerError(result.error || t('user.auth.register.error.generic'));

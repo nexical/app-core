@@ -11,18 +11,18 @@ async function generateEnv() {
   const envPath = path.join(rootDir, '.env');
 
   if (fs.existsSync(envPath)) {
-    console.log('ℹ️  .env file already exists. Skipping generation.');
+    console.info('ℹ️  .env file already exists. Skipping generation.');
     return;
   }
 
-  console.log('🚀 Generating .env file...');
+  console.info('🚀 Generating .env file...');
 
   let envContent = '';
 
   // 1. Read root .env.example
   const rootEnvExamplePath = path.join(rootDir, '.env.example');
   if (fs.existsSync(rootEnvExamplePath)) {
-    console.log('   - Reading root .env.example');
+    console.info('   - Reading root .env.example');
     envContent += fs.readFileSync(rootEnvExamplePath, 'utf-8');
     envContent += '\n';
   } else {
@@ -37,7 +37,7 @@ async function generateEnv() {
 
   for (const moduleEnvPath of moduleEnvExamples) {
     const relativePath = path.relative(rootDir, moduleEnvPath);
-    console.log(`   - Reading ${relativePath}`);
+    console.info(`   - Reading ${relativePath}`);
 
     envContent += `\n# --- ${relativePath} ---\n`;
     envContent += fs.readFileSync(moduleEnvPath, 'utf-8');
@@ -46,7 +46,7 @@ async function generateEnv() {
 
   // 3. Write to .env
   fs.writeFileSync(envPath, envContent.trim() + '\n');
-  console.log('✅ .env file created successfully.');
+  console.info('✅ .env file created successfully.');
 }
 
 generateEnv().catch((error) => {

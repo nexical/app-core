@@ -1,48 +1,42 @@
 ---
-import Layout from "@/layouts/Layout.astro";
-import {
-    Card,
-    CardHeader,
-    CardTitle,
-    CardDescription,
-    CardContent,
-} from "@/components/ui/card";
-import { config } from "@/lib/core/config";
-import { ModuleI18nIntegration } from "@/lib/integrations/module-i18n-integration";
-import { PageGuard } from "@/lib/ui/page-guard";
+import Layout from '@/layouts/Layout.astro';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { config } from '@/lib/core/config';
+import { ModuleI18nIntegration } from '@/lib/integrations/module-i18n-integration';
+import { PageGuard } from '@/lib/ui/page-guard';
 
-const guard = await PageGuard.protect(Astro, "anonymous");
+const guard = await PageGuard.protect(Astro, 'anonymous');
 if (guard) return guard;
 
-const lang =
-    Astro.cookies.get("i18next")?.value ||
-    config.PUBLIC_DEFAULT_LANGUAGE ||
-    "en";
+const lang = Astro.cookies.get('i18next')?.value || config.PUBLIC_DEFAULT_LANGUAGE || 'en';
 const store = await ModuleI18nIntegration.getMergedLocale(lang);
 function t(key: string) {
-    return key.split(".").reduce((o: any, i) => o?.[i], store) || key;
+  return (
+    (key
+      .split('.')
+      .reduce(
+        (o: Record<string, unknown> | undefined, i) =>
+          (o as Record<string, unknown>)?.[i] as Record<string, unknown>,
+        store as Record<string, unknown>,
+      ) as string) || key
+  );
 }
 ---
 
-<Layout
-    title={`${t("user.pages.verify_email.title")} | ${config.PUBLIC_SITE_NAME}`}
->
-    <Card className="auth-card">
-        <CardHeader>
-            <CardTitle className="auth-card-title">
-                {t("user.pages.verify_email.heading_verify")}
-            </CardTitle>
-            <CardDescription className="auth-card-description">
-                {t("user.pages.verify_email.submessage")}
-            </CardDescription>
-        </CardHeader>
-        <CardContent className="auth-form-container text-center">
-            <p
-                class="auth-verify-message mb-4"
-                data-testid="verify-email-message"
-            >
-                {t("user.pages.verify_email.message_sent")}
-            </p>
-        </CardContent>
-    </Card>
+<Layout title={`${t('user.pages.verify_email.title')} | ${config.PUBLIC_SITE_NAME}`}>
+  <Card className="auth-card">
+    <CardHeader>
+      <CardTitle className="auth-card-title">
+        {t('user.pages.verify_email.heading_verify')}
+      </CardTitle>
+      <CardDescription className="auth-card-description">
+        {t('user.pages.verify_email.submessage')}
+      </CardDescription>
+    </CardHeader>
+    <CardContent className="auth-form-container text-center">
+      <p class="auth-verify-message mb-4" data-testid="verify-email-message">
+        {t('user.pages.verify_email.message_sent')}
+      </p>
+    </CardContent>
+  </Card>
 </Layout>

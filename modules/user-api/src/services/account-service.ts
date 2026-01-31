@@ -55,7 +55,10 @@ export class AccountService {
       const input = await HookSystem.filter('account.beforeCreate', data);
 
       const newItem = await db.$transaction(async (tx) => {
-        const created = await tx.account.create({ data: input as any, select });
+        const created = await tx.account.create({
+          data: input as Prisma.AccountCreateInput,
+          select,
+        });
         await HookSystem.dispatch('account.created', {
           id: created.id,
           actorId: 'system',
@@ -84,7 +87,7 @@ export class AccountService {
       const updatedItem = await db.$transaction(async (tx) => {
         const updated = await tx.account.update({
           where: { id },
-          data: input as any,
+          data: input as Prisma.AccountUpdateInput,
           select,
         });
         await HookSystem.dispatch('account.updated', {

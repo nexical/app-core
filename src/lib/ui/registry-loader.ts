@@ -2,7 +2,7 @@ import type { ComponentType } from 'react';
 import { getRegistryModules } from '../core/glob-helper';
 
 export interface RegistryComponent {
-  component: ComponentType<any>; // ComponentType often needs any or a broad type for generic registry use
+  component: ComponentType<unknown>; // ComponentType often needs any or a broad type for generic registry use
   order: number;
   name: string;
 }

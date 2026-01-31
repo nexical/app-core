@@ -8,7 +8,7 @@ export class ResetPasswordAuthAction {
   public static async run(
     input: ResetPasswordDTO,
     context: APIContext,
-  ): Promise<ServiceResponse<any>> {
+  ): Promise<ServiceResponse<{ userId: string }>> {
     const token = String(input.token);
     const newPassword = String(input.password);
 

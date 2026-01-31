@@ -1,4 +1,10 @@
-import { type FileDefinition, type ClassDefinition, type MethodConfig } from '../types.js';
+import {
+  type FileDefinition,
+  type ClassDefinition,
+  type MethodConfig,
+  type ImportConfig,
+  type NodeContainer,
+} from '../types.js';
 import { BaseBuilder } from './base-builder.js';
 
 export class ActionBuilder extends BaseBuilder {
@@ -10,24 +16,24 @@ export class ActionBuilder extends BaseBuilder {
     super();
   }
 
-  protected getSchema(node?: any): FileDefinition {
+  protected getSchema(node?: NodeContainer): FileDefinition {
     // Check if class/method already exist
     let existingStatements: string[] | undefined;
     if (node && 'getClass' in node) {
       const cls = node.getClass(this.actionName);
       if (cls) {
-        console.log(`[ActionBuilder] Found existing class ${this.actionName}`);
+        console.info(`[ActionBuilder] Found existing class ${this.actionName}`);
         const method = cls.getMethod('run') || cls.getStaticMethod('run');
         if (method) {
-          console.log(
+          console.info(
             `[ActionBuilder] Found existing method 'run' (static: ${method.isStatic()}) in ${this.actionName}`,
           );
           existingStatements = [method.getBodyText() || ''];
         } else {
-          console.log(`[ActionBuilder] Method 'run' NOT found in ${this.actionName}`);
+          console.info(`[ActionBuilder] Method 'run' NOT found in ${this.actionName}`);
         }
       } else {
-        console.log(`[ActionBuilder] Class ${this.actionName} NOT found in file`);
+        console.info(`[ActionBuilder] Class ${this.actionName} NOT found in file`);
       }
     }
 
@@ -42,7 +48,7 @@ export class ActionBuilder extends BaseBuilder {
       ],
       statements: existingStatements || [
         // Default stub implementation
-        `return { success: true, data: {} as any };`,
+        `return { success: true, data: {} as unknown as ${this.outputType} };`,
       ],
     };
 
@@ -71,7 +77,7 @@ export class ActionBuilder extends BaseBuilder {
         ].includes(normalized);
       });
 
-    const imports: any[] = [
+    const imports: ImportConfig[] = [
       { moduleSpecifier: '@/types/service', namedImports: ['ServiceResponse'], isTypeOnly: true },
       { moduleSpecifier: 'astro', namedImports: ['APIContext'], isTypeOnly: true },
     ];

@@ -1,5 +1,9 @@
-import { SourceFile } from 'ts-morph';
-import { type FileDefinition, type ClassDefinition } from '../types.js';
+import {
+  type FileDefinition,
+  type ClassDefinition,
+  type NodeContainer,
+  type ImportConfig,
+} from '../types.js';
 import { Reconciler } from '../reconciler.js';
 
 export class PermissionBuilder {
@@ -22,9 +26,9 @@ export class PermissionBuilder {
           overwriteBody: false,
           isStatic: true,
           parameters: [
-            { name: 'context', type: 'any' },
-            { name: 'input', type: 'any', optional: true },
-          ], // TODO: Proper ApiContext type
+            { name: 'context', type: 'APIContext' },
+            { name: 'input', type: 'unknown', optional: true },
+          ],
           returnType: 'Promise<void>',
           statements: [
             {
@@ -41,13 +45,17 @@ export class PermissionBuilder {
       ],
     };
 
+    const imports: ImportConfig[] = [
+      { moduleSpecifier: 'astro', namedImports: ['APIContext'], isTypeOnly: true },
+    ];
+
     return {
-      imports: [],
+      imports,
       classes: [permissionClass],
     };
   }
 
-  ensure(sourceFile: SourceFile): void {
+  ensure(sourceFile: NodeContainer): void {
     Reconciler.reconcile(sourceFile, this.getSchema());
   }
 }

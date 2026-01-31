@@ -16,7 +16,7 @@ import { type User, type UpdateUserDTO } from '@modules/user-api/src/sdk';
  * Registry component for the user profile settings form.
  * Renders in the details panel.
  */
-export default function UserProfileForm(props: any) {
+export default function UserProfileForm(props: { [key: string]: unknown }) {
   const { t } = useTranslation();
   const { context } = useNavData();
   const user = context?.user as User;
@@ -54,12 +54,12 @@ export default function UserProfileForm(props: any) {
       try {
         const result = await api.user.updateMe({ ...data, id: user.id } as UpdateUserDTO);
         // Based on standard ServiceResponse pattern used in other components
-        if ((result as any).success) {
+        if (result.success) {
           setSuccess(t('user.registry.profile_form.success'));
           setPassword('');
           setConfirmPassword('');
         } else {
-          setError(t((result as any).error || 'user.registry.profile_form.error.unknown'));
+          setError(t(result.error || 'user.registry.profile_form.error.unknown'));
         }
       } catch (err: unknown) {
         const errorKey =

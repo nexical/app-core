@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { HeadRegistry } from '@/lib/registries/head-registry';
+import { HeadRegistry, type HeadEntry } from '@/lib/registries/head-registry';
 
 describe('HeadRegistry', () => {
   beforeEach(() => {
@@ -7,7 +7,7 @@ describe('HeadRegistry', () => {
   });
 
   it('should register and retrieve entries', () => {
-    const entry: any = { tag: 'meta', props: { name: 'test' } };
+    const entry: HeadEntry = { tag: 'meta', props: { name: 'test' } };
     HeadRegistry.register(entry);
 
     expect(HeadRegistry.getEntries()).toContain(entry);

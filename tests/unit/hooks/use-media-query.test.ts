@@ -4,7 +4,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { useMediaQuery } from '@/hooks/use-media-query';
 
 describe('useMediaQuery', () => {
-  const mockMatchMedia = (matches: boolean) => {
+  const mockMatchMedia = (matches: boolean): MediaQueryList => {
     const listeners = new Set<(ev: MediaQueryListEvent) => void>();
     return {
       matches,
@@ -12,17 +12,17 @@ describe('useMediaQuery', () => {
       onchange: null,
       addListener: vi.fn(), // Deprecated
       removeListener: vi.fn(), // Deprecated
-      addEventListener: vi.fn((type, listener) => {
+      addEventListener: vi.fn((type: string, listener: any) => {
         if (type === 'change') listeners.add(listener);
       }),
-      removeEventListener: vi.fn((type, listener) => {
+      removeEventListener: vi.fn((type: string, listener: any) => {
         if (type === 'change') listeners.delete(listener);
       }),
-      dispatchEvent: vi.fn((event) => {
-        listeners.forEach((l) => l(event));
+      dispatchEvent: vi.fn((event: Event) => {
+        listeners.forEach((l) => l(event as MediaQueryListEvent));
         return true;
       }),
-    };
+    } as unknown as MediaQueryList;
   };
 
   beforeEach(() => {
@@ -30,21 +30,21 @@ describe('useMediaQuery', () => {
   });
 
   it('should return the initial value from matchMedia', () => {
-    vi.mocked(matchMedia).mockReturnValue(mockMatchMedia(true) as any);
+    vi.mocked(matchMedia).mockReturnValue(mockMatchMedia(true));
     const { result } = renderHook(() => useMediaQuery('(min-width: 1024px)'));
     expect(result.current).toBe(true);
   });
 
   it('should update value when media query changes', () => {
     const mml = mockMatchMedia(false);
-    vi.mocked(matchMedia).mockReturnValue(mml as any);
+    vi.mocked(matchMedia).mockReturnValue(mml);
 
     const { result } = renderHook(() => useMediaQuery('(min-width: 1024px)'));
     expect(result.current).toBe(false);
 
     act(() => {
-      mml.matches = true;
-      mml.dispatchEvent({ matches: true } as any);
+      (mml as any).matches = true;
+      mml.dispatchEvent({ matches: true } as unknown as Event);
     });
 
     expect(result.current).toBe(true);
@@ -52,7 +52,7 @@ describe('useMediaQuery', () => {
 
   it('should cleanup listener on unmount', () => {
     const mml = mockMatchMedia(false);
-    vi.mocked(matchMedia).mockReturnValue(mml as any);
+    vi.mocked(matchMedia).mockReturnValue(mml);
 
     const { unmount } = renderHook(() => useMediaQuery('(min-width: 1024px)'));
     expect(mml.addEventListener).toHaveBeenCalledWith('change', expect.any(Function));

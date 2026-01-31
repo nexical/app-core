@@ -26,7 +26,7 @@ export class ZodSchemaGenerator {
     // Generate Enums
     if (definition.enums) {
       for (const [name, enumDef] of Object.entries(definition.enums)) {
-        statements.push(this.createZodEnum(name, (enumDef as any).values));
+        statements.push(this.createZodEnum(name, (enumDef as { values: string[] }).values));
       }
     }
 
@@ -76,7 +76,12 @@ export class ZodSchemaGenerator {
     const propertyAssignments: ts.PropertyAssignment[] = [];
 
     for (const [fieldName, fieldDef] of Object.entries(model.fields)) {
-      propertyAssignments.push(this.createZodField(fieldName, fieldDef as any));
+      propertyAssignments.push(
+        this.createZodField(
+          fieldName,
+          fieldDef as { type: string; isRequired?: boolean; isList?: boolean },
+        ),
+      );
     }
 
     return factory.createVariableStatement(

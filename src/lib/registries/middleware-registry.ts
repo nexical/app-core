@@ -1,6 +1,6 @@
 export interface ModuleMiddleware {
   publicRoutes?: string[];
-  onRequest?: (context: any, next: () => Promise<Response>) => Promise<Response | undefined>;
+  onRequest?: (context: unknown, next: () => Promise<Response>) => Promise<Response | undefined>;
 }
 
 /**
@@ -34,7 +34,7 @@ export async function getModuleMiddlewares(): Promise<ModuleMiddleware[]> {
   for (const mod of sortedModules) {
     // Construct the key that matches the glob pattern result
     const key = `/modules/${mod.name}/src/middleware.ts`;
-    const middlewareModule = globbedMiddlewares[key] as any;
+    const middlewareModule = globbedMiddlewares[key] as Record<string, unknown>;
 
     if (middlewareModule && middlewareModule.default) {
       middlewares.push(middlewareModule.default);

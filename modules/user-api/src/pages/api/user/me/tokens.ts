@@ -20,7 +20,7 @@ export const GET = defineApi(
     await ApiGuard.protect(context, 'member', combinedInput);
 
     // Inject userId from context for protected routes
-    const user = (context as any).user;
+    const user = context.locals?.actor;
     if (user && user.id) {
       Object.assign(combinedInput, { userId: user.id });
     }
@@ -88,7 +88,7 @@ export const POST = defineApi(
     await ApiGuard.protect(context, 'member', combinedInput);
 
     // Inject userId from context for protected routes
-    const user = (context as any).user;
+    const user = context.locals?.actor;
     if (user && user.id) {
       Object.assign(combinedInput, { userId: user.id });
     }

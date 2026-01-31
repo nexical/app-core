@@ -46,27 +46,30 @@ export class ModelParser {
     const rawModels: Record<string, RawModelConfig> = parsed.models || {};
     const rawEnums = parsed.enums || {};
 
-    const enums: EnumConfig[] = Object.entries(rawEnums).map(([name, values]: [string, any]) => {
-      let memberNames: string[] = [];
+    const enums: EnumConfig[] = Object.entries(rawEnums).map(
+      ([name, values]: [string, unknown]) => {
+        let memberNames: string[] = [];
 
-      if (Array.isArray(values)) {
-        memberNames = values;
-      } else if (typeof values === 'object' && values !== null) {
-        // Check if it has a 'values' property which is an array
-        if (Array.isArray(values.values)) {
-          memberNames = values.values;
-        } else {
-          // Fallback to keys if it's a record without 'values' array
-          memberNames = Object.keys(values);
+        if (Array.isArray(values)) {
+          memberNames = values;
+        } else if (typeof values === 'object' && values !== null) {
+          // Check if it has a 'values' property which is an array
+          const v = values as { values?: unknown[] };
+          if (Array.isArray(v.values)) {
+            memberNames = v.values.map(String);
+          } else {
+            // Fallback to keys if it's a record without 'values' array
+            memberNames = Object.keys(values);
+          }
         }
-      }
 
-      return {
-        name,
-        isExported: true,
-        members: memberNames.map((m) => ({ name: m, value: m })),
-      };
-    });
+        return {
+          name,
+          isExported: true,
+          members: memberNames.map((m) => ({ name: m, value: m })),
+        };
+      },
+    );
 
     const enumNames = new Set(Object.keys(rawEnums));
     const modelNames = new Set(Object.keys(rawModels));
@@ -78,7 +81,7 @@ export class ModelParser {
         db: config.db !== false,
         default: config.default === true,
         extended: config.extended === true,
-        actor: config.actor as any, // Cast to any to avoid strict "strategy required" check against optional YAML
+        actor: config.actor as ModelDef['actor'], // Cast to ModelDef['actor'] to avoid strict "strategy required" check against optional YAML
         fields: {},
         role: config.role,
         test: config.test,
@@ -103,11 +106,13 @@ export class ModelParser {
           isEnum,
           enumValues: isEnum
             ? (() => {
-                const val = rawEnums[field.type];
-                if (Array.isArray(val)) return val;
-                if (typeof val === 'object' && val !== null && Array.isArray(val.values))
-                  return val.values;
-                if (typeof val === 'object' && val !== null) return Object.keys(val);
+                const val = rawEnums[field.type] as unknown;
+                if (Array.isArray(val)) return val.map(String);
+                if (typeof val === 'object' && val !== null) {
+                  const v = val as { values?: unknown[] };
+                  if (Array.isArray(v.values)) return v.values.map(String);
+                  return Object.keys(val);
+                }
                 return [];
               })()
             : undefined,

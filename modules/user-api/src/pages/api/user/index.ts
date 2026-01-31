@@ -55,7 +55,7 @@ export const GET = defineApi(
       updatedAt: true,
     };
 
-    const actor = context.locals?.actor || (context as any).user;
+    const actor = context.locals?.actor;
     const result = await UserService.list({ where, take, skip, orderBy, select }, actor);
 
     if (!result.success) {
@@ -692,7 +692,7 @@ export const POST = defineApi(
       createdAt: true,
       updatedAt: true,
     };
-    const actor = context.locals?.actor || (context as any).user;
+    const actor = context.locals?.actor;
 
     const result = await UserService.create(validated, select, actor);
 

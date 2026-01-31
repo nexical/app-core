@@ -4,10 +4,10 @@ import { type APIContext, type AstroGlobal } from 'astro';
 export class IsMyself implements RolePolicy {
   async check(
     context: AstroGlobal | APIContext,
-    input: Record<string, any>,
-    data?: any,
+    input: Record<string, unknown>,
+    data?: unknown,
   ): Promise<void> {
-    const currentUser = context.locals?.actor || (context as any).user;
+    const currentUser = context.locals?.actor;
 
     if (!currentUser) {
       throw new Error('Unauthorized: Login required');
@@ -15,16 +15,18 @@ export class IsMyself implements RolePolicy {
 
     // 1. Check existing data (Post-fetch check)
     if (data) {
+      const record = data as { id?: string; userId?: string };
       // If checking a user record, id matches
-      if (data.id === currentUser.id) return;
+      if (record.id === currentUser.id) return;
       // If checking a resource (Session, etc), userId matches
-      if (data.userId === currentUser.id) return;
+      if (record.userId === currentUser.id) return;
     }
 
     // 2. Check input params (Pre-fetch check or filtered input)
     if (input) {
-      if (input.id === currentUser.id) return;
-      if (input.userId === currentUser.id) return;
+      const p = input as { id?: string; userId?: string };
+      if (p.id === currentUser.id) return;
+      if (p.userId === currentUser.id) return;
     }
 
     // Special case: /user/me alias often used

@@ -23,7 +23,7 @@ export default function UserProfile() {
   const { t } = useTranslation();
   const { context } = useNavData();
   const { setDetailPanel } = useShellStore();
-  const user = context?.user as any;
+  const user = context?.user as { name: string; email: string; role?: string } | undefined;
 
   if (!user) return null;
 

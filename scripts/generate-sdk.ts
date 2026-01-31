@@ -64,7 +64,7 @@ ${initializers}
 
   const outputPath = path.join(ROOT_DIR, 'packages/sdk/src/registry.generated.ts');
   await fs.writeFile(outputPath, content);
-  console.log(`Generated SDK registry at ${outputPath}`);
+  console.info(`Generated SDK registry at ${outputPath}`);
 }
 
 generate().catch(console.error);

@@ -18,15 +18,15 @@ class TestCommand extends BaseCommand {
 
 describe('BaseCommand', () => {
   let command: TestCommand;
-  let originalExit: any;
-  let originalEnv: any;
+  let originalExit: typeof process.exit;
+  let originalEnv: NodeJS.ProcessEnv;
 
   beforeEach(() => {
     vi.clearAllMocks();
     command = new TestCommand();
     originalExit = process.exit;
     originalEnv = { ...process.env };
-    process.exit = vi.fn() as any;
+    process.exit = vi.fn() as unknown as typeof process.exit;
     vi.spyOn(console, 'log').mockImplementation(() => {});
     vi.spyOn(console, 'error').mockImplementation(() => {});
   });
@@ -62,7 +62,7 @@ describe('BaseCommand', () => {
   });
 
   it('should show stack trace in debug mode', async () => {
-    process.env.DEBUG = 'true';
+    process.env['DEBUG'] = 'true';
     const cmd = command.getCommand();
     await cmd.parseAsync(['node', 'test.js', 'fail']);
     expect(process.exit).toHaveBeenCalledWith(1);

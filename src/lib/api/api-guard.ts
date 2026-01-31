@@ -9,8 +9,8 @@ export class ApiGuard {
   public static async protect(
     context: APIContext,
     roleName: string,
-    input: Record<string, any> = {},
-    data?: any,
+    input: Record<string, unknown> = {},
+    data?: unknown,
   ): Promise<void> {
     const policy = roleRegistry.get(roleName);
 

@@ -1,4 +1,4 @@
-import { type FileDefinition, type FunctionConfig } from '../types.js';
+import { type FileDefinition, type FunctionConfig, type NodeContainer } from '../types.js';
 import { BaseBuilder } from './base-builder.js';
 
 export class InitBuilder extends BaseBuilder {
@@ -6,7 +6,7 @@ export class InitBuilder extends BaseBuilder {
     super();
   }
 
-  protected getSchema(node?: any): FileDefinition {
+  protected getSchema(node?: NodeContainer): FileDefinition {
     if (this.type === 'server') {
       return this.getServerSchema(node);
     } else {
@@ -14,7 +14,7 @@ export class InitBuilder extends BaseBuilder {
     }
   }
 
-  private getServerSchema(node?: any): FileDefinition {
+  private getServerSchema(node?: NodeContainer): FileDefinition {
     const initFunc: FunctionConfig = {
       name: 'init',
       isExported: true,
@@ -25,7 +25,7 @@ export class InitBuilder extends BaseBuilder {
         `// 1. Auto-discover and Register Roles from src/roles/`,
         `const roleModules = import.meta.glob("./roles/*.ts", { eager: true });`,
         `for (const path in roleModules) {`,
-        `    const mod = roleModules[path] as any;`,
+        `    const mod = roleModules[path] as { [key: string]: unknown };`,
         `    const roleName = path.split("/").pop()?.replace(".ts", "");`,
         `    if (!roleName) continue;`,
         `    `,
@@ -42,7 +42,7 @@ export class InitBuilder extends BaseBuilder {
         `// 2. Auto-load all Hook definitions from src/hooks/`,
         `const hookModules = import.meta.glob("./hooks/*.ts", { eager: true });`,
         `for (const path in hookModules) {`,
-        `    const mod = hookModules[path] as any;`,
+        `    const mod = hookModules[path] as { init?: () => Promise<void> | void };`,
         `    if (typeof mod.init === "function") {`,
         `        await mod.init();`,
         `    }`,
@@ -59,14 +59,14 @@ export class InitBuilder extends BaseBuilder {
     };
   }
 
-  private getClientSchema(node?: any): FileDefinition {
+  private getClientSchema(node?: NodeContainer): FileDefinition {
     const initFunc: FunctionConfig = {
       name: 'init',
       isExported: true,
       isAsync: true,
       overwriteBody: true,
       parameters: [],
-      statements: [`console.log("[Client] Initializing module...");`],
+      statements: [`console.info("[Client] Initializing module...");`],
     };
 
     return {

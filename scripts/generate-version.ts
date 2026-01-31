@@ -30,7 +30,7 @@ function getVersionFileContent(): string | null {
 }
 
 async function generateVersion() {
-  console.log('🚀 Generating version file...');
+  console.info('🚀 Generating version file...');
 
   const packageVersion = getPackageVersion();
   const versionFileContent = getVersionFileContent();
@@ -38,7 +38,7 @@ async function generateVersion() {
   // Priority: VERSION file > package.json
   const appVersion = versionFileContent || packageVersion;
 
-  console.log(
+  console.info(
     `   - Detected version: ${appVersion} (Source: ${versionFileContent ? 'VERSION file' : 'package.json'})`,
   );
 
@@ -48,7 +48,7 @@ export const APP_VERSION = "${appVersion}";
 `;
 
   fs.writeFileSync(versionFilePath, content);
-  console.log(`✅ Generated ${versionFilePath}`);
+  console.info(`✅ Generated ${versionFilePath}`);
 }
 
 generateVersion().catch((error) => {

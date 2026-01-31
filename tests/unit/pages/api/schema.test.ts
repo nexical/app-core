@@ -1,7 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { GET } from '../../../../src/pages/api/schema';
-import { ModuleDiscovery } from '../../../../src/lib/modules/module-discovery';
+import { ModuleDiscovery, type Module } from '../../../../src/lib/modules/module-discovery';
 import { generateDocs } from '../../../../src/lib/api/api-docs';
+import type { APIContext } from 'astro';
 
 // Mock dependencies
 vi.mock('../../../../src/lib/modules/module-discovery', () => ({
@@ -30,9 +31,9 @@ describe('API Schema Endpoint', () => {
   it('generates openapi schema correctly', async () => {
     // Setup mocks
     const mockModules = [{ id: 'mod1' }, { id: 'mod2' }];
-    vi.mocked(ModuleDiscovery.loadModules).mockResolvedValue(mockModules as any);
+    vi.mocked(ModuleDiscovery.loadModules).mockResolvedValue(mockModules as unknown as Module[]);
 
-    vi.mocked(generateDocs).mockImplementation(async (module: any) => {
+    vi.mocked(generateDocs).mockImplementation(async (module: Module) => {
       if (module.id === 'mod1') return { '/path1': { get: {} } };
       if (module.id === 'mod2') return { '/path2': { post: {} } };
       return {};
@@ -42,9 +43,9 @@ describe('API Schema Endpoint', () => {
       locals: {
         actor: { id: 'user1' },
       },
-    };
+    } as unknown as APIContext;
 
-    const response = await GET(mockContext as any);
+    const response = await GET(mockContext);
 
     expect(response).toBeInstanceOf(Response);
     expect(response.headers.get('Content-Type')).toBe('application/json');

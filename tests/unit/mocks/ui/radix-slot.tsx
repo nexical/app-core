@@ -1,15 +1,18 @@
 import React from 'react';
 
-export const Slot = React.forwardRef<HTMLElement, any>(({ children, ...props }, ref) => {
+type SlotProps = {
+  children?: React.ReactNode;
+} & React.HTMLAttributes<HTMLElement>;
+
+export const Slot = React.forwardRef<HTMLElement, SlotProps>(({ children, ...props }, ref) => {
   if (React.isValidElement(children)) {
+    const childProps = children.props as React.HTMLAttributes<HTMLElement>;
     return React.cloneElement(children, {
       ...props,
-      ...(children.props as any),
+      ...childProps,
       ref,
-      className: [(props as any).className, (children.props as any).className]
-        .filter(Boolean)
-        .join(' '),
-    });
+      className: [props.className, childProps.className].filter(Boolean).join(' '),
+    } as React.Attributes & SlotProps);
   }
   return null;
 });

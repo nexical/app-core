@@ -1,9 +1,10 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Logger } from '../../../../src/lib/core/logger';
+import type { Mock } from 'vitest';
 
 describe('Core Logger', () => {
   beforeEach(() => {
-    vi.spyOn(console, 'log').mockImplementation(() => {});
+    vi.spyOn(console, 'info').mockImplementation(() => {});
     vi.spyOn(console, 'error').mockImplementation(() => {});
     vi.spyOn(console, 'warn').mockImplementation(() => {});
     vi.spyOn(console, 'debug').mockImplementation(() => {});
@@ -11,7 +12,7 @@ describe('Core Logger', () => {
 
   it('should log info messages as JSON', () => {
     Logger.info('test message', { foo: 'bar' });
-    expect(console.log).toHaveBeenCalledWith(
+    expect(console.info).toHaveBeenCalledWith(
       JSON.stringify({ level: 'info', message: 'test message', foo: 'bar' }),
     );
   });
@@ -19,7 +20,7 @@ describe('Core Logger', () => {
   it('should log error messages with error object as JSON', () => {
     const error = new Error('boom');
     Logger.error('error message', error, { extra: 'data' });
-    const call = (console.error as any).mock.calls[0][0];
+    const call = (console.error as Mock).mock.calls[0][0] as string;
     const parsed = JSON.parse(call);
 
     expect(parsed.level).toBe('error');

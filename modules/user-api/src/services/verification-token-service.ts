@@ -69,7 +69,7 @@ export class VerificationTokenService {
 
       const newItem = await db.$transaction(async (tx) => {
         const created = await tx.verificationToken.create({
-          data: input as any,
+          data: input as Prisma.VerificationTokenCreateInput,
           select,
         });
         await HookSystem.dispatch('verificationToken.created', {
@@ -103,7 +103,7 @@ export class VerificationTokenService {
       const updatedItem = await db.$transaction(async (tx) => {
         const updated = await tx.verificationToken.update({
           where: { id },
-          data: input as any,
+          data: input as Prisma.VerificationTokenUpdateInput,
           select,
         });
         await HookSystem.dispatch('verificationToken.updated', {

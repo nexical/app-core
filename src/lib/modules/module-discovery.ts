@@ -7,7 +7,7 @@ export type ModulePhase = 'core' | 'provider' | 'feature' | 'integration' | 'the
 export interface ModuleConfig {
   type?: ModulePhase;
   order?: number;
-  [key: string]: any;
+  [key: string]: unknown;
 }
 
 export interface LoadedModule {
@@ -49,7 +49,7 @@ export class ModuleDiscovery {
 
       if (fs.existsSync(configPath)) {
         try {
-          const mod = (await jiti.import(configPath)) as any;
+          const mod = (await jiti.import(configPath)) as { default?: ModuleConfig };
           config = mod.default || mod || {};
         } catch (e) {
           console.warn(`[ModuleDiscovery] Failed to load config for ${name}:`, e);

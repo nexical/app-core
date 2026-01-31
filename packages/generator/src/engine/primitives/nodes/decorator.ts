@@ -3,28 +3,23 @@ import { BasePrimitive } from '../core/base-primitive.js';
 import { type ValidationResult } from '../contracts.js';
 import { type DecoratorConfig } from '../../types.js';
 
-// DecoratableNode is a union of all nodes that can have decorators.
-
 export class DecoratorPrimitive extends BasePrimitive<Decorator, DecoratorConfig> {
   find(parent: Node): Decorator | undefined {
     if (!Node.isDecoratable(parent)) return undefined;
-    // Cast or assume parent has getDecorator.
-    return (parent as any).getDecorator((d: Decorator) => d.getName() === this.config.name);
+    return (
+      parent as unknown as { getDecorator(cb: (d: Decorator) => boolean): Decorator | undefined }
+    ).getDecorator((d: Decorator) => d.getName() === this.config.name);
   }
 
   create(parent: Node): Decorator {
-    // addDecorator is specific, assume parent is correct type if this primitive is called.
-    // Or check Node.isDecoratable(parent)
-    // Note: ts-morph addDecorator uses structure.
-    return (parent as any).addDecorator(this.toStructure());
+    return (
+      parent as unknown as { addDecorator(structure: OptionalKind<DecoratorStructure>): Decorator }
+    ).addDecorator(this.toStructure());
   }
 
   update(node: Decorator) {
     const structure = this.toStructure();
 
-    // Check arguments drift
-    // Decorator arguments can be strings.
-    // We compare the text of arguments.
     const currentArgs = node.getArguments().map((a) => a.getText());
     const targetArgs = (structure.arguments as string[]) || [];
 
@@ -33,19 +28,6 @@ export class DecoratorPrimitive extends BasePrimitive<Decorator, DecoratorConfig
       currentArgs.some((arg, i) => arg !== targetArgs[i]);
 
     if (isArgsDrift) {
-      // Simplest way is to remove argument and add new ones or mostly setArguments (if available)
-      // ts-morph node.removeArgument is complex.
-      // node.setArguments exists? No.
-      // But we can removing the decorator and re-adding, OR iterate args.
-      // Re-adding is safer for arguments specifically as they are complex expressions.
-      // However, that loses the specific node identity if we were caching it.
-      // But since we are inside 'update', we should try to be granular if possible.
-      // Actually, remove and re-add IS what the old helper did.
-
-      // But avoiding full removal preserves position?
-      // Not really for decorators (list order matter).
-
-      // Let's use the standard "replace" pattern for complex internals
       node.replaceWithText(this.generateText());
     }
   }
@@ -53,9 +35,6 @@ export class DecoratorPrimitive extends BasePrimitive<Decorator, DecoratorConfig
   validate(node: Decorator): ValidationResult {
     const issues: string[] = [];
 
-    // Name check is implicit by find()
-
-    // Args check
     const currentArgs = node.getArguments().map((a) => a.getText());
     const targetArgs = this.config.arguments || [];
 
@@ -64,7 +43,6 @@ export class DecoratorPrimitive extends BasePrimitive<Decorator, DecoratorConfig
         `Decorator '@${this.config.name}' argument count mismatch. Expected: ${targetArgs.length}, Found: ${currentArgs.length}`,
       );
     } else {
-      // Check content
       currentArgs.forEach((arg, i) => {
         if (arg !== targetArgs[i]) {
           issues.push(

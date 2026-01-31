@@ -3,6 +3,7 @@ import {
   type FileDefinition,
   type VariableConfig,
   type FunctionConfig,
+  type NodeContainer,
 } from '../types.js';
 import { BaseBuilder } from './base-builder.js';
 
@@ -11,7 +12,7 @@ export class FactoryBuilder extends BaseBuilder {
     super();
   }
 
-  protected getSchema(node?: any): FileDefinition {
+  protected getSchema(node?: NodeContainer): FileDefinition {
     const factoriesBody: string[] = [];
 
     for (const model of this.models) {

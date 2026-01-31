@@ -71,7 +71,7 @@ export class PersonalAccessTokenService {
 
       const newItem = await db.$transaction(async (tx) => {
         const created = await tx.personalAccessToken.create({
-          data: input as any,
+          data: input as Prisma.PersonalAccessTokenCreateInput,
           select,
         });
         await HookSystem.dispatch('personalAccessToken.created', {
@@ -105,7 +105,7 @@ export class PersonalAccessTokenService {
       const updatedItem = await db.$transaction(async (tx) => {
         const updated = await tx.personalAccessToken.update({
           where: { id },
-          data: input as any,
+          data: input as Prisma.PersonalAccessTokenUpdateInput,
           select,
         });
         await HookSystem.dispatch('personalAccessToken.updated', {

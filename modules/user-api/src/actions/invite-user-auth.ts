@@ -26,10 +26,10 @@ export class InviteUserAuthAction {
     const expires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
     try {
-      const invitation = await db.invitation.upsert({
+      const invitation = (await db.invitation.upsert({
         where: { email },
         update: { token, role, expires },
-        create: { email, token, role, expires } as any,
+        create: { email, token, role, expires },
         // We return the created invitation to match ServiceResponse<Invitation>
         select: {
           id: true,
@@ -38,8 +38,8 @@ export class InviteUserAuthAction {
           token: true,
           expires: true,
           createdAt: true,
-        } as any, // Cast because Select subset isn't strictly Invitation type, but sufficient for now or we fetch fresh.
-      });
+        },
+      })) as unknown as Invitation;
 
       // Dispatch event to trigger email
       await HookSystem.dispatch('invitation.created', {
@@ -49,7 +49,7 @@ export class InviteUserAuthAction {
         role: invitation.role,
       });
 
-      return { success: true, data: invitation as unknown as Invitation };
+      return { success: true, data: invitation };
     } catch (error: unknown) {
       console.error('Invite Error:', error);
       return { success: false, error: 'user.service.error.invite_failed' };

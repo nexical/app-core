@@ -66,7 +66,7 @@ export class MethodPrimitive extends BasePrimitive<MethodDeclaration, MethodConf
         // Type check (ignoring whitespace and delimiters for improved stability)
         const curType = cur.getTypeNode()?.getText() || 'any'; // fallback if implicit
         if (Normalizer.normalizeType(curType) !== Normalizer.normalizeType(neuType)) {
-          console.log(
+          console.info(
             `[MethodPrimitive] Param mismatch for ${this.config.name}: '${curType}' != '${neuType}'`,
           );
           paramsChanged = true;
@@ -234,7 +234,7 @@ export class MethodPrimitive extends BasePrimitive<MethodDeclaration, MethodConf
       // Logic for other statement types (reused conceptually from FunctionPrimitive)
       // Ideally we extract this to a shared 'StatementReconciler' but for now duplication is safer than major refactor
 
-      if ((stmtConfig as any).isDefault === false) {
+      if ((stmtConfig as { isDefault?: boolean }).isDefault === false) {
         // handle enforced updates
       }
 

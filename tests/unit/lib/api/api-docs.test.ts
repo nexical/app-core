@@ -70,7 +70,7 @@ describe('api-docs and defineApi', () => {
         { error: new Error('Access denied'), expected: 403 },
         { error: new Error('Not a member'), expected: 403 },
         { error: new Error('Not found items'), expected: 404 },
-        { error: { name: 'ZodError', message: 'Invalid' }, expected: 400 },
+        { error: Object.assign(new Error('Invalid'), { name: 'ZodError' }), expected: 400 },
         { error: new Error('already exists'), expected: 400 },
         { error: new Error('mismatch detected'), expected: 400 },
         { error: new Error('Generic'), expected: 500 },
@@ -119,8 +119,9 @@ describe('api-docs and defineApi', () => {
       const docs = await gen({ name: 'test-api', path: '' });
 
       expect(docs['/items']).toBeDefined();
-      expect(docs['/items'].get.summary).toBe('Get list');
-      expect(docs['/items'].post).toBeDefined();
+      const items = docs['/items'] as Record<string, any>;
+      expect(items.get.summary).toBe('Get list');
+      expect(items.post).toBeDefined();
       expect(docs['/users/{id}/profile']).toBeDefined();
     });
 
@@ -162,16 +163,18 @@ describe('api-docs and defineApi', () => {
 
       // 1. No actor -> show all
       const publicDocs = await gen({ name: 'test-api', path: '' });
-      expect(publicDocs['/admin'].get).toBeDefined();
-      expect(publicDocs['/admin'].post).toBeDefined();
+      const pubAdmin = publicDocs['/admin'] as Record<string, any>;
+      expect(pubAdmin.get).toBeDefined();
+      expect(pubAdmin.post).toBeDefined();
 
-      // 2. Actor with visibility function
       const adminDocs = await gen({ name: 'test-api', path: '' }, { isAdmin: true });
-      expect(adminDocs['/admin'].get).toBeDefined();
+      const admAdmin = adminDocs['/admin'] as Record<string, any>;
+      expect(admAdmin.get).toBeDefined();
 
       const userDocs = await gen({ name: 'test-api', path: '' }, { isAdmin: false });
-      expect(userDocs['/admin'].get).toBeUndefined();
-      expect(userDocs['/admin'].post).toBeDefined(); // visibility is undefined -> true
+      const usrAdmin = userDocs['/admin'] as Record<string, any>;
+      expect(usrAdmin.get).toBeUndefined();
+      expect(usrAdmin.post).toBeDefined(); // visibility is undefined -> true
     });
   });
 });

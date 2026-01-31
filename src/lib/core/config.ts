@@ -14,7 +14,10 @@ export const getProcessEnv = (key: string) => {
 
 export function createConfig<T extends ZodRawShape>(schema: ZodObject<T>) {
   const processEnv: Record<string, string | undefined> = {};
-  const globalConfig = typeof window !== 'undefined' ? (window as any).__APP_CONFIG__ : undefined;
+  const globalConfig =
+    typeof window !== 'undefined'
+      ? (window as unknown as { __APP_CONFIG__?: Record<string, string> }).__APP_CONFIG__
+      : undefined;
 
   for (const key in schema.shape) {
     if (globalConfig && key in globalConfig) {
@@ -72,12 +75,12 @@ const coreSchema = z.object({
 export const config = createConfig(coreSchema);
 
 export const publicConfig = (() => {
-  const safeConfig: Record<string, any> = {};
+  const safeConfig: Record<string, unknown> = {};
 
   // 1. Auto-discover PUBLIC_ keys from parsed config (Internal Defaults)
   for (const key of Object.keys(config)) {
     if (key.startsWith('PUBLIC_')) {
-      safeConfig[key] = (config as any)[key];
+      safeConfig[key] = (config as Record<string, unknown>)[key];
     }
   }
 

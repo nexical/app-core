@@ -84,5 +84,5 @@ export abstract class BaseCommand {
   }
 
   // Abstract run method that must be implemented by subclasses
-  abstract run(...args: any[]): Promise<void>;
+  abstract run(...args: unknown[]): Promise<void>;
 }

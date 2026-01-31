@@ -15,7 +15,7 @@ export default (): AstroIntegration => {
         const coreStylesPath = path.resolve(process.cwd(), 'src/styles/styles.css');
         if (fs.existsSync(coreStylesPath)) {
           injectScript('page', `import "${coreStylesPath}";`);
-          console.log(`[module-styles] Injected Core CSS from src/styles/styles.css`);
+          console.info(`[module-styles] Injected Core CSS from src/styles/styles.css`);
         }
 
         if (!fs.existsSync(MODULES_DIR)) return;
@@ -28,7 +28,7 @@ export default (): AstroIntegration => {
             // Inject the CSS file directly into the client-side head via a script import
             // This ensures Vite handles the CSS correctly with hot-reloading
             injectScript('page', `import "${stylesPath}";`);
-            console.log(`[module-styles] Injected CSS from ${moduleName}`);
+            console.info(`[module-styles] Injected CSS from ${moduleName}`);
           }
         }
       },

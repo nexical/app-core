@@ -56,7 +56,7 @@ export class InvitationService {
 
       const newItem = await db.$transaction(async (tx) => {
         const created = await tx.invitation.create({
-          data: input as any,
+          data: input as Prisma.InvitationCreateInput,
           select,
         });
         await HookSystem.dispatch('invitation.created', {
@@ -90,7 +90,7 @@ export class InvitationService {
       const updatedItem = await db.$transaction(async (tx) => {
         const updated = await tx.invitation.update({
           where: { id },
-          data: input as any,
+          data: input as Prisma.InvitationUpdateInput,
           select,
         });
         await HookSystem.dispatch('invitation.updated', {

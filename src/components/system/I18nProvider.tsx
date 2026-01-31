@@ -6,7 +6,7 @@ declare global {
   interface Window {
     __I18N_DATA__?: {
       language: string;
-      store: Record<string, any>;
+      store: Record<string, unknown>;
       availableLanguages: string[];
     };
   }
@@ -15,7 +15,7 @@ declare global {
 interface I18nProviderProps {
   children: React.ReactNode;
   initialLanguage?: string;
-  initialStore?: Record<string, any>;
+  initialStore?: Record<string, unknown>;
   availableLanguages?: string[];
 }
 

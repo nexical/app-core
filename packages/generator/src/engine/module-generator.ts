@@ -103,7 +103,7 @@ export abstract class ModuleGenerator {
     for (const file of this.project.getSourceFiles()) {
       const filePath = file.getFilePath();
       const inSet = this.generatedFiles.has(filePath);
-      const forgotten = (file as any).wasForgotten?.() || false;
+      const forgotten = (file as unknown as { wasForgotten(): boolean }).wasForgotten?.() || false;
 
       console.log(
         `[ModuleGenerator] [PROJECT_FILE] ${filePath} | IN_SET: ${inSet} | FORGOTTEN: ${forgotten}`,

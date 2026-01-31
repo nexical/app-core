@@ -13,7 +13,7 @@ export class CreateTokenUserAction {
   ): Promise<ServiceResponse<CreateTokenResponseDTO>> {
     let userId = input.userId;
     // Logic update: session middleware might not set actorType on locals root, but actor object is present.
-    const locals = context.locals as any;
+    const locals = context.locals;
     if (!userId && locals.actor && locals.actor.id) {
       userId = locals.actor.id;
     }

@@ -27,7 +27,7 @@ const TARGET_THEME_PATH = path.join(ROOT_DIR, 'src/styles/theme.css');
  * 2. Any active module that exports a `theme.css`
  */
 function generateTheme() {
-  console.log('🎨 Generating Dynamic Theme System (Import Strategy)...');
+  console.info('🎨 Generating Dynamic Theme System (Import Strategy)...');
 
   // 1. Check Base Theme existence
   const baseThemePath = path.join(SRC_STYLES_DIR, 'theme.base.css');
@@ -48,7 +48,7 @@ function generateTheme() {
   if (themeModule) {
     const moduleThemePath = path.join(ROOT_DIR, 'modules', themeModule, 'theme.css');
     if (fs.existsSync(moduleThemePath)) {
-      console.log(`✅ Linking App Theme Module: ${themeModule}`);
+      console.info(`✅ Linking App Theme Module: ${themeModule}`);
 
       // Calculate relative path from src/styles/theme.css to modules/{name}/theme.css
       // src/styles is 2 levels deep from root.
@@ -58,12 +58,12 @@ function generateTheme() {
       console.warn(`⚠️ Theme module '${themeModule}' specified but 'theme.css' not found.`);
     }
   } else {
-    console.log('ℹ️ Using Default Base Theme only.');
+    console.info('ℹ️ Using Default Base Theme only.');
   }
 
   // 3. Write Final File
   fs.writeFileSync(TARGET_THEME_PATH, finalContent);
-  console.log(`✨ Generated theme.css with imports for: ${themeModule || 'Default'}`);
+  console.info(`✨ Generated theme.css with imports for: ${themeModule || 'Default'}`);
 }
 
 generateTheme();

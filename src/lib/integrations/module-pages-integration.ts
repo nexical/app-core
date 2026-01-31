@@ -51,7 +51,9 @@ export default (): AstroIntegration => {
                     pattern: routePattern,
                     entrypoint: filePath,
                   });
-                  console.log(`[module-pages] Injected route: ${routePattern} from ${module.name}`);
+                  console.info(
+                    `[module-pages] Injected route: ${routePattern} from ${module.name}`,
+                  );
                 }
               }
             };

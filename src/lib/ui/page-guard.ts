@@ -1,9 +1,17 @@
-import type { AstroGlobal } from 'astro';
-import { roleRegistry } from '../registries/role-registry';
+import type { AstroGlobal, APIContext } from 'astro';
+import { roleRegistry, type RolePolicy } from '../registries/role-registry';
 
 export interface PagePermission {
-  check(context: AstroGlobal, input?: any): Promise<void>;
-  redirect?(context: AstroGlobal, input?: any): Promise<Response | undefined>;
+  check(
+    context: AstroGlobal | APIContext,
+    input?: Record<string, unknown>,
+    data?: unknown,
+  ): Promise<void>;
+  redirect?(
+    context: AstroGlobal | APIContext,
+    input?: Record<string, unknown>,
+    data?: unknown,
+  ): Promise<Response | undefined>;
 }
 
 export class PageGuard {
@@ -11,12 +19,12 @@ export class PageGuard {
    * Enforces a role check. If failed, attempts to call the Role's redirect method.
    */
   public static async protect(
-    context: AstroGlobal,
-    RoleClassOrName: any | string,
-    input: Record<string, any> = {},
-    data?: any,
+    context: AstroGlobal | APIContext,
+    RoleClassOrName: PagePermission | RolePolicy | string,
+    input: Record<string, unknown> = {},
+    data?: unknown,
   ): Promise<Response | undefined | void> {
-    let RoleClass = RoleClassOrName;
+    let RoleClass: PagePermission | RolePolicy = RoleClassOrName as PagePermission | RolePolicy;
 
     if (typeof RoleClassOrName === 'string') {
       const policy = roleRegistry.get(RoleClassOrName);
@@ -34,7 +42,11 @@ export class PageGuard {
     } catch (error) {
       // If the role class has a specific redirect strategy, use it
       if (RoleClass.redirect) {
-        return RoleClass.redirect(context, input, data);
+        const result = await RoleClass.redirect(context, input, data);
+        if (typeof result === 'string') {
+          return context.redirect(result);
+        }
+        return result;
       }
 
       // Fallback default: If "Unauthorized", redirect to login
@@ -43,7 +55,7 @@ export class PageGuard {
       }
 
       // Fallback default: Forbidden
-      return context.redirect('/?error=forbidden');
+      return (context as any).redirect('/?error=forbidden');
     }
   }
 }

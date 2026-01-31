@@ -69,7 +69,7 @@ export class PasswordResetTokenService {
 
       const newItem = await db.$transaction(async (tx) => {
         const created = await tx.passwordResetToken.create({
-          data: input as any,
+          data: input as Prisma.PasswordResetTokenCreateInput,
           select,
         });
         await HookSystem.dispatch('passwordResetToken.created', {
@@ -103,7 +103,7 @@ export class PasswordResetTokenService {
       const updatedItem = await db.$transaction(async (tx) => {
         const updated = await tx.passwordResetToken.update({
           where: { id },
-          data: input as any,
+          data: input as Prisma.PasswordResetTokenUpdateInput,
           select,
         });
         await HookSystem.dispatch('passwordResetToken.updated', {

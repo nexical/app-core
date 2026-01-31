@@ -3,16 +3,16 @@ import type { ApiClient } from '@tests/integration/lib/client';
 import crypto from 'node:crypto';
 
 export const actors = {
-  user: async (client: ApiClient, params: any = {}) => {
+  user: async (client: ApiClient, params: Record<string, unknown> = {}) => {
     let actor;
     if (params.id) {
       actor = await Factory.prisma.user.findUnique({
-        where: { id: params.id },
+        where: { id: params.id as string },
       });
     } else if (params.email) {
       // Support email lookup if available
       actor = await Factory.prisma.user.findFirst({
-        where: { email: params.email },
+        where: { email: params.email as string },
       });
     }
 

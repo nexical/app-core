@@ -85,8 +85,9 @@ function runAgent(agentName: string, agentFile: string, args: Record<string, str
   try {
     // Inherit stdio so logs stream to user
     execSync(cmd, { stdio: 'inherit' });
-  } catch (error: any) {
-    throw new Error(`Agent ${agentName} failed execution: ${error.message}`);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`Agent ${agentName} failed execution: ${message}`);
   }
 }
 
@@ -100,7 +101,7 @@ function checkFileExists(filePath: string, stepName: string): string {
 // --- Pipeline Stages ---
 
 function stageAuditor(target: Target): string {
-  console.log(`\uD83D\uDD75\ufe0f  Auditing ${target.name}...`);
+  console.info(`\uD83D\uDD75\ufe0f  Auditing ${target.name}...`);
   const outputFile = path.join(TMP_DIR, `${target.name.replace(/\s+/g, '-')}-canon.json`);
 
   // Remove stale file
@@ -118,7 +119,7 @@ function stageAuditor(target: Target): string {
 }
 
 function stageCritic(target: Target, canonFile: string): string {
-  console.log(`\u2696\ufe0f  Critiquing ${target.name}...`);
+  console.info(`\u2696\ufe0f  Critiquing ${target.name}...`);
   const outputFile = path.join(TMP_DIR, `${target.name.replace(/\s+/g, '-')}-drift.md`);
 
   const skillPath = target.skillPath;
@@ -145,7 +146,7 @@ function stageInstructor(
   reportFile: string,
   feedbackFile?: string,
 ) {
-  console.log(`\u270d\ufe0f  Rewriting ${target.name}...`);
+  console.info(`\u270d\ufe0f  Rewriting ${target.name}...`);
   const skillPath = target.skillPath;
   const docPath = path.join(skillPath, 'SKILL.md');
 
@@ -163,7 +164,7 @@ function stageInstructor(
   };
 
   if (feedbackFile) {
-    console.log(`  \u21aa With Gauntlet Feedback: ${feedbackFile}`);
+    console.info(`  \u21aa With Gauntlet Feedback: ${feedbackFile}`);
     args.gauntlet_report_file = feedbackFile;
   }
 
@@ -174,7 +175,7 @@ function stageInstructor(
 }
 
 function stageGauntlet(target: Target): string {
-  console.log(`\uD83E\uDDE4  Verifying ${target.name}...`);
+  console.info(`\uD83E\uDDE4  Verifying ${target.name}...`);
   const statusFile = path.join(TMP_DIR, `${target.name.replace(/\s+/g, '-')}-status.txt`);
 
   const skillPath = target.skillPath;
@@ -196,7 +197,7 @@ function stageGauntlet(target: Target): string {
     // console.error(status); // Optional: print full status
     return status;
   } else {
-    console.log(`\u2705  Gauntlet Check PASSED`);
+    console.info(`\u2705  Gauntlet Check PASSED`);
     return 'PASSED';
   }
 }
@@ -226,15 +227,15 @@ async function main() {
   // Filter out completed targets
   const targets = allTargets.filter((t) => !completedTargets.includes(t.name));
 
-  console.log(`\uD83D\uDE80 Starting Skill Refinement Loop.`);
-  console.log(
+  console.info(`\uD83D\uDE80 Starting Skill Refinement Loop.`);
+  console.info(
     `Total Skills: ${allTargets.length} | Completed: ${completedTargets.length} | Remaining: ${targets.length}`,
   );
-  console.log(`Models: [${MODELS}]`);
+  console.info(`Models: [${MODELS}]`);
 
   for (const target of targets) {
-    console.log(`\n--- Refinement Target: ${target.name} ---`);
-    console.log(`Truth Path: ${target.truthPath}`);
+    console.info(`\n--- Refinement Target: ${target.name} ---`);
+    console.info(`Truth Path: ${target.truthPath}`);
     try {
       // 1. Auditor
       const canonFile = stageAuditor(target);
@@ -260,7 +261,7 @@ async function main() {
 
         attempts++;
         if (attempts < MAX_RETRIES) {
-          console.log(
+          console.info(
             `\u26A0\ufe0f  Gauntlet Failed (Attempt ${attempts}/${MAX_RETRIES}). Looping back to Instructor...`,
           );
 
@@ -276,13 +277,14 @@ async function main() {
         console.error(`\u274C  Final: ${target.name} FAILED after ${MAX_RETRIES} attempts.`);
         // We do NOT mark as completed if failed
       } else {
-        console.log(`\u2728  Final: ${target.name} REFINED successfully.`);
+        console.info(`\u2728  Final: ${target.name} REFINED successfully.`);
         completedTargets.push(target.name);
         saveState(completedTargets);
       }
-    } catch (error: any) {
-      console.error(`\uD83D\uDCA5 Error processing ${target.name}:`, error.message);
-      if (error.message.includes('429') || error.message.includes('exhausted')) {
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error(`\uD83D\uDCA5 Error processing ${target.name}:`, message);
+      if (message.includes('429') || message.includes('exhausted')) {
         console.error('Capacity exhausted. Exiting to preserve state.');
         process.exit(1);
       }
@@ -291,10 +293,10 @@ async function main() {
 
   // If all done, cleanup
   if (completedTargets.length === allTargets.length) {
-    console.log(`\n\u2728 All targets successfully processed. Cleaning up state.`);
+    console.info(`\n\u2728 All targets successfully processed. Cleaning up state.`);
     if (fs.existsSync(STATE_FILE)) fs.unlinkSync(STATE_FILE);
   } else {
-    console.log(
+    console.info(
       `\n\u23F8  Loop finished. ${completedTargets.length}/${allTargets.length} completed.`,
     );
   }

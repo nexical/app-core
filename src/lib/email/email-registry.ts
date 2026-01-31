@@ -17,7 +17,7 @@ export class EmailRegistry {
    */
   static register(id: string, component: React.ComponentType<any>) {
     this.templates.set(id, component);
-    console.log(`[EmailRegistry] Registered template: ${id}`);
+    console.info(`[EmailRegistry] Registered template: ${id}`);
   }
 
   /**
@@ -36,11 +36,11 @@ export class EmailRegistry {
    * @param id - The template ID.
    * @param props - Props to pass to the component.
    */
-  static async render(id: string, props: any): Promise<string> {
+  static async render(id: string, props: unknown): Promise<string> {
     const Component = this.get(id);
     if (!Component) {
       throw new Error(`Email template not found: ${id}`);
     }
-    return render(React.createElement(Component, props));
+    return render(React.createElement(Component, props as any));
   }
 }

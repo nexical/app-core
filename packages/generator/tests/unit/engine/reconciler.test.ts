@@ -103,7 +103,7 @@ describe('Reconciler', () => {
   it('should reconcile raw statements', () => {
     const definition: FileDefinition = {
       statements: ['console.log("hello");'],
-    } as any;
+    };
 
     Reconciler.reconcile(sourceFile, definition);
     expect(sourceFile.getFullText()).toContain('console.log("hello");');
@@ -127,7 +127,7 @@ describe('Reconciler', () => {
 
   it('should handle errors in reconcile', () => {
     const definition: FileDefinition = {
-      classes: [{ name: 'TestClass', properties: [null as any] }],
+      classes: [{ name: 'TestClass', properties: [null as unknown as any] }],
     };
 
     expect(() => Reconciler.reconcile(sourceFile, definition)).toThrow(/Failed to reconcile file/);

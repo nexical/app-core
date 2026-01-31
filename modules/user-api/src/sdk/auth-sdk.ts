@@ -18,7 +18,7 @@ import type {
 export class AuthSDK extends BaseResource {
   public async list(params?: {
     search?: string;
-    filters?: Record<string, any>;
+    filters?: Record<string, unknown>;
   }): Promise<{ data: Auth[]; meta: { total: number } }> {
     const query = this.buildQuery({
       ...params?.filters,
@@ -43,7 +43,7 @@ export class AuthSDK extends BaseResource {
     return this.request('DELETE', `/auth/${id}`);
   }
 
-  public async checkAuthStatus(): Promise<any> {
+  public async checkAuthStatus(): Promise<unknown> {
     return this.request('GET', `/auth/status`);
   }
 
@@ -57,7 +57,9 @@ export class AuthSDK extends BaseResource {
     return this._request('POST', `/auth/login`, data);
   }
 
-  public async logout(data: LogoutDTO): Promise<{ success: boolean; data: any; error?: string }> {
+  public async logout(
+    data: LogoutDTO,
+  ): Promise<{ success: boolean; data: unknown; error?: string }> {
     return this._request('POST', `/auth/logout`, data);
   }
 
@@ -69,19 +71,19 @@ export class AuthSDK extends BaseResource {
 
   public async verifyEmail(
     data: VerifyEmailDTO,
-  ): Promise<{ success: boolean; data: any; error?: string }> {
+  ): Promise<{ success: boolean; data: unknown; error?: string }> {
     return this._request('POST', `/auth/verify-email`, data);
   }
 
   public async requestPasswordReset(
     data: RequestPasswordResetDTO,
-  ): Promise<{ success: boolean; data: any; error?: string }> {
+  ): Promise<{ success: boolean; data: unknown; error?: string }> {
     return this._request('POST', `/auth/password/request-reset`, data);
   }
 
   public async resetPassword(
     data: ResetPasswordDTO,
-  ): Promise<{ success: boolean; data: any; error?: string }> {
+  ): Promise<{ success: boolean; data: unknown; error?: string }> {
     return this._request('POST', `/auth/password/reset`, data);
   }
 

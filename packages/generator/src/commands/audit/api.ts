@@ -5,7 +5,12 @@ import fs from 'fs';
 import path from 'path';
 import { Project, SourceFile } from 'ts-morph';
 import YAML from 'yaml';
-import { PlatformDefinitionSchema, PlatformApiDefinitionSchema } from '../../schema.js';
+import {
+  PlatformDefinitionSchema,
+  PlatformApiDefinitionSchema,
+  type PlatformDefinition,
+  type PlatformModel,
+} from '../../schema.js';
 
 // Builders
 import { ModelParser } from '../../engine/model-parser.js';
@@ -22,6 +27,7 @@ import { ActorBuilder } from '../../engine/builders/actor-builder.js';
 import { ActorTypeBuilder } from '../../engine/builders/actor-type-builder.js';
 import { type ModelDef, type CustomRoute } from '../../engine/types.js';
 import { ModuleLocator } from '../../lib/module-locator.js';
+import { type BaseBuilder } from '../../engine/builders/base-builder.js';
 
 export class AuditApiCommand extends BaseCommand {
   constructor() {
@@ -50,11 +56,11 @@ export class AuditApiCommand extends BaseCommand {
     const modules = await ModuleLocator.expand(pattern);
 
     if (modules.length === 0) {
-      console.log(chalk.yellow(`No modules found matching pattern "${pattern}"`));
+      console.info(chalk.yellow(`No modules found matching pattern "${pattern}"`));
       return;
     }
 
-    console.log(chalk.blue(`Found ${modules.length} module(s) to audit.`));
+    console.info(chalk.blue(`Found ${modules.length} module(s) to audit.`));
 
     let totalIssues: string[] = [];
     const spinner = ora('Auditing modules...').start();
@@ -67,7 +73,7 @@ export class AuditApiCommand extends BaseCommand {
 
     if (totalIssues.length > 0) {
       spinner.fail(chalk.red(`Audit failed with ${totalIssues.length} issues: `));
-      totalIssues.forEach((issue) => console.log(issue));
+      totalIssues.forEach((issue) => console.info(issue));
       process.exitCode = 1;
     } else {
       spinner.succeed(chalk.green(`Audit passed for all ${modules.length} modules.`));
@@ -90,11 +96,11 @@ export class AuditApiCommand extends BaseCommand {
       }
 
       const modelsContent = fs.readFileSync(modelsPath, 'utf8');
-      let parsedModels: any;
+      let parsedModels: PlatformDefinition;
       try {
         parsedModels = YAML.parse(modelsContent);
-      } catch (e: any) {
-        report(`Failed to parse models.yaml: ${e.message} `);
+      } catch (e: unknown) {
+        report(`Failed to parse models.yaml: ${e instanceof Error ? e.message : String(e)} `);
         return issues;
       }
 
@@ -120,8 +126,12 @@ export class AuditApiCommand extends BaseCommand {
               report(chalk.red(`  Path: ${err.path.join('.')} - ${err.message} `));
             });
           }
-        } catch (e: any) {
-          report(chalk.red(`[Schema] Failed to parse api.yaml: ${e.message} `));
+        } catch (e: unknown) {
+          report(
+            chalk.red(
+              `[Schema] Failed to parse api.yaml: ${e instanceof Error ? e.message : String(e)} `,
+            ),
+          );
         }
       }
 
@@ -166,41 +176,41 @@ export class AuditApiCommand extends BaseCommand {
       }
 
       // Validate Models.yaml Semantics
-      if (parsedModels.models) {
-        for (const [modelName, modelDef] of Object.entries<any>(parsedModels.models)) {
-          // Validate Fields
-          if (modelDef.fields) {
-            for (const [fieldName, fieldDef] of Object.entries<any>(modelDef.fields)) {
-              const fieldType = typeof fieldDef === 'string' ? fieldDef : fieldDef.type;
-              if (!validTypes.has(fieldType)) {
-                report(
-                  chalk.red(
-                    `[Semantic] Model '${modelName}.${fieldName}' has unknown type '${fieldType}'`,
-                  ),
-                );
-              }
+      for (const [modelName, modelDef] of Object.entries<PlatformModel>(
+        parsedModels.models || {},
+      )) {
+        // Validate Fields
+        if (modelDef.fields) {
+          for (const [fieldName, fieldDef] of Object.entries(modelDef.fields)) {
+            const fieldType = typeof fieldDef === 'string' ? fieldDef : fieldDef.type;
+            if (!validTypes.has(fieldType)) {
+              report(
+                chalk.red(
+                  `[Semantic] Model '${modelName}.${fieldName}' has unknown type '${fieldType}'`,
+                ),
+              );
             }
           }
+        }
 
-          // Validate Role (String or Map)
-          if (modelDef.role) {
-            const rolesToCheck: string[] = [];
-            if (typeof modelDef.role === 'string') {
-              rolesToCheck.push(modelDef.role);
-            } else if (typeof modelDef.role === 'object') {
-              Object.values(modelDef.role).forEach((r: any) => rolesToCheck.push(r));
-            }
-
-            rolesToCheck.forEach((r) => {
-              if (!validRoles.has(r)) {
-                report(
-                  chalk.red(
-                    `[Semantic] Model '${modelName}' has unknown role '${r}'.Valid: ${Array.from(validRoles).join(', ')} `,
-                  ),
-                );
-              }
-            });
+        // Validate Role (String or Map)
+        if (modelDef.role) {
+          const rolesToCheck: string[] = [];
+          if (typeof modelDef.role === 'string') {
+            rolesToCheck.push(modelDef.role);
+          } else if (typeof modelDef.role === 'object' && modelDef.role !== null) {
+            Object.values(modelDef.role).forEach((r: unknown) => rolesToCheck.push(String(r)));
           }
+
+          rolesToCheck.forEach((r) => {
+            if (!validRoles.has(r)) {
+              report(
+                chalk.red(
+                  `[Semantic] Model '${modelName}' has unknown role '${r}'. Valid: ${Array.from(validRoles).join(', ')} `,
+                ),
+              );
+            }
+          });
         }
       }
 
@@ -241,7 +251,7 @@ export class AuditApiCommand extends BaseCommand {
                 if (!validRoles.has(route.role)) {
                   report(
                     chalk.red(
-                      `[Semantic] ${label} has unknown role '${route.role}'.Valid: ${Array.from(validRoles).join(', ')} `,
+                      `[Semantic] ${label} has unknown role '${route.role}'. Valid: ${Array.from(validRoles).join(', ')} `,
                     ),
                   );
                 }
@@ -284,7 +294,7 @@ export class AuditApiCommand extends BaseCommand {
         return project.addSourceFileAtPath(absPath);
       };
 
-      const validate = (builder: any, file: SourceFile | undefined, label: string) => {
+      const validate = (builder: BaseBuilder, file: SourceFile | undefined, label: string) => {
         if (!file) return;
         const res = builder.validate(file);
         if (!res.valid) {
@@ -310,7 +320,7 @@ export class AuditApiCommand extends BaseCommand {
         if (model.db) {
           validate(
             new ServiceBuilder(model),
-            getFile(`src / services / ${kebabName} -service.ts`),
+            getFile(`src/services/${kebabName}-service.ts`),
             `${entityName} Service`,
           );
         }
@@ -319,7 +329,7 @@ export class AuditApiCommand extends BaseCommand {
           if (model.db) {
             validate(
               new ApiBuilder(model, models, name, 'collection'),
-              getFile(`src / pages / api / ${kebabName}/index.ts`),
+              getFile(`src/pages/api/${kebabName}/index.ts`),
               `${entityName}API List`,
             );
             validate(
@@ -398,16 +408,16 @@ export class AuditApiCommand extends BaseCommand {
           const routePath = route.path.startsWith('/') ? route.path.slice(1) : route.path;
           const fileName = routePath === '' ? 'index' : routePath;
 
-          let apiPath: string;
+          let apiPathResult: string;
           if (isRoot) {
-            apiPath = `src/pages/api/${fileName}.ts`;
+            apiPathResult = `src/pages/api/${fileName}.ts`;
           } else {
-            apiPath = `src/pages/api/${kebabEntity}/${fileName}.ts`;
+            apiPathResult = `src/pages/api/${kebabEntity}/${fileName}.ts`;
           }
 
           validate(
             new ApiBuilder(virtualModel, [...models, ...virtualModels], name, 'custom', [route]),
-            getFile(apiPath),
+            getFile(apiPathResult),
             `${entityName}API ${fileName}`,
           );
 
@@ -439,8 +449,8 @@ export class AuditApiCommand extends BaseCommand {
       validate(new InitBuilder('server'), getFile('src/server-init.ts'), 'Server Init');
 
       return issues;
-    } catch (error: any) {
-      report(`Audit threw exception: ${error.message}`);
+    } catch (error: unknown) {
+      report(`Audit threw exception: ${error instanceof Error ? error.message : String(error)}`);
       return issues;
     }
   }

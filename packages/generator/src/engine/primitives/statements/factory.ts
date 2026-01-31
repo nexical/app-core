@@ -1,10 +1,10 @@
-import { type StatementConfig } from '../../types';
-import { VariableStatementPrimitive } from './variable';
-import { ReturnStatementPrimitive } from './return';
-import { ExpressionStatementPrimitive } from './expression';
-import { JsxElementPrimitive } from '../jsx/element';
-import { IfStatementPrimitive } from './if';
-import { ThrowStatementPrimitive } from './throw';
+import { type StatementConfig } from '../../types.js';
+import { VariableStatementPrimitive } from './variable.js';
+import { ReturnStatementPrimitive } from './return.js';
+import { ExpressionStatementPrimitive } from './expression.js';
+import { JsxElementPrimitive } from '../jsx/element.js';
+import { IfStatementPrimitive } from './if.js';
+import { ThrowStatementPrimitive } from './throw.js';
 
 export class StatementFactory {
   static generate(config: StatementConfig): string {
@@ -26,7 +26,7 @@ export class StatementFactory {
       case 'throw':
         return new ThrowStatementPrimitive(config).generate();
       default:
-        throw new Error(`Unknown statement kind: ${(config as any).kind}`);
+        throw new Error(`Unknown statement kind: ${(config as { kind: string }).kind}`);
     }
   }
 
@@ -34,7 +34,9 @@ export class StatementFactory {
     if (!configs) return '';
     if (typeof configs === 'string') return configs;
     if (Array.isArray(configs)) {
-      return configs.map((c) => this.generate(c)).join('\n');
+      return (configs as (string | StatementConfig)[])
+        .map((c) => this.generate(c as StatementConfig))
+        .join('\n');
     }
     return '';
   }

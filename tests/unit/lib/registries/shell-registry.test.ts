@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { ShellRegistry } from '@/lib/registries/shell-registry';
+import { ShellRegistry, type ShellContext } from '@/lib/registries/shell-registry';
 
 describe('ShellRegistry', () => {
   it('should register and find a shell component', () => {
@@ -18,7 +18,7 @@ describe('ShellRegistry', () => {
 
   it('should find the whole entry', () => {
     const MockComp = () => null;
-    const condition = (ctx: any) => ctx.url.pathname === '/entry';
+    const condition = (ctx: ShellContext) => ctx.url.pathname === '/entry';
     ShellRegistry.register('entry', MockComp, condition);
 
     const context = {

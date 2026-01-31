@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { PageGuard } from '../../../../src/lib/ui/page-guard';
 import { roleRegistry } from '../../../../src/lib/registries/role-registry';
 import { createMockAstroContext } from '../../helpers';
+import type { Mock } from 'vitest';
 
 vi.mock('../../../../src/lib/registries/role-registry', () => ({
   roleRegistry: {
@@ -30,7 +31,7 @@ describe('PageGuard', () => {
     const role = {
       check: vi.fn().mockResolvedValue(undefined),
     };
-    (roleRegistry.get as any).mockReturnValue(role);
+    (roleRegistry.get as Mock).mockReturnValue(role);
 
     await PageGuard.protect(context, 'Admin');
     expect(roleRegistry.get).toHaveBeenCalledWith('Admin');
@@ -39,7 +40,7 @@ describe('PageGuard', () => {
 
   it('should throw error if role name not found', async () => {
     const context = createMockAstroContext();
-    (roleRegistry.get as any).mockReturnValue(undefined);
+    (roleRegistry.get as Mock).mockReturnValue(undefined);
     const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     await expect(PageGuard.protect(context, 'Unknown')).rejects.toThrow(

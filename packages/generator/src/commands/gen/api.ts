@@ -1,4 +1,3 @@
- 
 import { BaseCommand } from '../base';
 import chalk from 'chalk';
 import fs from 'fs-extra';
@@ -32,11 +31,11 @@ export class GenApiCommand extends BaseCommand {
     }
 
     if (modules.length === 0) {
-      console.log(chalk.yellow(`No modules found matching pattern "${pattern}"`));
+      console.info(chalk.yellow(`No modules found matching pattern "${pattern}"`));
       return;
     }
 
-    console.log(chalk.blue(`Found ${modules.length} module(s) to generate.`));
+    console.info(chalk.blue(`Found ${modules.length} module(s) to generate.`));
 
     for (const moduleName of modules) {
       await this.generateForModule(moduleName);
@@ -44,13 +43,13 @@ export class GenApiCommand extends BaseCommand {
   }
 
   private async generateForModule(name: string) {
-    console.log(chalk.magenta(`\nGenerating code for module: ${name}`));
+    console.info(chalk.magenta(`\nGenerating code for module: ${name}`));
     const moduleDir = path.join(process.cwd(), 'modules', name);
 
     try {
       // 0. Ensure Module Directory & Project Files
       if (!fs.existsSync(moduleDir)) {
-        console.log(chalk.blue(`Module '${name}' does not exist. Creating...`));
+        console.info(chalk.blue(`Module '${name}' does not exist. Creating...`));
         await fs.ensureDir(path.join(moduleDir, 'src'));
       }
 
@@ -61,10 +60,10 @@ export class GenApiCommand extends BaseCommand {
       const generator = new ApiModuleGenerator(moduleDir);
       await generator.run();
 
-      console.log(chalk.green(`Successfully generated code for "${name}"`));
+      console.info(chalk.green(`Successfully generated code for "${name}"`));
     } catch (error) {
       console.error(error);
-      console.log(chalk.red('Failed to generate code'));
+      console.info(chalk.red('Failed to generate code'));
       throw error;
     }
   }

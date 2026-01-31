@@ -1,6 +1,6 @@
-import { SourceFile, StatementedNode, ModuleDeclaration } from 'ts-morph';
+import { SourceFile, StatementedNode, Node } from 'ts-morph';
 import { GeneratorError } from './errors.js';
-import { type FileDefinition } from './types.js';
+import { type FileDefinition, type NodeContainer } from './types.js';
 import { ImportPrimitive } from './primitives/core/import-manager.js';
 import { ExportPrimitive } from './primitives/core/export-manager.js';
 import { ClassPrimitive } from './primitives/nodes/class.js';
@@ -16,14 +16,11 @@ import { AccessorPrimitive } from './primitives/nodes/accessor.js';
 import { ModulePrimitive } from './primitives/nodes/module.js';
 import { Normalizer } from '../utils/normalizer.js';
 
-// Helper type to handle both SourceFile and ModuleDeclaration (Namespace)
-type NodeContainer = SourceFile | ModuleDeclaration;
-
 export class Reconciler {
   static reconcile(sourceFile: NodeContainer, definition: FileDefinition): void {
     const filePath =
       'getFilePath' in sourceFile ? (sourceFile as SourceFile).getFilePath() : 'namespace';
-    console.log(`[Reconciler] Reconciling ${filePath}`);
+    console.info(`[Reconciler] Reconciling ${filePath}`);
     try {
       // 0. Handle Header
       if (definition.header && 'insertStatements' in sourceFile) {
@@ -103,7 +100,7 @@ export class Reconciler {
       if ('statements' in definition && Array.isArray(definition.statements)) {
         const stmts = definition.statements as string[];
         if ('addStatements' in sourceFile) {
-          const existingText = Normalizer.normalize((sourceFile as any).getFullText());
+          const existingText = Normalizer.normalize((sourceFile as unknown as Node).getFullText());
           // Filter out statements that already exist perfectly in the file
           const uniqueStmts = stmts.filter(
             (stmt) => !existingText.includes(Normalizer.normalize(stmt)),

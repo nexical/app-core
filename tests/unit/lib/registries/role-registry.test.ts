@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { roleRegistry } from '@/lib/registries/role-registry';
+import type { APIContext } from 'astro';
 
 describe('RoleRegistry', () => {
   beforeEach(() => {
@@ -17,14 +18,14 @@ describe('RoleRegistry', () => {
   });
 
   it('should throw if policy not found during check', async () => {
-    await expect(roleRegistry.check('Missing', {} as any, {})).rejects.toThrow(/not found/);
+    await expect(roleRegistry.check('Missing', {} as APIContext, {})).rejects.toThrow(/not found/);
   });
 
   it('should call policy.check during check', async () => {
     const mockPolicy = { check: vi.fn().mockResolvedValue(undefined) };
     roleRegistry.register('active-role', mockPolicy);
 
-    await roleRegistry.check('active-role', { locals: {} } as any, { id: 1 }, { data: 2 });
+    await roleRegistry.check('active-role', { locals: {} } as APIContext, { id: 1 }, { data: 2 });
 
     expect(mockPolicy.check).toHaveBeenCalledWith({ locals: {} }, { id: 1 }, { data: 2 });
   });

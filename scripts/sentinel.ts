@@ -60,7 +60,7 @@ async function getProtectedFiles(): Promise<string[]> {
 }
 
 async function check(): Promise<void> {
-  console.log('🔍 Verifying core architecture integrity...');
+  console.info('🔍 Verifying core architecture integrity...');
 
   if (!fs.existsSync(LOCK_FILE)) {
     console.error('❌ Lock file not found. Run "npm run core:accept" to initialize.');
@@ -99,11 +99,11 @@ async function check(): Promise<void> {
     process.exit(1);
   }
 
-  console.log('✅ Core integrity verified.');
+  console.info('✅ Core integrity verified.');
 }
 
 async function accept(): Promise<void> {
-  console.log('🔒 Locking core architecture state...');
+  console.info('🔒 Locking core architecture state...');
 
   const currentFiles = await getProtectedFiles();
   const lockData: LockFile = {};
@@ -113,7 +113,7 @@ async function accept(): Promise<void> {
   }
 
   await fs.promises.writeFile(LOCK_FILE, JSON.stringify(lockData, null, 2) + '\n');
-  console.log('✅ Core changes accepted and locked.');
+  console.info('✅ Core changes accepted and locked.');
 }
 
 async function main() {

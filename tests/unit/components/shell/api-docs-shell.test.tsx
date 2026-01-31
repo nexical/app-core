@@ -20,7 +20,9 @@ vi.mock('react-i18next', () => ({
 }));
 
 vi.mock('../../../../src/components/ui/scroll-area', () => ({
-  ScrollArea: ({ children }: any) => <div data-testid="scroll-area">{children}</div>,
+  ScrollArea: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="scroll-area">{children}</div>
+  ),
 }));
 
 vi.mock('../../../../src/lib/core/config', () => ({
@@ -41,7 +43,7 @@ describe('ApiDocsShell', () => {
       panelProps: {},
       detailsPanelWidth: 500,
       setDetailsPanelWidth: mockSetDetailsPanelWidth,
-    } as any);
+    } as ReturnType<typeof useShellStore>);
     vi.mocked(getZoneComponents).mockResolvedValue([]);
   });
 
@@ -74,7 +76,7 @@ describe('ApiDocsShell', () => {
       panelProps: {},
       detailsPanelWidth: 500,
       setDetailsPanelWidth: mockSetDetailsPanelWidth,
-    } as any);
+    } as unknown as ReturnType<typeof useShellStore>);
 
     const MockPanel = () => <div data-testid="mock-panel">Panel</div>;
     vi.mocked(getZoneComponents).mockImplementation(async (zone) => {
@@ -86,7 +88,7 @@ describe('ApiDocsShell', () => {
       render(<ApiDocsShell>Content</ApiDocsShell>);
     });
 
-    const handle = screen.getByTitle('Drag to resize detail panel');
+    const handle = screen.getByRole('slider', { name: 'Resize details panel' });
 
     // Start resizing
     fireEvent.mouseDown(handle);
@@ -106,7 +108,7 @@ describe('ApiDocsShell', () => {
       panelProps: {},
       detailsPanelWidth: 500,
       setDetailsPanelWidth: mockSetDetailsPanelWidth,
-    } as any);
+    } as unknown as ReturnType<typeof useShellStore>);
 
     const MockPanel = () => <div data-testid="mock-panel">Panel</div>;
     vi.mocked(getZoneComponents).mockImplementation(async (zone) => {

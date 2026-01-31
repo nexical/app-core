@@ -4,6 +4,8 @@ import {
   type FileDefinition,
   type ClassDefinition,
   type ConstructorConfig,
+  type NodeContainer,
+  type ImportConfig,
 } from '../types.js';
 import { BaseBuilder } from './base-builder.js';
 
@@ -30,7 +32,7 @@ export class SdkIndexBuilder extends BaseBuilder {
       .toLowerCase();
   }
 
-  protected getSchema(node?: any): FileDefinition {
+  protected getSchema(node?: NodeContainer): FileDefinition {
     const apiModels = this.models.filter((m) => m.api && !m.extended);
     const defaultModel = apiModels.find((m) => m.default);
     const otherModels = apiModels.filter((m) => m.name !== defaultModel?.name);
@@ -38,7 +40,7 @@ export class SdkIndexBuilder extends BaseBuilder {
     const cleanName = this.moduleName.replace(/-api$/, '');
     const mainSdkName = `${this.toPascalCase(cleanName)}SDK`;
 
-    const imports = [
+    const imports: ImportConfig[] = [
       { moduleSpecifier: '@nexical/sdk-core', namedImports: ['BaseResource', 'ApiClient'] },
       ...apiModels.map((m) => ({
         moduleSpecifier: `./${this.toKebabCase(m.name)}-sdk`,
@@ -68,7 +70,7 @@ export class SdkIndexBuilder extends BaseBuilder {
       name: mainSdkName,
       isExported: true,
       extends: classExtends,
-      properties: properties as any,
+      properties: properties,
       constructorDef: constructorConfig,
       docs: [`Main SDK for the ${this.moduleName} module.`],
     };

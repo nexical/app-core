@@ -10,25 +10,27 @@ import { getCoreInits, getModuleInits } from '../core/glob-helper';
  * without modifying core configuration files.
  */
 export async function initializeModules() {
-  console.log('[Core] Initializing modules...');
+  console.info('[Core] Initializing modules...');
   const promises: Promise<void>[] = [];
 
   // We import glob eagerly so the side-effects (registration) run immediately.
   // 1. Initialize Core First (Registers default '*' shell)
   const core = getCoreInits();
-  Object.values(core).forEach((mod: any) => {
-    if (typeof mod.init === 'function') promises.push(mod.init());
+  Object.values(core).forEach((mod: unknown) => {
+    const module = mod as { init?: () => Promise<void> };
+    if (typeof module.init === 'function') promises.push(module.init());
   });
 
   // 2. Initialize Modules (Registers specific overrides like 'auth')
   // Includes standard 'init.ts' AND 'server-init.ts'
   const modules = getModuleInits();
-  Object.values(modules).forEach((mod: any) => {
-    if (typeof mod.init === 'function') promises.push(mod.init());
+  Object.values(modules).forEach((mod: unknown) => {
+    const module = mod as { init?: () => Promise<void> };
+    if (typeof module.init === 'function') promises.push(module.init());
   });
 
   await Promise.allSettled(promises);
 
   const count = Object.keys(core).length + Object.keys(modules).length;
-  console.log(`[Core] Initialized ${count} module(s) via init.ts`);
+  console.info(`[Core] Initialized ${count} module(s) via init.ts`);
 }

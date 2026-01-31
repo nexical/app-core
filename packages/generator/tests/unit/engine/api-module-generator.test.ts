@@ -93,7 +93,7 @@ describe('ApiModuleGenerator', () => {
       config: {},
     });
     const generator = new ApiModuleGenerator('/tmp/user-api');
-    const spy = vi.spyOn(console, 'log');
+    const spy = vi.spyOn(console, 'info');
     await generator.run();
     expect(spy).toHaveBeenCalledWith(expect.stringContaining('No models found'));
   });

@@ -8,7 +8,7 @@ export class UpdateMeUserAction {
     input: UpdateUserDTO,
     context: APIContext,
   ): Promise<ServiceResponse<User>> {
-    const userId = input.id || (context.locals as any)?.actor?.id;
+    const userId = input.id || context.locals.actor?.id;
 
     if (!userId) return { success: false, error: 'user.service.error.missing_user_id' };
 

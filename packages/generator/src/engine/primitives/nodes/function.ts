@@ -126,7 +126,7 @@ export class FunctionPrimitive extends BasePrimitive<FunctionDeclaration, Functi
         continue;
       }
 
-      if ((stmtConfig as any).isDefault === false) {
+      if ((stmtConfig as { isDefault?: boolean }).isDefault === false) {
         // Force overwrite/insert logic here if we wanted to enforce "system" statements
         // For now, let's focus on preserving "default" ones
       }

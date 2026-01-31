@@ -4,6 +4,7 @@ import {
   type VariableConfig,
   type ImportConfig,
   type CustomRoute,
+  type NodeContainer,
 } from '../types.js';
 import { BaseBuilder } from './base-builder.js';
 
@@ -18,7 +19,7 @@ export class ApiBuilder extends BaseBuilder {
     super();
   }
 
-  protected getSchema(node?: any): FileDefinition {
+  protected getSchema(node?: NodeContainer): FileDefinition {
     if (this.type === 'collection') {
       return this.getCollectionSchema();
     } else if (this.type === 'individual') {
@@ -272,7 +273,7 @@ export class ApiBuilder extends BaseBuilder {
 
     const select = ${selectObject};
     
-    const actor = context.locals?.actor || (context as any).user;
+    const actor = context.locals?.actor || (context as unknown as { user: unknown }).user;
     const result = await ${serviceName}.list({ where, take, skip, orderBy, select }, actor);
 
     if (!result.success) {
@@ -322,7 +323,7 @@ export class ApiBuilder extends BaseBuilder {
     
     const validated = schema.parse(body);
     const select = ${selectObject};
-    const actor = context.locals?.actor || (context as any).user;
+    const actor = context.locals?.actor || (context as unknown as { user: unknown }).user;
 
     const result = await ${serviceName}.create(validated, select, actor);
 
@@ -436,7 +437,7 @@ export class ApiBuilder extends BaseBuilder {
     await ApiGuard.protect(context, '${getRole}', { ...context.params }, result.data);
 
     // Analytics Hook
-    const actor = (context as any).user;
+    const actor = context.locals?.actor || (context as unknown as { user: { id?: string } }).user;
     await HookSystem.dispatch('${entityName.charAt(0).toLowerCase() + entityName.slice(1)}.viewed', { id, actorId: actor?.id || 'anonymous' });
 
     return { success: true, data: result.data };
@@ -485,7 +486,7 @@ export class ApiBuilder extends BaseBuilder {
     const schema = ${zodSchema};
     const validated = schema.parse(body);
     const select = ${selectObject};
-    const actor = context.locals?.actor || (context as any).user;
+    const actor = context.locals?.actor || (context as unknown as { user: unknown }).user;
 
     const result = await ${serviceName}.update(id, validated, select, actor);
 
@@ -653,7 +654,7 @@ export class ApiBuilder extends BaseBuilder {
 
     for (const route of this.routes) {
       const { method, verb, input, output, role } = route;
-      console.log(`[ApiBuilder] Processing route: ${verb} ${method}, input: ${input}`);
+      console.info(`[ApiBuilder] Processing route: ${verb} ${method}, input: ${input}`);
       const entityName = this.model.name;
       // ... (rest of variable setup, entityName, etc)
       const kebabName = entityName
@@ -735,7 +736,7 @@ export class ApiBuilder extends BaseBuilder {
         await ApiGuard.protect(context, '${role || 'member'}', combinedInput);
 
         // Inject userId from context for protected routes
-        const user = (context as any).user;
+        const user = (context as unknown as { user: { id: string } }).user;
         if (user && user.id) {
             Object.assign(combinedInput, { userId: user.id });
         }

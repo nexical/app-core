@@ -29,7 +29,7 @@ describe('PlatformParser', () => {
     vi.mocked(PlatformDefinitionSchema.safeParse).mockReturnValue({
       success: true,
       data: {},
-    } as any);
+    } as unknown as any);
   });
 
   it('should throw error if file does not exist', () => {
@@ -45,7 +45,7 @@ describe('PlatformParser', () => {
     vi.mocked(PlatformDefinitionSchema.safeParse).mockReturnValue({
       success: true,
       data: mockYaml,
-    } as any);
+    } as unknown as any);
 
     const result = PlatformParser.parseFile('valid.yaml');
     expect(result).toEqual(mockYaml);
@@ -59,7 +59,7 @@ describe('PlatformParser', () => {
     vi.mocked(PlatformDefinitionSchema.safeParse).mockReturnValue({
       success: false,
       error: { issues: [] },
-    } as any);
+    } as unknown as any);
 
     expect(() => PlatformParser.parseFile('invalid.yaml')).toThrow('Schema validation failed');
   });
@@ -72,7 +72,7 @@ describe('PlatformParser', () => {
     vi.mocked(PlatformDefinitionSchema.safeParse).mockReturnValue({
       success: true,
       data: mockYaml,
-    } as any);
+    } as unknown as any);
 
     PlatformParser.parseModule('/path/to/module');
     expect(fs.existsSync).toHaveBeenCalledWith(expect.stringContaining('models.yaml'));

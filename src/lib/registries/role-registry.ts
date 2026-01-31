@@ -1,11 +1,15 @@
 import type { AstroGlobal, APIContext } from 'astro';
 
 export interface RolePolicy {
-  check(context: AstroGlobal | APIContext, input: Record<string, any>, data?: any): Promise<void>;
+  check(
+    context: AstroGlobal | APIContext,
+    input: Record<string, unknown>,
+    data?: unknown,
+  ): Promise<void>;
   redirect?(
     context: AstroGlobal | APIContext,
-    input: Record<string, any>,
-    data?: any,
+    input: Record<string, unknown>,
+    data?: unknown,
   ): Promise<Response | undefined | void | string>;
 }
 
@@ -31,8 +35,8 @@ class RoleRegistry {
   public async check(
     name: string,
     context: AstroGlobal | APIContext,
-    input: Record<string, any>,
-    data?: any,
+    input: Record<string, unknown>,
+    data?: unknown,
   ): Promise<void> {
     const policy = this.get(name);
     if (!policy) {

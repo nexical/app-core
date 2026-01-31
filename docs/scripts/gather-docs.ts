@@ -12,7 +12,7 @@ const DOCS_CONTENT_DIR = path.resolve(__dirname, '../src/content/docs');
 const MODULES_OUT_DIR = path.join(DOCS_CONTENT_DIR, 'modules');
 const SIDEBAR_FILE = path.resolve(__dirname, '../src/sidebar-modules.json');
 
-console.log(`Scanning modules in: ${MODULES_DIR}`);
+console.info(`Scanning modules in: ${MODULES_DIR}`);
 
 if (!fs.existsSync(MODULES_DIR)) {
   console.error('Modules directory not found!');
@@ -29,9 +29,15 @@ const modules = fs.readdirSync(MODULES_DIR).filter((name) => {
   return fs.statSync(path.join(MODULES_DIR, name)).isDirectory();
 });
 
-const sidebarEntries: any[] = [];
+interface SidebarEntry {
+  label: string;
+  autogenerate?: { directory: string };
+  link?: string;
+}
 
-console.log(`Found ${modules.length} modules.`);
+const sidebarEntries: SidebarEntry[] = [];
+
+console.info(`Found ${modules.length} modules.`);
 
 for (const moduleName of modules) {
   const modulePath = path.join(MODULES_DIR, moduleName);
@@ -45,7 +51,7 @@ for (const moduleName of modules) {
     continue;
   }
 
-  console.log(`Processing ${moduleName}...`);
+  console.info(`Processing ${moduleName}...`);
 
   if (hasDocs) {
     // Mode A: Full Module Documentation (Directory)
@@ -103,7 +109,7 @@ ${readmeContent}`;
 // Write sidebar config
 fs.writeFileSync(SIDEBAR_FILE, JSON.stringify(sidebarEntries, null, 2));
 
-console.log('Documentation aggregation complete.');
+console.info('Documentation aggregation complete.');
 
 function copyRecursive(src: string, dest: string) {
   const stats = fs.statSync(src);

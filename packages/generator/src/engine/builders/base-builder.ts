@@ -1,9 +1,6 @@
-import { SourceFile, ModuleDeclaration } from 'ts-morph';
 import { Reconciler } from '../reconciler.js';
-import { type FileDefinition } from '../types.js';
+import { type FileDefinition, type NodeContainer } from '../types.js';
 import { type ValidationResult } from '../primitives/contracts.js';
-
-type NodeContainer = SourceFile | ModuleDeclaration;
 
 /**
  * Base class for all code builders.

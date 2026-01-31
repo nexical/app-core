@@ -3,7 +3,7 @@ import bcrypt from 'bcryptjs';
 import 'dotenv/config';
 
 export async function seed(prisma: PrismaClient) {
-  console.log('--- Seeding module: user ---');
+  console.info('--- Seeding module: user ---');
   const rootUserName = process.env.ROOT_USER_NAME;
   const rootUserEmail = process.env.ROOT_USER_EMAIL;
   const rootUserPassword = process.env.ROOT_USER_DEFAULT_PASSWORD;
@@ -15,14 +15,14 @@ export async function seed(prisma: PrismaClient) {
     return;
   }
 
-  console.log(`Seeding root user: ${rootUserName}`);
+  console.info(`Seeding root user: ${rootUserName}`);
 
   const existingUser = await prisma.user.findUnique({
     where: { username: rootUserName },
   });
 
   if (existingUser) {
-    console.log('Root user already exists. Skipping creation.');
+    console.info('Root user already exists. Skipping creation.');
   } else {
     const hashedPassword = await bcrypt.hash(rootUserPassword, 10);
 
@@ -36,6 +36,6 @@ export async function seed(prisma: PrismaClient) {
         role: 'ADMIN', // Explicitly set site role
       },
     });
-    console.log('Root user created successfully.');
+    console.info('Root user created successfully.');
   }
 }

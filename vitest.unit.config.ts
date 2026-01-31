@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 export default getViteConfig({
-  plugins: [tsconfigPaths()],
+  plugins: [tsconfigPaths({ projects: ['./tsconfig.json'] })],
   test: {
     environment: 'jsdom',
     globals: true,
@@ -62,7 +62,7 @@ export default getViteConfig({
   },
   resolve: {
     alias: {
-      '@': path.resolve(__dirname, 'src'),
+      // '@': path.resolve(__dirname, 'src'), // Handled by tsconfigPaths
       '@radix-ui/react-slot': path.resolve(__dirname, 'tests/unit/mocks/ui/radix-slot.tsx'),
       'astro:middleware': path.resolve(__dirname, 'tests/unit/mocks/astro.ts'),
       'astro:actions': path.resolve(__dirname, 'tests/unit/mocks/astro.ts'),

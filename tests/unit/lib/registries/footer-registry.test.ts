@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { FooterRegistry } from '@/lib/registries/footer-registry';
+import { type ShellContext } from '@/lib/registries/shell-registry';
 
 describe('FooterRegistry', () => {
   beforeEach(() => {
@@ -22,7 +23,7 @@ describe('FooterRegistry', () => {
 
   it('should find the whole entry', () => {
     const MockComp = () => null;
-    const condition = (ctx: any) => ctx.url.pathname === '/entry';
+    const condition = (ctx: ShellContext) => ctx.url.pathname === '/entry';
     FooterRegistry.register('entry', MockComp, condition);
 
     const context = {

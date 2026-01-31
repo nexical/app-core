@@ -24,7 +24,10 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // They execute in order. If a module returns a response, the chain stops.
   for (const middleware of moduleMiddlewares) {
     if (middleware.onRequest) {
-      const response = await middleware.onRequest(context, async () => undefined as any);
+      const response = await middleware.onRequest(
+        context,
+        async () => undefined as unknown as Response,
+      );
       if (response) {
         await HookSystem.dispatch('core.module.handled', { path: pathname });
         return response;

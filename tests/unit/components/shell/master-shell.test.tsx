@@ -8,13 +8,19 @@ import { FooterRegistry } from '../../../../src/lib/registries/footer-registry';
 
 // Aggressively mock all shell components to prevent loading heavy dependencies
 vi.mock('../../../../src/components/shell/app-shell-desktop', () => ({
-  AppShellDesktop: ({ children }: any) => <div data-testid="desktop-shell">{children}</div>,
+  AppShellDesktop: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="desktop-shell">{children}</div>
+  ),
 }));
 vi.mock('../../../../src/components/shell/app-shell-mobile', () => ({
-  AppShellMobile: ({ children }: any) => <div data-testid="mobile-shell">{children}</div>,
+  AppShellMobile: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="mobile-shell">{children}</div>
+  ),
 }));
 vi.mock('../../../../src/components/shell/api-docs-shell.tsx', () => ({
-  ApiDocsShell: ({ children }: any) => <div data-testid="api-docs-shell">{children}</div>,
+  ApiDocsShell: ({ children }: { children: React.ReactNode }) => (
+    <div data-testid="api-docs-shell">{children}</div>
+  ),
 }));
 
 // Mock registries
@@ -69,9 +75,17 @@ describe('MasterShell', () => {
   it('should render children within the selected shell and footer', async () => {
     // Mock for both SSR (get) and Client (findEntry)
     vi.mocked(ShellRegistry.get).mockReturnValue(MockShell);
-    vi.mocked(ShellRegistry.findEntry).mockReturnValue({ component: MockShell } as any);
+    vi.mocked(ShellRegistry.findEntry).mockReturnValue({
+      component: MockShell,
+      name: 'default',
+      matcher: '*',
+    });
     vi.mocked(FooterRegistry.get).mockReturnValue(MockFooter);
-    vi.mocked(FooterRegistry.findEntry).mockReturnValue({ component: MockFooter } as any);
+    vi.mocked(FooterRegistry.findEntry).mockReturnValue({
+      component: MockFooter,
+      name: 'default',
+      matcher: '*',
+    });
 
     await act(async () => {
       render(
@@ -87,7 +101,7 @@ describe('MasterShell', () => {
   });
 
   it('should fallback to AppShellDesktop if shell is not found', async () => {
-    vi.mocked(ShellRegistry.get).mockReturnValue(null);
+    vi.mocked(ShellRegistry.get).mockReturnValue(undefined);
     vi.mocked(ShellRegistry.findEntry).mockReturnValue(undefined);
 
     await act(async () => {

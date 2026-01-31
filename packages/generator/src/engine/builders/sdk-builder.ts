@@ -5,6 +5,7 @@ import {
   type MethodConfig,
   type CustomRoute,
   type ImportConfig,
+  type NodeContainer,
 } from '../types.js';
 import { BaseBuilder } from './base-builder.js';
 
@@ -23,7 +24,7 @@ export class SdkBuilder extends BaseBuilder {
     return roleConfig[action] || 'member';
   }
 
-  protected getSchema(node?: any): FileDefinition {
+  protected getSchema(node?: NodeContainer): FileDefinition {
     const entityName = this.model.name;
     const sdkName = `${entityName}SDK`;
     const kebabEntity = entityName
@@ -46,7 +47,7 @@ export class SdkBuilder extends BaseBuilder {
           parameters: [
             {
               name: 'params',
-              type: '{ search?: string; take?: number; skip?: number; orderBy?: string | Record<string, "asc" | "desc">; filters?: Record<string, any> }',
+              type: '{ search?: string; take?: number; skip?: number; orderBy?: string | Record<string, "asc" | "desc">; filters?: Record<string, unknown> }',
               optional: true,
             },
           ],
@@ -129,7 +130,7 @@ export class SdkBuilder extends BaseBuilder {
         name: route.method,
         isAsync: true,
         isStatic: false,
-        returnType: `Promise<{ success: boolean; data: ${route.output || 'any'}; error?: string }>`,
+        returnType: `Promise<{ success: boolean; data: ${route.output || 'unknown'}; error?: string }>`,
         parameters: pathParams.map((p) => ({ name: p, type: 'string' })),
         statements: [],
       };
@@ -139,7 +140,7 @@ export class SdkBuilder extends BaseBuilder {
       url = url.replace(/\[(\w+)\]/g, '${$1}');
 
       if (['POST', 'PUT', 'PATCH'].includes(route.verb)) {
-        const inputType = route.input || 'any';
+        const inputType = route.input || 'unknown';
         methodConfig.parameters!.push({ name: 'data', type: inputType });
         methodConfig.statements!.push(
           `return this._request('${route.verb}', \`/${endpoint}${url}\`, data);`,

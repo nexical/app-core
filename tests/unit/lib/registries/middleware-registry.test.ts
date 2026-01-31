@@ -1,7 +1,7 @@
 /** @vitest-environment node */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as GlobHelper from '@/lib/core/glob-helper';
-import { ModuleDiscovery } from '@/lib/modules/module-discovery';
+import { ModuleDiscovery, type LoadedModule } from '@/lib/modules/module-discovery';
 
 vi.mock('@/lib/core/glob-helper', () => ({
   getMiddlewareModules: vi.fn(),
@@ -25,7 +25,7 @@ describe('middleware-registry', () => {
       '/modules/test-mod/src/middleware.ts': mockModule,
     });
     vi.mocked(ModuleDiscovery.loadModules).mockResolvedValue([
-      { name: 'test-mod', version: '1.0.0' } as any,
+      { name: 'test-mod' } as Partial<LoadedModule> as LoadedModule,
     ]);
 
     const { getModuleMiddlewares } = await import('@/lib/registries/middleware-registry');
@@ -44,7 +44,7 @@ describe('middleware-registry', () => {
   it('should skip modules without middleware implementation', async () => {
     vi.mocked(GlobHelper.getMiddlewareModules).mockReturnValue({});
     vi.mocked(ModuleDiscovery.loadModules).mockResolvedValue([
-      { name: 'test-mod', version: '1.0.0' } as any,
+      { name: 'test-mod' } as Partial<LoadedModule> as LoadedModule,
     ]);
 
     const { getModuleMiddlewares } = await import('@/lib/registries/middleware-registry');

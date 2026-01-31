@@ -13,27 +13,32 @@ const mocks = vi.hoisted(() => ({
   PrismaPg: vi.fn().mockImplementation(() => ({})),
 }));
 
+// Use specific mock types to avoid 'any'
+type MockPool = typeof mocks.Pool;
+type MockPrismaClient = typeof mocks.PrismaClient;
+type MockPrismaPg = typeof mocks.PrismaPg;
+
 // Mock pg specifically as a class that returns our mocked object
 vi.mock('pg', () => {
   return {
-    Pool: function (this: any) {
-      return mocks.Pool();
+    Pool: function (this: unknown) {
+      return (mocks.Pool as MockPool)();
     },
   };
 });
 
 vi.mock('@prisma/client', () => {
   return {
-    PrismaClient: function (this: any) {
-      return mocks.PrismaClient();
+    PrismaClient: function (this: unknown) {
+      return (mocks.PrismaClient as MockPrismaClient)();
     },
   };
 });
 
 vi.mock('@prisma/adapter-pg', () => {
   return {
-    PrismaPg: function (this: any) {
-      return mocks.PrismaPg();
+    PrismaPg: function (this: unknown) {
+      return (mocks.PrismaPg as MockPrismaPg)();
     },
   };
 });
@@ -55,10 +60,11 @@ describe('Core DB', () => {
 
   it('should use global instance', async () => {
     const mockInstance = { isMock: true };
-    (globalThis as any).prisma_db_v1 = mockInstance;
+    // Use unknown then cast to access global variables
+    (globalThis as unknown as Record<string, unknown>).prisma_db_v1 = mockInstance;
     const { db } = await import('../../../../src/lib/core/db');
     expect(db).toBe(mockInstance);
-    delete (globalThis as any).prisma_db_v1;
+    delete (globalThis as unknown as Record<string, unknown>).prisma_db_v1;
   });
 
   it('should not set global instance in production', async () => {
@@ -66,7 +72,7 @@ describe('Core DB', () => {
     process.env.NODE_ENV = 'production'; // redundant but ensuring
 
     await import('../../../../src/lib/core/db');
-    expect((globalThis as any).prisma_db_v1).toBeUndefined();
+    expect((globalThis as unknown as Record<string, unknown>).prisma_db_v1).toBeUndefined();
 
     vi.unstubAllEnvs();
   });

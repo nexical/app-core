@@ -37,7 +37,7 @@ export const GET = defineApi(
     await ApiGuard.protect(context, 'admin', { ...context.params }, result.data);
 
     // Analytics Hook
-    const actor = (context as any).user;
+    const actor = context.locals?.actor;
     await HookSystem.dispatch('user.viewed', {
       id,
       actorId: actor?.id || 'anonymous',
@@ -123,7 +123,7 @@ export const PUT = defineApi(
       createdAt: true,
       updatedAt: true,
     };
-    const actor = context.locals?.actor || (context as any).user;
+    const actor = context.locals?.actor;
 
     const result = await UserService.update(id, validated, select, actor);
 

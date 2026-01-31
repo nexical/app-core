@@ -1,4 +1,9 @@
-import { SourceFile, ExportDeclaration } from 'ts-morph';
+import {
+  SourceFile,
+  ExportDeclaration,
+  type ExportDeclarationStructure,
+  StructureKind,
+} from 'ts-morph';
 import { BasePrimitive } from './base-primitive.js';
 import { type ExportConfig } from '../../types.js';
 
@@ -12,8 +17,9 @@ export class ExportPrimitive extends BasePrimitive<ExportDeclaration, ExportConf
   }
 
   create(parent: SourceFile) {
-    console.log(`[ExportPrimitive] Creating export for ${this.config.moduleSpecifier}`);
-    const structure: any = {
+    console.info(`[ExportPrimitive] Creating export for ${this.config.moduleSpecifier}`);
+    const structure: ExportDeclarationStructure = {
+      kind: StructureKind.ExportDeclaration,
       moduleSpecifier: this.config.moduleSpecifier,
       isTypeOnly: this.config.isTypeOnly,
     };

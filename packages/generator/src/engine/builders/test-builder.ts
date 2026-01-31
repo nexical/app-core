@@ -3,6 +3,7 @@ import {
   type FileDefinition,
   type VariableConfig,
   type TestRoleConfig,
+  type NodeContainer,
 } from '../types.js';
 import { BaseBuilder } from './base-builder.js';
 
@@ -21,11 +22,15 @@ export class TestBuilder extends BaseBuilder {
   private getRole(operation: string): string {
     if (!this.model.role) return 'member';
     if (typeof this.model.role === 'string') return this.model.role;
-    return (this.model.role as any)[operation] || 'member';
+    if (typeof this.model.role === 'object' && this.model.role !== null) {
+      return this.model.role[operation] || 'member';
+    }
+    return 'member';
   }
 
   private getTestActorModelName(): string {
-    const actor = (this.model as any).test?.actor;
+    const testConfig = this.model.test;
+    const actor = testConfig?.actor;
     if (!actor) {
       throw new Error(
         `Model [${this.model.name}] is missing required 'test.actor' configuration. No default actor is provided.`,
@@ -77,8 +82,8 @@ export class TestBuilder extends BaseBuilder {
   }
 
   private getNegativeActorStatement(operation: TestOperation): string {
-    return `(client as any).bearerToken = 'invalid-token';
-            const actor = undefined as any;`;
+    return `client.useToken('invalid-token');
+            const actor = undefined as unknown;`;
   }
 
   private getUniqueField(): string | null {
@@ -112,12 +117,9 @@ export class TestBuilder extends BaseBuilder {
     return false;
   }
 
-  protected getSchema(node?: any): FileDefinition {
-    // ... existing logic ...
+  protected getSchema(node?: NodeContainer): FileDefinition {
     const entityName = this.model.name;
-    // e.g. "UserApi" -> "userApi" for camelCase variable names
     const camelEntity = entityName.charAt(0).toLowerCase() + entityName.slice(1);
-    // e.g. "UserApi" -> "user-api" for URLs
     const kebabEntity = entityName
       .replace(/([a-z])([A-Z])/g, '$1-$2')
       .replace(/[\s_]+/g, '-')
@@ -175,16 +177,13 @@ export class TestBuilder extends BaseBuilder {
   }
 
   private getActorRelationFieldName(): string | null {
-    // Case 1: ID link (e.g. userId) - Look for standard conventions first
     const actorName = this.getTestActorModelName();
     if (this.model.fields['actorId']) return 'actorId';
     if (this.model.fields['userId'] && actorName.toLowerCase() === 'user') return 'userId';
 
-    // Case 2: Resolve scalar FK from relation (e.g. team -> teamId)
     const scalarFK = this.findActorForeignKey();
     if (scalarFK) return scalarFK;
 
-    // Case 3: Fallback to direct relation name (e.g. user: User) if no scalar found
     for (const [name, field] of Object.entries(this.model.fields)) {
       if (field.type && field.type.toLowerCase() === actorName.toLowerCase()) {
         return name;
@@ -206,7 +205,6 @@ export class TestBuilder extends BaseBuilder {
           if (match) {
             const scalars = match[1].split(',').map((f) => f.trim());
             for (const scalarName of scalars) {
-              // SKIP IF THIS IS THE ACTOR RELATION
               if (
                 actorRelationField &&
                 (scalarName === actorRelationField || name === actorRelationField)
@@ -215,7 +213,6 @@ export class TestBuilder extends BaseBuilder {
               }
 
               const scalarField = this.model.fields[scalarName];
-              // Only include if required and not already handled (mockData excludes them)
               if (scalarField && scalarField.isRequired) {
                 requiredFKs.push({ field: scalarName, model: field.type });
               }
@@ -227,7 +224,11 @@ export class TestBuilder extends BaseBuilder {
     return requiredFKs;
   }
 
-  private generateCreateTests(kebabEntity: string, camelEntity: string, mockData: any): string {
+  private generateCreateTests(
+    kebabEntity: string,
+    camelEntity: string,
+    mockData: Record<string, unknown>,
+  ): string {
     const requiredFKs = this.getRequiredForeignKeys();
     const actorRelationField = this.getActorRelationFieldName();
 
@@ -236,11 +237,9 @@ export class TestBuilder extends BaseBuilder {
       .replace(/"([^"]+)":/g, '$1:')
       .replace(/"__DATE_NOW__"/g, 'new Date().toISOString()')};`;
 
-    // Check if we need to add FKs OR the actor relation to the payload
     if (requiredFKs.length > 0 || actorRelationField) {
       const setups = requiredFKs.map((fk, i) => {
         const varName = `${fk.model.charAt(0).toLowerCase() + fk.model.slice(1)}_${i}`;
-        // Heuristic: If creating a Job as a dependency, link it to the actor
         const extras =
           fk.model === 'Job'
             ? ', actorId: (typeof actor !== "undefined" ? actor.id : undefined)'
@@ -313,25 +312,26 @@ export class TestBuilder extends BaseBuilder {
     const actorName = this.getTestActorModelName();
     for (const [name, field] of Object.entries(this.model.fields)) {
       if (field.type && field.type.toLowerCase() === actorName.toLowerCase()) {
-        // Found relation field. Now find scalar.
         if (field.attributes) {
           const relationAttr = field.attributes.find((a) => a.startsWith('@relation'));
           if (relationAttr) {
             const match = relationAttr.match(/fields:\s*\[([^\]]+)\]/);
             if (match) {
-              // Assuming single field FK for actor relation
               return match[1].split(',')[0].trim();
             }
           }
         }
-        // Fallback to standard naming
         if (this.model.fields[`${name}Id`]) return `${name}Id`;
       }
     }
-    return null; // No relation found
+    return null;
   }
 
-  private generateListTests(kebabEntity: string, camelEntity: string, mockData: any): string {
+  private generateListTests(
+    kebabEntity: string,
+    camelEntity: string,
+    mockData: Record<string, unknown>,
+  ): string {
     const actorModelName = this.getTestActorModelName();
     const isActorModel = this.model.name.toLowerCase() === actorModelName.toLowerCase();
     const actorFK = this.findActorForeignKey();
@@ -364,7 +364,7 @@ export class TestBuilder extends BaseBuilder {
             await new Promise(r => setTimeout(r, 10));
             // Reuse getActorStatement to ensure correct actor context
             ${this.getActorStatement('list')}
-            ${this.model.test?.actor === 'user' && (this.model as any).role?.list !== 'admin' ? `// Note: Ensure role allows filtering if restricted` : ''}
+            ${this.model.test?.actor === 'user' && this.model.role && typeof this.model.role === 'object' && this.model.role.list !== 'admin' ? `// Note: Ensure role allows filtering if restricted` : ''}
 
             const val1 = '${field}_' + Date.now() + '_A${field === 'email' ? '@example.com' : ''}';
             await new Promise(r => setTimeout(r, 10));
@@ -385,7 +385,6 @@ export class TestBuilder extends BaseBuilder {
       })
       .join('\n');
 
-    // Hueristic: Only preserve actor data if it's the actor itself OR an auth resource
     const isAuthResource = ['token', 'key', 'session'].some((k) =>
       camelEntity.toLowerCase().includes(k),
     );
@@ -486,7 +485,11 @@ export class TestBuilder extends BaseBuilder {
     });`;
   }
 
-  private generateGetTests(kebabEntity: string, camelEntity: string, mockData: any): string {
+  private generateGetTests(
+    kebabEntity: string,
+    camelEntity: string,
+    mockData: Record<string, unknown>,
+  ): string {
     const isActorModel =
       this.model.name.toLowerCase() === this.getTestActorModelName().toLowerCase();
 
@@ -519,7 +522,6 @@ export class TestBuilder extends BaseBuilder {
     if (isActorModel) {
       setupSnippet = `const target = actor;`;
     } else {
-      // Include overrides for FKs
       setupSnippet = `
             ${dependencySetup}
             const target = await Factory.create('${camelEntity}', { ...${JSON.stringify(mockData).replace(/"__DATE_NOW__"/g, 'new Date().toISOString()')}${this.getActorRelationSnippet()}${overrides} });`;
@@ -550,8 +552,8 @@ export class TestBuilder extends BaseBuilder {
   private generateUpdateTests(
     kebabEntity: string,
     camelEntity: string,
-    mockData: any,
-    updateData: any,
+    mockData: Record<string, unknown>,
+    updateData: Record<string, unknown>,
   ): string {
     const updatePayload = JSON.stringify(updateData, null, 8)
       .replace(/"([^"]+)":/g, '$1:')
@@ -624,7 +626,11 @@ export class TestBuilder extends BaseBuilder {
     });`;
   }
 
-  private generateDeleteTests(kebabEntity: string, camelEntity: string, mockData: any): string {
+  private generateDeleteTests(
+    kebabEntity: string,
+    camelEntity: string,
+    mockData: Record<string, unknown>,
+  ): string {
     const isActorModel =
       this.model.name.toLowerCase() === this.getTestActorModelName().toLowerCase();
 
@@ -680,9 +686,8 @@ export class TestBuilder extends BaseBuilder {
     });`;
   }
 
-  private generateMockData(): Record<string, any> {
-    // ... existing logic ...
-    const data: Record<string, any> = {};
+  private generateMockData(): Record<string, unknown> {
+    const data: Record<string, unknown> = {};
     for (const [name, field] of Object.entries(this.model.fields)) {
       const isIdWithDefault =
         name === 'id' && field.attributes?.some((a) => a.startsWith('@default'));
@@ -691,14 +696,14 @@ export class TestBuilder extends BaseBuilder {
         name === 'createdAt' ||
         name === 'updatedAt' ||
         field.api === false ||
-        (field as any).private
+        field.private
       )
         continue;
 
       if (this.isForeignKey(name)) continue;
 
       if (!field.isRequired) continue;
-      let val: any = null;
+      let val: unknown = null;
       if (field.type === 'String') val = `${name}_test`;
       else if (field.type === 'Boolean') val = true;
       else if (field.type === 'Int') val = 10;
@@ -716,9 +721,8 @@ export class TestBuilder extends BaseBuilder {
     return data;
   }
 
-  private generateUpdateData(): Record<string, any> {
-    // ... existing logic ...
-    const data: Record<string, any> = {};
+  private generateUpdateData(): Record<string, unknown> {
+    const data: Record<string, unknown> = {};
     for (const [name, field] of Object.entries(this.model.fields)) {
       const isIdWithDefault =
         name === 'id' && field.attributes?.some((a) => a.startsWith('@default'));
@@ -727,13 +731,12 @@ export class TestBuilder extends BaseBuilder {
         name === 'createdAt' ||
         name === 'updatedAt' ||
         field.api === false ||
-        (field as any).private
+        field.private
       )
         continue;
 
       if (this.isForeignKey(name)) continue;
 
-      // Security: Don't attempt to update ownership, state or reserved fields
       const reserved = [
         'id',
         'createdAt',
@@ -751,7 +754,7 @@ export class TestBuilder extends BaseBuilder {
       ];
       if (reserved.includes(name)) continue;
 
-      let val: any = null;
+      let val: unknown = null;
       if (field.type === 'String') val = `${name}_updated`;
       else if (field.type === 'Boolean') val = false;
       else if (field.type === 'Int') val = 20;

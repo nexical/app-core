@@ -8,7 +8,7 @@ export class VerifyEmailAuthAction {
   public static async run(
     input: VerifyEmailDTO,
     context: APIContext,
-  ): Promise<ServiceResponse<any>> {
+  ): Promise<ServiceResponse<{ userId: string; email: string }>> {
     const tokenStr = String(input.token);
 
     try {
@@ -44,7 +44,7 @@ export class VerifyEmailAuthAction {
         email: user.email,
       });
 
-      return { success: true, data: { userId: user.id, email: user.email } };
+      return { success: true, data: { userId: user.id, email: user.email as string } };
     } catch (error: unknown) {
       console.error('Verify Email Error:', error);
       return {

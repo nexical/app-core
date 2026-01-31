@@ -5,13 +5,16 @@ import type { ComponentType, ReactNode } from 'react';
  */
 export interface ShellContext {
   url: URL;
-  navData: any;
+  navData: Record<string, unknown>;
   isMobile: boolean;
   width: number;
   height: number;
 }
 
-export type ShellComponent = ComponentType<{ children: ReactNode; navData: any }>;
+export type ShellComponent = ComponentType<{
+  children: ReactNode;
+  navData: Record<string, unknown>;
+}>;
 
 /**
  * A matcher can be:

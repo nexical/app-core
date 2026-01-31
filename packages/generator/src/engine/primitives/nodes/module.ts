@@ -6,14 +6,9 @@ import {
   type ModuleDeclarationStructure,
 } from 'ts-morph';
 import { BasePrimitive } from '../core/base-primitive.js';
-import { type ModuleConfig } from '../../types.js';
+import { type ModuleConfig, type FileDefinition } from '../../types.js';
 import { type ValidationResult } from '../contracts.js';
 import { Reconciler } from '../../reconciler.js';
-
-// We need a common interface for SourceFile and ModuleDeclaration as they both hold statements
-// but they don't share a simple common interface in ts-morph export that exposes addClass etc easily without casting
-// However 'any' works for Reconciler.reconcile if we inspect it or change Reconciler signature.
-// Let's assume Reconciler.reconcile will be updated to accept any "StatementedNode"
 
 export class ModulePrimitive extends BasePrimitive<ModuleDeclaration, ModuleConfig> {
   find(parent: SourceFile | ModuleDeclaration) {
@@ -30,8 +25,7 @@ export class ModulePrimitive extends BasePrimitive<ModuleDeclaration, ModuleConf
     }
 
     // Recursively reconcile contents
-    // This requires Reconciler to accept ModuleDeclaration
-    Reconciler.reconcile(node, this.config as any);
+    Reconciler.reconcile(node, this.config as unknown as FileDefinition);
   }
 
   ensure(parent: SourceFile | ModuleDeclaration): ModuleDeclaration {
@@ -44,7 +38,7 @@ export class ModulePrimitive extends BasePrimitive<ModuleDeclaration, ModuleConf
   }
 
   validate(node: ModuleDeclaration): ValidationResult {
-    const result = Reconciler.validate(node as any, this.config as any);
+    const result = Reconciler.validate(node, this.config as unknown as FileDefinition);
     if (!result.valid) return result;
 
     const issues: string[] = [];
@@ -65,13 +59,9 @@ export class ModulePrimitive extends BasePrimitive<ModuleDeclaration, ModuleConf
       kind = ModuleDeclarationKind.Global;
       hasDeclareKeyword = true;
     } else if (this.config.isDeclaration) {
-      // Kind of ambiguous what 'isDeclaration' maps to for 'module'
-      // Usually 'declare module "foo"' -> Module
-      // 'namespace Foo' -> Namespace
-      // For now, if name is quoted string, it's a Module.
       if (this.config.name.includes('"') || this.config.name.includes("'")) {
         kind = ModuleDeclarationKind.Module;
-        hasDeclareKeyword = true; // explicitly declare module "foo"
+        hasDeclareKeyword = true;
       }
     }
 
@@ -80,7 +70,6 @@ export class ModulePrimitive extends BasePrimitive<ModuleDeclaration, ModuleConf
       isExported: this.config.isExported,
       declarationKind: kind,
       hasDeclareKeyword: hasDeclareKeyword,
-      // We don't generate body here because we reconcile it recursively
       statements: [],
     };
   }

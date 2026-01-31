@@ -1,26 +1,29 @@
+import type { APIContext, MiddlewareNext } from 'astro';
 import { getSession } from './lib/auth-session';
+import type { User } from '@modules/user-api/src/sdk';
 
 export default {
-  onRequest: async (context: any, next: any) => {
+  onRequest: async (context: APIContext, next: MiddlewareNext) => {
     const { pathname } = context.url;
     if (pathname.startsWith('/api/auth')) return next();
 
     const session = await getSession(context.request);
+    const user = session?.user as User | undefined;
 
-    if (session?.user && !context.locals.actor) {
+    if (user && !context.locals.actor) {
       context.locals.actor = {
         type: 'user',
-        id: session.user.id,
-        email: session.user.email,
-        name: session.user.name,
-        username: (session.user as any).username,
-        role: (session.user as any).role,
-        status: (session.user as any).status,
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        username: user.username,
+        role: user.role,
+        status: user.status,
       };
     }
 
     // Inject navData into locals for pages to consume
-    const userData = session?.user || context.locals.actor || null;
+    const userData = user || context.locals.actor || null;
 
     context.locals.navData = {
       ...context.locals.navData,
@@ -31,9 +34,9 @@ export default {
               id: userData.id,
               email: userData.email,
               name: userData.name,
-              username: (userData as any).username,
-              role: (userData as any).role,
-              status: (userData as any).status,
+              username: userData.username,
+              role: (userData as User).role,
+              status: (userData as User).status,
             }
           : null,
       },

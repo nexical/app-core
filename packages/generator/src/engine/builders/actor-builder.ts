@@ -3,6 +3,7 @@ import {
   type FileDefinition,
   type VariableConfig,
   type ImportConfig,
+  type NodeContainer,
 } from '../types.js';
 import { BaseBuilder } from './base-builder.js';
 
@@ -11,8 +12,13 @@ export class ActorBuilder extends BaseBuilder {
     super();
   }
 
-  protected getSchema(node?: any): FileDefinition {
-    // ... existing logic ...
+  public override ensure(node: NodeContainer): void {
+    // Fully generated file, clear previous content to avoid duplication
+    if ('removeText' in node) (node as unknown as { removeText(): void }).removeText();
+    super.ensure(node);
+  }
+
+  protected getSchema(node?: NodeContainer): FileDefinition {
     const actorsBody: string[] = [];
     const imports: ImportConfig[] = [
       { moduleSpecifier: '@tests/integration/lib/factory', namedImports: ['Factory'] },
@@ -45,7 +51,7 @@ export class ActorBuilder extends BaseBuilder {
         const idField = config.fields?.identifier || 'email';
         const secretField = config.fields?.secret || 'password';
 
-        body = `async (client: ApiClient, params: any = {}) => {
+        body = `async (client: ApiClient, params: Record<string, unknown> = {}) => {
         const password = params.${secretField} || 'Password123!';
 
         // 1. Get or Create ${model.name}
@@ -58,19 +64,14 @@ export class ActorBuilder extends BaseBuilder {
 
         if (!actor) {
              const factoryParams = { ...params };
-             if (params.password) delete factoryParams.password; // Don't pass raw pass to update if handled
+             if (params.password) delete factoryParams.password; 
              
-            // Factory usually hashes password if provided in defaults, but we ensure it matches the logic
-            // The factory builder handles hashing 'Password123!' by default.
-            
             actor = await Factory.create('${actorName}', {
                 ...factoryParams,
-                 // status: params.status || 'ACTIVE' // TODO: Generic status handling?
             });
         }
 
         // 2. Authenticate
-        // Use Session (Login)
         const res = await client.useSession().post('/api/login', {
             email: actor.${idField},
             password: password
@@ -87,17 +88,15 @@ export class ActorBuilder extends BaseBuilder {
         const ownerField = config.fields?.ownerField;
 
         if (!keyModel || !ownerField) {
-          // Warn or skip
           continue;
         }
 
-        needsDb = true; // Creating keys usually requires direct DB manipulation to set hashedKey
+        needsDb = true;
         needsCrypto = true;
 
-        // Capitalized Key Model for Prisma access
         const keyModelProp = keyModel.charAt(0).toLowerCase() + keyModel.slice(1);
 
-        body = `async (client: ApiClient, params: any = {}) => {
+        body = `async (client: ApiClient, params: Record<string, unknown> = {}) => {
         let actor;
         if (params.id) {
             actor = await Factory.prisma.${actorName}.findUnique({ where: { id: params.id } });
@@ -107,11 +106,9 @@ export class ActorBuilder extends BaseBuilder {
             actor = await Factory.create('${actorName}', params);
         }
 
-        // Create API Key directly
         const randomHex = crypto.randomBytes(32).toString('hex');
         const rawKey = \`ne_test_\${randomHex}\`;
         
-        // This assumes simpler hashing or custom logic. For now, matching the Team Example:
         const hashedKey = crypto.createHash('sha256').update(rawKey).digest('hex');
 
         await db.${keyModelProp}.create({
@@ -119,8 +116,9 @@ export class ActorBuilder extends BaseBuilder {
                 ${ownerField}: actor.id,
                 name: 'Test Key',
                 hashedKey: hashedKey,
-                prefix: 'ne_test_'
-            } as any
+                prefix: 'ne_test_',
+                status: 'ACTIVE'
+            } as unknown as object
         });
 
         client.useToken(rawKey);
@@ -135,12 +133,10 @@ export class ActorBuilder extends BaseBuilder {
 
         const tokenModelLocal = tokenModel.charAt(0).toLowerCase() + tokenModel.slice(1);
 
-        // If tokenModel is different from model, we need to find the relation back to the actor
         const isExternalToken = tokenModel !== model.name;
         let relationFieldStr = '';
 
         if (isExternalToken) {
-          // Find the relation field in tokenModel that points to model.name
           const targetModelDef = this.models.find((m) => m.name === tokenModel);
           if (targetModelDef) {
             const relationEntry = Object.entries(targetModelDef.fields).find(
@@ -151,29 +147,19 @@ export class ActorBuilder extends BaseBuilder {
               relationFieldStr = `${relationName}: { connect: { id: actor.id } },`;
             }
           }
-          // Fallback to ownerField if provided and relation lookup failed (or as scalar override if needed, though scalar + connect is safer via connect)
           if (!relationFieldStr && ownerField) {
-            // If we only have scalar config, we risk Factory generating the relation.
-            // We assume ownerField is the scalar (e.g. userId).
-            // But Factory might still generate 'user' relation default.
-            // Prudent approach: Try to guess relation name from ownerField? (userId -> user)
             const inferred = ownerField.replace('Id', '');
-
-            // Check if the actor model has the ownerField (e.g. userId)
-            // This allows "Link Table" actors (TeamMember) to act as the User
             const hasOnActor = model.fields[ownerField];
             const sourceId = hasOnActor ? `actor.${ownerField}` : `actor.id`;
-
             relationFieldStr = `${inferred}: { connect: { id: ${sourceId} } },`;
           }
         }
 
-        body = `async (client: ApiClient, params: any = {}) => {
+        body = `async (client: ApiClient, params: Record<string, unknown> = {}) => {
         let actor;
         if (params.id) {
             actor = await Factory.prisma.${actorName}.findUnique({ where: { id: params.id } });
         } else if (params.email) {
-            // Support email lookup if available
              actor = await Factory.prisma.${actorName}.findFirst({ where: { email: params.email } });
         }
 
@@ -190,13 +176,11 @@ export class ActorBuilder extends BaseBuilder {
         ${
           keyField.includes('hash')
             ? `
-        // Auto-hash: Field implies hashing, so we hash the raw key at runtime
         dbKey = crypto.createHash('sha256').update(rawKey).digest('hex');
         `
             : ''
         }
         
-        // Create Token
         await Factory.create('${tokenModelLocal}', {
             ${relationFieldStr}
             name: 'Test Token',
@@ -215,7 +199,6 @@ export class ActorBuilder extends BaseBuilder {
       }
     }
 
-    // If no actors defined, output empty object to valid file
     const actorsVariable: VariableConfig = {
       name: 'actors',
       declarationKind: 'const',

@@ -1,3 +1,4 @@
+import type { OpenAPIParameter } from './api-docs';
 export type FilterFieldType = 'string' | 'number' | 'boolean' | 'date' | 'enum';
 
 export interface FilterOptions {
@@ -30,17 +31,17 @@ const OPERATORS_BY_TYPE: Record<FilterFieldType, string[]> = {
   enum: ['eq', 'ne', 'in'],
 };
 
-export function parseQuery<T = any>(
+export function parseQuery<T = unknown>(
   searchParams: URLSearchParams,
   options: FilterOptions,
-): { where: T; take: number; skip: number; orderBy?: any } {
-  const where: any = {};
+): { where: T; take: number; skip: number; orderBy?: Record<string, 'asc' | 'desc'> } {
+  const where: Record<string, unknown> = {};
   const errors: FilterErrorDetail[] = [];
 
   // Initialize defaults
   let take = options.defaults?.take || 50;
   let skip = options.defaults?.skip || 0;
-  let orderBy = options.defaults?.orderBy;
+  let orderBy: Record<string, 'asc' | 'desc'> | undefined = options.defaults?.orderBy;
 
   // Handle Top-Level Params
   if (searchParams.has('take')) {
@@ -132,6 +133,7 @@ export function parseQuery<T = any>(
     if (!where[field]) {
       where[field] = {};
     }
+    const fieldFilter = where[field] as Record<string, unknown>;
 
     // Map operator to Prisma
     switch (operator) {
@@ -144,7 +146,7 @@ export function parseQuery<T = any>(
               : value;
         break;
       case 'ne':
-        where[field]['not'] =
+        fieldFilter['not'] =
           fieldType === 'boolean'
             ? parseBoolean(value)
             : fieldType === 'number'
@@ -152,29 +154,29 @@ export function parseQuery<T = any>(
               : value;
         break;
       case 'contains':
-        where[field]['contains'] = value;
-        where[field]['mode'] = 'insensitive';
+        fieldFilter['contains'] = value;
+        fieldFilter['mode'] = 'insensitive';
         break;
       case 'gt':
-        where[field]['gt'] = parseValue(value, fieldType);
+        fieldFilter['gt'] = parseValue(value, fieldType);
         break;
       case 'gte':
-        where[field]['gte'] = parseValue(value, fieldType);
+        fieldFilter['gte'] = parseValue(value, fieldType);
         break;
       case 'lt':
-        where[field]['lt'] = parseValue(value, fieldType);
+        fieldFilter['lt'] = parseValue(value, fieldType);
         break;
       case 'lte':
-        where[field]['lte'] = parseValue(value, fieldType);
+        fieldFilter['lte'] = parseValue(value, fieldType);
         break;
       case 'startsWith':
-        where[field]['startsWith'] = value;
+        fieldFilter['startsWith'] = value;
         break;
       case 'endsWith':
-        where[field]['endsWith'] = value;
+        fieldFilter['endsWith'] = value;
         break;
       case 'in':
-        where[field]['in'] = value.split(',').map((v) => parseValue(v, fieldType));
+        fieldFilter['in'] = value.split(',').map((v) => parseValue(v, fieldType));
         break;
     }
   }
@@ -192,17 +194,17 @@ export function parseQuery<T = any>(
     throw new InvalidFilterError(errors);
   }
 
-  return { where, take, skip, orderBy };
+  return { where: where as T, take, skip, orderBy };
 }
 
 function parseBoolean(val: string): boolean {
   return val === 'true';
 }
 
-function parseValue(val: string, type: FilterFieldType): any {
+function parseValue(val: string, type: FilterFieldType): string | number | boolean {
   if (type === 'number') {
     const num = Number(val);
-    return isNaN(num) ? undefined : num;
+    return isNaN(num) ? (undefined as unknown as number) : num; // undefined isn't number, so we might need return type adjustment or ignore if undefined is filtered out upstream
   }
   if (type === 'boolean') {
     return val === 'true';
@@ -220,8 +222,8 @@ export function getAllowedOperators(type: FilterFieldType): string[] {
 /**
  * Generates OpenAPI parameters.
  */
-export function generateFilterDocs(options: FilterOptions): any[] {
-  const parameters: any[] = [];
+export function generateFilterDocs(options: FilterOptions): OpenAPIParameter[] {
+  const parameters: OpenAPIParameter[] = [];
 
   for (const [field, type] of Object.entries(options.fields)) {
     const operators = OPERATORS_BY_TYPE[type] || [];

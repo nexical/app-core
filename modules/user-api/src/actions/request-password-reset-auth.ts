@@ -8,7 +8,7 @@ export class RequestPasswordResetAuthAction {
   public static async run(
     input: RequestPasswordResetDTO,
     context: APIContext,
-  ): Promise<ServiceResponse<any>> {
+  ): Promise<ServiceResponse<Record<string, unknown>>> {
     const normalizedEmail = String(input.email).toLowerCase();
 
     try {

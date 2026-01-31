@@ -1,7 +1,8 @@
 /** @vitest-environment node */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import integration from '../../../../src/lib/integrations/module-email-theme-integration';
-import { ModuleDiscovery } from '../../../../src/lib/modules/module-discovery';
+import { ModuleDiscovery, type LoadedModule } from '../../../../src/lib/modules/module-discovery';
+import type { AstroIntegration } from 'astro';
 import fs from 'node:fs';
 
 vi.mock('node:fs', () => ({
@@ -24,17 +25,22 @@ describe('module-email-theme-integration', () => {
   });
 
   it('should aggregate themes and write config file', async () => {
-    const inst = integration();
+    const inst = integration() as AstroIntegration;
     vi.mocked(ModuleDiscovery.loadModules).mockResolvedValue([
-      { name: 'base', config: { theme: { primary: 'blue' } } } as any,
-      { name: 'no-theme', config: {} } as any, // Branch 25: false
-      { name: 'override', config: { theme: { primary: 'red', secondary: 'green' } } } as any,
+      { name: 'base', config: { theme: { primary: 'blue' } } } as unknown as LoadedModule,
+      { name: 'no-theme', config: {} } as unknown as LoadedModule,
+      {
+        name: 'override',
+        config: { theme: { primary: 'red', secondary: 'green' } },
+      } as unknown as LoadedModule,
     ]);
 
     vi.mocked(fs.existsSync).mockReturnValue(true);
 
-    const hook = inst.hooks['astro:config:setup'] as any;
-    await hook({});
+    const hook = inst.hooks['astro:config:setup'];
+    if (hook) {
+      await (hook as any)({});
+    }
 
     expect(fs.writeFileSync).toHaveBeenCalledWith(
       expect.stringContaining('email-theme-config.ts'),
@@ -47,12 +53,14 @@ describe('module-email-theme-integration', () => {
   });
 
   it('should create output directory if it does not exist', async () => {
-    const inst = integration();
+    const inst = integration() as AstroIntegration;
     vi.mocked(ModuleDiscovery.loadModules).mockResolvedValue([]);
     vi.mocked(fs.existsSync).mockReturnValue(false);
 
-    const hook = inst.hooks['astro:config:setup'] as any;
-    await hook({});
+    const hook = inst.hooks['astro:config:setup'];
+    if (hook) {
+      await (hook as any)({});
+    }
 
     expect(fs.mkdirSync).toHaveBeenCalled();
     expect(fs.writeFileSync).toHaveBeenCalled();

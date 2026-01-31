@@ -55,7 +55,7 @@ export class UserService {
       const input = await HookSystem.filter('user.beforeCreate', data);
 
       const newItem = await db.$transaction(async (tx) => {
-        const created = await tx.user.create({ data: input as any, select });
+        const created = await tx.user.create({ data: input as Prisma.UserCreateInput, select });
         await HookSystem.dispatch('user.created', {
           id: created.id,
           actorId: 'system',
@@ -84,7 +84,7 @@ export class UserService {
       const updatedItem = await db.$transaction(async (tx) => {
         const updated = await tx.user.update({
           where: { id },
-          data: input as any,
+          data: input as Prisma.UserUpdateInput,
           select,
         });
         await HookSystem.dispatch('user.updated', {

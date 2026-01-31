@@ -3,10 +3,10 @@
  * Replaces direct console usage to ensure consistent formatting.
  */
 export const Logger = {
-  info: (message: string, meta?: Record<string, any>) => {
-    console.log(JSON.stringify({ level: 'info', message, ...meta }));
+  info: (message: string, meta?: Record<string, unknown>) => {
+    console.info(JSON.stringify({ level: 'info', message, ...meta }));
   },
-  error: (message: string, error?: unknown, meta?: Record<string, any>) => {
+  error: (message: string, error?: unknown, meta?: Record<string, unknown>) => {
     console.error(
       JSON.stringify({
         level: 'error',
@@ -16,10 +16,10 @@ export const Logger = {
       }),
     );
   },
-  warn: (message: string, meta?: Record<string, any>) => {
+  warn: (message: string, meta?: Record<string, unknown>) => {
     console.warn(JSON.stringify({ level: 'warn', message, ...meta }));
   },
-  debug: (message: string, meta?: Record<string, any>) => {
+  debug: (message: string, meta?: Record<string, unknown>) => {
     // Only log debug in development if needed, or use a flag
     if (process.env.NODE_ENV !== 'production') {
       console.debug(JSON.stringify({ level: 'debug', message, ...meta }));

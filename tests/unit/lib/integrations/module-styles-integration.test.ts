@@ -1,6 +1,7 @@
 /** @vitest-environment node */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import integration from '../../../../src/lib/integrations/module-styles-integration';
+import type { AstroIntegration } from 'astro';
 import fs from 'node:fs';
 
 vi.mock('node:fs', () => ({
@@ -18,17 +19,20 @@ describe('module-styles-integration', () => {
   });
 
   it('should inject Core and Module CSS', () => {
-    const inst = integration();
-    vi.mocked(fs.existsSync).mockImplementation((p: any) => {
-      if (p.endsWith('src/styles/styles.css')) return true;
-      if (p.endsWith('modules/mod1/styles.css')) return true;
-      if (p.endsWith('modules')) return true;
+    const inst = integration() as AstroIntegration;
+    vi.mocked(fs.existsSync).mockImplementation((p: fs.PathLike) => {
+      const pathStr = p.toString();
+      if (pathStr.endsWith('src/styles/styles.css')) return true;
+      if (pathStr.endsWith('modules/mod1/styles.css')) return true;
+      if (pathStr.endsWith('modules')) return true;
       return false;
     });
     vi.mocked(fs.readdirSync).mockReturnValue(['mod1', 'mod2'] as any);
 
-    const hook = inst.hooks['astro:config:setup'] as any;
-    hook({ injectScript });
+    const hook = inst.hooks['astro:config:setup'];
+    if (hook) {
+      hook({ injectScript } as any);
+    }
 
     expect(injectScript).toHaveBeenCalledWith(
       'page',
@@ -45,11 +49,13 @@ describe('module-styles-integration', () => {
   });
 
   it('should handle missing modules directory', () => {
-    const inst = integration();
+    const inst = integration() as AstroIntegration;
     vi.mocked(fs.existsSync).mockReturnValue(false);
 
-    const hook = inst.hooks['astro:config:setup'] as any;
-    hook({ injectScript });
+    const hook = inst.hooks['astro:config:setup'];
+    if (hook) {
+      (hook as any)({ injectScript });
+    }
 
     expect(injectScript).not.toHaveBeenCalled();
   });

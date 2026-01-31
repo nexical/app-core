@@ -1,6 +1,7 @@
 /** @vitest-environment node */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ModuleI18nIntegration } from '../../../../src/lib/integrations/module-i18n-integration';
+import type { LoadedModule } from '../../../../src/lib/modules/module-discovery';
 import {
   getI18nCoreLocales,
   getI18nModuleLocales,
@@ -74,10 +75,10 @@ describe('module-i18n-integration', () => {
       '../../../modules/delta/module.config.mjs': {}, // empty config, direct export
     });
 
-    const modules = (ModuleI18nIntegration as any).getRuntimeModules();
-    expect(modules.find((m: any) => m.name === 'gamma').config.type).toBe('unknown');
-    expect(modules.find((m: any) => m.name === 'delta').config.type).toBe('feature');
-    expect(modules.find((m: any) => m.name === 'delta').config.order).toBe(50);
+    const modules = (ModuleI18nIntegration as any).getRuntimeModules() as LoadedModule[];
+    expect(modules.find((m) => m.name === 'gamma')?.config.type).toBe('unknown');
+    expect(modules.find((m) => m.name === 'delta')?.config.type).toBe('feature');
+    expect(modules.find((m) => m.name === 'delta')?.config.order).toBe(50);
 
     // Verify sorting logic for unknown phase and missing order
     expect(modules[0].name).toBe('alpha'); // core (0)
@@ -91,7 +92,7 @@ describe('module-i18n-integration', () => {
       '../../../modules/alpha/module.config.mjs': { name: 'alpha' }, // direct export
       '../../../modules/beta/module.config.mjs': { default: null }, // fallback to empty
     });
-    const modules = (ModuleI18nIntegration as any).getRuntimeModules();
+    const modules = (ModuleI18nIntegration as any).getRuntimeModules() as LoadedModule[];
     expect(modules.length).toBe(2);
   });
 
@@ -120,9 +121,9 @@ describe('module-i18n-integration', () => {
       { name: 'feat2', config: { type: 'feature', order: 10 } },
       { name: 'core', config: { type: 'core', order: 1 } },
       { name: 'unknown', config: { type: 'unknown', order: 5 } },
-    ] as any;
+    ] as unknown as LoadedModule[];
 
-    const sorted = (ModuleI18nIntegration as any).sortModules(modules);
+    const sorted = (ModuleI18nIntegration as any).sortModules(modules) as LoadedModule[];
 
     expect(sorted[0].name).toBe('core');
     expect(sorted[1].name).toBe('unknown'); // phase 20 (feature fallback), order 5
@@ -135,9 +136,9 @@ describe('module-i18n-integration', () => {
     const modules = [
       { name: 'b', config: { type: 'feature' } }, // order defaults to 50
       { name: 'a', config: { type: 'feature', order: 10 } },
-    ] as any;
+    ] as unknown as LoadedModule[];
 
-    const sorted = (ModuleI18nIntegration as any).sortModules(modules);
+    const sorted = (ModuleI18nIntegration as any).sortModules(modules) as LoadedModule[];
     expect(sorted[0].name).toBe('a');
     expect(sorted[1].name).toBe('b');
   });

@@ -3,7 +3,10 @@ import type { LogoutDTO } from '../sdk/types';
 import type { APIContext } from 'astro';
 
 export class LogoutAuthAction {
-  public static async run(input: LogoutDTO, context: APIContext): Promise<ServiceResponse<any>> {
+  public static async run(
+    input: LogoutDTO,
+    context: APIContext,
+  ): Promise<ServiceResponse<Record<string, unknown>>> {
     return { success: true, data: {} };
   }
 }

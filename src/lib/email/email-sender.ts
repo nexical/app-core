@@ -1,7 +1,11 @@
 import { HookSystem } from '../modules/hooks';
 import { config } from '../core/config';
 
-let transporter: any = null;
+interface Transporter {
+  sendMail: (options: unknown) => Promise<{ messageId: string; response: string }>;
+}
+
+let transporter: Transporter | null = null;
 
 async function getTransporter() {
   if (transporter) return transporter;
@@ -18,7 +22,7 @@ async function getTransporter() {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
     },
-  });
+  }) as unknown as Transporter;
   return transporter;
 }
 
@@ -42,7 +46,7 @@ export const sendEmail = async ({ to, subject, html }: SendEmailOptions) => {
       process.env.CI === 'true' ||
       process.env.NODE_ENV === 'test'
     ) {
-      console.log(`[MOCK EMAIL] To: ${to} | Subject: ${subject}`);
+      console.info(`[MOCK EMAIL] To: ${to} | Subject: ${subject}`);
       await HookSystem.dispatch('core.email.sent', {
         to,
         subject,
@@ -62,17 +66,17 @@ export const sendEmail = async ({ to, subject, html }: SendEmailOptions) => {
     };
 
     if (process.env.NODE_ENV === 'development') {
-      console.log(`[DEV MODE] Sending email to ${to} | Subject: ${subject}`);
+      console.info(`[DEV MODE] Sending email to ${to} | Subject: ${subject}`);
     }
 
-    const info = await transport.sendMail(options);
+    const info = await transport!.sendMail(options);
 
     if (process.env.NODE_ENV === 'development') {
-      const previewUrl = nodemailer.getTestMessageUrl(info);
+      const previewUrl = nodemailer.getTestMessageUrl(info as any);
       if (previewUrl) {
-        console.log('Preview URL: %s', previewUrl);
+        console.info('Preview URL: %s', previewUrl);
       } else {
-        console.log(`Email sent: ${info.messageId}`);
+        console.info(`Email sent: ${info.messageId}`);
       }
     }
 

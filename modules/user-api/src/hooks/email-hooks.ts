@@ -8,7 +8,7 @@ import { db } from '@/lib/core/db';
 export class EmailHooks {
   static init() {
     // Handle User Registration / Verification
-    HookSystem.on('user.created', async (event: any) => {
+    HookSystem.on('user.created', async (event: { id: string }) => {
       const { id } = event;
       const user = await db.user.findUnique({ where: { id } });
       if (!user || user.emailVerified || !user.email) return;
@@ -47,7 +47,7 @@ export class EmailHooks {
     });
 
     // Handle Invitation
-    HookSystem.on('invitation.created', async (event: any) => {
+    HookSystem.on('invitation.created', async (event: { id: string }) => {
       const { id } = event;
       const invitation = await db.invitation.findUnique({ where: { id } });
       if (!invitation) return;

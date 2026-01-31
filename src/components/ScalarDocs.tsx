@@ -3,7 +3,7 @@ import React from 'react';
 import '@scalar/api-reference-react/style.css';
 
 interface Props {
-  spec: Record<string, any>;
+  spec: Record<string, unknown>;
 }
 
 export const ScalarDocs = ({ spec }: Props) => {

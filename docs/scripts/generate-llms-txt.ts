@@ -13,7 +13,7 @@ const OUTPUT_FULL = path.join(PUBLIC_DIR, 'llms-full.txt');
 // Configurable Base URL
 const BASE_URL = process.env.SITE_URL || 'http://localhost:4321';
 
-console.log(`Generating AI context files...`);
+console.info(`Generating AI context files...`);
 
 if (!fs.existsSync(PUBLIC_DIR)) {
   fs.mkdirSync(PUBLIC_DIR, { recursive: true });
@@ -101,4 +101,4 @@ summaryContent += `For the complete context, access [llms-full.txt](${BASE_URL}/
 fs.writeFileSync(OUTPUT_SUMMARY, summaryContent);
 fs.writeFileSync(OUTPUT_FULL, fullContent);
 
-console.log(`Generated ${OUTPUT_SUMMARY} and ${OUTPUT_FULL}`);
+console.info(`Generated ${OUTPUT_SUMMARY} and ${OUTPUT_FULL}`);

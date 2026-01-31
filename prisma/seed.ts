@@ -8,7 +8,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const modulesDir = path.resolve(__dirname, '../modules');
 
 export async function seed() {
-  console.log('Starting database seeding...');
+  console.info('Starting database seeding...');
 
   if (fs.existsSync(modulesDir)) {
     const modules = fs.readdirSync(modulesDir);
@@ -31,7 +31,7 @@ export async function seed() {
     }
   }
 
-  console.log('Database seeding completed.');
+  console.info('Database seeding completed.');
 }
 
 // Execute if run directly

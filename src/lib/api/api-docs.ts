@@ -6,14 +6,58 @@ const allApiModules = getApiModules();
 
 export type ApiActor = App.Locals['actor'];
 
+export interface OpenAPIParameter {
+  name: string;
+  in: 'query' | 'header' | 'path' | 'cookie';
+  description?: string;
+  required?: boolean;
+  deprecated?: boolean;
+  allowEmptyValue?: boolean;
+  schema?: Record<string, unknown>; // JSON Schema
+  style?: string;
+  explode?: boolean;
+  allowReserved?: boolean;
+  example?: unknown;
+  examples?: Record<string, unknown>;
+}
+
+export interface OpenAPIRequestBody {
+  description?: string;
+  content: Record<
+    string,
+    {
+      schema?: Record<string, unknown>; // JSON Schema
+      example?: unknown;
+      examples?: Record<string, unknown>;
+      encoding?: Record<string, unknown>;
+    }
+  >;
+  required?: boolean;
+}
+
+export interface OpenAPIResponse {
+  description: string;
+  headers?: Record<string, unknown>;
+  content?: Record<
+    string,
+    {
+      schema?: Record<string, unknown>;
+      example?: unknown;
+      examples?: Record<string, unknown>;
+      encoding?: Record<string, unknown>;
+    }
+  >;
+  links?: Record<string, unknown>;
+}
+
 export interface OpenAPIRouteDocs {
   tags?: string[];
   summary?: string;
   description?: string;
   operationId?: string;
-  parameters?: any[]; // OpenAPI Parameters
-  requestBody?: any; // OpenAPI Request Body
-  responses?: Record<string, any>; // OpenAPI Responses
+  parameters?: OpenAPIParameter[];
+  requestBody?: OpenAPIRequestBody;
+  responses?: Record<string, OpenAPIResponse>;
   /**
    * Predicate to determine if this endpoint should be visible in the generated docs.
    * If undefined, it is visible to everyone (public).
@@ -31,7 +75,7 @@ export interface ApiRouteHandler extends APIRoute {
   schema?: OpenAPIRouteDocs;
 }
 
-export type ApiHandler<T = any> = (
+export type ApiHandler<T = unknown> = (
   context: APIContext,
   actor: ApiActor,
 ) => Promise<Response | T> | Response | T;
@@ -70,16 +114,16 @@ export function defineApi<T>(handler: ApiHandler<T>, docs: OpenAPIRouteDocs = {}
         status: 200,
         headers: { 'Content-Type': 'application/json' },
       });
-    } catch (e: any) {
+    } catch (e: unknown) {
       // 4. Error Handling
-      const err = e || new Error('Unknown error');
-      const errName = (err as any)?.name || 'Error';
-      const errMessage = (err as any)?.message || 'Unknown';
+      const err = e instanceof Error ? e : new Error(String(e));
+      const errName = err.name || 'Error';
+      const errMessage = err.message || 'Unknown';
       console.error(`[API Error] ${errName}: ${errMessage}`);
 
       let status = 500;
-      const message = (err as any)?.message || '';
-      const lowerMessage = typeof message === 'string' ? message.toLowerCase() : '';
+      const message = err.message || '';
+      const lowerMessage = message.toLowerCase();
 
       if (
         lowerMessage.includes('unauthorized') ||
@@ -89,7 +133,7 @@ export function defineApi<T>(handler: ApiHandler<T>, docs: OpenAPIRouteDocs = {}
       ) {
         status = 403;
       } else if (
-        (err as any)?.name === 'ZodError' ||
+        errName === 'ZodError' ||
         lowerMessage.includes('invalid') ||
         lowerMessage.includes('already exists') ||
         lowerMessage.includes('exists') ||
@@ -100,10 +144,16 @@ export function defineApi<T>(handler: ApiHandler<T>, docs: OpenAPIRouteDocs = {}
         status = 404;
       }
 
+      // Safe access to potential extra properties like 'details' or 'issues'
+      // commonly found in ZodError or custom ApiError
+      const details =
+        (err as { details?: unknown; issues?: unknown }).details ||
+        (err as { issues?: unknown }).issues;
+
       return new Response(
         JSON.stringify({
           error: message || 'Internal Server Error',
-          details: (err as any)?.details || (err as any)?.issues || undefined,
+          details,
         }),
         {
           status,
@@ -126,8 +176,8 @@ export function defineApi<T>(handler: ApiHandler<T>, docs: OpenAPIRouteDocs = {}
 export async function generateDocs(
   module: { path: string; name: string },
   actor?: ApiActor,
-): Promise<Record<string, any>> {
-  const paths: Record<string, any> = {};
+): Promise<Record<string, Record<string, unknown>>> {
+  const paths: Record<string, Record<string, unknown>> = {};
   const modulePrefix = `/modules/${module.name}/src/pages/api`;
 
   for (const [fileIdentifier, mod] of Object.entries(allApiModules)) {
@@ -146,7 +196,7 @@ export async function generateDocs(
 
     // Convert Astro [param] to OpenAPI {param}
     const openApiPath = routePath.replace(/\[([^\]]+)\]/g, '{$1}');
-    const pathItem: Record<string, any> = {};
+    const pathItem: Record<string, unknown> = {};
     const apiMod = mod as Record<string, ApiRouteHandler>;
 
     const methods = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'HEAD', 'OPTIONS'];

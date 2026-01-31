@@ -4,11 +4,11 @@ import { cleanup } from '@testing-library/react';
 import * as matchers from '@testing-library/jest-dom/matchers';
 import { afterEach, vi, expect } from 'vitest';
 
-expect.extend(matchers as any);
+expect.extend(matchers as unknown as Parameters<typeof expect.extend>[0]);
 import { TextEncoder, TextDecoder } from 'util';
 
 global.TextEncoder = TextEncoder;
-global.TextDecoder = TextDecoder as any;
+global.TextDecoder = TextDecoder as unknown as typeof global.TextDecoder;
 
 // Automatically cleanup after each test to prevent memory leaks and state pollution
 afterEach(() => {
@@ -18,11 +18,14 @@ afterEach(() => {
 // Mock framer-motion to render children statically
 vi.mock('framer-motion', () => ({
   motion: {
-    div: ({ children, ...props }: any) => React.createElement('div', props, children),
-    button: ({ children, ...props }: any) => React.createElement('button', props, children),
-    span: ({ children, ...props }: any) => React.createElement('span', props, children),
+    div: ({ children, ...props }: React.HTMLAttributes<HTMLDivElement>) =>
+      React.createElement('div', props, children),
+    button: ({ children, ...props }: React.ButtonHTMLAttributes<HTMLButtonElement>) =>
+      React.createElement('button', props, children),
+    span: ({ children, ...props }: React.HTMLAttributes<HTMLSpanElement>) =>
+      React.createElement('span', props, children),
   },
-  AnimatePresence: ({ children }: any) => children,
+  AnimatePresence: ({ children }: { children: React.ReactNode }) => children,
 }));
 
 // Mock ResizeObserver for Radix components

@@ -1,4 +1,6 @@
-import { Scope } from 'ts-morph';
+import { Scope, SourceFile, ModuleDeclaration } from 'ts-morph';
+
+export type NodeContainer = SourceFile | ModuleDeclaration;
 
 export interface ModelField {
   type: string;

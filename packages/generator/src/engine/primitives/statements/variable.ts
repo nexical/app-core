@@ -1,11 +1,9 @@
-import { type VariableStatementConfig } from '../../types';
-import { StatementPrimitive } from './statement-primitive';
+import { type VariableStatementConfig } from '../../types.js';
+import { StatementPrimitive } from './statement-primitive.js';
 
-export class VariableStatementPrimitive extends StatementPrimitive<any, VariableStatementConfig> {
+export class VariableStatementPrimitive extends StatementPrimitive<VariableStatementConfig> {
   generate(): string {
-    // e.g. "const name: Type = init;"
     const parts: string[] = [];
-    // Kind
     parts.push(this.config.declarationKind);
 
     const declarations = this.config.declarations.map((d) => {

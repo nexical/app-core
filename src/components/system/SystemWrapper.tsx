@@ -3,7 +3,7 @@ import { I18nProvider } from './I18nProvider';
 
 interface I18nData {
   language: string;
-  store: Record<string, any>;
+  store: Record<string, unknown>;
   availableLanguages: string[];
 }
 

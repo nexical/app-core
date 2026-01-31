@@ -25,6 +25,18 @@ vi.mock('../../../../src/components/ui/scroll-area', () => ({
   ScrollArea: ({ children }: any) => <div data-testid="scroll-area">{children}</div>,
 }));
 
+vi.mock('../../../../src/components/ui/resizable', () => ({
+  ResizablePanelGroup: ({ children }: any) => <div>{children}</div>,
+  ResizablePanel: ({ children, order, defaultSize }: any) => (
+    <div data-testid={`resizable-panel-${order}`} data-default-size={defaultSize}>
+      {children}
+    </div>
+  ),
+  ResizableHandle: ({ withHandle }: any) => (
+    <div title={withHandle ? 'Drag to resize' : 'Handle'} role="separator" />
+  ),
+}));
+
 vi.mock('../../../../src/lib/core/config', () => ({
   config: {
     PUBLIC_SITE_NAME: 'Test Site',
@@ -93,7 +105,7 @@ describe('AppShellDesktop', () => {
       render(<AppShellDesktop>Content</AppShellDesktop>);
     });
 
-    const handle = screen.getByTitle('Drag to resize sidebar');
+    const handle = screen.getByRole('slider', { name: 'Resize sidebar' });
 
     // Start resizing
     fireEvent.mouseDown(handle);
@@ -128,7 +140,7 @@ describe('AppShellDesktop', () => {
       render(<AppShellDesktop>Content</AppShellDesktop>);
     });
 
-    const handle = screen.getByTitle('Drag to resize detail panel');
+    const handle = screen.getByRole('slider', { name: 'Resize details panel' });
 
     // Start resizing
     fireEvent.mouseDown(handle);

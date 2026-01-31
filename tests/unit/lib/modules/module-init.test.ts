@@ -26,7 +26,7 @@ describe('module-init', () => {
       mod1: { init: modInit },
     });
 
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const logSpy = vi.spyOn(console, 'info').mockImplementation(() => {});
 
     await initializeModules();
 
