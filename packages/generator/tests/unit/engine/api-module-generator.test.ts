@@ -4,12 +4,19 @@ import { ApiModuleGenerator } from '@nexical/generator/engine/api-module-generat
 import { ModelParser } from '@nexical/generator/engine/model-parser';
 import { ServiceBuilder } from '@nexical/generator/engine/builders/service-builder';
 import { ApiBuilder } from '@nexical/generator/engine/builders/api-builder';
-import { Project } from 'ts-morph';
 import fs from 'fs';
 
 vi.mock('@nexical/generator/engine/model-parser');
 vi.mock('@nexical/generator/engine/builders/service-builder');
 vi.mock('@nexical/generator/engine/builders/api-builder');
+vi.mock('@nexical/generator/utils/template-loader', () => ({
+  TemplateLoader: {
+    load: () => ({
+      raw: '/* mocked content */',
+      getNodes: () => [],
+    }),
+  },
+}));
 const fsMocks = vi.hoisted(() => {
   return {
     existsSync: vi.fn(),
