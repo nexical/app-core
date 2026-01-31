@@ -23,6 +23,7 @@ export class ApiModuleGenerator extends ModuleGenerator {
     const apiYamlPath = path.join(this.modulePath, 'api.yaml');
 
     const { models, enums, config } = ModelParser.parse(modelsYamlPath);
+
     if (models.length === 0) {
       console.info('No models found in models.yaml. Skipping generation.');
       return;
@@ -38,8 +39,10 @@ export class ApiModuleGenerator extends ModuleGenerator {
 
     const processedModels = new Set(models.map((m) => m.name));
 
-    // 2. Iterate Models
+    // 2. Services, API Pages, SDK
     for (const model of models) {
+      // Skip if explicitly disabled
+      if (!model.db && !model.api) continue;
       const name = model.name;
       const kebabName = name
         .replace(/([a-z])([A-Z])/g, '$1-$2')
@@ -83,6 +86,18 @@ export class ApiModuleGenerator extends ModuleGenerator {
           new ApiBuilder(model, models, this.moduleName, 'custom', routes).ensure(apiFile);
 
           for (const route of routes) {
+            // Validation: Strict Schema Enforcement
+            if (!route.input) {
+              throw new Error(
+                `[Strict Schema] Route '${route.verb} ${route.path}' in model '${name}' is missing 'input'. Use 'input: none' if no input is required.`,
+              );
+            }
+            if (!route.output) {
+              throw new Error(
+                `[Strict Schema] Route '${route.verb} ${route.path}' in model '${name}' is missing 'output'. Use 'output: none' if no output is returned.`,
+              );
+            }
+
             // Action Stub
             const actionBase =
               route.action ||
@@ -96,11 +111,11 @@ export class ApiModuleGenerator extends ModuleGenerator {
                   .join('') + 'Action'
               : `${route.method.charAt(0).toUpperCase() + route.method.slice(1)}${name}Action`;
 
-            new ActionBuilder(
-              actionName,
-              route.input || 'unknown',
-              route.output || 'unknown',
-            ).ensure(actionFile);
+            // Support "none" keyword mapped to "void"
+            const inputType = route.input === 'none' ? 'void' : route.input;
+            const outputType = route.output === 'none' ? 'void' : route.output;
+
+            new ActionBuilder(actionName, inputType, outputType).ensure(actionFile);
           }
         }
 
@@ -203,6 +218,18 @@ export class ApiModuleGenerator extends ModuleGenerator {
         ).ensure(apiFile);
 
         for (const route of routes) {
+          // Validation: Strict Schema Enforcement
+          if (!route.input) {
+            throw new Error(
+              `[Strict Schema] Route '${route.verb} ${route.path}' in virtual model '${entityName}' is missing 'input'. Use 'input: none' if no input is required.`,
+            );
+          }
+          if (!route.output) {
+            throw new Error(
+              `[Strict Schema] Route '${route.verb} ${route.path}' in virtual model '${entityName}' is missing 'output'. Use 'output: none' if no output is returned.`,
+            );
+          }
+
           // Action
           const actionBase =
             route.action ||
@@ -216,9 +243,11 @@ export class ApiModuleGenerator extends ModuleGenerator {
                 .join('') + 'Action'
             : `${route.method.charAt(0).toUpperCase() + route.method.slice(1)}${entityName}Action`;
 
-          new ActionBuilder(actionName, route.input || 'unknown', route.output || 'unknown').ensure(
-            actionFile,
-          );
+          // Support "none" keyword mapped to "void"
+          const inputType = route.input === 'none' ? 'void' : route.input;
+          const outputType = route.output === 'none' ? 'void' : route.output;
+
+          new ActionBuilder(actionName, inputType, outputType).ensure(actionFile);
         }
       }
 

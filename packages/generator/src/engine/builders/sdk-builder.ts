@@ -126,11 +126,15 @@ export class SdkBuilder extends BaseBuilder {
     for (const route of this.customRoutes) {
       const pathParams = route.path.match(/\[(\w+)\]/g)?.map((p) => p.slice(1, -1)) || [];
 
+      const defaultOutput = route.verb === 'DELETE' ? 'void' : 'unknown';
+      let outputType = route.output || defaultOutput;
+      if (outputType === 'none') outputType = 'void';
+
       const methodConfig: MethodConfig = {
         name: route.method,
         isAsync: true,
         isStatic: false,
-        returnType: `Promise<{ success: boolean; data: ${route.output || 'unknown'}; error?: string }>`,
+        returnType: `Promise<{ success: boolean; data: ${outputType}; error?: string }>`,
         parameters: pathParams.map((p) => ({ name: p, type: 'string' })),
         statements: [],
       };
@@ -139,7 +143,7 @@ export class SdkBuilder extends BaseBuilder {
       // Replace [param] with ${param} for template literal
       url = url.replace(/\[(\w+)\]/g, '${$1}');
 
-      if (['POST', 'PUT', 'PATCH'].includes(route.verb)) {
+      if (['POST', 'PUT', 'PATCH'].includes(route.verb) && route.input !== 'none') {
         const inputType = route.input || 'unknown';
         methodConfig.parameters!.push({ name: 'data', type: inputType });
         methodConfig.statements!.push(
@@ -177,9 +181,19 @@ export class SdkBuilder extends BaseBuilder {
     // Collect other types from custom routes
     const otherTypes = new Set<string>();
     for (const route of this.customRoutes) {
-      if (route.input && route.input !== 'any' && route.input !== entityName)
+      if (
+        route.input &&
+        route.input !== 'any' &&
+        route.input !== 'none' &&
+        route.input !== entityName
+      )
         otherTypes.add(route.input.replace('[]', ''));
-      if (route.output && route.output !== 'any' && route.output !== entityName)
+      if (
+        route.output &&
+        route.output !== 'any' &&
+        route.output !== 'none' &&
+        route.output !== entityName
+      )
         otherTypes.add(route.output.replace('[]', ''));
     }
 

@@ -84,6 +84,7 @@ export class TypeBuilder extends BaseBuilder {
     }
 
     return {
+      header: '// GENERATED CODE - DO NOT MODIFY BY HAND',
       imports: imports,
       exports: exportsConfig,
       interfaces: interfaces,

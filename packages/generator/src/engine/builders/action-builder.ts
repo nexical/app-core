@@ -17,8 +17,9 @@ export class ActionBuilder extends BaseBuilder {
   }
 
   protected getSchema(node?: NodeContainer): FileDefinition {
-    // Check if class/method already exist
+    const capturedReturnType = `Promise<ServiceResponse<${this.outputType}>>`;
     let existingStatements: string[] | undefined;
+
     if (node && 'getClass' in node) {
       const cls = node.getClass(this.actionName);
       if (cls) {
@@ -41,9 +42,9 @@ export class ActionBuilder extends BaseBuilder {
       name: 'run',
       isStatic: true,
       isAsync: true,
-      returnType: `Promise<ServiceResponse<${this.outputType}>>`,
+      returnType: capturedReturnType,
       parameters: [
-        { name: 'input', type: this.inputType },
+        { name: this.inputType === 'void' ? '_input' : 'input', type: this.inputType },
         { name: 'context', type: 'APIContext' },
       ],
       statements: existingStatements || [
