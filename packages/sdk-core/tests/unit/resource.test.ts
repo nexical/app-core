@@ -6,13 +6,13 @@ class TestResource extends BaseResource {
   public async testRequest<T>(
     method: string,
     path: string,
-    body?: any,
+    body?: unknown,
     options?: RequestInit,
   ): Promise<T> {
     return this._request<T>(method, path, body, options);
   }
 
-  public testBuildQuery(filters: Record<string, any>): string {
+  public testBuildQuery(filters: Record<string, unknown>): string {
     return this.buildQuery(filters);
   }
 }

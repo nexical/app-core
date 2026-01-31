@@ -2,15 +2,16 @@
 import React from 'react';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import type { Row } from '@tanstack/react-table';
 import { DataTableRowActions } from '../../../../../src/components/ui/data-table/data-table-row-actions';
 
 describe('DataTableRowActions', () => {
-  let rowMock: any;
+  let rowMock: Row<unknown>;
 
   beforeEach(() => {
     rowMock = {
       getValue: vi.fn(),
-    };
+    } as unknown as Row<unknown>;
   });
 
   afterEach(() => {

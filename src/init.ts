@@ -11,4 +11,5 @@ ShellRegistry.register('desktop', AppShellDesktop, (ctx) => !ctx.isMobile);
 // Override for API Docs
 ShellRegistry.register('api-docs', ApiDocsShell, (ctx) => ctx.url.pathname.startsWith('/api/docs'));
 
-console.log('[Core] Initialized.');
+import { Logger } from '@/lib/core/logger';
+Logger.info('[Core] Initialized.');

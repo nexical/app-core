@@ -12,6 +12,7 @@ describe('ApiClient', () => {
 
   it('should strip trailing slash from baseUrl', () => {
     const clientWithSlash = new ApiClient({ baseUrl: 'https://example.com/' });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     expect((clientWithSlash as any).baseUrl).toBe('https://example.com');
   });
 
@@ -84,10 +85,11 @@ describe('ApiClient', () => {
 
     try {
       await client.request('GET', '/test');
-    } catch (error: any) {
-      expect(error).toBeInstanceOf(NexicalError);
-      expect(error.status).toBe(500);
-      expect(error.data).toBe('Something went wrong');
+    } catch (error) {
+      const err = error as NexicalError;
+      expect(err).toBeInstanceOf(NexicalError);
+      expect(err.status).toBe(500);
+      expect(err.data).toBe('Something went wrong');
     }
   });
 

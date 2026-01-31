@@ -23,7 +23,8 @@ describe('ApiGuard', () => {
 
   it('should call policy.check if role is found', async () => {
     const mockPolicy = { check: vi.fn().mockResolvedValue(undefined) };
-    vi.mocked(roleRegistry.get).mockReturnValue(mockPolicy as any);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    vi.mocked(roleRegistry.get).mockReturnValue(mockPolicy as unknown as any); // any needed for RolePolicy compat or mock structure
     const context = createMockAstroContext();
     const input = { id: 1 };
     const data = { owner: 'me' };

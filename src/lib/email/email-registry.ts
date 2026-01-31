@@ -6,7 +6,7 @@ import { render } from '@react-email/render';
  * Allows modules to register and override email templates by ID.
  */
 export class EmailRegistry {
-  private static templates = new Map<string, React.ComponentType<any>>();
+  private static templates = new Map<string, React.ComponentType<unknown>>();
 
   /**
    * Registers an email template with a unique ID.
@@ -15,7 +15,7 @@ export class EmailRegistry {
    * @param id - Unique identifier (e.g., 'user:welcome').
    * @param component - The React Component to render.
    */
-  static register(id: string, component: React.ComponentType<any>) {
+  static register(id: string, component: React.ComponentType<unknown>) {
     this.templates.set(id, component);
     console.info(`[EmailRegistry] Registered template: ${id}`);
   }
@@ -41,6 +41,6 @@ export class EmailRegistry {
     if (!Component) {
       throw new Error(`Email template not found: ${id}`);
     }
-    return render(React.createElement(Component, props as any));
+    return render(React.createElement(Component, props as Record<string, unknown>));
   }
 }

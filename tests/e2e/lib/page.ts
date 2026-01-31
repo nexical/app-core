@@ -10,7 +10,7 @@ export abstract class BasePage {
   /**
    * Navigates to the page.
    */
-  abstract visit(params?: any): Promise<void>;
+  abstract visit(params?: unknown): Promise<void>;
 
   /**
    * Verifies that the page has loaded successfully.

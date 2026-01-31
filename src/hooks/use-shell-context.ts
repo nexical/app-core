@@ -4,7 +4,7 @@ import type { ShellContext } from '@/lib/registries/shell-registry';
 /**
  * Hook to provide a reactive ShellContext on the client.
  */
-export function useShellContext(initialNavData: any): ShellContext {
+export function useShellContext(initialNavData: ShellContext['navData']): ShellContext {
   const [context, setContext] = useState<ShellContext>(() => {
     // Initial state (SSR compatible defaults)
     return {

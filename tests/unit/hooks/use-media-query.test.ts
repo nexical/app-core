@@ -12,10 +12,11 @@ describe('useMediaQuery', () => {
       onchange: null,
       addListener: vi.fn(), // Deprecated
       removeListener: vi.fn(), // Deprecated
-      addEventListener: vi.fn((type: string, listener: any) => {
-        if (type === 'change') listeners.add(listener);
+      addEventListener: vi.fn((type: string, listener: EventListener) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        if (type === 'change') listeners.add(listener as any); // Cast to any internally if needed for Set compatibility or just keep strict
       }),
-      removeEventListener: vi.fn((type: string, listener: any) => {
+      removeEventListener: vi.fn((type: string, listener: EventListener) => {
         if (type === 'change') listeners.delete(listener);
       }),
       dispatchEvent: vi.fn((event: Event) => {
@@ -43,6 +44,7 @@ describe('useMediaQuery', () => {
     expect(result.current).toBe(false);
 
     act(() => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (mml as any).matches = true;
       mml.dispatchEvent({ matches: true } as unknown as Event);
     });

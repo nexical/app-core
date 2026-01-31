@@ -35,6 +35,7 @@ describe('ModuleDiscovery', () => {
 
   it('should discover and sort modules correctly', async () => {
     vi.mocked(fs.existsSync).mockReturnValue(true);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(fs.readdirSync).mockReturnValue(['mod-b', 'mod-a'] as any);
     vi.mocked(fs.statSync).mockReturnValue({ isDirectory: () => true } as fs.Stats);
 
@@ -55,6 +56,7 @@ describe('ModuleDiscovery', () => {
     vi.mocked(fs.existsSync).mockImplementation(
       (path: fs.PathLike) => typeof path === 'string' && path.endsWith('modules'),
     ); // Only modules dir exists
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(fs.readdirSync).mockReturnValue(['no-config'] as any);
     vi.mocked(fs.statSync).mockReturnValue({ isDirectory: () => true } as fs.Stats);
 
@@ -65,6 +67,7 @@ describe('ModuleDiscovery', () => {
 
   it('should handle config load errors gracefully', async () => {
     vi.mocked(fs.existsSync).mockReturnValue(true);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(fs.readdirSync).mockReturnValue(['bad-config'] as any);
     vi.mocked(fs.statSync).mockReturnValue({ isDirectory: () => true } as fs.Stats);
 
@@ -81,6 +84,7 @@ describe('ModuleDiscovery', () => {
 
   it('should skip non-directory files in the modules directory', async () => {
     vi.mocked(fs.existsSync).mockReturnValue(true);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(fs.readdirSync).mockReturnValue(['not-a-dir'] as any);
     vi.mocked(fs.statSync).mockReturnValue({ isDirectory: () => false } as fs.Stats);
 
@@ -90,6 +94,7 @@ describe('ModuleDiscovery', () => {
 
   it('should handle non-default config exports from module.config.mjs', async () => {
     vi.mocked(fs.existsSync).mockReturnValue(true);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(fs.readdirSync).mockReturnValue(['named-export'] as any);
     vi.mocked(fs.statSync).mockReturnValue({ isDirectory: () => true } as fs.Stats);
 
@@ -106,7 +111,8 @@ describe('ModuleDiscovery', () => {
     vi.mocked(fs.readdirSync).mockReturnValue([
       'unknown-type',
       'another-unknown',
-    ] as unknown as string[]);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ] as any);
     vi.mocked(fs.statSync).mockReturnValue({ isDirectory: () => true } as fs.Stats);
 
     mockJiti.import.mockImplementation(async (path: string) => {
@@ -125,7 +131,8 @@ describe('ModuleDiscovery', () => {
 
   it('should sort unknown phases to the default position (20)', async () => {
     vi.mocked(fs.existsSync).mockReturnValue(true);
-    vi.mocked(fs.readdirSync).mockReturnValue(['mod-unknown', 'mod-core'] as unknown as string[]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    vi.mocked(fs.readdirSync).mockReturnValue(['mod-unknown', 'mod-core'] as any);
     vi.mocked(fs.statSync).mockReturnValue({ isDirectory: () => true } as fs.Stats);
 
     mockJiti.import.mockImplementation(async (path: string) => {
@@ -145,7 +152,8 @@ describe('ModuleDiscovery', () => {
       (p: fs.PathLike) =>
         p.toString().includes('modules') || p.toString().includes('module.config.mjs'),
     );
-    vi.mocked(fs.readdirSync).mockReturnValue(['default-export'] as unknown as string[]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    vi.mocked(fs.readdirSync).mockReturnValue(['default-export'] as any);
     vi.mocked(fs.statSync).mockReturnValue({ isDirectory: () => true } as fs.Stats);
 
     mockJiti.import.mockResolvedValue({ default: { type: 'theme', order: 1 } });
@@ -159,7 +167,8 @@ describe('ModuleDiscovery', () => {
       (p: fs.PathLike) =>
         p.toString().includes('modules') || p.toString().includes('module.config.mjs'),
     );
-    vi.mocked(fs.readdirSync).mockReturnValue(['falsy-export'] as unknown as string[]);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    vi.mocked(fs.readdirSync).mockReturnValue(['falsy-export'] as any);
     vi.mocked(fs.statSync).mockReturnValue({ isDirectory: () => true } as fs.Stats);
 
     mockJiti.import.mockResolvedValue(null);

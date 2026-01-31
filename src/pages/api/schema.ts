@@ -8,6 +8,7 @@ export const GET: APIRoute = async (context) => {
   const modules = await ModuleDiscovery.loadModules();
   const actor = context.locals.actor;
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const openApiDoc: any = {
     openapi: '3.0.0',
     info: {

@@ -3,7 +3,7 @@ export type FilterFieldType = 'string' | 'number' | 'boolean' | 'date' | 'enum';
 
 export interface FilterOptions {
   fields: Record<string, FilterFieldType>;
-  defaults?: Record<string, any>;
+  defaults?: Record<string, unknown>;
   searchFields?: readonly string[];
 }
 
@@ -39,9 +39,11 @@ export function parseQuery<T = unknown>(
   const errors: FilterErrorDetail[] = [];
 
   // Initialize defaults
-  let take = options.defaults?.take || 50;
-  let skip = options.defaults?.skip || 0;
-  let orderBy: Record<string, 'asc' | 'desc'> | undefined = options.defaults?.orderBy;
+  let take = (options.defaults?.take as number) || 50;
+  let skip = (options.defaults?.skip as number) || 0;
+  let orderBy: Record<string, 'asc' | 'desc'> | undefined = options.defaults?.orderBy as
+    | Record<string, 'asc' | 'desc'>
+    | undefined;
 
   // Handle Top-Level Params
   if (searchParams.has('take')) {

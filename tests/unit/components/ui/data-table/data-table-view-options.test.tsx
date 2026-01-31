@@ -2,15 +2,24 @@
 import React from 'react';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import type { Table, Column } from '@tanstack/react-table';
 import { DataTableViewOptions } from '../../../../../src/components/ui/data-table/data-table-view-options';
 
 // Mock Radix DropdownMenu to expose content immediately
 vi.mock('../../../../../src/components/ui/dropdown-menu', () => ({
-  DropdownMenu: ({ children }: any) => <div>{children}</div>,
-  DropdownMenuTrigger: ({ children }: any) => <div>{children}</div>,
-  DropdownMenuContent: ({ children }: any) => <div>{children}</div>,
-  DropdownMenuItem: ({ children }: any) => <div>{children}</div>,
-  DropdownMenuCheckboxItem: ({ children, checked, onCheckedChange }: any) => (
+  DropdownMenu: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  DropdownMenuTrigger: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  DropdownMenuContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  DropdownMenuItem: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  DropdownMenuCheckboxItem: ({
+    children,
+    checked,
+    onCheckedChange,
+  }: {
+    children: React.ReactNode;
+    checked: boolean;
+    onCheckedChange: (c: boolean) => void;
+  }) => (
     <div
       role="menuitemcheckbox"
       aria-checked={checked}
@@ -22,12 +31,12 @@ vi.mock('../../../../../src/components/ui/dropdown-menu', () => ({
       {children}
     </div>
   ),
-  DropdownMenuLabel: ({ children }: any) => <div>{children}</div>,
+  DropdownMenuLabel: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
   DropdownMenuSeparator: () => <hr />,
 }));
 
 describe('DataTableViewOptions', () => {
-  let tableMock: any;
+  let tableMock: Table<unknown>;
 
   beforeEach(() => {
     tableMock = {
@@ -48,7 +57,7 @@ describe('DataTableViewOptions', () => {
         },
         { id: 'id', getCanHide: () => false }, // Should be filtered out
       ]),
-    };
+    } as unknown as Table<unknown>;
   });
 
   afterEach(() => {
@@ -71,7 +80,9 @@ describe('DataTableViewOptions', () => {
     const columnItems = screen.getAllByTestId('column-item');
     fireEvent.click(columnItems[0]); // name (visible -> hidden)
 
-    const nameColumn = tableMock.getAllColumns().find((c: any) => c.id === 'name');
-    expect(nameColumn.toggleVisibility).toHaveBeenCalledWith(false);
+    const nameColumn = tableMock
+      .getAllColumns()
+      .find((c: Column<unknown, unknown>) => c.id === 'name');
+    expect(nameColumn!.toggleVisibility).toHaveBeenCalledWith(false);
   });
 });

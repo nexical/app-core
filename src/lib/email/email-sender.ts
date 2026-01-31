@@ -72,6 +72,7 @@ export const sendEmail = async ({ to, subject, html }: SendEmailOptions) => {
     const info = await transport!.sendMail(options);
 
     if (process.env.NODE_ENV === 'development') {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const previewUrl = nodemailer.getTestMessageUrl(info as any);
       if (previewUrl) {
         console.info('Preview URL: %s', previewUrl);

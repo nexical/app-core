@@ -1,15 +1,22 @@
 /** @vitest-environment jsdom */
 import React from 'react';
 import { render, screen, fireEvent, cleanup } from '@testing-library/react';
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach, type Mock } from 'vitest';
+import type { Column } from '@tanstack/react-table';
 import { DataTableColumnHeader } from '../../../../../src/components/ui/data-table/data-table-column-header';
 
 // Mock Radix DropdownMenu
 vi.mock('../../../../../src/components/ui/dropdown-menu', () => ({
-  DropdownMenu: ({ children }: any) => <div>{children}</div>,
-  DropdownMenuTrigger: ({ children }: any) => <div>{children}</div>,
-  DropdownMenuContent: ({ children }: any) => <div>{children}</div>,
-  DropdownMenuItem: ({ children, onClick }: any) => (
+  DropdownMenu: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  DropdownMenuTrigger: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  DropdownMenuContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  DropdownMenuItem: ({
+    children,
+    onClick,
+  }: {
+    children: React.ReactNode;
+    onClick?: () => void;
+  }) => (
     <div
       role="menuitem"
       tabIndex={0}
@@ -24,7 +31,7 @@ vi.mock('../../../../../src/components/ui/dropdown-menu', () => ({
 }));
 
 describe('DataTableColumnHeader', () => {
-  let columnMock: any;
+  let columnMock: Column<unknown, unknown>;
 
   beforeEach(() => {
     columnMock = {
@@ -32,7 +39,7 @@ describe('DataTableColumnHeader', () => {
       getIsSorted: vi.fn().mockReturnValue(false),
       toggleSorting: vi.fn(),
       toggleVisibility: vi.fn(),
-    };
+    } as unknown as Column<unknown, unknown>;
   });
 
   afterEach(() => {
@@ -58,11 +65,11 @@ describe('DataTableColumnHeader', () => {
   });
 
   it('should show correct icons based on sort state', () => {
-    columnMock.getIsSorted.mockReturnValue('desc');
+    (columnMock.getIsSorted as unknown as Mock).mockReturnValue('desc');
     const { rerender } = render(<DataTableColumnHeader column={columnMock} title="Name" />);
     expect(screen.getByRole('button')).toBeDefined();
 
-    columnMock.getIsSorted.mockReturnValue('asc');
+    (columnMock.getIsSorted as unknown as Mock).mockReturnValue('asc');
     rerender(<DataTableColumnHeader column={columnMock} title="Name" />);
     expect(screen.getByRole('button')).toBeDefined();
   });

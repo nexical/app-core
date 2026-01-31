@@ -55,6 +55,7 @@ describe('module-pages-integration', () => {
 
     const hook = inst.hooks['astro:config:setup'];
     if (hook) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await hook({ injectRoute } as any);
     }
 
@@ -81,6 +82,7 @@ describe('module-pages-integration', () => {
 
     const hook = inst.hooks['astro:config:setup'];
     if (hook) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (hook as any)({ injectRoute });
     }
 

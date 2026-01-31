@@ -1,6 +1,6 @@
 import type { ApiClient } from './client';
 
-export type ActorProvider = (client: ApiClient, params: any) => Promise<any>;
+export type ActorProvider = (client: ApiClient, params: unknown) => Promise<unknown>;
 
 export class ActorRegistry {
   private providers: Map<string, ActorProvider> = new Map();
@@ -19,7 +19,7 @@ export class ActorRegistry {
     );
 
     for (const path in modules) {
-      const mod = modules[path] as any;
+      const mod = modules[path] as { actors?: Record<string, ActorProvider> };
       if (mod.actors) {
         for (const [key, provider] of Object.entries(mod.actors)) {
           this.register(key, provider as ActorProvider);

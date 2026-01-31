@@ -6,7 +6,13 @@ import { SystemWrapper } from '@/components/system/SystemWrapper';
 
 // Mock I18nProvider to isolate test
 vi.mock('@/components/system/I18nProvider', () => ({
-  I18nProvider: ({ children, initialLanguage }: any) => (
+  I18nProvider: ({
+    children,
+    initialLanguage,
+  }: {
+    children: React.ReactNode;
+    initialLanguage: string;
+  }) => (
     <div data-testid="i18n-provider" data-lang={initialLanguage}>
       {children}
     </div>

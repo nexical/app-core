@@ -20,6 +20,8 @@ describe('Core Logger', () => {
   it('should log error messages with error object as JSON', () => {
     const error = new Error('boom');
     Logger.error('error message', error, { extra: 'data' });
+    // eslint-disable-next-line no-console
+    console.log('Test output');
     const call = (console.error as Mock).mock.calls[0][0] as string;
     const parsed = JSON.parse(call);
 
@@ -47,6 +49,7 @@ describe('Core Logger', () => {
   it('should log debug messages in non-production environment', () => {
     // process.env.NODE_ENV is set to 'test' by Vitest
     Logger.debug('debug message', { context: 'test' });
+    // eslint-disable-next-line no-console
     expect(console.debug).toHaveBeenCalledWith(
       JSON.stringify({ level: 'debug', message: 'debug message', context: 'test' }),
     );

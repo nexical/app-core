@@ -39,6 +39,7 @@ describe('module-email-theme-integration', () => {
 
     const hook = inst.hooks['astro:config:setup'];
     if (hook) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (hook as any)({});
     }
 
@@ -59,6 +60,7 @@ describe('module-email-theme-integration', () => {
 
     const hook = inst.hooks['astro:config:setup'];
     if (hook) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       await (hook as any)({});
     }
 

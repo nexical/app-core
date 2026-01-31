@@ -60,9 +60,13 @@ describe('InstallPrompt', () => {
     render(<InstallPrompt />);
 
     const promptMock = vi.fn();
-    const userChoiceMock = Promise.resolve({ outcome: 'accepted' });
+    const userChoiceMock = Promise.resolve({ outcome: 'accepted' as const });
 
-    const event: any = new Event('beforeinstallprompt');
+    interface BeforeInstallPromptEvent extends Event {
+      prompt: () => void;
+      userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+    }
+    const event = new Event('beforeinstallprompt') as BeforeInstallPromptEvent;
     event.prompt = promptMock;
     event.userChoice = userChoiceMock;
 

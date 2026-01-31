@@ -6,7 +6,9 @@ const baseUrl =
     : (process.env.PUBLIC_SITE_URL || 'http://localhost:4321') + '/api';
 
 if (typeof window === 'undefined') {
-  console.log('[API] Initializing server-side client with baseUrl:', baseUrl);
+  // Use console.info inside conditional logging if logger not available, but here we can't import logger easily if it causes cycles.
+  // Actually, let's use console.info as it is allowed.
+  console.info('[API] Initializing server-side client with baseUrl:', baseUrl);
 }
 
 export const api = new NexicalClient({
@@ -15,7 +17,7 @@ export const api = new NexicalClient({
 
 // Attach to window for debugging in the browser
 if (typeof window !== 'undefined') {
-  (window as any).api = api;
+  (window as unknown as { api: typeof api }).api = api;
 }
 
 export interface ApiError {

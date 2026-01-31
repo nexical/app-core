@@ -20,7 +20,9 @@ describe('LanguageSelector', () => {
   };
 
   beforeEach(() => {
-    vi.mocked(useTranslation).mockReturnValue({ i18n } as any);
+    vi.mocked(useTranslation).mockReturnValue({ i18n } as unknown as ReturnType<
+      typeof useTranslation
+    >);
     document.cookie = '';
   });
 
@@ -43,7 +45,7 @@ describe('LanguageSelector', () => {
   it('should return null if only one language supported', () => {
     vi.mocked(useTranslation).mockReturnValue({
       i18n: { ...i18n, options: { supportedLngs: ['en'] } },
-    } as any);
+    } as unknown as ReturnType<typeof useTranslation>);
     const { container } = render(<LanguageSelector />);
     expect(container.firstChild).toBeNull();
   });

@@ -3,6 +3,7 @@
  * Allows modules to provide and consume services in a decoupled way.
  */
 import { HookSystem } from './hooks';
+import { Logger } from '../core/logger';
 export class ServiceLocator {
   private static services = new Map<string, unknown>();
 
@@ -13,10 +14,10 @@ export class ServiceLocator {
    */
   static provide<T>(name: string, service: T): void {
     if (this.services.has(name)) {
-      console.warn(`[ServiceLocator] Service '${name}' is being overwritten.`);
+      Logger.warn(`[ServiceLocator] Service '${name}' is being overwritten.`);
     }
     this.services.set(name, service);
-    console.log(`[ServiceLocator] Service provided: ${name}`);
+    Logger.info(`[ServiceLocator] Service provided: ${name}`);
     HookSystem.dispatch('core.service.provided', { name });
   }
 

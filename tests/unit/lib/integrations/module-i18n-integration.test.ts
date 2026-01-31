@@ -75,6 +75,7 @@ describe('module-i18n-integration', () => {
       '../../../modules/delta/module.config.mjs': {}, // empty config, direct export
     });
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const modules = (ModuleI18nIntegration as any).getRuntimeModules() as LoadedModule[];
     expect(modules.find((m) => m.name === 'gamma')?.config.type).toBe('unknown');
     expect(modules.find((m) => m.name === 'delta')?.config.type).toBe('feature');
@@ -92,6 +93,7 @@ describe('module-i18n-integration', () => {
       '../../../modules/alpha/module.config.mjs': { name: 'alpha' }, // direct export
       '../../../modules/beta/module.config.mjs': { default: null }, // fallback to empty
     });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const modules = (ModuleI18nIntegration as any).getRuntimeModules() as LoadedModule[];
     expect(modules.length).toBe(2);
   });
@@ -123,6 +125,7 @@ describe('module-i18n-integration', () => {
       { name: 'unknown', config: { type: 'unknown', order: 5 } },
     ] as unknown as LoadedModule[];
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sorted = (ModuleI18nIntegration as any).sortModules(modules) as LoadedModule[];
 
     expect(sorted[0].name).toBe('core');
@@ -138,6 +141,7 @@ describe('module-i18n-integration', () => {
       { name: 'a', config: { type: 'feature', order: 10 } },
     ] as unknown as LoadedModule[];
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const sorted = (ModuleI18nIntegration as any).sortModules(modules) as LoadedModule[];
     expect(sorted[0].name).toBe('a');
     expect(sorted[1].name).toBe('b');

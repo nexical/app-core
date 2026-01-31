@@ -11,7 +11,10 @@ export async function getTranslation(lang?: string): Promise<TranslationFunction
   const store = await ModuleI18nIntegration.getMergedLocale(targetLang);
 
   return function t(key: string, params?: Record<string, string>) {
-    let text = key.split('.').reduce((o: any, i) => o?.[i], store) || key;
+    let text =
+      (key
+        .split('.')
+        .reduce<unknown>((o, i) => (o as Record<string, unknown>)?.[i], store) as string) || key;
 
     if (params && typeof text === 'string') {
       Object.entries(params).forEach(([k, v]) => {

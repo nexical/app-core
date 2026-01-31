@@ -1,4 +1,5 @@
 import { getCoreInits, getClientModuleInits } from './glob-helper';
+import { Logger } from './logger';
 
 /**
  * Client-Side Module Initialization
@@ -8,7 +9,7 @@ import { getCoreInits, getClientModuleInits } from './glob-helper';
  * EXCLUDES 'server-init.ts'.
  */
 export async function initializeClientModules() {
-  console.log('[Core] Initializing Client modules...');
+  Logger.info('[Core] Initializing Client modules...');
   const promises: Promise<void>[] = [];
 
   // 1. Initialize Core (Shells)
@@ -30,5 +31,5 @@ export async function initializeClientModules() {
   });
 
   await Promise.allSettled(promises);
-  console.log(`[Core] Client Initialized.`);
+  Logger.info(`[Core] Client Initialized.`);
 }

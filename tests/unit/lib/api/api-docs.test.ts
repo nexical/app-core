@@ -119,8 +119,8 @@ describe('api-docs and defineApi', () => {
       const docs = await gen({ name: 'test-api', path: '' });
 
       expect(docs['/items']).toBeDefined();
-      const items = docs['/items'] as Record<string, any>;
-      expect(items.get.summary).toBe('Get list');
+      const items = docs['/items'] as Record<string, unknown>;
+      expect((items.get as { summary: string }).summary).toBe('Get list');
       expect(items.post).toBeDefined();
       expect(docs['/users/{id}/profile']).toBeDefined();
     });
@@ -150,7 +150,7 @@ describe('api-docs and defineApi', () => {
     it('should handle visibility branches', async () => {
       const mockModule = {
         GET: Object.assign(vi.fn(), {
-          schema: { visibility: (actor: any) => actor.isAdmin },
+          schema: { visibility: (actor: { isAdmin: boolean }) => actor.isAdmin },
         }),
         POST: Object.assign(vi.fn(), { schema: { summary: 'No visibility' } }),
       };
@@ -163,16 +163,16 @@ describe('api-docs and defineApi', () => {
 
       // 1. No actor -> show all
       const publicDocs = await gen({ name: 'test-api', path: '' });
-      const pubAdmin = publicDocs['/admin'] as Record<string, any>;
+      const pubAdmin = publicDocs['/admin'] as Record<string, unknown>;
       expect(pubAdmin.get).toBeDefined();
       expect(pubAdmin.post).toBeDefined();
 
       const adminDocs = await gen({ name: 'test-api', path: '' }, { isAdmin: true });
-      const admAdmin = adminDocs['/admin'] as Record<string, any>;
+      const admAdmin = adminDocs['/admin'] as Record<string, unknown>;
       expect(admAdmin.get).toBeDefined();
 
       const userDocs = await gen({ name: 'test-api', path: '' }, { isAdmin: false });
-      const usrAdmin = userDocs['/admin'] as Record<string, any>;
+      const usrAdmin = userDocs['/admin'] as Record<string, unknown>;
       expect(usrAdmin.get).toBeUndefined();
       expect(usrAdmin.post).toBeDefined(); // visibility is undefined -> true
     });

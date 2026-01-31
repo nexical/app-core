@@ -19,8 +19,12 @@ describe('ThemeSelector', () => {
   const t = vi.fn((key) => key);
 
   beforeEach(() => {
-    vi.mocked(useTheme).mockReturnValue({ theme: 'light', setTheme } as any);
-    vi.mocked(useTranslation).mockReturnValue({ t } as any);
+    vi.mocked(useTheme).mockReturnValue({ theme: 'light', setTheme } as unknown as ReturnType<
+      typeof useTheme
+    >);
+    vi.mocked(useTranslation).mockReturnValue({ t } as unknown as ReturnType<
+      typeof useTranslation
+    >);
   });
 
   it('should render correctly', () => {
@@ -36,7 +40,9 @@ describe('ThemeSelector', () => {
   });
 
   it('should toggle from dark to light', () => {
-    vi.mocked(useTheme).mockReturnValue({ theme: 'dark', setTheme } as any);
+    vi.mocked(useTheme).mockReturnValue({ theme: 'dark', setTheme } as unknown as ReturnType<
+      typeof useTheme
+    >);
     render(<ThemeSelector />);
     const button = screen.getByTestId('theme-selector');
     fireEvent.click(button);

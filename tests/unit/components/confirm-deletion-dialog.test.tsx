@@ -7,7 +7,7 @@ import { ConfirmDeletionDialog } from '@/components/confirm-deletion-dialog';
 // Mock translations
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
-  Trans: ({ i18nKey }: any) => <span>{i18nKey}</span>,
+  Trans: ({ i18nKey }: { i18nKey: string }) => <span>{i18nKey}</span>,
 }));
 
 describe('ConfirmDeletionDialog', () => {

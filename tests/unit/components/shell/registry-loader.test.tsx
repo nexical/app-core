@@ -10,7 +10,9 @@ vi.mock('@/lib/ui/registry-loader', () => ({
   getZoneComponents: vi.fn(),
 }));
 
-const MockComponent = ({ name }: any) => <div data-testid={`comp-${name}`}>{name}</div>;
+const MockComponent = ({ name }: { name: string }) => (
+  <div data-testid={`comp-${name}`}>{name}</div>
+);
 
 describe('RegistryLoader Component', () => {
   beforeEach(() => {

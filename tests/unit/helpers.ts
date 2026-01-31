@@ -48,6 +48,7 @@ export function createMockAstroContext(
     clientAddress: '127.0.0.1',
     isPrerendered: false,
     originPathname: url.pathname,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     self: {} as any, // Astro-internal, usually not needed for unit tests
     preferredLocale: undefined,
     preferredLocaleList: [],

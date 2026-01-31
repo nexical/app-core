@@ -27,10 +27,12 @@ describe('module-styles-integration', () => {
       if (pathStr.endsWith('modules')) return true;
       return false;
     });
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     vi.mocked(fs.readdirSync).mockReturnValue(['mod1', 'mod2'] as any);
 
     const hook = inst.hooks['astro:config:setup'];
     if (hook) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       hook({ injectScript } as any);
     }
 
@@ -54,6 +56,7 @@ describe('module-styles-integration', () => {
 
     const hook = inst.hooks['astro:config:setup'];
     if (hook) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (hook as any)({ injectScript });
     }
 

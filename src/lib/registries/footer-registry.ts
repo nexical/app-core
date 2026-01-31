@@ -1,7 +1,7 @@
 import type { ComponentType } from 'react';
 import type { ShellContext, ShellMatcher } from './shell-registry';
 
-export type FooterComponent = ComponentType<{ navData?: any }>;
+export type FooterComponent = ComponentType<{ navData?: unknown }>;
 
 interface FooterRegistryEntry {
   name: string;

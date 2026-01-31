@@ -1,66 +1,67 @@
 ---
-import { ModuleDiscovery } from "@/lib/modules/module-discovery";
-import { generateDocs } from "@/lib/api/api-docs";
-import { config } from "@/lib/core/config";
-import { ScalarDocs } from "@/components/ScalarDocs";
-import Layout from "@/layouts/Layout.astro";
-import "@/styles/styles.css";
+import { ModuleDiscovery } from '@/lib/modules/module-discovery';
+import { generateDocs } from '@/lib/api/api-docs';
+import { config } from '@/lib/core/config';
+import { ScalarDocs } from '@/components/ScalarDocs';
+import Layout from '@/layouts/Layout.astro';
+import '@/styles/styles.css';
 
 // Eagerly load all module styles
-import.meta.glob("/modules/*/styles.css", { eager: true });
+import.meta.glob('/modules/*/styles.css', { eager: true });
 
 // Access Control
 if (config.PUBLIC_DISABLE_API_DOCS) {
-    return new Response(null, { status: 404 });
+  return new Response(null, { status: 404 });
 }
 
-const isStatic = config.PUBLIC_SITE_MODE === "static";
+const isStatic = config.PUBLIC_SITE_MODE === 'static';
 const actor = Astro.locals.actor;
 
 // In static mode, we cannot check auth at build time, so we must assume public access if the user builds for static.
 // If the user wants private docs, they should stick to server mode.
 if (!isStatic && !config.PUBLIC_DOCS_PUBLIC_ACCESS && !actor) {
-    return new Response(null, { status: 401 });
+  return new Response(null, { status: 401 });
 }
 
 // Generate Spec
 const modules = await ModuleDiscovery.loadModules();
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const openApiDoc: any = {
-    openapi: "3.0.0",
-    info: {
-        title: config.PUBLIC_SITE_NAME,
-        version: config.PUBLIC_SITE_VERSION,
-        description: config.PUBLIC_API_DESCRIPTION,
+  openapi: '3.0.0',
+  info: {
+    title: config.PUBLIC_SITE_NAME,
+    version: config.PUBLIC_SITE_VERSION,
+    description: config.PUBLIC_API_DESCRIPTION,
+  },
+  servers: [{ url: '/api' }],
+  paths: {},
+  components: {
+    securitySchemes: {
+      BearerAuth: {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+      },
+      CookieAuth: {
+        type: 'apiKey',
+        in: 'cookie',
+        name: 'authjs.session-token',
+      },
     },
-    servers: [{ url: "/api" }],
-    paths: {},
-    components: {
-        securitySchemes: {
-            BearerAuth: {
-                type: "http",
-                scheme: "bearer",
-                bearerFormat: "JWT",
-            },
-            CookieAuth: {
-                type: "apiKey",
-                in: "cookie",
-                name: "authjs.session-token",
-            },
-        },
-    },
-    security: [{ BearerAuth: [] }, { CookieAuth: [] }],
+  },
+  security: [{ BearerAuth: [] }, { CookieAuth: [] }],
 };
 
 for (const module of modules) {
-    const moduleDocs = await generateDocs(module, actor);
-    // Deep merge or simple merge? paths are unique per module usually
-    openApiDoc.paths = { ...openApiDoc.paths, ...moduleDocs };
+  const moduleDocs = await generateDocs(module, actor);
+  // Deep merge or simple merge? paths are unique per module usually
+  openApiDoc.paths = { ...openApiDoc.paths, ...moduleDocs };
 }
 ---
 
 <Layout title={`${config.PUBLIC_SITE_NAME} - API Reference`} showShell={true}>
-    <div class="h-full w-full bg-background">
-        <ScalarDocs spec={openApiDoc} client:only="react" />
-    </div>
+  <div class="h-full w-full bg-background">
+    <ScalarDocs spec={openApiDoc} client:only="react" />
+  </div>
 </Layout>

@@ -55,6 +55,7 @@ export class PageGuard {
       }
 
       // Fallback default: Forbidden
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return (context as any).redirect('/?error=forbidden');
     }
   }

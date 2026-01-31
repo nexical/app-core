@@ -49,7 +49,7 @@ export async function getZoneComponents(zone: string): Promise<RegistryComponent
     // Check if module exports a default component
     if (mod.default) {
       components.push({
-        component: mod.default as ComponentType<any>,
+        component: mod.default as ComponentType<unknown>,
         order,
         name,
       });

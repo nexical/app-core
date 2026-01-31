@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /**
  * Simple structured logger for standardizing application logging.
  * Replaces direct console usage to ensure consistent formatting.

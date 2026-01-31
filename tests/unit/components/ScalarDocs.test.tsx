@@ -6,7 +6,7 @@ import { ScalarDocs } from '@/components/ScalarDocs';
 
 // Mock dependencies
 vi.mock('@scalar/api-reference-react', () => ({
-  ApiReferenceReact: ({ configuration }: any) => (
+  ApiReferenceReact: ({ configuration }: { configuration: unknown }) => (
     <div data-testid="scalar-docs">
       <pre data-testid="scalar-config">{JSON.stringify(configuration)}</pre>
     </div>

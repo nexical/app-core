@@ -11,7 +11,13 @@ const data = [
   { id: '2', name: 'Jane Smith', role: 'User' },
 ];
 
-const columns: ColumnDef<any>[] = [
+interface TestData {
+  id: string;
+  name: string;
+  role: string;
+}
+
+const columns: ColumnDef<TestData>[] = [
   {
     accessorKey: 'name',
     header: 'Name',
