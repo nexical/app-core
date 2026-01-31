@@ -60,28 +60,25 @@ export class TestBuilder extends BaseBuilder {
     return '';
   }
 
-  private getActorStatement(operation: TestOperation): string {
+  private getActorStatement(operation: string, isUsed: boolean = false): string {
     const requiredRole = this.getRole(operation);
-    const actorName = this.getTestActorModelName();
-
-    if (requiredRole === 'public') {
-      return '// Public access - no auth required';
-    }
+    const actorName = this.model.test?.actor || 'user';
 
     // Check config first
     if (this.roleConfig[requiredRole]) {
       const opts = JSON.stringify(this.roleConfig[requiredRole])
         .replace(/"([^"]+)":/g, '$1:')
         .replace(/"/g, "'");
-      return `const actor = await client.as('${actorName}', ${opts});`;
+      return `${!isUsed ? '// eslint-disable-next-line @typescript-eslint/no-unused-vars\n      ' : ''}const actor = await client.as('${actorName}', ${opts});`;
     }
 
     // Fallback
-    return `const actor = await client.as('${actorName}', {});`;
+    return `${!isUsed ? '// eslint-disable-next-line @typescript-eslint/no-unused-vars\n    ' : ''}const actor = await client.as('${actorName}', {});`;
   }
 
   private getNegativeActorStatement(operation: TestOperation): string {
     return `client.useToken('invalid-token');
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const actor = undefined as unknown;`;
   }
 
@@ -148,14 +145,22 @@ export class TestBuilder extends BaseBuilder {
         break;
     }
 
+    const imports = [
+      { moduleSpecifier: 'vitest', namedImports: ['describe', 'it', 'expect', 'beforeEach'] },
+      { moduleSpecifier: '@tests/integration/lib/client', namedImports: ['ApiClient'] },
+      { moduleSpecifier: '@tests/integration/lib/server', namedImports: ['TestServer'] },
+    ];
+
+    if (testBody.includes('Factory')) {
+      imports.push({
+        moduleSpecifier: '@tests/integration/lib/factory',
+        namedImports: ['Factory'],
+      });
+    }
+
     return {
       header: '// GENERATED CODE - DO NOT MODIFY',
-      imports: [
-        { moduleSpecifier: 'vitest', namedImports: ['describe', 'it', 'expect', 'beforeEach'] },
-        { moduleSpecifier: '@tests/integration/lib/client', namedImports: ['ApiClient'] },
-        { moduleSpecifier: '@tests/integration/lib/factory', namedImports: ['Factory'] },
-        { moduleSpecifier: '@tests/integration/lib/server', namedImports: ['TestServer'] },
-      ],
+      imports: imports,
       variables: [],
       statements: [
         `describe('${entityName} API - ${this.operation.charAt(0).toUpperCase() + this.operation.slice(1)}', () => {
@@ -260,11 +265,13 @@ export class TestBuilder extends BaseBuilder {
             }; `;
     }
 
+    const isActorUsed = requiredFKs.some((fk) => fk.model === 'Job');
+
     return `
 // POST /api/${kebabEntity}
 describe('POST /api/${kebabEntity}', () => {
   it('should allow ${this.getRole('create')} to create ${camelEntity}', async () => {
-            ${this.getActorStatement('create')}
+      ${this.getActorStatement('create', isActorUsed)}
             
             ${dependencySetup}
             ${payloadConstruction}
@@ -361,13 +368,8 @@ it('should filter by ${field}', async () => {
             ${this.getActorStatement('list')}
             ${this.model.test?.actor === 'user' && this.model.role && typeof this.model.role === 'object' && this.model.role.list !== 'admin' ? `// Note: Ensure role allows filtering if restricted` : ''}
 
-  const val1 = '${field}_' + Date.now() + '_A${field === 'email' ? '@example.com' : ''}';
-  await new Promise(r => setTimeout(r, 10));
   const val2 = '${field}_' + Date.now() + '_B${field === 'email' ? '@example.com' : ''}';
 
-  const relationSnippet = ${JSON.stringify(
-    this.getActorRelationSnippet(),
-  )}.replace(/^, /, '').replace(/actor.id/g, 'actor.id');
 const data1 = { ...baseData, ${field}: val1${uniqueInjectionA} };
 const data2 = { ...baseData, ${field}: val2${uniqueInjectionB} };
 
@@ -398,6 +400,8 @@ expect(res.body.data[0].${field}).toBe(val1);
       cleanupClause = `await Factory.prisma.${camelEntity}.deleteMany(); `;
     }
 
+    const isActorUsed = shouldPreserve || !!this.getActorRelationSnippet();
+
     return `
 // GET /api/${kebabEntity}
 describe('GET /api/${kebabEntity}', () => {
@@ -407,7 +411,7 @@ describe('GET /api/${kebabEntity}', () => {
   )};
 
 it('should allow ${this.getRole('list')} to list ${camelEntity}s', async () => {
-             ${this.getActorStatement('list')}
+             ${this.getActorStatement('list', isActorUsed)}
 
              // Cleanup first to ensure clean state
              ${cleanupClause}
@@ -531,7 +535,7 @@ const target = await Factory.create('${camelEntity}', { ...${JSON.stringify(mock
 // GET /api/${kebabEntity}/[id]
 describe('GET /api/${kebabEntity}/[id]', () => {
   it('should retrieve a specific ${camelEntity}', async () => {
-            ${this.getActorStatement('get')}
+            ${this.getActorStatement('get', !!this.getActorRelationSnippet())}
             
             ${setupSnippet}
 
@@ -595,11 +599,16 @@ describe('GET /api/${kebabEntity}/[id]', () => {
             const target = await Factory.create('${camelEntity}', { ...${JSON.stringify(mockData).replace(/"__DATE_NOW__"/g, 'new Date().toISOString()')}${this.getActorRelationSnippet()}${overrides} });`;
     }
 
+    const isActorUsed =
+      isActorModel ||
+      requiredFKs.some((fk) => fk.model === 'Job') ||
+      !!this.getActorRelationSnippet();
+
     return `
     // PUT /api/${kebabEntity}/[id]
     describe('PUT /api/${kebabEntity}/[id]', () => {
         it('should update ${camelEntity}', async () => {
-            ${this.getActorStatement('update')}
+            ${this.getActorStatement('update', isActorUsed)}
             
             ${setupSnippet}
 
@@ -672,7 +681,7 @@ describe('GET /api/${kebabEntity}/[id]', () => {
     // DELETE /api/${kebabEntity}/[id]
     describe('DELETE /api/${kebabEntity}/[id]', () => {
         it('should delete ${camelEntity}', async () => {
-            ${this.getActorStatement('delete')}
+            ${this.getActorStatement('delete', isActorModel || !!this.getActorRelationSnippet())}
             
             ${setupSnippet}
 

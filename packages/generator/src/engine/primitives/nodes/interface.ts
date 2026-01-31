@@ -19,6 +19,11 @@ export class InterfacePrimitive extends BasePrimitive<InterfaceDeclaration, Inte
         hasQuestionToken: p.optional,
         isReadonly: p.readonly,
       })),
+      leadingTrivia: this.config.comments
+        ? (writer) => {
+            this.config.comments?.forEach((c) => writer.writeLine(c));
+          }
+        : undefined,
     });
   }
 

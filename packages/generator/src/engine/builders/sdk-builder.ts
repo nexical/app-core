@@ -168,7 +168,7 @@ export class SdkBuilder extends BaseBuilder {
     };
 
     const imports: ImportConfig[] = [
-      { moduleSpecifier: '@nexical/sdk-core', namedImports: ['BaseResource', 'ApiClient'] },
+      { moduleSpecifier: '@nexical/sdk-core', namedImports: ['BaseResource'] },
     ];
 
     // Entity Type (Always from ./types.ts which re-exports/defines everything)

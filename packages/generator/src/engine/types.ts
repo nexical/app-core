@@ -232,6 +232,7 @@ export interface InterfaceConfig {
   isExported?: boolean;
   extends?: string[];
   properties?: PropertyConfig[];
+  comments?: string[];
 }
 
 export interface ClassDefinition extends ClassConfig {

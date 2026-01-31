@@ -76,11 +76,20 @@ export class TypeBuilder extends BaseBuilder {
         };
       });
 
-      interfaces.push({
-        name: model.name,
-        isExported: true,
-        properties,
-      });
+      if (properties.length === 0) {
+        interfaces.push({
+          name: model.name,
+          isExported: true,
+          properties,
+          comments: ['// eslint-disable-next-line @typescript-eslint/no-empty-object-type'],
+        });
+      } else {
+        interfaces.push({
+          name: model.name,
+          isExported: true,
+          properties,
+        });
+      }
     }
 
     return {
