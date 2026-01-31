@@ -64,6 +64,10 @@ export class TestBuilder extends BaseBuilder {
     const requiredRole = this.getRole(operation);
     const actorName = this.model.test?.actor || 'user';
 
+    if (requiredRole === 'public') {
+      return `// Public access - no auth required\n    ${!isUsed ? '// eslint-disable-next-line @typescript-eslint/no-unused-vars\n    ' : ''}const actor = undefined as unknown;`;
+    }
+
     // Check config first
     if (this.roleConfig[requiredRole]) {
       const opts = JSON.stringify(this.roleConfig[requiredRole])
@@ -239,17 +243,17 @@ export class TestBuilder extends BaseBuilder {
 
     if (requiredFKs.length > 0 || actorRelationField) {
       const setups = requiredFKs.map((fk, i) => {
-        const varName = `${fk.model.charAt(0).toLowerCase() + fk.model.slice(1)}_${i} `;
+        const varName = `${fk.model.charAt(0).toLowerCase() + fk.model.slice(1)}_${i}`;
         const extras =
           fk.model === 'Job'
             ? ', actorId: (typeof actor !== "undefined" ? actor.id : undefined)'
             : '';
-        return `const ${varName} = await Factory.create('${fk.model.charAt(0).toLowerCase() + fk.model.slice(1)}', { ${extras.replace(/^, /, '')}}); `;
+        return `const ${varName} = await Factory.create('${fk.model.charAt(0).toLowerCase() + fk.model.slice(1)}', { ${extras.replace(/^, /, '')} });`;
       });
       dependencySetup = setups.join('\n            ');
 
       const overrides = requiredFKs.map((fk, i) => {
-        const varName = `${fk.model.charAt(0).toLowerCase() + fk.model.slice(1)}_${i} `;
+        const varName = `${fk.model.charAt(0).toLowerCase() + fk.model.slice(1)}_${i}`;
         return `${fk.field}: ${varName}.id`;
       });
 

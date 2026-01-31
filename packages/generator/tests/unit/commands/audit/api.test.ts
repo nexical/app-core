@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { AuditApiCommand } from '@nexical/generator/commands/audit/api';
+import AuditApiCommand from '@nexical/generator/commands/audit/api';
 import { ModuleLocator } from '@nexical/generator/lib/module-locator';
 import { ModelParser } from '@nexical/generator/engine/model-parser';
 import YAML from 'yaml';

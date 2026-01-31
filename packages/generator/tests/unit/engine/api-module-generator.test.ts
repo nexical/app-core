@@ -111,7 +111,7 @@ describe('ApiModuleGenerator', () => {
       return false;
     });
     vi.mocked(fs.readFileSync).mockReturnValue(
-      'Root: [{ method: "ping", path: "/ping", verb: "GET" }]',
+      'Root: [{ method: "ping", path: "/ping", verb: "GET", input: "none", output: "none" }]',
     );
 
     const generator = new ApiModuleGenerator('/tmp/user-api');
@@ -148,7 +148,7 @@ describe('ApiModuleGenerator', () => {
     });
     // Test normalization of path and verb
     vi.mocked(fs.readFileSync).mockReturnValue(
-      'External: [{ method: "sync", path: "sync", verb: "" }]',
+      'External: [{ method: "sync", path: "sync", verb: "", input: "none", output: "none" }]',
     );
 
     const generator = new ApiModuleGenerator('/tmp/user-api');

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { GenApiCommand } from '@nexical/generator/commands/gen/api';
+import GenApiCommand from '@nexical/generator/commands/gen/api';
 import { ModuleLocator } from '@nexical/generator/lib/module-locator';
 import { ApiModuleGenerator } from '@nexical/generator/engine/api-module-generator';
 import fs from 'fs-extra';

@@ -50,10 +50,11 @@ describe('Builders Sweeper', () => {
       } as unknown as ModelDef;
       const builder = new TestBuilder(model, 'mod', 'create');
       // Just verifying it runs without error and internal logic holds
-      const file = (
-        builder as unknown as { getSchema: () => { variables: { initializer: string }[] } }
-      ).getSchema();
-      expect(file).toBeDefined();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      builder.validate({} as any); // Use a dummy for validate check
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const schema = (builder as any).getSchema();
+      expect(schema).toBeDefined();
     });
 
     it('should use roleConfig for actor options', () => {
@@ -61,10 +62,9 @@ describe('Builders Sweeper', () => {
         member: { headers: { 'X-Custom': 'val' } },
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       } as any);
-      const file = (
-        builder as unknown as { getSchema: () => { variables: { initializer: string }[] } }
-      ).getSchema();
-      const content = file.variables?.[0].initializer || '';
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const file = (builder as any).getSchema();
+      const content = file.statements?.[0] || '';
 
       // Expect generated content (note: keys might be unquoted due to naive replacement in builder)
       expect(content).toContain('headers:');
@@ -88,9 +88,8 @@ describe('Builders Sweeper', () => {
         test: { actor: 'Team' },
       } as unknown as ModelDef;
       const b1 = new TestBuilder(teamModel, 'mod', 'create');
-      const c1 =
-        (b1 as unknown as { getSchema: () => { variables: { initializer: string }[] } }).getSchema()
-          .variables?.[0].initializer || '';
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const c1 = (b1 as any).getSchema().statements?.[0] || '';
       // Expect NOT to have actor override in payload for self-model?
       // Actually `generateCreateTests` checks `actorRelationField`.
       expect(c1).not.toContain('actorId: (actor ?');
@@ -105,9 +104,8 @@ describe('Builders Sweeper', () => {
         test: { actor: 'Manager' },
       } as unknown as ModelDef;
       const b2 = new TestBuilder(jobModel, 'mod', 'create');
-      const c2 =
-        (b2 as unknown as { getSchema: () => { variables: { initializer: string }[] } }).getSchema()
-          .variables?.[0].initializer || '';
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const c2 = (b2 as any).getSchema().statements?.[0] || '';
       // For CREATE, it generates: manager: (actor ? actor.id : undefined)
       expect(c2).toContain('manager: (actor ? actor.id : undefined)');
 
@@ -121,9 +119,8 @@ describe('Builders Sweeper', () => {
         test: { actor: 'User' },
       } as unknown as ModelDef;
       const b3 = new TestBuilder(postModel, 'mod', 'create');
-      const c3 =
-        (b3 as unknown as { getSchema: () => { variables: { initializer: string }[] } }).getSchema()
-          .variables?.[0].initializer || '';
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const c3 = (b3 as any).getSchema().statements?.[0] || '';
       expect(c3).toContain('userId: (actor ? actor.id : undefined)');
     });
 
@@ -144,10 +141,9 @@ describe('Builders Sweeper', () => {
       } as unknown as ModelDef;
 
       const builder = new TestBuilder(model, 'mod', 'list');
-      const file = (
-        builder as unknown as { getSchema: () => { variables: { initializer: string }[] } }
-      ).getSchema();
-      const content = file.variables?.[0].initializer || '';
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const file = (builder as any).getSchema();
+      const content = file.statements?.[0] || '';
 
       expect(content).toContain('ownerId: { not: actor.id }');
     });
@@ -160,10 +156,9 @@ describe('Builders Sweeper', () => {
         test: { actor: 'User' },
       } as unknown as ModelDef;
       const builder = new TestBuilder(model, 'mod', 'create');
-      const file = (
-        builder as unknown as { getSchema: () => { variables: { initializer: string }[] } }
-      ).getSchema();
-      const content = file.variables?.[0].initializer || '';
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const file = (builder as any).getSchema();
+      const content = file.statements?.[0] || '';
 
       expect(content).toContain('Public access - no auth required');
     });
@@ -180,10 +175,9 @@ describe('Builders Sweeper', () => {
       } as unknown as ModelDef;
       // List operation triggers valid filter generation
       const builder = new TestBuilder(model, 'mod', 'list');
-      const file = (
-        builder as unknown as { getSchema: () => { variables: { initializer: string }[] } }
-      ).getSchema();
-      const content = file.variables?.[0].initializer || '';
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const file = (builder as any).getSchema();
+      const content = file.statements?.[0] || '';
 
       // filter by 'other', creating 'email' unique values
       expect(content).toContain("email: 'filter_a_'");

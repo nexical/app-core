@@ -143,7 +143,7 @@ describe('ApiBuilder', () => {
     const text = sourceFile.getFullText();
     expect(text).toContain('price: z.number()');
     expect(text).toContain('birthday: z.string().datetime().optional()');
-    expect(text).toContain('meta: z.any().optional()');
+    expect(text).toContain('meta: z.unknown().optional()');
     expect(text).toContain('type: "number"');
     expect(text).toContain('format: "date-time"');
   });

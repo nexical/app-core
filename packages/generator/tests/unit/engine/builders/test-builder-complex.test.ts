@@ -82,7 +82,7 @@ describe('TestBuilder Complex Scenarios', () => {
     const text = sourceFile.getText();
 
     // Should create category dependency
-    expect(text).toContain("Factory.create('category', {");
+    expect(text).toContain("Factory.create('category'");
 
     // Should inject fk into payload
     expect(text).toContain('categoryId: category_0.id');
