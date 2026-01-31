@@ -13,7 +13,7 @@ import type { ApiActor } from '@/lib/api/api-docs';
 export class PersonalAccessTokenService {
   public static async list(
     params?: Prisma.PersonalAccessTokenFindManyArgs,
-    _actor?: ApiActor,
+    actor?: ApiActor,
   ): Promise<ServiceResponse<PersonalAccessToken[]>> {
     try {
       const { where, take, skip, orderBy, select } = params || {};
@@ -64,7 +64,7 @@ export class PersonalAccessTokenService {
   public static async create(
     data: Prisma.PersonalAccessTokenCreateInput,
     select?: Prisma.PersonalAccessTokenSelect,
-    _actor?: ApiActor,
+    actor?: ApiActor,
   ): Promise<ServiceResponse<PersonalAccessToken>> {
     try {
       const input = await HookSystem.filter('personalAccessToken.beforeCreate', data);
@@ -97,7 +97,7 @@ export class PersonalAccessTokenService {
     id: string,
     data: Prisma.PersonalAccessTokenUpdateInput,
     select?: Prisma.PersonalAccessTokenSelect,
-    _actor?: ApiActor,
+    actor?: ApiActor,
   ): Promise<ServiceResponse<PersonalAccessToken>> {
     try {
       const input = await HookSystem.filter('personalAccessToken.beforeUpdate', data);

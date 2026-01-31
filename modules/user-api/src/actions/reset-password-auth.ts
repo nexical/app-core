@@ -1,5 +1,5 @@
 import type { ServiceResponse } from '@/types/service';
-import type { ResetPasswordDTO } from '../sdk/types';
+import type { ResetPasswordDTO, ResetPasswordResponseDTO } from '../sdk/types';
 import { db } from '@/lib/core/db';
 import { HookSystem } from '@/lib/modules/hooks';
 import type { APIContext } from 'astro';
@@ -8,7 +8,7 @@ export class ResetPasswordAuthAction {
   public static async run(
     input: ResetPasswordDTO,
     context: APIContext,
-  ): Promise<ServiceResponse<{ userId: string }>> {
+  ): Promise<ServiceResponse<ResetPasswordResponseDTO>> {
     const token = String(input.token);
     const newPassword = String(input.password);
 

@@ -33,13 +33,7 @@ export const GET = defineApi(
 
     // Security Check
     // Pass query params as input to role check
-    await ApiGuard.protect(context, 'admin', {
-      ...context.params,
-      where,
-      take,
-      skip,
-      orderBy,
-    });
+    await ApiGuard.protect(context, 'admin', { ...context.params, where, take, skip, orderBy });
 
     const select = {
       id: true,
@@ -55,13 +49,11 @@ export const GET = defineApi(
       updatedAt: true,
     };
 
-    const actor = context.locals?.actor;
+    const actor = context.locals.actor;
     const result = await UserService.list({ where, take, skip, orderBy, select }, actor);
 
     if (!result.success) {
-      return new Response(JSON.stringify({ error: result.error }), {
-        status: 500,
-      });
+      return new Response(JSON.stringify({ error: result.error }), { status: 500 });
     }
 
     const data = result.data || [];
@@ -630,10 +622,7 @@ export const GET = defineApi(
                       id: { type: 'string' },
                       username: { type: 'string' },
                       email: { type: 'string' },
-                      passwordUpdatedAt: {
-                        type: 'string',
-                        format: 'date-time',
-                      },
+                      passwordUpdatedAt: { type: 'string', format: 'date-time' },
                       emailVerified: { type: 'string', format: 'date-time' },
                       name: { type: 'string' },
                       image: { type: 'string' },
@@ -692,19 +681,15 @@ export const POST = defineApi(
       createdAt: true,
       updatedAt: true,
     };
-    const actor = context.locals?.actor;
+    const actor = context.locals.actor;
 
     const result = await UserService.create(validated, select, actor);
 
     if (!result.success) {
-      return new Response(JSON.stringify({ error: result.error }), {
-        status: 400,
-      });
+      return new Response(JSON.stringify({ error: result.error }), { status: 400 });
     }
 
-    return new Response(JSON.stringify({ success: true, data: result.data }), {
-      status: 201,
-    });
+    return new Response(JSON.stringify({ success: true, data: result.data }), { status: 201 });
   },
   {
     summary: 'Create User',

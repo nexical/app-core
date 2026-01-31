@@ -4,6 +4,8 @@ import { ApiGuard } from '@/lib/api/api-guard';
 import { HookSystem } from '@/lib/modules/hooks';
 import { LogoutAuthAction } from '@modules/user-api/src/actions/logout-auth';
 import type { LogoutDTO } from '@modules/user-api/src/sdk';
+
+// GENERATED CODE - DO NOT MODIFY
 export const POST = defineApi(
   async (context) => {
     // 1. Body Parsing (Input)
@@ -19,7 +21,7 @@ export const POST = defineApi(
     await ApiGuard.protect(context, 'member', combinedInput);
 
     // Inject userId from context for protected routes
-    const user = context.locals?.actor;
+    const user = context.locals.actor;
     if (user && user.id) {
       Object.assign(combinedInput, { userId: user.id });
     }
@@ -32,9 +34,7 @@ export const POST = defineApi(
 
     // 6. Response
     if (!filteredResult.success) {
-      return new Response(JSON.stringify({ error: filteredResult.error }), {
-        status: 400,
-      });
+      return new Response(JSON.stringify({ error: filteredResult.error }), { status: 400 });
     }
 
     return { success: true, data: filteredResult.data };

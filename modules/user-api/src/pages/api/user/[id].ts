@@ -37,11 +37,8 @@ export const GET = defineApi(
     await ApiGuard.protect(context, 'admin', { ...context.params }, result.data);
 
     // Analytics Hook
-    const actor = context.locals?.actor;
-    await HookSystem.dispatch('user.viewed', {
-      id,
-      actorId: actor?.id || 'anonymous',
-    });
+    const actor = context.locals.actor;
+    await HookSystem.dispatch('user.viewed', { id, actorId: actor?.id || 'anonymous' });
 
     return { success: true, data: result.data };
   },
@@ -123,14 +120,12 @@ export const PUT = defineApi(
       createdAt: true,
       updatedAt: true,
     };
-    const actor = context.locals?.actor;
+    const actor = context.locals.actor;
 
     const result = await UserService.update(id, validated, select, actor);
 
     if (!result.success) {
-      return new Response(JSON.stringify({ error: result.error }), {
-        status: 400,
-      });
+      return new Response(JSON.stringify({ error: result.error }), { status: 400 });
     }
 
     return { success: true, data: result.data };
@@ -209,9 +204,7 @@ export const DELETE = defineApi(
     const result = await UserService.delete(id);
 
     if (!result.success) {
-      return new Response(JSON.stringify({ error: result.error }), {
-        status: 400,
-      });
+      return new Response(JSON.stringify({ error: result.error }), { status: 400 });
     }
 
     return { success: true };

@@ -433,3 +433,22 @@ models:
       rawKey:
         type: String
         isRequired: true
+
+  VerifyEmailResponseDTO:
+    db: false
+    api: false
+    fields:
+      userId:
+        type: String
+        isRequired: true
+      email:
+        type: String
+        isRequired: true
+
+  ResetPasswordResponseDTO:
+    db: false
+    api: false
+    fields:
+      userId:
+        type: String
+        isRequired: true

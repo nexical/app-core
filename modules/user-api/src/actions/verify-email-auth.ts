@@ -1,5 +1,5 @@
 import type { ServiceResponse } from '@/types/service';
-import type { VerifyEmailDTO } from '../sdk/types';
+import type { VerifyEmailDTO, VerifyEmailResponseDTO } from '../sdk/types';
 import { db } from '@/lib/core/db';
 import { HookSystem } from '@/lib/modules/hooks';
 import type { APIContext } from 'astro';
@@ -8,7 +8,7 @@ export class VerifyEmailAuthAction {
   public static async run(
     input: VerifyEmailDTO,
     context: APIContext,
-  ): Promise<ServiceResponse<{ userId: string; email: string }>> {
+  ): Promise<ServiceResponse<VerifyEmailResponseDTO>> {
     const tokenStr = String(input.token);
 
     try {

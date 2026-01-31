@@ -19,7 +19,7 @@ export const POST = defineApi(
     await ApiGuard.protect(context, 'anonymous', combinedInput);
 
     // Inject userId from context for protected routes
-    const user = context.locals?.actor;
+    const user = context.locals.actor;
     if (user && user.id) {
       Object.assign(combinedInput, { userId: user.id });
     }
@@ -32,9 +32,7 @@ export const POST = defineApi(
 
     // 6. Response
     if (!filteredResult.success) {
-      return new Response(JSON.stringify({ error: filteredResult.error }), {
-        status: 400,
-      });
+      return new Response(JSON.stringify({ error: filteredResult.error }), { status: 400 });
     }
 
     return { success: true, data: filteredResult.data };
@@ -62,7 +60,13 @@ export const POST = defineApi(
         description: 'OK',
         content: {
           'application/json': {
-            schema: { type: 'object' },
+            schema: {
+              type: 'object',
+              properties: {
+                userId: { type: 'string' },
+              },
+              required: ['userId'],
+            },
           },
         },
       },

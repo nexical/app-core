@@ -1,5 +1,5 @@
 import type { ServiceResponse } from '@/types/service';
-import type { PersonalAccessToken, DeleteTokenDTO } from '../sdk/types';
+import type { DeleteTokenDTO } from '../sdk/types';
 import { PersonalAccessTokenService } from '../services/personal-access-token-service';
 import type { APIContext } from 'astro';
 
@@ -7,7 +7,7 @@ export class DeleteTokenUserAction {
   public static async run(
     input: DeleteTokenDTO,
     context: APIContext,
-  ): Promise<ServiceResponse<PersonalAccessToken>> {
+  ): Promise<ServiceResponse<void>> {
     const { id, userId } = input;
     if (!userId) return { success: false, error: 'user.service.error.missing_user_id' };
 

@@ -6,14 +6,9 @@ export const actors = {
   user: async (client: ApiClient, params: Record<string, unknown> = {}) => {
     let actor;
     if (params.id) {
-      actor = await Factory.prisma.user.findUnique({
-        where: { id: params.id as string },
-      });
+      actor = await Factory.prisma.user.findUnique({ where: { id: params.id } });
     } else if (params.email) {
-      // Support email lookup if available
-      actor = await Factory.prisma.user.findFirst({
-        where: { email: params.email as string },
-      });
+      actor = await Factory.prisma.user.findFirst({ where: { email: params.email } });
     }
 
     if (!actor) {
@@ -26,10 +21,8 @@ export const actors = {
     const rawKey = `ne_pat_${Date.now()}`;
     let dbKey = rawKey;
 
-    // Auto-hash: Field implies hashing, so we hash the raw key at runtime
     dbKey = crypto.createHash('sha256').update(rawKey).digest('hex');
 
-    // Create Token
     await Factory.create('personalAccessToken', {
       user: { connect: { id: actor.id } },
       name: 'Test Token',

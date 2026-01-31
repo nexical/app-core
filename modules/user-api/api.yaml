@@ -20,6 +20,7 @@ Auth:
     method: logout
     summary: Logout user
     input: LogoutDTO
+    output: none
     role: member
 
   - path: /invite
@@ -35,6 +36,7 @@ Auth:
     method: verifyEmail
     summary: Verify email address
     input: VerifyEmailDTO
+    output: VerifyEmailResponseDTO
     role: anonymous
 
   - path: /password/request-reset
@@ -42,6 +44,7 @@ Auth:
     method: requestPasswordReset
     summary: Request password reset
     input: RequestPasswordResetDTO
+    output: none
     role: anonymous
 
   - path: /password/reset
@@ -49,6 +52,7 @@ Auth:
     method: resetPassword
     summary: Reset password
     input: ResetPasswordDTO
+    output: ResetPasswordResponseDTO
     role: anonymous
 
   - path: /password/validate-token
@@ -64,6 +68,7 @@ User:
     verb: GET
     method: getMe
     summary: Get current user profile
+    input: none
     output: User
     role: member
 
@@ -80,6 +85,7 @@ User:
     method: deleteMe
     summary: Delete current user account
     input: DeleteMeDTO
+    output: none
     role: member
 
   - path: /me/tokens
@@ -103,4 +109,5 @@ User:
     method: deleteToken
     summary: Delete personal access token
     input: DeleteTokenDTO
+    output: none
     role: member

@@ -10,7 +10,7 @@ export async function init() {
   // 1. Auto-discover and Register Roles from src/roles/
   const roleModules = import.meta.glob('./roles/*.ts', { eager: true });
   for (const path in roleModules) {
-    const mod = roleModules[path] as Record<string, unknown>;
+    const mod = roleModules[path] as { [key: string]: unknown };
     const roleName = path.split('/').pop()?.replace('.ts', '');
     if (!roleName) continue;
 
@@ -27,7 +27,7 @@ export async function init() {
   // 2. Auto-load all Hook definitions from src/hooks/
   const hookModules = import.meta.glob('./hooks/*.ts', { eager: true });
   for (const path in hookModules) {
-    const mod = hookModules[path] as { init?: () => Promise<void> };
+    const mod = hookModules[path] as { init?: () => Promise<void> | void };
     if (typeof mod.init === 'function') {
       await mod.init();
     }

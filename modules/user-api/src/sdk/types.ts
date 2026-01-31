@@ -1,33 +1,4 @@
-export type {
-  User,
-  PersonalAccessToken,
-  Account,
-  VerificationToken,
-  PasswordResetToken,
-  Invitation,
-} from '@prisma/client';
-
-export const SiteRole = {
-  ADMIN: 'ADMIN',
-  EMPLOYEE: 'EMPLOYEE',
-  CONTRACTOR: 'CONTRACTOR',
-} as const;
-export type SiteRole = (typeof SiteRole)[keyof typeof SiteRole];
-
-export const UserStatus = {
-  ACTIVE: 'ACTIVE',
-  INACTIVE: 'INACTIVE',
-  BANNED: 'BANNED',
-} as const;
-export type UserStatus = (typeof UserStatus)[keyof typeof UserStatus];
-
-export const UserMode = {
-  SINGLE: 'SINGLE',
-  PUBLIC: 'PUBLIC',
-  ADMIN: 'ADMIN',
-} as const;
-export type UserMode = (typeof UserMode)[keyof typeof UserMode];
-
+// GENERATED CODE - DO NOT MODIFY BY HAND
 export interface CreateUserDTO {
   email: string;
   password: string;
@@ -62,6 +33,7 @@ export interface VerifyEmailDTO {
 }
 
 export interface UpdateUserDTO {
+  id: string;
   name?: string;
   username?: string;
   email?: string;
@@ -69,29 +41,13 @@ export interface UpdateUserDTO {
   role?: SiteRole;
   status?: UserStatus;
   password?: string;
-  id: string;
 }
 
 export interface CreateTokenDTO {
+  userId?: string;
   name: string;
   expiresAt?: Date;
-  userId?: string;
 }
-
-export type Auth = Record<string, unknown>;
-
-export interface DeleteTokenDTO {
-  id: string;
-  userId?: string;
-}
-
-export interface ListTokensDTO {
-  userId: string;
-  skip?: number;
-  take?: number;
-}
-
-export type LogoutDTO = Record<string, unknown>;
 
 export interface ValidateResetTokenDTO {
   token: string;
@@ -102,7 +58,18 @@ export interface ValidateResetTokenResponseDTO {
   email?: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface LogoutDTO {}
+
 export interface DeleteMeDTO {
+  userId?: string;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface ListTokensDTO {}
+
+export interface DeleteTokenDTO {
+  id: string;
   userId?: string;
 }
 
@@ -110,3 +77,41 @@ export interface CreateTokenResponseDTO {
   token: PersonalAccessToken;
   rawKey: string;
 }
+
+export interface VerifyEmailResponseDTO {
+  userId: string;
+  email: string;
+}
+
+export interface ResetPasswordResponseDTO {
+  userId: string;
+}
+
+export type SiteRole = (typeof SiteRole)[keyof typeof SiteRole];
+export type UserStatus = (typeof UserStatus)[keyof typeof UserStatus];
+export type UserMode = (typeof UserMode)[keyof typeof UserMode];
+
+export const SiteRole = {
+  ADMIN: 'ADMIN',
+  EMPLOYEE: 'EMPLOYEE',
+  CONTRACTOR: 'CONTRACTOR',
+} as const;
+export const UserStatus = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+  BANNED: 'BANNED',
+} as const;
+export const UserMode = {
+  SINGLE: 'SINGLE',
+  PUBLIC: 'PUBLIC',
+  ADMIN: 'ADMIN',
+} as const;
+
+export type {
+  User,
+  PersonalAccessToken,
+  Account,
+  VerificationToken,
+  PasswordResetToken,
+  Invitation,
+} from '@prisma/client';

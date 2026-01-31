@@ -11,7 +11,7 @@ import type { ApiActor } from '@/lib/api/api-docs';
 export class UserService {
   public static async list(
     params?: Prisma.UserFindManyArgs,
-    _actor?: ApiActor,
+    actor?: ApiActor,
   ): Promise<ServiceResponse<User[]>> {
     try {
       const { where, take, skip, orderBy, select } = params || {};
@@ -49,7 +49,7 @@ export class UserService {
   public static async create(
     data: Prisma.UserCreateInput,
     select?: Prisma.UserSelect,
-    _actor?: ApiActor,
+    actor?: ApiActor,
   ): Promise<ServiceResponse<User>> {
     try {
       const input = await HookSystem.filter('user.beforeCreate', data);
@@ -76,7 +76,7 @@ export class UserService {
     id: string,
     data: Prisma.UserUpdateInput,
     select?: Prisma.UserSelect,
-    _actor?: ApiActor,
+    actor?: ApiActor,
   ): Promise<ServiceResponse<User>> {
     try {
       const input = await HookSystem.filter('user.beforeUpdate', data);
