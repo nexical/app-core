@@ -1,0 +1,127 @@
+import chalk from 'chalk';
+import fs from 'fs-extra';
+import path from 'path';
+import { ApiModuleGenerator } from '../engine/api-module-generator.js';
+import { ModuleLocator } from '../lib/module-locator.js';
+import { glob } from 'glob';
+
+export async function generateApiModule(name?: string) {
+    const pattern = name || '*-api';
+    const modules = await ModuleLocator.expand(pattern);
+
+    // specific check: if no modules found but the name is NOT a glob,
+    // implies the user matched nothing but might want to create a NEW module.
+    if (modules.length === 0 && !glob.hasMagic(pattern)) {
+        modules.push(pattern);
+    }
+
+    if (modules.length === 0) {
+        console.info(chalk.yellow(`No modules found matching pattern "${pattern}"`));
+        return;
+    }
+
+    console.info(chalk.blue(`Found ${modules.length} module(s) to generate.`));
+
+    for (const moduleName of modules) {
+        await generateForModule(moduleName);
+    }
+}
+
+async function generateForModule(name: string) {
+    console.info(chalk.magenta(`\nGenerating code for module: ${name}`));
+    const moduleDir = path.join(process.cwd(), 'modules', name);
+
+    try {
+        // 0. Ensure Module Directory & Project Files
+        if (!fs.existsSync(moduleDir)) {
+            console.info(chalk.blue(`Module '${name}' does not exist. Creating...`));
+            await fs.ensureDir(path.join(moduleDir, 'src'));
+        }
+
+        // Scaffolding
+        await generateProjectFiles(moduleDir, name);
+
+        // 1. Run Generator
+        const generator = new ApiModuleGenerator(moduleDir);
+        await generator.run();
+
+        console.info(chalk.green(`Successfully generated code for "${name}"`));
+    } catch (error) {
+        console.error(error);
+        console.info(chalk.red('Failed to generate code'));
+        throw error;
+    }
+}
+
+async function generateProjectFiles(moduleDir: string, name: string) {
+    // package.json
+    const pkgPath = path.join(moduleDir, 'package.json');
+    if (!fs.existsSync(pkgPath)) {
+        const pkg = {
+            name: `@modules/${name}`,
+            version: '0.0.0',
+            type: 'module',
+            private: true,
+            exports: { './*': './src/*' },
+            dependencies: {
+                '@prisma/client': '^5.7.0',
+                zod: '^3.22.4',
+            },
+        };
+        await fs.writeJSON(pkgPath, pkg, { spaces: 4 });
+    }
+
+    // tsconfig.json
+    const tsconfigPath = path.join(moduleDir, 'tsconfig.json');
+    if (!fs.existsSync(tsconfigPath)) {
+        const tsconfig = {
+            extends: '../../tsconfig.json',
+            compilerOptions: { baseUrl: '../../' },
+            include: ['src/**/*', '../../src/**/*'],
+        };
+        await fs.writeJSON(tsconfigPath, tsconfig, { spaces: 4 });
+    }
+
+    // module.config.mjs
+    const configPath = path.join(moduleDir, 'module.config.mjs');
+    if (!fs.existsSync(configPath)) {
+        const content = `export default {\n    type: 'feature',\n    order: 50\n};\n`;
+        await fs.writeFile(configPath, content);
+    }
+
+    // .env.example
+    const envPath = path.join(moduleDir, '.env.example');
+    if (!fs.existsSync(envPath)) {
+        await fs.writeFile(envPath, `# Env vars for @modules/${name}\n`);
+    }
+
+    // models.yaml
+    const modelsPath = path.join(moduleDir, 'models.yaml');
+    if (!fs.existsSync(modelsPath)) {
+        const modelName = name
+            .split('-')
+            .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+            .join('');
+        const content = `models:
+  ${modelName}:
+    fields:
+      id:
+        type: String
+        attributes:
+          - "@id"
+          - "@default(cuid())"
+      name:
+        type: String
+        isRequired: false
+      createdAt:
+        type: DateTime
+        attributes:
+          - "@default(now())"
+      updatedAt:
+        type: DateTime
+        attributes:
+          - "@updatedAt"
+`;
+        await fs.writeFile(modelsPath, content);
+    }
+}
