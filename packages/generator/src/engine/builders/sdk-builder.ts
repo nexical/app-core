@@ -181,7 +181,11 @@ export class SdkBuilder extends BaseBuilder {
     // Collect other types from custom routes
     const otherTypes = new Set<string>();
     for (const route of this.customRoutes) {
+      // Only import input types if they're actually used in the method signature
+      // Skip if input is 'none' or if the verb doesn't accept a body
+      const acceptsBody = ['POST', 'PUT', 'PATCH'].includes(route.verb);
       if (
+        acceptsBody &&
         route.input &&
         route.input !== 'any' &&
         route.input !== 'none' &&

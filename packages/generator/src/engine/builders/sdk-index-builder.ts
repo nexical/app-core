@@ -40,8 +40,14 @@ export class SdkIndexBuilder extends BaseBuilder {
     const cleanName = this.moduleName.replace(/-api$/, '');
     const mainSdkName = `${this.toPascalCase(cleanName)}SDK`;
 
+    const classExtends = defaultModel ? `Base${defaultModel.name}SDK` : 'BaseResource';
+    const needsBaseResource = !defaultModel;
+
     const imports: ImportConfig[] = [
-      { moduleSpecifier: '@nexical/sdk-core', namedImports: ['BaseResource', 'ApiClient'] },
+      {
+        moduleSpecifier: '@nexical/sdk-core',
+        namedImports: needsBaseResource ? ['BaseResource', 'ApiClient'] : ['ApiClient'],
+      },
       ...apiModels.map((m) => ({
         moduleSpecifier: `./${this.toKebabCase(m.name)}-sdk`,
         namedImports: [`${m.name}SDK as Base${m.name}SDK`],
@@ -63,8 +69,6 @@ export class SdkIndexBuilder extends BaseBuilder {
         ),
       ],
     };
-
-    const classExtends = defaultModel ? `Base${defaultModel.name}SDK` : 'BaseResource';
 
     const sdkClass: ClassDefinition = {
       name: mainSdkName,
