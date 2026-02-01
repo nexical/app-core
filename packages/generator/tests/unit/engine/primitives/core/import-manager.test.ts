@@ -2,6 +2,7 @@ import { describe, it, expect, beforeEach } from 'vitest';
 import { SourceFile } from 'ts-morph';
 import { createTestProject } from '@nexical/generator-tests/helpers/test-project';
 import { ImportPrimitive } from '@nexical/generator/engine/primitives/core/import-manager';
+import { Normalizer } from '@nexical/generator/utils/normalizer';
 
 describe('ImportPrimitive', () => {
   let sourceFile: SourceFile;
@@ -12,11 +13,8 @@ describe('ImportPrimitive', () => {
   });
 
   it('should normalize module specifiers', () => {
-    const primitive = new ImportPrimitive({ moduleSpecifier: '@/lib/utils.ts' });
-    // @ts-expect-error - testing invalid assignment
-    expect(primitive.normalizeModuleSpecifier('@/lib/utils.ts')).toBe('@/lib/core/utils');
-    // @ts-expect-error - testing invalid assignment
-    expect(primitive.normalizeModuleSpecifier('@modules/user-api/src/sdk/types.ts')).toBe(
+    expect(Normalizer.normalizeImport('@/lib/utils.ts')).toBe('@/lib/core/utils');
+    expect(Normalizer.normalizeImport('@modules/user-api/src/sdk/types.ts')).toBe(
       '@modules/user-api/src/sdk',
     );
   });

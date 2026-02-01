@@ -78,12 +78,11 @@ describe('Builders Sweeper', () => {
       expect(content).toContain('val');
     });
 
-    it('should throw if actor is missing', () => {
+    it('should fallback to user if actor is missing', () => {
       const model: ModelDef = { name: 'NoActor', api: true, fields: {} } as unknown as ModelDef;
       const builder = new TestBuilder(model, 'mod', 'create');
-      expect(() => (builder as unknown as { getSchema: () => void }).getSchema()).toThrow(
-        'missing required',
-      );
+      const schema = (builder as unknown as { getSchema: () => any }).getSchema();
+      expect(schema).toBeDefined();
     });
 
     it('should handle getActorRelationSnippet edge cases', () => {

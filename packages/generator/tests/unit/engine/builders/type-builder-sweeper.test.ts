@@ -61,8 +61,9 @@ describe('TypeBuilder Sweeper', () => {
     const builder = new TypeBuilder([], enums);
     const file = (builder as unknown as { getSchema: () => FileDefinition }).getSchema();
 
-    const enumStatement = file.statements?.[0] as { raw: string };
-    expect(enumStatement.raw).toContain('export const Role = {');
-    expect(enumStatement.raw).toContain('export type Role = (typeof Role)[keyof typeof Role]');
+    const enumsResult = file.enums || [];
+    expect(enumsResult).toHaveLength(1);
+    expect(enumsResult[0].name).toBe('Role');
+    expect(enumsResult[0].members).toContainEqual({ name: 'ADMIN', value: 'ADMIN' });
   });
 });
