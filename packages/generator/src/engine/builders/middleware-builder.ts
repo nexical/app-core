@@ -3,27 +3,21 @@ import {
   type FileDefinition,
   type ImportConfig,
   type FunctionConfig,
+  type CustomRoute,
 } from '../types.js';
 import { BaseBuilder } from './base-builder.js';
 import { TemplateLoader } from '../../utils/template-loader.js';
 import { SourceFile, ModuleDeclaration } from 'ts-morph';
 
 export class MiddlewareBuilder extends BaseBuilder {
-  constructor(private models: ModelDef[]) {
+  constructor(
+    private models: ModelDef[],
+    private routes: CustomRoute[] = [],
+  ) {
     super();
   }
 
   protected getSchema(node?: SourceFile | ModuleDeclaration): FileDefinition {
-    const imports: ImportConfig[] = [
-      {
-        moduleSpecifier: 'astro',
-        namedImports: ['APIContext', 'MiddlewareNext'],
-        isTypeOnly: true,
-      },
-      { moduleSpecifier: '@/lib/core/db', namedImports: ['db'] },
-      { moduleSpecifier: 'node:crypto', defaultImport: 'crypto' },
-    ];
-
     let authLogic = '';
 
     for (const model of this.models) {
@@ -79,6 +73,22 @@ export class MiddlewareBuilder extends BaseBuilder {
       }).raw;
     }
 
+    const imports: ImportConfig[] = [
+      {
+        moduleSpecifier: 'astro',
+        namedImports: ['APIContext', 'MiddlewareNext'],
+        isTypeOnly: true,
+      },
+    ];
+
+    const hasActors = this.models.some((m) => m.actor && m.actor.prefix);
+    const hasAuthLogic = authLogic.trim().length > 0;
+
+    if (hasActors && hasAuthLogic) {
+      imports.push({ moduleSpecifier: '@/lib/core/db', namedImports: ['db'] });
+      imports.push({ moduleSpecifier: 'node:crypto', defaultImport: 'crypto' });
+    }
+
     // Scan for actor with validStatus or login strategy to implement Bouncer Pattern
     let sessionCheck = `
             // Check if actor was set by previous middleware (e.g. session)
@@ -115,12 +125,17 @@ export class MiddlewareBuilder extends BaseBuilder {
         { name: 'next', type: 'MiddlewareNext' },
       ],
       statements: [
-        `const authHeader = context.request.headers.get("Authorization");`,
+        `const publicRoutes = [${this.routes
+          .filter((r) => r.role === 'anonymous')
+          .map((r) => `"${r.path}"`)
+          .join(', ')}];`,
+        `if (publicRoutes.some(route => context.url.pathname.startsWith(route))) return next();`,
+        hasAuthLogic ? `const authHeader = context.request.headers.get("Authorization");` : null,
         authLogic,
         `// Dynamic Bouncer Pattern: Validate Actor Status`,
         sessionCheck,
         `return next();`,
-      ],
+      ].filter(Boolean) as string[],
     };
 
     return {

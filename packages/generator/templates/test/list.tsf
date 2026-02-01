@@ -38,7 +38,7 @@ describe('GET /api/${kebabEntity}', () => {
     ${cleanupClause}
 
     // Seed data
-    const suffix = Date.now();
+    const _listSuffix = Date.now();
     ${seedClause}
 
     const res = await client.get('/api/${kebabEntity}');
@@ -55,10 +55,9 @@ describe('GET /api/${kebabEntity}', () => {
     // Cleanup and seed specific count
     ${cleanupClause}
 
-    const suffix = Date.now();
+    const _suffix = Date.now();
     const createdIds: string[] = [];
     const totalTarget = 15;
-    let currentCount = 0;
     
     // Check current count
     ${paginationSeedClause}

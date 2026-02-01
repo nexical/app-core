@@ -12,7 +12,10 @@ import { FactoryBuilder } from './builders/factory-builder.js';
 import { ActorBuilder } from './builders/actor-builder.js';
 import { ActorTypeBuilder } from './builders/actor-type-builder.js';
 import { MiddlewareBuilder } from './builders/middleware-builder.js';
-import { type CustomRoute, type ModelDef } from './types.js';
+import { EmailBuilder } from './builders/email-builder.js';
+import { AgentBuilder } from './builders/agent-builder.js';
+import { HookBuilder } from './builders/hook-builder.js';
+import { type CustomRoute, type ModelDef, type ModuleConfig } from './types.js';
 import { toKebabCase } from '../utils/string.js';
 import path from 'node:path';
 import fs from 'node:fs';
@@ -270,9 +273,24 @@ export class ApiModuleGenerator extends ModuleGenerator {
     const serverInitFile = this.getOrCreateFile('src/server-init.ts');
     new InitBuilder('server').ensure(serverInitFile);
 
-    // 7. Middleware
+    // 7. Communications & Distributed Services
+    const allCustomRoutes = Object.values(customRoutes).flat();
+    await new EmailBuilder(this.moduleName, config as unknown as ModuleConfig).build(
+      this.project,
+      undefined,
+    );
+    await new AgentBuilder(this.moduleName, config as unknown as ModuleConfig).build(
+      this.project,
+      undefined,
+    );
+    await new HookBuilder(this.moduleName, config as unknown as ModuleConfig).build(
+      this.project,
+      undefined,
+    );
+
+    // 8. Middleware
     const middlewareFile = this.getOrCreateFile('src/middleware.ts');
-    new MiddlewareBuilder(models).ensure(middlewareFile);
+    new MiddlewareBuilder(models, allCustomRoutes).ensure(middlewareFile);
 
     // 5. Cleanup
     this.cleanup('src/services', /\.ts$/);

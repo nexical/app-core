@@ -1,0 +1,20 @@
+# UI Module Configuration
+# This file defines the behavior of the UI Generator for this module.
+
+# [Optional] Backend Module
+# If this UI module serves a specific API module (split architecture),
+# specify the name of that module here.
+# The generator will load models.yaml and api.yaml from that module.
+# If undefined, it defaults to the current module.
+backend: 'user-api'
+
+# [Optional] Component Prefixes
+# Standard prefix for generated components (e.g. "User" -> "UserTable")
+prefix: ''
+
+# [Optional] Navigation
+# Where to register this module in the main shell
+navigation:
+  label: 'Users'
+  icon: 'UserGroup'
+  parent: 'System'

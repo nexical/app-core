@@ -354,10 +354,9 @@ export class TestBuilder extends BaseBuilder {
         let uniqueInjectionB = '';
 
         if (uniqueField && uniqueField !== field) {
-          const isEmail = uniqueField === 'email';
-          const suffix = isEmail ? '@example.com' : '';
-          uniqueInjectionA = `, ${uniqueField}: 'filter_a_' + Date.now() + '${suffix}'`;
-          uniqueInjectionB = `, ${uniqueField}: 'filter_b_' + Date.now() + '${suffix}'`;
+          const _listSuffix = uniqueField === 'email' ? '@example.com' : '';
+          uniqueInjectionA = `, ${uniqueField}: 'filter_a_' + Date.now() + '${_listSuffix}'`;
+          uniqueInjectionB = `, ${uniqueField}: 'filter_b_' + Date.now() + '${_listSuffix}'`;
         }
 
         // Note: Template literal inside loop string generation
@@ -366,7 +365,7 @@ export class TestBuilder extends BaseBuilder {
     // Wait to avoid collisions
     await new Promise(r => setTimeout(r, 10));
     // Reuse getActorStatement to ensure correct actor context
-    ${this.getActorStatement('list')}
+    ${this.getActorStatement('list', !!this.getActorRelationSnippet())}
     ${this.model.test?.actor === 'user' && this.model.role && typeof this.model.role === 'object' && this.model.role.list !== 'admin' ? `// Note: Ensure role allows filtering if restricted` : ''}
 
     const val1 = '${field}_' + Date.now() + '_A${field === 'email' ? '@example.com' : ''}';
@@ -412,8 +411,8 @@ export class TestBuilder extends BaseBuilder {
       const rel = this.getActorRelationSnippet();
       if (unique) {
         const s = unique === 'email' ? '@example.com' : '';
-        return `await Factory.create('${camelEntity}', { ...baseData, ${unique}: 'list_1_' + suffix + '${s}'${rel} });
-             await Factory.create('${camelEntity}', { ...baseData, ${unique}: 'list_2_' + suffix + '${s}'${rel} });`;
+        return `await Factory.create('${camelEntity}', { ...baseData, ${unique}: 'list_1_' + _listSuffix + '${s}'${rel} });
+             await Factory.create('${camelEntity}', { ...baseData, ${unique}: 'list_2_' + _listSuffix + '${s}'${rel} });`;
       }
       return `await Factory.create('${camelEntity}', { ...baseData${rel} });
              await Factory.create('${camelEntity}', { ...baseData${rel} });`;
@@ -430,7 +429,7 @@ export class TestBuilder extends BaseBuilder {
       const rel = this.getActorRelationSnippet();
       if (unique) {
         const s = unique === 'email' ? '@example.com' : '';
-        return `const rec = await Factory.create('${camelEntity}', { ...baseData, ${unique}: \`page_\${i}_\${suffix}${s}\`${rel} });
+        return `const rec = await Factory.create('${camelEntity}', { ...baseData, ${unique}: \`page_\${i}_\${_listSuffix}${s}\`${rel} });
                             createdIds.push(rec.id);`;
       }
       return `const rec = await Factory.create('${camelEntity}', { ...baseData${rel} });
@@ -438,7 +437,8 @@ export class TestBuilder extends BaseBuilder {
     })();
 
     const paginationSeedClause = `
-    ${currentCountLogic}
+    const _listSuffix = Date.now();
+    ${currentCountLogic ? `let currentCount = 0;\n    ${currentCountLogic}` : 'const currentCount = 0;'}
     const toCreate = totalTarget - currentCount;
 
     for (let i = 0; i < toCreate; i++) {

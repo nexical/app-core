@@ -20,6 +20,7 @@ describe('InitBuilder', () => {
     expect(text).toContain('roleRegistry');
     expect(text).toContain('import.meta.glob("./roles/*.ts"');
     expect(text).toContain('import.meta.glob("./hooks/*.ts"');
+    expect(text).toContain('import.meta.glob("./emails/init.ts"');
   });
 
   it('should generate client init function', () => {

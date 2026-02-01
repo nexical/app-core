@@ -1,4 +1,4 @@
-import { Project, Statement, ReturnStatement } from 'ts-morph';
+import { Project, Statement, ReturnStatement, Block } from 'ts-morph';
 import { type ParsedStatement } from '../../types.js';
 
 export function tsx(strings: TemplateStringsArray, ...values: unknown[]): ParsedStatement {
@@ -21,10 +21,16 @@ export function tsx(strings: TemplateStringsArray, ...values: unknown[]): Parsed
         throw new Error('Failed to parse JSX fragment: could not find wrapper function');
       }
 
-      const returnStmt = func
-        .getBody()
-        ?.getStatements()
-        .find((s) => s.getKindName() === 'ReturnStatement') as ReturnStatement | undefined;
+      const body = func.getBody() as Block;
+      if (!body) {
+        throw new Error('Failed to parse JSX fragment: function has no body');
+      }
+
+      const returnStmt = body
+        .getStatements()
+        .find((s: Statement) => s.getKindName() === 'ReturnStatement') as
+        | ReturnStatement
+        | undefined;
 
       if (!returnStmt) {
         throw new Error(

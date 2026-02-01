@@ -81,7 +81,7 @@ describe('Builders Sweeper', () => {
     it('should fallback to user if actor is missing', () => {
       const model: ModelDef = { name: 'NoActor', api: true, fields: {} } as unknown as ModelDef;
       const builder = new TestBuilder(model, 'mod', 'create');
-      const schema = (builder as unknown as { getSchema: () => any }).getSchema();
+      const schema = (builder as unknown as { getSchema: () => unknown }).getSchema();
       expect(schema).toBeDefined();
     });
 
