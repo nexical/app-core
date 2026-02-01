@@ -4,21 +4,21 @@ import { ApiGuard } from '@/lib/api/api-guard';
 import { HookSystem } from '@/lib/modules/hooks';
 import { GetMeUserAction } from '@modules/user-api/src/actions/get-me-user';
 import { UpdateMeUserAction } from '@modules/user-api/src/actions/update-me-user';
-import type { UpdateUserDTO, DeleteMeDTO } from '@modules/user-api/src/sdk';
 import { DeleteMeUserAction } from '@modules/user-api/src/actions/delete-me-user';
+import type { UpdateUserDTO, DeleteMeDTO } from '@modules/user-api/src/sdk';
 
 // GENERATED CODE - DO NOT MODIFY
 export const GET = defineApi(
   async (context) => {
     // 1. Body Parsing (Input)
     const body = {} as none;
+
     const query = Object.fromEntries(new URL(context.request.url).searchParams);
 
     // 2. Hook: Filter Input
     const input: none = await HookSystem.filter('user.getMe.input', body);
 
     // 3. Security Check
-    // Pass merged input
     const combinedInput = { ...context.params, ...query, ...input };
     await ApiGuard.protect(context, 'member', combinedInput);
 
@@ -77,13 +77,13 @@ export const PUT = defineApi(
   async (context) => {
     // 1. Body Parsing (Input)
     const body = (await context.request.json()) as UpdateUserDTO;
+
     const query = Object.fromEntries(new URL(context.request.url).searchParams);
 
     // 2. Hook: Filter Input
     const input: UpdateUserDTO = await HookSystem.filter('user.updateMe.input', body);
 
     // 3. Security Check
-    // Pass merged input
     const combinedInput = { ...context.params, ...query, ...input };
     await ApiGuard.protect(context, 'member', combinedInput);
 
@@ -161,13 +161,13 @@ export const DELETE = defineApi(
   async (context) => {
     // 1. Body Parsing (Input)
     const body = (await context.request.json()) as DeleteMeDTO;
+
     const query = Object.fromEntries(new URL(context.request.url).searchParams);
 
     // 2. Hook: Filter Input
     const input: DeleteMeDTO = await HookSystem.filter('user.deleteMe.input', body);
 
     // 3. Security Check
-    // Pass merged input
     const combinedInput = { ...context.params, ...query, ...input };
     await ApiGuard.protect(context, 'member', combinedInput);
 

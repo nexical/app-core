@@ -4,10 +4,12 @@ import { ApiGuard } from '@/lib/api/api-guard';
 import { HookSystem } from '@/lib/modules/hooks';
 import { RequestPasswordResetAuthAction } from '@modules/user-api/src/actions/request-password-reset-auth';
 import type { RequestPasswordResetDTO } from '@modules/user-api/src/sdk';
+
 export const POST = defineApi(
   async (context) => {
     // 1. Body Parsing (Input)
     const body = (await context.request.json()) as RequestPasswordResetDTO;
+
     const query = Object.fromEntries(new URL(context.request.url).searchParams);
 
     // 2. Hook: Filter Input
@@ -17,7 +19,6 @@ export const POST = defineApi(
     );
 
     // 3. Security Check
-    // Pass merged input
     const combinedInput = { ...context.params, ...query, ...input };
     await ApiGuard.protect(context, 'anonymous', combinedInput);
 

@@ -4,18 +4,19 @@ import { ApiGuard } from '@/lib/api/api-guard';
 import { HookSystem } from '@/lib/modules/hooks';
 import { ListTokensUserAction } from '@modules/user-api/src/actions/list-tokens-user';
 import { CreateTokenUserAction } from '@modules/user-api/src/actions/create-token-user';
-import type { CreateTokenDTO, ListTokensDTO } from '@modules/user-api/src/sdk';
+import type { ListTokensDTO, CreateTokenDTO } from '@modules/user-api/src/sdk';
+
 export const GET = defineApi(
   async (context) => {
     // 1. Body Parsing (Input)
     const body = {} as ListTokensDTO;
+
     const query = Object.fromEntries(new URL(context.request.url).searchParams);
 
     // 2. Hook: Filter Input
     const input: ListTokensDTO = await HookSystem.filter('user.listTokens.input', body);
 
     // 3. Security Check
-    // Pass merged input
     const combinedInput = { ...context.params, ...query, ...input };
     await ApiGuard.protect(context, 'member', combinedInput);
 
@@ -75,13 +76,13 @@ export const POST = defineApi(
   async (context) => {
     // 1. Body Parsing (Input)
     const body = (await context.request.json()) as CreateTokenDTO;
+
     const query = Object.fromEntries(new URL(context.request.url).searchParams);
 
     // 2. Hook: Filter Input
     const input: CreateTokenDTO = await HookSystem.filter('user.createToken.input', body);
 
     // 3. Security Check
-    // Pass merged input
     const combinedInput = { ...context.params, ...query, ...input };
     await ApiGuard.protect(context, 'member', combinedInput);
 

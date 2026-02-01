@@ -1,3 +1,4 @@
+// GENERATED CODE - DO NOT MODIFY BY HAND
 import { BaseResource } from '@nexical/sdk-core';
 import type {
   User,
