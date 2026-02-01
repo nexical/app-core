@@ -4,6 +4,8 @@
  * @input {string} camelEntity
  * @input {string} role
  * @input {string} actorStatement
+ * @input {string} actorStatementPagination
+ * @input {string} actorStatementNeg
  * @input {string} cleanupClause
  * @input {string} seedClause
  * @input {string} paginationSeedClause
@@ -16,6 +18,8 @@ declare const kebabEntity: string;
 declare const camelEntity: string;
 declare const role: string;
 declare const actorStatement: unknown;
+declare const actorStatementPagination: unknown;
+declare const actorStatementNeg: unknown;
 declare const cleanupClause: unknown;
 declare const seedClause: unknown;
 declare const paginationSeedClause: unknown;
@@ -46,7 +50,7 @@ describe('GET /api/${kebabEntity}', () => {
   });
 
   it('should verify pagination metadata', async () => {
-    ${actorStatement}
+    ${actorStatementPagination}
 
     // Cleanup and seed specific count
     ${cleanupClause}

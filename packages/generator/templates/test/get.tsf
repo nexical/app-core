@@ -3,6 +3,7 @@
  * @input {string} kebabEntity
  * @input {string} camelEntity
  * @input {string} actorStatement
+ * @input {string} actorStatementNeg
  * @input {string} setupSnippet
  */
 import { fragment } from '@nexical/generator';
@@ -10,6 +11,7 @@ import { fragment } from '@nexical/generator';
 declare const kebabEntity: string;
 declare const camelEntity: string;
 declare const actorStatement: unknown;
+declare const actorStatementNeg: unknown;
 declare const setupSnippet: unknown;
 
 export default fragment/* ts */`
@@ -27,7 +29,7 @@ describe('GET /api/${kebabEntity}/[id]', () => {
   });
 
   it('should return 404 for missing id', async () => {
-    ${actorStatement}
+    ${actorStatementNeg}
     const res = await client.get('/api/${kebabEntity}/missing-id-123');
     expect(res.status).toBe(404);
   });

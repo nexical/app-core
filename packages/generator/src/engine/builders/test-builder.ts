@@ -71,10 +71,10 @@ export class TestBuilder extends BaseBuilder {
 
     // Check config first
     if (this.roleConfig[requiredRole]) {
-      const opts = JSON.stringify(this.roleConfig[requiredRole])
+      const optsArray = JSON.stringify(this.roleConfig[requiredRole])
         .replace(/"([^"]+)":/g, '$1:')
         .replace(/"/g, "'");
-      return `${!isUsed ? '// eslint-disable-next-line @typescript-eslint/no-unused-vars\n      ' : ''}const actor = await client.as('${actorName}', ${opts});`;
+      return `${!isUsed ? '// eslint-disable-next-line @typescript-eslint/no-unused-vars\n      ' : ''}const actor = await client.as('${actorName}', ${optsArray});`;
     }
 
     // Fallback
@@ -272,7 +272,7 @@ export class TestBuilder extends BaseBuilder {
             }; `;
     }
 
-    const isActorUsed = requiredFKs.some((fk) => fk.model === 'Job');
+    const isActorUsed = requiredFKs.some((fk) => fk.model === 'Job') || !!actorRelationField;
     const actorStatement = this.getActorStatement('create', isActorUsed);
 
     const assertionBlock = Object.keys(mockData)
@@ -401,8 +401,10 @@ export class TestBuilder extends BaseBuilder {
       cleanupClause = `await Factory.prisma.${camelEntity}.deleteMany(); `;
     }
 
-    const isActorUsed = shouldPreserve || !!this.getActorRelationSnippet();
+    const isActorUsed =
+      shouldPreserve || !!this.getActorRelationSnippet() || !!this.getActorRelationFieldName();
     const actorStatement = this.getActorStatement('list', isActorUsed);
+    const actorStatementNeg = this.getActorStatement('list', false);
 
     const seedClause = (() => {
       const unique = this.getUniqueField();
@@ -443,11 +445,16 @@ export class TestBuilder extends BaseBuilder {
     }
     `;
 
+    const isActorUsedInPagination = shouldPreserve;
+    const actorStatementPagination = this.getActorStatement('list', isActorUsedInPagination);
+
     return TemplateLoader.load('test/list.tsf', {
       kebabEntity,
       camelEntity,
       role: this.getRole('list'),
       actorStatement,
+      actorStatementPagination,
+      actorStatementNeg,
       cleanupClause,
       seedClause,
       paginationSeedClause,
@@ -498,12 +505,15 @@ export class TestBuilder extends BaseBuilder {
 const target = await Factory.create('${camelEntity}', { ...${JSON.stringify(mockData).replace(/"__DATE_NOW__"/g, 'new Date().toISOString()')}${this.getActorRelationSnippet()}${overrides} }); `;
     }
 
-    const actorStatement = this.getActorStatement('get', !!this.getActorRelationSnippet());
+    const isActorUsed = isActorModel || !!this.getActorRelationSnippet();
+    const actorStatement = this.getActorStatement('get', isActorUsed);
+    const actorStatementNeg = this.getActorStatement('get', false);
 
     return TemplateLoader.load('test/get.tsf', {
       kebabEntity,
       camelEntity,
       actorStatement,
+      actorStatementNeg,
       setupSnippet,
     }).raw;
   }
@@ -626,10 +636,8 @@ const target = await Factory.create('${camelEntity}', { ...${JSON.stringify(mock
             const target = await Factory.create('${camelEntity}', { ...${JSON.stringify(mockData).replace(/"__DATE_NOW__"/g, 'new Date().toISOString()')}${this.getActorRelationSnippet()}${overrides} });`;
     }
 
-    const actorStatement = this.getActorStatement(
-      'delete',
-      isActorModel || !!this.getActorRelationSnippet(),
-    );
+    const isActorUsed = isActorModel || !!this.getActorRelationSnippet();
+    const actorStatement = this.getActorStatement('delete', isActorUsed);
 
     return TemplateLoader.load('test/delete.tsf', {
       kebabEntity,

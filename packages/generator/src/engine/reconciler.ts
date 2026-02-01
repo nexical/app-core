@@ -46,9 +46,35 @@ export class Reconciler {
       // Typically imports are top-level only in basic usage, but namespaces can have imports? No, usually not ES imports.
       // Let's check instance.
       if ('getImportDeclarations' in sourceFile) {
-        definition.imports?.forEach((config) =>
-          new ImportPrimitive(config).ensure(sourceFile as SourceFile),
-        );
+        const source = sourceFile as SourceFile;
+        const targetConfigs = definition.imports || [];
+
+        // 1a. Ensure required imports exist or are updated
+        targetConfigs.forEach((config) => new ImportPrimitive(config).ensure(source));
+
+        // 1b. Prune imports that are no longer in the definition
+        // We only prune if it's a GENERATED file (has our marker) to be safe,
+        // or if we're in a strictly-managed part of the definition.
+        const sourceText = source.getFullText();
+        if (sourceText.includes('GENERATED CODE')) {
+          source.getImportDeclarations().forEach((decl) => {
+            const specifier = decl.getModuleSpecifierValue();
+            const normalizedSpecifier = Normalizer.normalize(specifier).replace(/['"]/g, '');
+
+            const isRequired = targetConfigs.some((config) => {
+              const targetSpecifier = Normalizer.normalize(config.moduleSpecifier).replace(
+                /['"]/g,
+                '',
+              );
+              return targetSpecifier === normalizedSpecifier;
+            });
+
+            if (!isRequired) {
+              console.info(`[Reconciler] Pruning unused import: ${specifier}`);
+              decl.remove();
+            }
+          });
+        }
       }
 
       // 2. Handle Classes
@@ -110,12 +136,29 @@ export class Reconciler {
         });
 
         if ('addStatements' in sourceFile) {
-          const existingText = Normalizer.normalize((sourceFile as unknown as Node).getFullText());
+          const sourceText = (sourceFile as unknown as Node).getFullText();
+          const normalizedExisting = Normalizer.normalize(sourceText);
 
-          // Filter out statements that already exist perfectly in the file
-          const uniqueStmts = rawStatements.filter(
-            (stmt) => !existingText.includes(Normalizer.normalize(stmt)),
-          );
+          const uniqueStmts = rawStatements.filter((stmt) => {
+            const normalizedStmt = Normalizer.normalize(stmt);
+            if (normalizedExisting.includes(normalizedStmt)) return false;
+
+            // Smart check for describe/it blocks
+            const firstLine = stmt.trim().split('\n')[0].trim();
+            if (firstLine.startsWith('describe(') || firstLine.startsWith('it(')) {
+              // Extract the signature: describe('...', () =>
+              const signatureMatch = firstLine.match(/^(describe|it)\(['"`]([^'"`]+)['"`]/);
+              if (signatureMatch) {
+                const searchPattern = `${signatureMatch[1]}("${signatureMatch[2]}"`;
+                if (normalizedExisting.includes(searchPattern)) {
+                  console.info(`[Reconciler] Skipping existing block: ${signatureMatch[2]}`);
+                  return false;
+                }
+              }
+            }
+
+            return true;
+          });
 
           if (uniqueStmts.length > 0) {
             (sourceFile as StatementedNode).addStatements(uniqueStmts);

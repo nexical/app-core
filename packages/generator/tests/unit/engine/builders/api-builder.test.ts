@@ -74,6 +74,11 @@ describe('ApiBuilder', () => {
     expect(text).toContain(
       'import { ResetPasswordUserAction } from "@modules/user-api/src/actions/reset-password-user"',
     );
+    // Verify strong typing restoration
+    expect(text).toContain('const body = await context.request.json() as ResetPasswordInput;');
+    expect(text).toContain(
+      "const input: ResetPasswordInput = await HookSystem.filter('user.resetPassword.input', body);",
+    );
   });
 
   it('should handle role-based restriction in API generation', () => {
@@ -123,6 +128,8 @@ describe('ApiBuilder', () => {
 
     const text = sourceFile.getFullText();
     expect(text).toContain('import type { UserStatsResponse } from "@modules/user-api/src/sdk"');
+    // Verify GET routes have empty body with correct type (unknown default)
+    expect(text).toContain('const body = {} as unknown;');
   });
   it('should handle complex field types (Float, DateTime, Json)', () => {
     const complexModel: ModelDef = {

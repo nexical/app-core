@@ -20,7 +20,6 @@ declare const docs: unknown;
 // External Globals
 declare const defineApi: unknown;
 declare const ApiGuard: unknown;
-declare const HookSystem: unknown;
 
 export default fragment/* ts */`
 defineApi(async (context) => {

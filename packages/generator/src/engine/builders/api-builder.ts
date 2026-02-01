@@ -498,7 +498,6 @@ export class ApiBuilder extends BaseBuilder {
     const imports: ImportConfig[] = [
       { moduleSpecifier: '@/lib/api/api-docs', namedImports: ['defineApi'] },
       { moduleSpecifier: '@/lib/api/api-guard', namedImports: ['ApiGuard'] },
-      { moduleSpecifier: '@/lib/modules/hooks', namedImports: ['HookSystem'] },
       { moduleSpecifier: 'zod', namedImports: ['z'] },
       { moduleSpecifier: serviceImport, namedImports: [serviceName] },
     ];
@@ -663,12 +662,15 @@ export class ApiBuilder extends BaseBuilder {
     }${role === 'anonymous' ? ',\n        protected: false' : ''}
 }`;
 
+      const bodyLoader = verb === 'GET' ? '{}' : 'await context.request.json()';
+
       variables.push({
         name: verb,
         declarationKind: 'const',
         isExported: true,
         initializer: TemplateLoader.load('api/custom/handler.tsf', {
           verb: verb,
+          bodyLoader,
           inputType,
           entityName: this.model.name,
           lowerEntity: this.model.name.charAt(0).toLowerCase() + this.model.name.slice(1),

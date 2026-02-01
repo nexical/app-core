@@ -1,6 +1,7 @@
 /** @fragment-contract
  * @description API Custom Route Handler
  * @input {string} verb
+ * @input {string} bodyLoader
  * @input {string} inputType
  * @input {string} entityName
  * @input {string} method
@@ -12,6 +13,7 @@ import { fragment } from '@nexical/generator';
 
 // Phantom Declarations
 declare const verb: string;
+declare const bodyLoader: unknown; // Injected
 declare const inputType: unknown;
 declare const entityName: string;
 declare const method: string;
@@ -28,18 +30,14 @@ declare const HookSystem: unknown;
 export default fragment/* ts */`
 defineApi(async (context) => {
     // 1. Body Parsing (Input)
-    let body: unknown = {};
-    if ('${verb}' !== 'GET') {
-        body = await context.request.json();
-    }
+    const body = ${bodyLoader} as ${inputType};
     
     const query = Object.fromEntries(new URL(context.request.url).searchParams);
 
     // 2. Hook: Filter Input
-    const input = await HookSystem.filter('${lowerEntity}.${method}.input', body as unknown);
+    const input: ${inputType} = await HookSystem.filter('${lowerEntity}.${method}.input', body);
 
     // 3. Security Check
-    // Pass merged input
     const combinedInput = { ...context.params, ...query, ...input };
     await ApiGuard.protect(context, '${role}', combinedInput);
 
