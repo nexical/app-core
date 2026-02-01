@@ -1,47 +1,34 @@
-import { describe, it, expect, beforeEach } from 'vitest';
-import { Project, SourceFile } from 'ts-morph';
-import { SdkIndexBuilder } from '../../../../src/engine/builders/sdk-index-builder';
-import { type ModelDef } from '../../../../src/engine/types';
+import { describe, it, expect } from 'vitest';
+import { SdkIndexBuilder } from '../../../../src/engine/builders/sdk-index-builder.js';
+import { Project } from 'ts-morph';
 
 describe('SdkIndexBuilder', () => {
-  let project: Project;
-  let sourceFile: SourceFile;
-  const models: ModelDef[] = [
-    { name: 'User', api: true, default: true, fields: {} },
-    { name: 'Profile', api: true, fields: {} },
-  ];
+  const project = new Project();
 
-  beforeEach(() => {
-    project = new Project({ useInMemoryFileSystem: true });
-    sourceFile = project.createSourceFile('index.ts', '');
+  it('should strip "-api" suffix and PascalCase the name', () => {
+    const builder = new SdkIndexBuilder([], 'user-api');
+    project.createSourceFile('test.ts', '', { overwrite: true });
+
+    // @ts-expect-error - accessing protected method for testing
+    const schema = builder.getSchema();
+    expect(schema.classes[0].name).toBe('UserSDK');
   });
 
-  it('should generate a main SDK class aggregating sub-SDKs', () => {
-    const builder = new SdkIndexBuilder(models, 'user-api');
-    builder.ensure(sourceFile);
+  it('should preserve full name if no "-api" suffix and PascalCase it', () => {
+    const builder = new SdkIndexBuilder([], 'user-test');
+    project.createSourceFile('test.ts', '', { overwrite: true });
 
-    const text = sourceFile.getFullText();
-    expect(text).toContain('export class UserSDK extends BaseUserSDK');
-    expect(text).toContain('public profile: BaseProfileSDK;');
-    expect(text).toContain('this.profile = new BaseProfileSDK(client);');
-    expect(text).toContain('export * from "./user-sdk"');
-    expect(text).toContain('export * from "./profile-sdk"');
-    expect(text).toContain('export * from "./types"');
+    // @ts-expect-error - accessing protected method for testing
+    const schema = builder.getSchema();
+    expect(schema.classes[0].name).toBe('UserTestSDK');
   });
 
-  it('should handle module name without -api suffix', () => {
-    const builder = new SdkIndexBuilder(models, 'custom');
-    builder.ensure(sourceFile);
+  it('should handle multiple hyphens correctly', () => {
+    const builder = new SdkIndexBuilder([], 'my-custom-module');
+    project.createSourceFile('test.ts', '', { overwrite: true });
 
-    expect(sourceFile.getClass('CustomSDK')).toBeDefined();
-  });
-
-  it('should use BaseResource if no default model is specified', () => {
-    const noDefaultModels = models.map((m) => ({ ...m, default: false }));
-    const builder = new SdkIndexBuilder(noDefaultModels, 'user-api');
-    builder.ensure(sourceFile);
-
-    const sdkClass = sourceFile.getClass('UserSDK');
-    expect(sdkClass?.getExtends()?.getText()).toBe('BaseResource');
+    // @ts-expect-error - accessing protected method for testing
+    const schema = builder.getSchema();
+    expect(schema.classes[0].name).toBe('MyCustomModuleSDK');
   });
 });

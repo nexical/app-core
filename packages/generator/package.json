@@ -10,9 +10,9 @@
   },
   "scripts": {
     "clean": "rm -rf dist tsconfig.tsbuildinfo",
-    "build": "npm run clean && tsc -b tsconfig.build.json && chmod +x dist/cli.js",
+    "build": "npm run clean && tsc -b tsconfig.build.json && chmod +x dist/bin.js",
     "dev": "tsc -w",
-    "start": "node dist/cli.js",
+    "start": "node dist/bin.js",
     "test:unit": "vitest run -c vitest.unit.config.ts",
     "test:unit:watch": "vitest -c vitest.unit.config.ts",
     "test:unit:coverage": "vitest run -c vitest.unit.config.ts --coverage"

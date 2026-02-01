@@ -7,6 +7,7 @@ import {
   type NodeContainer,
   type ImportConfig,
 } from '../types.js';
+import { toCamelCase, toPascalCase, toKebabCase } from '../../utils/string.js';
 import { BaseBuilder } from './base-builder.js';
 import { TemplateLoader } from '../../utils/template-loader.js';
 
@@ -18,28 +19,16 @@ export class SdkIndexBuilder extends BaseBuilder {
     super();
   }
 
-  private toCamelCase(str: string): string {
-    return str.charAt(0).toLowerCase() + str.slice(1);
-  }
-
-  private toPascalCase(str: string): string {
-    return str.charAt(0).toUpperCase() + str.slice(1);
-  }
-
-  private toKebabCase(str: string): string {
-    return str
-      .replace(/([a-z])([A-Z])/g, '$1-$2')
-      .replace(/[\s_]+/g, '-')
-      .toLowerCase();
-  }
-
   protected getSchema(node?: NodeContainer): FileDefinition {
     const apiModels = this.models.filter((m) => m.api && !m.extended);
     const defaultModel = apiModels.find((m) => m.default);
     const otherModels = apiModels.filter((m) => m.name !== defaultModel?.name);
 
-    const cleanName = this.moduleName.replace(/-api$/, '');
-    const mainSdkName = `${this.toPascalCase(cleanName)}SDK`;
+    // Only strip -api if it's there, otherwise keep the full name
+    const cleanName = this.moduleName.endsWith('-api')
+      ? this.moduleName.replace(/-api$/, '')
+      : this.moduleName;
+    const mainSdkName = `${toPascalCase(cleanName)}SDK`;
 
     const classExtends = defaultModel ? `Base${defaultModel.name}SDK` : 'BaseResource';
     const needsBaseResource = !defaultModel;
@@ -50,19 +39,19 @@ export class SdkIndexBuilder extends BaseBuilder {
         namedImports: needsBaseResource ? ['BaseResource', 'ApiClient'] : ['ApiClient'],
       },
       ...apiModels.map((m) => ({
-        moduleSpecifier: `./${this.toKebabCase(m.name)}-sdk`,
+        moduleSpecifier: `./${toKebabCase(m.name)}-sdk`,
         namedImports: [`${m.name}SDK as Base${m.name}SDK`],
       })),
     ];
 
     const properties = otherModels.map((m) => ({
-      name: this.toCamelCase(m.name),
+      name: toCamelCase(m.name),
       type: `Base${m.name}SDK`,
       scope: Scope.Public,
     }));
 
     const initStatements = otherModels
-      .map((m) => `this.${this.toCamelCase(m.name)} = new Base${m.name}SDK(client);`)
+      .map((m) => `this.${toCamelCase(m.name)} = new Base${m.name}SDK(client);`)
       .join('\n');
 
     const constructorConfig: ConstructorConfig = {
@@ -81,7 +70,7 @@ export class SdkIndexBuilder extends BaseBuilder {
 
     const exports = [
       ...apiModels.map((m) => ({
-        moduleSpecifier: `./${this.toKebabCase(m.name)}-sdk`,
+        moduleSpecifier: `./${toKebabCase(m.name)}-sdk`,
         exportClause: '*',
       })),
       { moduleSpecifier: './types', exportClause: '*' },

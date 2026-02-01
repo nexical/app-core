@@ -13,6 +13,7 @@ import { ActorBuilder } from './builders/actor-builder.js';
 import { ActorTypeBuilder } from './builders/actor-type-builder.js';
 import { MiddlewareBuilder } from './builders/middleware-builder.js';
 import { type CustomRoute, type ModelDef } from './types.js';
+import { toKebabCase } from '../utils/string.js';
 import path from 'node:path';
 import fs from 'node:fs';
 import { parse } from 'yaml';
@@ -44,10 +45,7 @@ export class ApiModuleGenerator extends ModuleGenerator {
       // Skip if explicitly disabled
       if (!model.db && !model.api) continue;
       const name = model.name;
-      const kebabName = name
-        .replace(/([a-z])([A-Z])/g, '$1-$2')
-        .replace(/[\s_]+/g, '-')
-        .toLowerCase();
+      const kebabName = toKebabCase(name);
 
       // Services
       if (model.db && !model.extended) {
@@ -107,7 +105,7 @@ export class ApiModuleGenerator extends ModuleGenerator {
             const actionName = route.action
               ? route.action
                   .split('-')
-                  .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+                  .map((s: string) => s.charAt(0).toUpperCase() + s.slice(1))
                   .join('') + 'Action'
               : `${route.method.charAt(0).toUpperCase() + route.method.slice(1)}${name}Action`;
 
@@ -168,10 +166,7 @@ export class ApiModuleGenerator extends ModuleGenerator {
       );
       if (processedModels.has(entityName)) continue;
 
-      const kebabEntity = entityName
-        .replace(/([a-z])([A-Z])/g, '$1-$2')
-        .replace(/[\s_]+/g, '-')
-        .toLowerCase();
+      const kebabEntity = toKebabCase(entityName);
       const isRoot = entityName === 'Root';
 
       const virtualModel: ModelDef = {
