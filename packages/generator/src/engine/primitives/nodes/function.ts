@@ -6,7 +6,7 @@ import {
   ModuleDeclaration,
 } from 'ts-morph';
 import { BasePrimitive } from '../core/base-primitive.js';
-import { type FunctionConfig } from '../../types.js';
+import { type FunctionConfig, type ParsedStatement } from '../../types.js';
 import { type ValidationResult } from '../contracts.js';
 import { StatementFactory } from '../statements/factory.js';
 import { Normalizer } from '../../../utils/normalizer.js';
@@ -127,7 +127,8 @@ export class FunctionPrimitive extends BasePrimitive<FunctionDeclaration, Functi
       }
 
       if (stmtConfig && typeof stmtConfig === 'object' && 'getNodes' in stmtConfig) {
-        const raw = (stmtConfig as any).raw || '';
+        const stmt = stmtConfig as ParsedStatement;
+        const raw = stmt.raw || '';
         const bodyText = node.getBodyText() || '';
         const normalizedBody = Normalizer.normalize(bodyText);
 

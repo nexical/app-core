@@ -1,4 +1,15 @@
-import { SourceFile, StatementedNode, Node } from 'ts-morph';
+import {
+  SourceFile,
+  StatementedNode,
+  Node,
+  ClassDeclaration,
+  InterfaceDeclaration,
+  EnumDeclaration,
+  FunctionDeclaration,
+  TypeAliasDeclaration,
+  VariableStatement,
+  ModuleDeclaration,
+} from 'ts-morph';
 import { GeneratorError } from './errors.js';
 import {
   type FileDefinition,
@@ -72,16 +83,21 @@ export class Reconciler {
       }
 
       // --- Pruning Pass (Only for GENERATED files) ---
-      const sourceText = 'getFullText' in sourceFile ? (sourceFile as any).getFullText() : '';
+      const sourceText =
+        'getFullText' in sourceFile
+          ? (sourceFile as SourceFile | ModuleDeclaration).getFullText()
+          : '';
       const isGenerated = sourceText.includes('GENERATED CODE');
 
       if (isGenerated) {
         // Class Pruning
         if ('getClasses' in sourceFile) {
+          const container = sourceFile as StatementedNode;
           const targetNames = definition.classes?.map((c) => c.name) || [];
-          (sourceFile as any).getClasses().forEach((node: any) => {
-            if (!targetNames.includes(node.getName())) {
-              console.info(`[Reconciler] Pruning class: ${node.getName()}`);
+          container.getClasses().forEach((node: ClassDeclaration) => {
+            const name = node.getName();
+            if (name && !targetNames.includes(name)) {
+              console.info(`[Reconciler] Pruning class: ${name}`);
               node.remove();
             }
           });
@@ -89,10 +105,12 @@ export class Reconciler {
 
         // Interface Pruning
         if ('getInterfaces' in sourceFile) {
+          const container = sourceFile as StatementedNode;
           const targetNames = definition.interfaces?.map((i) => i.name) || [];
-          (sourceFile as any).getInterfaces().forEach((node: any) => {
-            if (!targetNames.includes(node.getName())) {
-              console.info(`[Reconciler] Pruning interface: ${node.getName()}`);
+          container.getInterfaces().forEach((node: InterfaceDeclaration) => {
+            const name = node.getName();
+            if (name && !targetNames.includes(name)) {
+              console.info(`[Reconciler] Pruning interface: ${name}`);
               node.remove();
             }
           });
@@ -100,10 +118,12 @@ export class Reconciler {
 
         // Enum Pruning
         if ('getEnums' in sourceFile) {
+          const container = sourceFile as StatementedNode;
           const targetNames = definition.enums?.map((e) => e.name) || [];
-          (sourceFile as any).getEnums().forEach((node: any) => {
-            if (!targetNames.includes(node.getName())) {
-              console.info(`[Reconciler] Pruning enum: ${node.getName()}`);
+          container.getEnums().forEach((node: EnumDeclaration) => {
+            const name = node.getName();
+            if (name && !targetNames.includes(name)) {
+              console.info(`[Reconciler] Pruning enum: ${name}`);
               node.remove();
             }
           });
@@ -111,10 +131,12 @@ export class Reconciler {
 
         // Function Pruning
         if ('getFunctions' in sourceFile) {
+          const container = sourceFile as StatementedNode;
           const targetNames = definition.functions?.map((f) => f.name) || [];
-          (sourceFile as any).getFunctions().forEach((node: any) => {
-            if (!targetNames.includes(node.getName())) {
-              console.info(`[Reconciler] Pruning function: ${node.getName()}`);
+          container.getFunctions().forEach((node: FunctionDeclaration) => {
+            const name = node.getName();
+            if (name && !targetNames.includes(name)) {
+              console.info(`[Reconciler] Pruning function: ${name}`);
               node.remove();
             }
           });
@@ -122,10 +144,12 @@ export class Reconciler {
 
         // Type Pruning
         if ('getTypeAliases' in sourceFile) {
+          const container = sourceFile as StatementedNode;
           const targetNames = definition.types?.map((t) => t.name) || [];
-          (sourceFile as any).getTypeAliases().forEach((node: any) => {
-            if (!targetNames.includes(node.getName())) {
-              console.info(`[Reconciler] Pruning type: ${node.getName()}`);
+          container.getTypeAliases().forEach((node: TypeAliasDeclaration) => {
+            const name = node.getName();
+            if (name && !targetNames.includes(name)) {
+              console.info(`[Reconciler] Pruning type: ${name}`);
               node.remove();
             }
           });
@@ -133,10 +157,11 @@ export class Reconciler {
 
         // Variable Pruning
         if ('getVariableStatements' in sourceFile) {
+          const container = sourceFile as StatementedNode;
           const targetNames = definition.variables?.map((v) => v.name) || [];
-          (sourceFile as any).getVariableStatements().forEach((node: any) => {
+          container.getVariableStatements().forEach((node: VariableStatement) => {
             const declarations = node.getDeclarationList().getDeclarations();
-            const names = declarations.map((d: any) => d.getName());
+            const names = declarations.map((d) => d.getName());
 
             const isRequired = names.some((name: string) => targetNames.includes(name));
             if (!isRequired) {
