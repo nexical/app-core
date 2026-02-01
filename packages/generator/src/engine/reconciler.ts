@@ -30,6 +30,8 @@ import { PropertyPrimitive } from './primitives/nodes/property.js';
 import { ConstructorPrimitive } from './primitives/nodes/constructor.js';
 import { AccessorPrimitive } from './primitives/nodes/accessor.js';
 import { ModulePrimitive } from './primitives/nodes/module.js';
+import { ComponentPrimitive } from './primitives/nodes/component.js';
+
 import { Normalizer } from '../utils/normalizer.js';
 
 export class Reconciler {
@@ -132,7 +134,10 @@ export class Reconciler {
         // Function Pruning
         if ('getFunctions' in sourceFile) {
           const container = sourceFile as StatementedNode;
-          const targetNames = definition.functions?.map((f) => f.name) || [];
+          const targetNames = [
+            ...(definition.functions?.map((f) => f.name) || []),
+            ...(definition.components?.map((c) => c.name) || []),
+          ];
           container.getFunctions().forEach((node: FunctionDeclaration) => {
             const name = node.getName();
             if (name && !targetNames.includes(name)) {
@@ -158,7 +163,10 @@ export class Reconciler {
         // Variable Pruning
         if ('getVariableStatements' in sourceFile) {
           const container = sourceFile as StatementedNode;
-          const targetNames = definition.variables?.map((v) => v.name) || [];
+          const targetNames = [
+            ...(definition.variables?.map((v) => v.name) || []),
+            ...(definition.components?.map((c) => c.name) || []),
+          ];
           container.getVariableStatements().forEach((node: VariableStatement) => {
             const declarations = node.getDeclarationList().getDeclarations();
             const names = declarations.map((d) => d.getName());
@@ -215,6 +223,11 @@ export class Reconciler {
 
       // 7. Handle Variables
       definition.variables?.forEach((varDef) => new VariablePrimitive(varDef).ensure(sourceFile));
+
+      // 7.5 Handle Components
+      definition.components?.forEach((compDef) =>
+        new ComponentPrimitive(compDef).ensure(sourceFile),
+      );
 
       // 8. Handle Modules (Namespaces)
       definition.modules?.forEach((modDef) => new ModulePrimitive(modDef).ensure(sourceFile));
@@ -447,6 +460,17 @@ export class Reconciler {
       const node = primitive.find(sourceFile);
       if (!node) {
         issues.push(`Variable '${varDef.name}' is missing.`);
+      } else {
+        collect(primitive.validate(node));
+      }
+    });
+
+    // 7.5 Components
+    definition.components?.forEach((compDef) => {
+      const primitive = new ComponentPrimitive(compDef);
+      const node = primitive.find(sourceFile);
+      if (!node) {
+        issues.push(`Component '${compDef.name}' is missing.`);
       } else {
         collect(primitive.validate(node));
       }

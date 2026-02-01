@@ -310,5 +310,20 @@ export interface FileDefinition {
   functions?: FunctionConfig[];
   types?: TypeConfig[];
   variables?: VariableConfig[];
+  components?: ComponentConfig[];
   modules?: ModuleConfig[];
+}
+
+export interface ComponentProp {
+  name: string;
+  type: string;
+}
+
+export interface ComponentConfig {
+  name: string;
+  isExported?: boolean;
+  isDefaultExport?: boolean;
+  props?: ComponentProp[];
+  // The render logic, loaded via TemplateLoader (returns a ReturnStatement with JSX)
+  render: ParsedStatement;
 }
