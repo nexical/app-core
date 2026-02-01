@@ -42,11 +42,11 @@ import type { AgentWorker } from './core/types.js';
 
 ${imports}
 
-export const jobProcessors: Record<string, any> = {
+export const jobProcessors: Record<string, AgentWorker> = {
 ${jobMapping}
 };
 
-export const processors: Record<string, any> = {
+export const processors: Record<string, AgentWorker> = {
 ${persistentMapping}
 };
 `;
