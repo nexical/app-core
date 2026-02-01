@@ -32,9 +32,10 @@ export class TestBuilder extends BaseBuilder {
     const testConfig = this.model.test;
     const actor = testConfig?.actor;
     if (!actor) {
-      throw new Error(
-        `Model [${this.model.name}] is missing required 'test.actor' configuration. No default actor is provided.`,
+      console.warn(
+        `[TestBuilder] Warning: Model [${this.model.name}] is missing 'test.actor' config. Falling back to 'user'.`,
       );
+      return 'user';
     }
     return actor;
   }

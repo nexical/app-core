@@ -8,7 +8,6 @@ import {
   type StatementConfig,
 } from '../types.js';
 import { BaseBuilder } from './base-builder.js';
-import { TemplateLoader } from '../../utils/template-loader.js';
 
 export class TypeBuilder extends BaseBuilder {
   constructor(
@@ -26,16 +25,17 @@ export class TypeBuilder extends BaseBuilder {
     const imports: ImportConfig[] = [];
     const exportsConfig = [];
 
-    const statements: (string | StatementConfig)[] = [];
-    for (const enumDef of this.enums) {
-      const members = enumDef.members.map((m) => `    ${m.name}: '${m.value}'`).join(',\n');
-      statements.push(
-        TemplateLoader.load('type/enum.tsf', {
-          enumName: enumDef.name,
-          members,
-        }),
-      );
+    // Deduplicate enums by name
+    const enums: EnumConfig[] = [];
+    const enumNames = new Set<string>();
+    for (const e of this.enums) {
+      if (!enumNames.has(e.name)) {
+        enums.push(e);
+        enumNames.add(e.name);
+      }
     }
+
+    const statements: (string | StatementConfig)[] = [];
 
     if (dbModels.length > 0) {
       exportsConfig.push({
@@ -86,6 +86,7 @@ export class TypeBuilder extends BaseBuilder {
       header: '// GENERATED CODE - DO NOT MODIFY BY HAND',
       imports: imports,
       exports: exportsConfig,
+      enums: enums,
       interfaces: interfaces,
       statements: statements,
     };

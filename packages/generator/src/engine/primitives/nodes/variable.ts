@@ -7,6 +7,7 @@ import {
 import { BasePrimitive } from '../core/base-primitive.js';
 import { type VariableConfig } from '../../types.js';
 import { type ValidationResult } from '../contracts.js';
+import { Normalizer } from '../../../utils/normalizer.js';
 
 export class VariablePrimitive extends BasePrimitive<VariableStatement, VariableConfig> {
   find(parent: SourceFile | ModuleDeclaration) {
@@ -44,13 +45,20 @@ export class VariablePrimitive extends BasePrimitive<VariableStatement, Variable
       node.setDeclarationKind(kind);
     }
 
-    if (this.config.type && decl.getType().getText() !== this.config.type) {
+    if (
+      this.config.type &&
+      Normalizer.normalizeType(decl.getType().getText()) !==
+        Normalizer.normalizeType(this.config.type)
+    ) {
       decl.setType(this.config.type);
     }
 
     const initText = this.getInitializerText(this.config.initializer);
-    if (initText && decl.getInitializer()?.getText() !== initText) {
-      decl.setInitializer(initText);
+    if (initText) {
+      const currentInit = decl.getInitializer()?.getText() || '';
+      if (Normalizer.normalize(currentInit) !== Normalizer.normalize(initText)) {
+        decl.setInitializer(initText);
+      }
     }
   }
 

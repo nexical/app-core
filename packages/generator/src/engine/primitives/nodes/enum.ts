@@ -20,6 +20,16 @@ export class EnumPrimitive extends BasePrimitive<EnumDeclaration, EnumConfig> {
   }
 
   update(node: EnumDeclaration) {
+    const configMemberNames = this.config.members.map((m) => m.name);
+
+    // 1. Remove members not in config
+    node.getMembers().forEach((member) => {
+      if (!configMemberNames.includes(member.getName())) {
+        member.remove();
+      }
+    });
+
+    // 2. Add or update members
     this.config.members.forEach((memberConfig) => {
       const member = node.getMember(memberConfig.name);
       if (member) {

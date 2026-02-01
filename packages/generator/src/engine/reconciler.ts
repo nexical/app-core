@@ -23,9 +23,6 @@ import { Normalizer } from '../utils/normalizer.js';
 
 export class Reconciler {
   static reconcile(sourceFile: NodeContainer, definition: FileDefinition): void {
-    const filePath =
-      'getFilePath' in sourceFile ? (sourceFile as SourceFile).getFilePath() : 'namespace';
-    console.info(`[Reconciler] Reconciling ${filePath}`);
     try {
       // 0. Handle Header
       if (definition.header && 'insertStatements' in sourceFile) {
@@ -59,19 +56,96 @@ export class Reconciler {
         if (sourceText.includes('GENERATED CODE')) {
           source.getImportDeclarations().forEach((decl) => {
             const specifier = decl.getModuleSpecifierValue();
-            const normalizedSpecifier = Normalizer.normalize(specifier).replace(/['"]/g, '');
+            const normalizedSpecifier = Normalizer.normalizeImport(specifier);
 
             const isRequired = targetConfigs.some((config) => {
-              const targetSpecifier = Normalizer.normalize(config.moduleSpecifier).replace(
-                /['"]/g,
-                '',
-              );
+              const targetSpecifier = Normalizer.normalizeImport(config.moduleSpecifier);
               return targetSpecifier === normalizedSpecifier;
             });
 
             if (!isRequired) {
               console.info(`[Reconciler] Pruning unused import: ${specifier}`);
               decl.remove();
+            }
+          });
+        }
+      }
+
+      // --- Pruning Pass (Only for GENERATED files) ---
+      const sourceText = 'getFullText' in sourceFile ? (sourceFile as any).getFullText() : '';
+      const isGenerated = sourceText.includes('GENERATED CODE');
+
+      if (isGenerated) {
+        // Class Pruning
+        if ('getClasses' in sourceFile) {
+          const targetNames = definition.classes?.map((c) => c.name) || [];
+          (sourceFile as any).getClasses().forEach((node: any) => {
+            if (!targetNames.includes(node.getName())) {
+              console.info(`[Reconciler] Pruning class: ${node.getName()}`);
+              node.remove();
+            }
+          });
+        }
+
+        // Interface Pruning
+        if ('getInterfaces' in sourceFile) {
+          const targetNames = definition.interfaces?.map((i) => i.name) || [];
+          (sourceFile as any).getInterfaces().forEach((node: any) => {
+            if (!targetNames.includes(node.getName())) {
+              console.info(`[Reconciler] Pruning interface: ${node.getName()}`);
+              node.remove();
+            }
+          });
+        }
+
+        // Enum Pruning
+        if ('getEnums' in sourceFile) {
+          const targetNames = definition.enums?.map((e) => e.name) || [];
+          (sourceFile as any).getEnums().forEach((node: any) => {
+            if (!targetNames.includes(node.getName())) {
+              console.info(`[Reconciler] Pruning enum: ${node.getName()}`);
+              node.remove();
+            }
+          });
+        }
+
+        // Function Pruning
+        if ('getFunctions' in sourceFile) {
+          const targetNames = definition.functions?.map((f) => f.name) || [];
+          (sourceFile as any).getFunctions().forEach((node: any) => {
+            if (!targetNames.includes(node.getName())) {
+              console.info(`[Reconciler] Pruning function: ${node.getName()}`);
+              node.remove();
+            }
+          });
+        }
+
+        // Type Pruning
+        if ('getTypeAliases' in sourceFile) {
+          const targetNames = definition.types?.map((t) => t.name) || [];
+          (sourceFile as any).getTypeAliases().forEach((node: any) => {
+            if (!targetNames.includes(node.getName())) {
+              console.info(`[Reconciler] Pruning type: ${node.getName()}`);
+              node.remove();
+            }
+          });
+        }
+
+        // Variable Pruning
+        if ('getVariableStatements' in sourceFile) {
+          const targetNames = definition.variables?.map((v) => v.name) || [];
+          (sourceFile as any).getVariableStatements().forEach((node: any) => {
+            const declarations = node.getDeclarationList().getDeclarations();
+            const names = declarations.map((d: any) => d.getName());
+
+            const isRequired = names.some((name: string) => targetNames.includes(name));
+            if (!isRequired) {
+              // Special case: SiteRole/UserStatus/UserMode const objects from old versions
+              const legacyNames = ['SiteRole', 'UserStatus', 'UserMode'];
+              if (names.some((n: string) => legacyNames.includes(n))) {
+                console.info(`[Reconciler] Pruning legacy variable: ${names.join(', ')}`);
+                node.remove();
+              }
             }
           });
         }
@@ -139,25 +213,52 @@ export class Reconciler {
           const sourceText = (sourceFile as unknown as Node).getFullText();
           const normalizedExisting = Normalizer.normalize(sourceText);
 
-          const uniqueStmts = rawStatements.filter((stmt) => {
-            const normalizedStmt = Normalizer.normalize(stmt);
-            if (normalizedExisting.includes(normalizedStmt)) return false;
+          const uniqueStmts: string[] = [];
+          let currentNormalizedExisting = normalizedExisting;
 
-            // Smart check for describe/it blocks
-            const firstLine = stmt.trim().split('\n')[0].trim();
+          rawStatements.forEach((stmt) => {
+            const trimmedStmt = stmt.trim();
+            if (!trimmedStmt) return;
+
+            const normalizedStmt = Normalizer.normalize(trimmedStmt);
+            if (currentNormalizedExisting.includes(normalizedStmt)) return;
+
+            // Smart check for blocks: extract the "signature" (first meaningful line)
+            // e.g. "export enum Status {", "export function foo(", "defineApi("
+            const lines = trimmedStmt.split('\n');
+            const signature = lines.find((l) => l.trim().length > 0)?.trim();
+
+            if (signature) {
+              const normalizedSignature = Normalizer.normalize(signature);
+              // For declarations or common patterns, check if the signature already exists
+              const isDeclaration =
+                /^(export\s+)?(enum|function|class|const|let|interface)\s+/.test(signature);
+              const isDefineApi = signature.startsWith('defineApi(');
+
+              if (isDeclaration || isDefineApi) {
+                if (currentNormalizedExisting.includes(normalizedSignature)) {
+                  console.info(`[Reconciler] Skipping existing block by signature: ${signature}`);
+                  return;
+                }
+              }
+            }
+
+            // Fallback: Smart check for describe/it blocks
+            const firstLine = lines[0].trim();
             if (firstLine.startsWith('describe(') || firstLine.startsWith('it(')) {
               // Extract the signature: describe('...', () =>
               const signatureMatch = firstLine.match(/^(describe|it)\(['"`]([^'"`]+)['"`]/);
               if (signatureMatch) {
                 const searchPattern = `${signatureMatch[1]}("${signatureMatch[2]}"`;
-                if (normalizedExisting.includes(searchPattern)) {
+                if (currentNormalizedExisting.includes(searchPattern)) {
                   console.info(`[Reconciler] Skipping existing block: ${signatureMatch[2]}`);
-                  return false;
+                  return;
                 }
               }
             }
 
-            return true;
+            uniqueStmts.push(stmt);
+            currentNormalizedExisting += ' ' + normalizedStmt;
           });
 
           if (uniqueStmts.length > 0) {

@@ -127,9 +127,22 @@ export class FunctionPrimitive extends BasePrimitive<FunctionDeclaration, Functi
       }
 
       if (stmtConfig && typeof stmtConfig === 'object' && 'getNodes' in stmtConfig) {
+        const raw = (stmtConfig as any).raw || '';
+        const bodyText = node.getBodyText() || '';
+        const normalizedBody = Normalizer.normalize(bodyText);
+
+        if (raw) {
+          const normalizedConfig = Normalizer.normalize(raw);
+          if (normalizedBody.includes(normalizedConfig)) continue;
+        }
+
         const nodes = stmtConfig.getNodes(node.getProject());
         for (const n of nodes) {
-          node.addStatements(n.getText());
+          const text = n.getText();
+          const normalizedNode = Normalizer.normalize(text);
+          if (!normalizedBody.includes(normalizedNode)) {
+            node.addStatements(text);
+          }
         }
         if (nodes.length > 0) nodes[0].getSourceFile().delete();
         continue;

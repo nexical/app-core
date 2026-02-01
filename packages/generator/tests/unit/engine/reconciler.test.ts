@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { Project, SourceFile } from 'ts-morph';
-import { Reconciler } from '@nexical/generator/engine/reconciler';
-import type { FileDefinition, PropertyConfig } from '@nexical/generator/engine/types';
+import { Reconciler } from '../../../src/engine/reconciler.js';
+import type { FileDefinition, PropertyConfig } from '../../../src/engine/types.js';
+import { Normalizer } from '../../../src/utils/normalizer.js';
 
 describe('Reconciler', () => {
   let project: Project;
@@ -173,5 +174,87 @@ describe('Reconciler', () => {
     expect(result.issues).toContain('Constructor is missing in TestClass.');
     expect(result.issues).toContain("Accessor 'missingAcc' is missing in TestClass.");
     expect(result.issues).toContain("Method 'missingMethod' is missing in TestClass.");
+  });
+
+  it('should not prune imports with canonical variations (normalized matching)', () => {
+    // 1. Setup file with a "canonical" import
+    sourceFile.addImportDeclaration({
+      moduleSpecifier: '@modules/user-api/src/sdk',
+      namedImports: ['UserDTO'],
+    });
+
+    // Add generated marker to enable pruning
+    sourceFile.insertStatements(0, '// GENERATED CODE - DO NOT MODIFY\n');
+
+    // 2. Define expected import with variations
+    const definition: FileDefinition = {
+      imports: [
+        {
+          moduleSpecifier: '@modules/user-api/src/sdk/index', // Variation 1: /index
+          namedImports: ['UserDTO'],
+        },
+      ],
+    };
+
+    // 3. Reconcile
+    Reconciler.reconcile(sourceFile, definition);
+
+    // 4. Verify import is STILL there (not pruned)
+    const imports = sourceFile.getImportDeclarations();
+    expect(imports.length).toBe(1);
+    expect(Normalizer.normalizeImport(imports[0].getModuleSpecifierValue())).toBe(
+      '@modules/user-api/src/sdk',
+    );
+  });
+
+  it('should not prune imports with legacy mappings', () => {
+    // 1. Setup file with new path
+    sourceFile.addImportDeclaration({
+      moduleSpecifier: '@/lib/api/api-guard',
+      namedImports: ['ApiGuard'],
+    });
+    sourceFile.insertStatements(0, '// GENERATED CODE - DO NOT MODIFY\n');
+
+    // 2. Definition uses legacy path
+    const definition: FileDefinition = {
+      imports: [
+        {
+          moduleSpecifier: '@/lib/api-guard',
+          namedImports: ['ApiGuard'],
+        },
+      ],
+    };
+
+    // 3. Reconcile
+    Reconciler.reconcile(sourceFile, definition);
+
+    // 4. Verify import is preserved
+    expect(
+      sourceFile.getImportDeclaration((d) => d.getModuleSpecifierValue() === '@/lib/api/api-guard'),
+    ).toBeDefined();
+  });
+
+  it('should not duplicate multiline raw statements (e.g. enums)', () => {
+    const enumStmt = `export enum TestEnum {
+    A = 'A',
+    B = 'B'
+}`;
+    const definition: FileDefinition = {
+      statements: [enumStmt],
+    };
+
+    // 1. Initial reconcile
+    Reconciler.reconcile(sourceFile, definition);
+    expect(sourceFile.getFullText()).toContain('export enum TestEnum');
+    const firstCount = sourceFile.getFullText().split('export enum TestEnum').length - 1;
+    expect(firstCount).toBe(1);
+
+    // 2. Second reconcile with slightly different spacing
+    const definition2: FileDefinition = {
+      statements: [`export enum TestEnum {\n    A = 'A',\n    B = 'B'\n}`],
+    };
+    Reconciler.reconcile(sourceFile, definition2);
+    const secondCount = sourceFile.getFullText().split('export enum TestEnum').length - 1;
+    expect(secondCount).toBe(1); // Should still be 1
   });
 });

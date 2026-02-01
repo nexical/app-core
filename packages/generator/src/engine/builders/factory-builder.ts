@@ -132,12 +132,14 @@ export class FactoryBuilder extends BaseBuilder {
     const hashPasswordFunc: FunctionConfig = {
       name: 'hashPassword',
       isExported: true,
+      overwriteBody: true,
       parameters: [{ name: 'password', type: 'string' }],
       returnType: 'string',
       statements: [TemplateLoader.load('factory/utils.tsf')],
     };
 
     return {
+      header: '// GENERATED CODE - DO NOT MODIFY',
       imports: [
         { moduleSpecifier: 'node:crypto', defaultImport: 'crypto' },
         { moduleSpecifier: 'bcryptjs', defaultImport: 'bcrypt' },
