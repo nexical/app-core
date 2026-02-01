@@ -11,7 +11,7 @@ describe('SdkIndexBuilder', () => {
 
     // @ts-expect-error - accessing protected method for testing
     const schema = builder.getSchema();
-    expect(schema.classes[0].name).toBe('UserSDK');
+    expect(schema.classes![0].name).toBe('UserSDK');
   });
 
   it('should preserve full name if no "-api" suffix and PascalCase it', () => {
@@ -20,7 +20,7 @@ describe('SdkIndexBuilder', () => {
 
     // @ts-expect-error - accessing protected method for testing
     const schema = builder.getSchema();
-    expect(schema.classes[0].name).toBe('UserTestSDK');
+    expect(schema.classes![0].name).toBe('UserTestSDK');
   });
 
   it('should handle multiple hyphens correctly', () => {
@@ -29,6 +29,6 @@ describe('SdkIndexBuilder', () => {
 
     // @ts-expect-error - accessing protected method for testing
     const schema = builder.getSchema();
-    expect(schema.classes[0].name).toBe('MyCustomModuleSDK');
+    expect(schema.classes![0].name).toBe('MyCustomModuleSDK');
   });
 });
