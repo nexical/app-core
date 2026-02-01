@@ -28,6 +28,12 @@ describe('Normalizer', () => {
       expect(Normalizer.normalizeType('import("foo").Bar')).toBe('Bar');
     });
 
+    it('should be quote-agnostic', () => {
+      const type1 = "Record<string, 'asc' | 'desc'>";
+      const type2 = 'Record<string, "asc" | "desc">';
+      expect(Normalizer.normalizeType(type1)).toBe(Normalizer.normalizeType(type2));
+    });
+
     it('should handle empty input', () => {
       expect(Normalizer.normalizeType('')).toBe('');
       expect(Normalizer.normalizeType(null as unknown as string)).toBe('');

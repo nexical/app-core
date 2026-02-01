@@ -26,6 +26,7 @@ export class Normalizer {
     return type
       .replace(/\s/g, '')
       .replace(/[;,]/g, '')
+      .replace(/['`]/g, '"')
       .replace(/import\(.*?\)\./g, '');
   }
 }

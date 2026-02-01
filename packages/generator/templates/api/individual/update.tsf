@@ -11,16 +11,16 @@ import { fragment } from '@nexical/generator';
 
 // Phantom Declarations
 declare const updateRole: string;
-declare const zodSchema: any;
-declare const selectObject: any;
-declare const serviceName: any;
+declare const zodSchema: unknown;
+declare const selectObject: unknown;
+declare const serviceName: unknown;
 declare const entityName: string;
-declare const docs: any;
+declare const docs: unknown;
 
 // External Globals
-declare const defineApi: any;
-declare const ApiGuard: any;
-declare const HookSystem: any;
+declare const defineApi: unknown;
+declare const ApiGuard: unknown;
+declare const HookSystem: unknown;
 
 export default fragment/* ts */`
 defineApi(async (context) => {

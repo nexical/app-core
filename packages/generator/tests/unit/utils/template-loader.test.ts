@@ -1,11 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { TemplateLoader } from '../../../src/utils/template-loader.js';
 import { mkdirSync, writeFileSync, rmSync, existsSync } from 'node:fs';
-import { join } from 'node:path';
+import { join, dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 describe('TemplateLoader', () => {
-  // Assuming process.cwd() is project root
-  const templatesDir = join(process.cwd(), 'packages/generator/templates');
+  const __dirname = dirname(fileURLToPath(import.meta.url));
+  const templatesDir = resolve(__dirname, '../../../templates');
   const testDir = join(templatesDir, 'test-unit');
   const testFile = join(testDir, 'dummy.tsf');
 

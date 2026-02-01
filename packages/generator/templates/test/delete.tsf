@@ -9,8 +9,8 @@ import { fragment } from '@nexical/generator';
 
 declare const kebabEntity: string;
 declare const camelEntity: string;
-declare const actorStatement: any;
-declare const setupSnippet: any;
+declare const actorStatement: unknown;
+declare const setupSnippet: unknown;
 
 export default fragment/* ts */`
 // DELETE /api/${kebabEntity}/[id]

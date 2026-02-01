@@ -11,10 +11,10 @@ import { fragment } from '@nexical/generator';
 
 declare const kebabEntity: string;
 declare const camelEntity: string;
-declare const actorStatement: any;
-declare const setupSnippet: any;
-declare const updatePayload: any;
-declare const assertionBlock: any;
+declare const actorStatement: unknown;
+declare const setupSnippet: unknown;
+declare const updatePayload: unknown;
+declare const assertionBlock: unknown;
 
 export default fragment/* ts */`
 // PUT /api/${kebabEntity}/[id]

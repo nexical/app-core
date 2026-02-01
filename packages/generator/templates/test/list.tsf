@@ -15,12 +15,12 @@ import { fragment } from '@nexical/generator';
 declare const kebabEntity: string;
 declare const camelEntity: string;
 declare const role: string;
-declare const actorStatement: any;
-declare const cleanupClause: any;
-declare const seedClause: any;
-declare const paginationSeedClause: any;
-declare const filterTests: any;
-declare const baseDataConfig: any;
+declare const actorStatement: unknown;
+declare const cleanupClause: unknown;
+declare const seedClause: unknown;
+declare const paginationSeedClause: unknown;
+declare const filterTests: unknown;
+declare const baseDataConfig: unknown;
 
 export default fragment/* ts */`
 // GET /api/${kebabEntity}
@@ -57,9 +57,6 @@ describe('GET /api/${kebabEntity}', () => {
     let currentCount = 0;
     
     // Check current count
-    // (This logic was embedded, extracted to paginationSeedClause partially, or we keep specialized logic here?)
-    // The builder logic for pagination seeding was complex. 
-    // Let's assume paginationSeedClause handles the setup of 'toCreate' elements.
     ${paginationSeedClause}
 
     // Page 1

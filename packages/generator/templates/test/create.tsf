@@ -14,11 +14,11 @@ import { fragment } from '@nexical/generator';
 declare const kebabEntity: string;
 declare const camelEntity: string;
 declare const role: string;
-declare const actorStatement: any;
-declare const dependencySetup: any;
-declare const payloadConstruction: any;
-declare const assertionBlock: any;
-declare const negativeActorStatement: any;
+declare const actorStatement: unknown;
+declare const dependencySetup: unknown;
+declare const payloadConstruction: unknown;
+declare const assertionBlock: unknown;
+declare const negativeActorStatement: unknown;
 
 export default fragment/* ts */`
 // POST /api/${kebabEntity}
