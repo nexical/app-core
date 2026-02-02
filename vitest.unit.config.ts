@@ -18,7 +18,7 @@ export default getViteConfig({
     ],
     exclude: ['**/node_modules/**', '**/dist/**', '**/.agent/**'],
     coverage: {
-      enabled: !process.env.STRYKER_MUTATOR_ACTIVE,
+      enabled: true,
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
       include: [
