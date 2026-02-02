@@ -1,7 +1,6 @@
 import { OrchestrationService } from '../services/orchestration-service';
 import type { ServiceResponse } from '@/types/service';
 import type { PollJobsDTO, Job } from '../sdk/types';
-import type { Job } from '@prisma/client';
 import type { APIContext } from 'astro';
 import type { ApiActor } from '@/lib/api/api-docs';
 
