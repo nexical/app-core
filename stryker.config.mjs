@@ -5,7 +5,7 @@ const config = {
     "This config was generated using 'stryker init'. Please see the guide for more information: https://stryker-mutator.io/docs/stryker-js/guides/react",
   testRunner: 'vitest',
   reporters: ['progress', 'clear-text', 'html'],
-  coverageAnalysis: 'on',
+  coverageAnalysis: 'all',
   vitest: {
     configFile: 'vitest.unit.config.ts',
   },
