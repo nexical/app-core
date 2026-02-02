@@ -124,6 +124,8 @@
     "@eslint/js": "^9.39.2",
     "@nexical/generator": "*",
     "@playwright/test": "^1.57.0",
+    "@stryker-mutator/core": "^9.5.0",
+    "@stryker-mutator/vitest-runner": "^9.5.0",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.1",

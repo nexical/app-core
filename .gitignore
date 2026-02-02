@@ -41,3 +41,6 @@ src/styles/theme.css
 packages/agent/src/registry.ts
 packages/agent/bin/
 
+
+# stryker temp files
+.stryker-tmp
