@@ -499,5 +499,5 @@
   "tsconfig.json": "fbcc466709ccec559267606767e6fb8a8a7896e030a8a6a180e07dcaa7a2646b",
   "vitest.agent.config.ts": "7c9ed9105c6aedc837eb57293accc6ce30e5daac8534cc2a9c9a321e7c3402d1",
   "vitest.integration.config.ts": "7c7423fdcdfdf0c2b7ee959b606f98948226052667ed48744d5c1221060229d9",
-  "vitest.unit.config.ts": "646e4e902650126c7a989af9c6dcbd9e8d4d2864dd33fa3b59141a60acb304c4"
+  "vitest.unit.config.ts": "707360c08001a117b7613fac5ea248da7ad760fdf2da740ddf2679437708fc16"
 }
