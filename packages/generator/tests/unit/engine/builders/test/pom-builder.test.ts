@@ -1,3 +1,4 @@
+/** @vitest-environment node */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Project } from 'ts-morph';
 import { PageObjectBuilder } from '../../../../../src/engine/builders/test/pom-builder.js';
@@ -15,8 +16,8 @@ describe('PageObjectBuilder', () => {
 
   it('should generate POMs for models', async () => {
     // Mock ui.yaml and models.yaml
-    vi.spyOn(fs, 'existsSync').mockReturnValue(true);
-    vi.spyOn(fs, 'readFileSync').mockImplementation((path) => {
+    vi.mocked(fs.existsSync).mockReturnValue(true);
+    vi.mocked(fs.readFileSync).mockImplementation((path) => {
       const p = String(path);
       if (p.includes('ui.yaml')) return 'backend: "user-api"';
       if (p.includes('models.yaml')) {

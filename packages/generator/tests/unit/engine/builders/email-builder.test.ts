@@ -1,3 +1,4 @@
+/** @vitest-environment node */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Project } from 'ts-morph';
 import { EmailBuilder } from '../../../../src/engine/builders/email-builder.js';
@@ -14,8 +15,8 @@ describe('EmailBuilder', () => {
   });
 
   it('should generate email templates and init file', async () => {
-    vi.spyOn(fs, 'existsSync').mockReturnValue(true);
-    vi.spyOn(fs, 'readFileSync').mockImplementation((path) => {
+    vi.mocked(fs.existsSync).mockReturnValue(true);
+    vi.mocked(fs.readFileSync).mockImplementation((path) => {
       if (String(path).endsWith('emails.yaml')) {
         return `
 templates:

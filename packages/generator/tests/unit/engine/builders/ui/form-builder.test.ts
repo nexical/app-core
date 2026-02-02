@@ -1,3 +1,4 @@
+/** @vitest-environment node */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Project } from 'ts-morph';
 import { FormBuilder } from '../../../../../src/engine/builders/ui/form-builder.js';
@@ -15,8 +16,8 @@ describe('FormBuilder', () => {
 
   it('should generate form component for models', async () => {
     // Mock ui.yaml and models
-    vi.spyOn(fs, 'existsSync').mockReturnValue(true);
-    vi.spyOn(fs, 'readFileSync').mockImplementation((path) => {
+    vi.mocked(fs.existsSync).mockReturnValue(true);
+    vi.mocked(fs.readFileSync).mockImplementation((path) => {
       if (String(path).endsWith('ui.yaml')) return 'backend: "user-api"';
       if (String(path).endsWith('models.yaml')) {
         return `

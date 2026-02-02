@@ -4,6 +4,9 @@ import {
   type ModelDef,
   type NodeContainer,
   type FileDefinition,
+  type PageDefinition,
+  type ShellDefinition,
+  type RegistryItemDefinition,
 } from '../../types.js';
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
@@ -12,11 +15,9 @@ import { parse } from 'yaml';
 export interface UiConfig {
   backend?: string;
   prefix?: string;
-  navigation?: {
-    label?: string;
-    icon?: string;
-    parent?: string;
-  };
+  pages?: PageDefinition[];
+  shells?: ShellDefinition[];
+  registries?: Record<string, RegistryItemDefinition[]>;
 }
 
 export abstract class UiBaseBuilder extends BaseBuilder {

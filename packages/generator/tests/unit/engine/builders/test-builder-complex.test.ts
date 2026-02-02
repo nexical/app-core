@@ -1,3 +1,4 @@
+/** @vitest-environment node */
 import { describe, it, expect } from 'vitest';
 import { Project } from 'ts-morph';
 import { TestBuilder } from '../../../../src/engine/builders/test-builder';

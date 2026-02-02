@@ -1,3 +1,4 @@
+/** @vitest-environment node */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import GenApiCommand from '@nexical/generator/commands/gen/api';
 import { ModuleLocator } from '@nexical/generator/lib/module-locator';

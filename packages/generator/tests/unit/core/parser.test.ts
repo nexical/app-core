@@ -1,3 +1,4 @@
+/** @vitest-environment node */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { PlatformParser } from '@nexical/generator/core/parser';

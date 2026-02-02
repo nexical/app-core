@@ -1,3 +1,4 @@
+/** @vitest-environment node */
 import { describe, it, expect } from 'vitest';
 import { Project } from 'ts-morph';
 import { ComponentPrimitive } from '../../../src/engine/primitives/nodes/component.js';

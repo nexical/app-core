@@ -1,3 +1,4 @@
+/** @vitest-environment node */
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { TemplateLoader } from '../../../src/utils/template-loader.js';
 import { mkdirSync, writeFileSync, rmSync, existsSync } from 'node:fs';

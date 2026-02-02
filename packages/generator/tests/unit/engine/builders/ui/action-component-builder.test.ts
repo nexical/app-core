@@ -1,3 +1,4 @@
+/** @vitest-environment node */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Project } from 'ts-morph';
 import { ActionComponentBuilder } from '../../../../../src/engine/builders/ui/action-component-builder.js';
@@ -15,9 +16,8 @@ describe('ActionComponentBuilder', () => {
 
   it('should generate button component for custom actions', async () => {
     // Mock ui.yaml and api.yaml
-    vi.spyOn(fs, 'existsSync').mockReturnValue(true);
-    vi.spyOn(fs, 'readFileSync').mockImplementation((path) => {
-      console.error('Mock readFileSync:', path); // DEBUG
+    vi.mocked(fs.existsSync).mockReturnValue(true);
+    vi.mocked(fs.readFileSync).mockImplementation((path) => {
       const p = String(path);
       if (p.includes('ui.yaml')) return 'backend: "user-api"';
       if (p.includes('api.yaml')) {

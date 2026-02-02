@@ -1,3 +1,4 @@
+/** @vitest-environment node */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { Project, SourceFile, Scope } from 'ts-morph';
 import { ConstructorPrimitive } from '@nexical/generator/engine/primitives/nodes/constructor';

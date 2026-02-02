@@ -1,3 +1,4 @@
+/** @vitest-environment node */
 /* eslint-disable */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ApiModuleGenerator } from '@nexical/generator/engine/api-module-generator';

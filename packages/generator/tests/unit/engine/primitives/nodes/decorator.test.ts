@@ -1,3 +1,4 @@
+/** @vitest-environment node */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { Project, SourceFile } from 'ts-morph';
 import { DecoratorPrimitive } from '@nexical/generator/engine/primitives/nodes/decorator.js';

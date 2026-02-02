@@ -1,3 +1,4 @@
+/** @vitest-environment node */
 import { describe, it, expect } from 'vitest';
 import { SdkIndexBuilder } from '../../../../src/engine/builders/sdk-index-builder.js';
 import { Project } from 'ts-morph';

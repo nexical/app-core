@@ -18,24 +18,30 @@ export class GuardBuilder extends UiBaseBuilder {
     // 1. Generate Generic RoleGuard
     this.generateGenericGuard(project);
 
-    // 2. Generate Specific Guards from Roles found in API
-    // We look for 'roles' property in routes
-    const routes = this.resolveRoutes();
+    // 2. Extract roles from pages and registries
     const roles = new Set<string>();
 
-    if (routes) {
-      routes.forEach((r) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const route = r as any;
-        if (route.roles && Array.isArray(route.roles)) {
-          route.roles.forEach((role: string) => roles.add(role));
+    // Extract from pages
+    if (this.uiConfig.pages) {
+      this.uiConfig.pages.forEach((page) => {
+        if (page.guard && Array.isArray(page.guard)) {
+          page.guard.forEach((role) => roles.add(role));
         }
       });
     }
 
-    // Always add default roles if none found?
-    // roles.add('ADMIN'); // Maybe?
+    // Extract from registries
+    if (this.uiConfig.registries) {
+      Object.values(this.uiConfig.registries).forEach((items) => {
+        items.forEach((item) => {
+          if (item.guard && Array.isArray(item.guard)) {
+            item.guard.forEach((role) => roles.add(role));
+          }
+        });
+      });
+    }
 
+    // Generate specific guards for each role
     for (const role of roles) {
       this.generateSpecificGuard(project, role);
     }

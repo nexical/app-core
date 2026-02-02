@@ -1,3 +1,4 @@
+/** @vitest-environment node */
 import { describe, it, expect } from 'vitest';
 import { Project } from 'ts-morph';
 import { FactoryBuilder } from '../../../../src/engine/builders/factory-builder';

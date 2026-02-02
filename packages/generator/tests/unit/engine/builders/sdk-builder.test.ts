@@ -1,3 +1,4 @@
+/** @vitest-environment node */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { Project, SourceFile } from 'ts-morph';
 import { SdkBuilder } from '../../../../src/engine/builders/sdk-builder';

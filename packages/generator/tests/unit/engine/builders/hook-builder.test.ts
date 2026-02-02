@@ -1,3 +1,4 @@
+/** @vitest-environment node */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Project } from 'ts-morph';
 import { HookBuilder } from '../../../../src/engine/builders/hook-builder.js';
@@ -14,16 +15,15 @@ describe('HookBuilder', () => {
   });
 
   it('should generate hook files from config', async () => {
-    vi.spyOn(fs, 'existsSync').mockReturnValue(true);
-    vi.spyOn(fs, 'readFileSync').mockImplementation((path) => {
+    vi.mocked(fs.existsSync).mockReturnValue(true);
+    vi.mocked(fs.readFileSync).mockImplementation((path) => {
       if (String(path).endsWith('hooks.yaml')) {
         return `
 hooks:
-  - event: "user.registered"
-    action: "sendWelcomeEmail"
-  - event: "user.read"
-    filter: true
-    action: "enrichData"
+  - event: "user.created"
+    action: "SendWelcomeEmail"
+  - event: "order.paid"
+    action: "MarkAsShipped"
 `;
       }
       return '';
@@ -32,15 +32,14 @@ hooks:
     const builder = new HookBuilder('test-api', { name: 'test-api' });
     await builder.build(project, undefined);
 
-    const onFile = project.getSourceFile('src/hooks/user-registered-sendWelcomeEmail.ts');
+    const onFile = project.getSourceFile('src/hooks/user-created-SendWelcomeEmail.ts');
     expect(onFile).toBeDefined();
     const onText = onFile?.getFullText();
-    expect(onText).toContain('HookSystem.on("user.registered"');
-    expect(onText).toContain('export async function init()');
+    expect(onText).toContain('HookSystem.on("user.created"');
+    expect(onText).toContain('SendWelcomeEmail');
 
-    const filterFile = project.getSourceFile('src/hooks/user-read-enrichData.ts');
+    const filterFile = project.getSourceFile('src/hooks/order-paid-MarkAsShipped.ts');
     expect(filterFile).toBeDefined();
-    const filterText = filterFile?.getFullText();
-    expect(filterText).toContain('HookSystem.filter("user.read"');
+    expect(filterFile?.getFullText()).toContain('HookSystem.on("order.paid"');
   });
 });

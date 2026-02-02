@@ -1,3 +1,4 @@
+/** @vitest-environment node */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Project } from 'ts-morph';
 import { AuthBuilder } from '../../../../../src/engine/builders/ui/auth-builder.js';
@@ -15,8 +16,8 @@ describe('AuthBuilder', () => {
 
   it('should generate auth provider and hook', async () => {
     // Mock ui.yaml
-    vi.spyOn(fs, 'existsSync').mockReturnValue(true);
-    vi.spyOn(fs, 'readFileSync').mockReturnValue('');
+    vi.mocked(fs.existsSync).mockReturnValue(true);
+    vi.mocked(fs.readFileSync).mockReturnValue('');
 
     const builder = new AuthBuilder('test-ui', { name: 'test-ui' });
     await builder.build(project, undefined);

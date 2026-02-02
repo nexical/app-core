@@ -1,3 +1,4 @@
+/** @vitest-environment node */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Project, SourceFile } from 'ts-morph';
 import { BaseBuilder } from '../../../../src/engine/builders/base-builder';

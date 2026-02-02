@@ -69,6 +69,35 @@ export interface CustomRoute {
   action?: string; // Optional custom action file path/name
 }
 
+// --- UI Module Configurations ---
+
+export interface PageDefinition {
+  path: string;
+  component: string;
+  guard: string[];
+}
+
+export interface ShellDefinition {
+  name: string;
+  matcher: Record<string, unknown>; // Map of rules for ShellContext
+}
+
+export interface RegistryItemDefinition {
+  name: string;
+  priority: number;
+  component: string;
+  guard: string[];
+  matcher: Record<string, unknown>;
+}
+
+export interface UiModuleConfig {
+  backend?: string;
+  prefix?: string;
+  pages?: PageDefinition[];
+  shells?: ShellDefinition[];
+  registries?: Record<string, RegistryItemDefinition[]>;
+}
+
 // --- Statement Configurations ---
 
 // --- Statement Configurations ---

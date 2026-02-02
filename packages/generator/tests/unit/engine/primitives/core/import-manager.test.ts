@@ -1,3 +1,4 @@
+/** @vitest-environment node */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { SourceFile } from 'ts-morph';
 import { createTestProject } from '@nexical/generator-tests/helpers/test-project';

@@ -1,3 +1,4 @@
+/** @vitest-environment node */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { ModelParser } from '@nexical/generator/engine/model-parser';
 import fs from 'fs';

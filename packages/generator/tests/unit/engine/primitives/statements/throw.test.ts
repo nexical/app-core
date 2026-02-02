@@ -1,3 +1,4 @@
+/** @vitest-environment node */
 import { describe, it, expect } from 'vitest';
 import { ThrowStatementPrimitive } from '@nexical/generator/engine/primitives/statements/throw';
 

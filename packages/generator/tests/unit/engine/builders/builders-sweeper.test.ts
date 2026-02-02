@@ -1,3 +1,4 @@
+/** @vitest-environment node */
 import { describe, it, expect } from 'vitest';
 import { FactoryBuilder } from '../../../../src/engine/builders/factory-builder';
 import { TestBuilder } from '../../../../src/engine/builders/test-builder';

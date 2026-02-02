@@ -1,3 +1,4 @@
+/** @vitest-environment node */
 import { describe, it, expect } from 'vitest';
 import { SdkBuilder } from '../../../../src/engine/builders/sdk-builder';
 import {
