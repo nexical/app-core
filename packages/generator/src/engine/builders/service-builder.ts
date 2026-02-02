@@ -139,12 +139,16 @@ export class ServiceBuilder extends BaseBuilder {
 
     const imports = [
       { moduleSpecifier: '@/lib/core/db', namedImports: ['db'] },
-      { moduleSpecifier: '@/lib/core/logger', namedImports: ['Logger'] },
       { moduleSpecifier: '@/types/service', namedImports: ['ServiceResponse'], isTypeOnly: true },
       { moduleSpecifier: '@/lib/modules/hooks', namedImports: ['HookSystem'] },
       { moduleSpecifier: '@prisma/client', namedImports: [entityName, 'Prisma'], isTypeOnly: true },
       { moduleSpecifier: '@/lib/api/api-docs', namedImports: ['ApiActor'], isTypeOnly: true },
     ];
+
+    const allStatements = methods.flatMap((m) => m.statements || []).join('\n');
+    if (allStatements.includes('Logger.')) {
+      imports.push({ moduleSpecifier: '@/lib/core/logger', namedImports: ['Logger'] });
+    }
 
     return {
       header: '// GENERATED CODE - DO NOT MODIFY',

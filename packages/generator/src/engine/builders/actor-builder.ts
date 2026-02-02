@@ -21,14 +21,7 @@ export class ActorBuilder extends BaseBuilder {
 
   protected getSchema(node?: NodeContainer): FileDefinition {
     const actorsBody: string[] = [];
-    const imports: ImportConfig[] = [
-      { moduleSpecifier: '@tests/integration/lib/factory', namedImports: ['Factory'] },
-      {
-        moduleSpecifier: '@tests/integration/lib/client',
-        isTypeOnly: true,
-        namedImports: ['ApiClient'],
-      },
-    ];
+    const imports: ImportConfig[] = [];
 
     let needsDb = false;
     let needsCrypto = false;
@@ -133,6 +126,18 @@ export class ActorBuilder extends BaseBuilder {
     ${actorsBody.join(',\n    ')}
 }`,
     };
+
+    if (actorsBody.length > 0) {
+      imports.push({
+        moduleSpecifier: '@tests/integration/lib/factory',
+        namedImports: ['Factory'],
+      });
+      imports.push({
+        moduleSpecifier: '@tests/integration/lib/client',
+        isTypeOnly: true,
+        namedImports: ['ApiClient'],
+      });
+    }
 
     if (needsDb) {
       imports.push({ moduleSpecifier: '@/lib/core/db', namedImports: ['db'] });

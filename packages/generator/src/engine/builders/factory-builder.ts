@@ -138,13 +138,19 @@ export class FactoryBuilder extends BaseBuilder {
       statements: [TemplateLoader.load('factory/utils.tsf')],
     };
 
+    const imports = [
+      { moduleSpecifier: 'bcryptjs', defaultImport: 'bcrypt' },
+      { moduleSpecifier: '@tests/integration/lib/factory', namedImports: ['Factory'] },
+    ];
+
+    const allFactoriesBody = factoriesBody.join('\n');
+    if (allFactoriesBody.includes('crypto.')) {
+      imports.unshift({ moduleSpecifier: 'node:crypto', defaultImport: 'crypto' });
+    }
+
     return {
       header: '// GENERATED CODE - DO NOT MODIFY',
-      imports: [
-        { moduleSpecifier: 'node:crypto', defaultImport: 'crypto' },
-        { moduleSpecifier: 'bcryptjs', defaultImport: 'bcrypt' },
-        { moduleSpecifier: '@tests/integration/lib/factory', namedImports: ['Factory'] },
-      ],
+      imports,
       functions: [hashPasswordFunc],
       variables: [factoryVariable],
     };
