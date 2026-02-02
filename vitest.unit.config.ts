@@ -56,6 +56,7 @@ export default getViteConfig({
       },
     },
     testTimeout: 30000,
+    cache: process.env.STRYKER_MUTATOR_ACTIVE ? false : undefined,
     server: {
       deps: {
         inline: [/@radix-ui\/.*/, /@tanstack\/.*/, 'lucide-react'],
