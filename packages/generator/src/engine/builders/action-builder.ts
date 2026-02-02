@@ -82,6 +82,20 @@ export class ActionBuilder extends BaseBuilder {
       { moduleSpecifier: 'astro', namedImports: ['APIContext'], isTypeOnly: true },
     ];
 
+    if (existingStatements?.some((s) => s.includes('OrchestrationService'))) {
+      imports.push({
+        moduleSpecifier: '../services/orchestration-service',
+        namedImports: ['OrchestrationService'],
+      });
+    }
+
+    if (existingStatements?.some((s) => s.includes('z.'))) {
+      imports.push({
+        moduleSpecifier: 'zod',
+        namedImports: ['z'],
+      });
+    }
+
     if (namedImports.length > 0) {
       // Deduplicate imports
       const uniqueImports = [...new Set(namedImports)];
@@ -95,6 +109,7 @@ export class ActionBuilder extends BaseBuilder {
     }
 
     return {
+      header: '// GENERATED CODE - DO NOT MODIFY',
       imports,
       classes: [actionClass],
     };

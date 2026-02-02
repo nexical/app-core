@@ -580,14 +580,19 @@ export class ApiBuilder extends BaseBuilder {
         .replace(/[\s_]+/g, '-')
         .toLowerCase();
 
+      const kebabMethod = method.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
       const actionBase =
-        route.action || `${method.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()}-${kebabName}`;
+        route.action ||
+        (kebabMethod.includes(kebabName) ? kebabMethod : `${kebabMethod}-${kebabName}`);
+
+      const methodPascal = method.charAt(0).toUpperCase() + method.slice(1);
       const actionClassName = route.action
         ? route.action
             .split('-')
             .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
             .join('') + 'Action'
-        : `${method.charAt(0).toUpperCase() + method.slice(1)}${entityName}Action`;
+        : (methodPascal.includes(entityName) ? methodPascal : `${methodPascal}${entityName}`) +
+          'Action';
 
       const actionImport = `@modules/${this.moduleName}/src/actions/${actionBase}`;
 

@@ -40,7 +40,8 @@ agents:
     const scrapeText = scrapeFile?.getFullText();
     expect(scrapeText).toContain('export class ScrapeProcessor extends JobProcessor<unknown>');
     expect(scrapeText).toContain("static jobType: string = 'ScrapeProcessor'");
-    expect(scrapeText).toContain('export const worker = new ScrapeProcessor()');
+    expect(scrapeText).toContain('constructor(config: ProcessorConfig)');
+    expect(scrapeText).toContain('super(config);');
 
     const monitorFile = project.getSourceFile('src/agent/MonitorAgent.ts');
     expect(monitorFile).toBeDefined();
