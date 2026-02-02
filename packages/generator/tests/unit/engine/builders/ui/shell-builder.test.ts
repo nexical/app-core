@@ -1,5 +1,4 @@
 /** @vitest-environment node */
-/** @vitest-environment node */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Project } from 'ts-morph';
 import { ShellBuilder } from '../../../../../src/engine/builders/ui/shell-builder.js';

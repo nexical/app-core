@@ -209,7 +209,7 @@
   "packages/generator/tests/unit/engine/builders/ui/form-builder.test.ts": "145223b701ce256ad93b884444716059191be9bed16ce3dbf145d9fcb9bb3fa0",
   "packages/generator/tests/unit/engine/builders/ui/guard-builder.test.ts": "00f42e4bdbbb15c3934d701df7845e4ae37d9b71fb26f8c76504b5cf69dffe27",
   "packages/generator/tests/unit/engine/builders/ui/registry-builder.test.ts": "63e969e89a6bba92c3339aa2dd0b718b523f92dace232ad4a561bdc29e21e0de",
-  "packages/generator/tests/unit/engine/builders/ui/shell-builder.test.ts": "6b9c6a38ff1809ee6694436b75fa5202c706b3233fdde6afc65aad82f23e56dc",
+  "packages/generator/tests/unit/engine/builders/ui/shell-builder.test.ts": "77d7f258e67818bd7a02df6c81e26be60c7faa1d87d95903bd551ff89d1698bd",
   "packages/generator/tests/unit/engine/builders/ui/table-builder.test.ts": "4102fed875c55c6c549a2dca7ab3596545cff01f8a8b63f988bf91cdfc39c76a",
   "packages/generator/tests/unit/engine/component-primitive.test.ts": "2e6a76a37cd3000cc0dbdbcae7453dd1e048cc7ab9ab67b5d16310fcf16e2c4a",
   "packages/generator/tests/unit/engine/coverage-gap-sweeper.test.ts": "c76e79a4a703e3b2e872d60662b342371d1ca1266b31e3ff8fe0e8f181bcc6bd",
