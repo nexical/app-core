@@ -3,8 +3,10 @@ import {
   type FileDefinition,
   type ImportConfig,
   type NodeContainer,
+  type StatementConfig,
 } from '../types.js';
 import { BaseBuilder } from './base-builder.js';
+import { TemplateLoader } from '../../utils/template-loader.js';
 
 export class ActorTypeBuilder extends BaseBuilder {
   constructor(private models: ModelDef[]) {
@@ -16,7 +18,7 @@ export class ActorTypeBuilder extends BaseBuilder {
     const actorModels = this.models.filter((m) => m.actor);
 
     const imports: ImportConfig[] = [];
-    const statements: string[] = [];
+    const statements: (string | StatementConfig)[] = [];
 
     for (const model of actorModels) {
       // Import the model type
@@ -28,13 +30,16 @@ export class ActorTypeBuilder extends BaseBuilder {
     }
 
     if (actorModels.length > 0) {
-      statements.push(`declare global {
-  namespace App {
-    interface ActorMap {
-            ${actorModels.map((m: ModelDef) => `${m.name.charAt(0).toLowerCase() + m.name.slice(1)}: ${m.name} & { type: '${m.name.charAt(0).toLowerCase() + m.name.slice(1)}' };`).join('\n            ')}
-  }
-}
-}`);
+      const mapEntries = actorModels
+        .map(
+          (m: ModelDef) =>
+            `${m.name.charAt(0).toLowerCase() + m.name.slice(1)}: ${m.name} & { type: '${
+              m.name.charAt(0).toLowerCase() + m.name.slice(1)
+            }' };`,
+        )
+        .join('\n      ');
+
+      statements.push(TemplateLoader.load('actor/global-map.tsf', { mapEntries }));
     }
 
     return {

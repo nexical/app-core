@@ -1,0 +1,48 @@
+# UI Module Configuration
+# This file defines the behavior of the UI Generator for this module.
+
+# [Optional] Backend Module
+# If this UI module serves a specific API module (split architecture),
+# specify the name of that module here.
+# The generator will load models.yaml and api.yaml from that module.
+# If undefined, it defaults to the current module.
+backend: 'user-api'
+
+# [Optional] Component Prefixes
+# Standard prefix for generated components (e.g. "User" -> "UserTable")
+prefix: 'User'
+
+# 1. PHYSICAL ENTRY POINTS (src/pages/)
+# Define the physical page routes that will be generated
+pages:
+  - path: '/users'
+    component: '@/components/users/UserDashboard'
+    guard: ['member']
+  - path: '/admin/users'
+    component: '@/components/admin/AdminUserDashboard'
+    guard: ['admin', 'super-user']
+
+# 2. RUNTIME LAYOUT CONTAINERS (src/init.ts)
+# Define shells that will be registered in src/init.ts via ShellRegistry
+shells:
+  - name: 'UserManagementShell'
+    matcher:
+      path: '/admin/users/*'
+      isMobile: false
+
+# 3. ZONAL PLUGS (src/registry/[zone]/)
+# Define components that will populate specific zones in shells
+registries:
+  nav-main:
+    - name: 'user-dashboard-link'
+      priority: 10
+      component: '@/components/nav/UserDashboardLink'
+      guard: ['member']
+      matcher:
+        path: '/users/*'
+    - name: 'admin-user-link'
+      priority: 20
+      component: '@/components/nav/AdminUserLink'
+      guard: ['admin']
+      matcher:
+        path: '/admin/*'

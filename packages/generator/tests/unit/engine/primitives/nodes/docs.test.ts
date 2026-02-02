@@ -1,3 +1,4 @@
+/** @vitest-environment node */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { Project, SourceFile } from 'ts-morph';
 import { JSDocPrimitive } from '@nexical/generator/engine/primitives/nodes/docs.js';

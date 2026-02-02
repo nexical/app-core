@@ -1,3 +1,4 @@
+/** @vitest-environment node */
 import { describe, it, expect } from 'vitest';
 import ts from 'typescript';
 import { ZodSchemaGenerator } from '@nexical/generator/ast-builders/schema-gen';

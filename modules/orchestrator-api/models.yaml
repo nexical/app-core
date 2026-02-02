@@ -1,0 +1,191 @@
+enums:
+  JobStatus:
+    values:
+      - PENDING
+      - RUNNING
+      - COMPLETED
+      - FAILED
+  AgentStatus:
+    values:
+      - ONLINE
+      - OFFLINE
+      - BUSY
+
+models:
+  Job:
+    role: job-owner
+    test:
+      actor: team
+    fields:
+      id:
+        type: String
+        attributes:
+          - '@id'
+          - '@default(cuid())'
+      type:
+        type: String
+      userId:
+        type: String
+        isRequired: false
+      actorId:
+        type: String
+        isRequired: false
+      actorType:
+        type: String
+        isRequired: false
+      payload:
+        type: Json
+        attributes:
+          - '@default("{}")'
+      result:
+        type: Json
+        isRequired: false
+      error:
+        type: Json
+        isRequired: false
+      status:
+        type: JobStatus
+        attributes:
+          - '@default(PENDING)'
+      progress:
+        type: Int
+        attributes:
+          - '@default(0)'
+      lockedBy:
+        type: String
+        isRequired: false
+      lockedAt:
+        type: DateTime
+        isRequired: false
+      startedAt:
+        type: DateTime
+        isRequired: false
+      completedAt:
+        type: DateTime
+        isRequired: false
+      createdAt:
+        type: DateTime
+        attributes:
+          - '@default(now())'
+      updatedAt:
+        type: DateTime
+        attributes:
+          - '@updatedAt'
+      logs:
+        type: JobLog
+        isList: true
+        attributes:
+          - '@relation("JobLogs")'
+
+  JobLog:
+    role: job-owner
+    test:
+      actor: team
+    fields:
+      id:
+        type: String
+        attributes:
+          - '@id'
+          - '@default(cuid())'
+      jobId:
+        type: String
+      level:
+        type: String
+        attributes:
+          - '@default("INFO")'
+      message:
+        type: String
+      timestamp:
+        type: DateTime
+        attributes:
+          - '@default(now())'
+      job:
+        type: Job
+        attributes:
+          - '@relation("JobLogs", fields: [jobId], references: [id], onDelete: Cascade)'
+
+  Agent:
+    test:
+      actor: team
+    fields:
+      id:
+        type: String
+        attributes:
+          - '@id'
+          - '@default(cuid())'
+      hostname:
+        type: String
+      capabilities:
+        type: String
+        isList: true
+      lastHeartbeat:
+        type: DateTime
+        attributes:
+          - '@default(now())'
+      status:
+        type: AgentStatus
+        attributes:
+          - '@default(ONLINE)'
+      createdAt:
+        type: DateTime
+        attributes:
+          - '@default(now())'
+
+  # DTOs
+  CreateJobDTO:
+    db: false
+    api: false
+    fields:
+      type:
+        type: String
+        isRequired: true
+      payload:
+        type: Json
+        isRequired: true
+      actorId:
+        type: String
+        isRequired: false
+      actorType:
+        type: String
+        isRequired: false
+      userId:
+        type: String
+        isRequired: false
+
+  PollJobsDTO:
+    db: false
+    api: false
+    fields:
+      capabilities:
+        type: String
+        isList: true
+
+  CompleteJobDTO:
+    db: false
+    api: false
+    fields:
+      result:
+        type: Json
+        isRequired: true
+
+  FailJobDTO:
+    db: false
+    api: false
+    fields:
+      error:
+        type: Json
+        isRequired: true
+
+  RegisterAgentDTO:
+    db: false
+    api: false
+    fields:
+      id:
+        type: String
+        isRequired: false
+      hostname:
+        type: String
+        isRequired: true
+      capabilities:
+        type: String
+        isList: true

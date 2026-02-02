@@ -1,0 +1,34 @@
+Job:
+  - path: /[id]/complete
+    verb: POST
+    method: completeJob
+    summary: Mark job as completed
+    input: CompleteJobDTO
+    output: Job
+    role: job-owner
+
+  - path: /[id]/fail
+    verb: POST
+    method: failJob
+    summary: Mark job as failed
+    input: FailJobDTO
+    output: Job
+    role: job-owner
+
+Orchestrator:
+  - path: /poll
+    verb: POST
+    method: pollJobs
+    summary: Poll for pending jobs based on capabilities
+    input: PollJobsDTO
+    output: Job[]
+    role: job-owner
+
+Agent:
+  - path: /register
+    verb: POST
+    method: register
+    summary: Register or update an agent
+    input: RegisterAgentDTO
+    output: Agent
+    role: public

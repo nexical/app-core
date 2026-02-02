@@ -87,26 +87,6 @@ export interface ResetPasswordResponseDTO {
   userId: string;
 }
 
-export type SiteRole = (typeof SiteRole)[keyof typeof SiteRole];
-export type UserStatus = (typeof UserStatus)[keyof typeof UserStatus];
-export type UserMode = (typeof UserMode)[keyof typeof UserMode];
-
-export const SiteRole = {
-  ADMIN: 'ADMIN',
-  EMPLOYEE: 'EMPLOYEE',
-  CONTRACTOR: 'CONTRACTOR',
-} as const;
-export const UserStatus = {
-  ACTIVE: 'ACTIVE',
-  INACTIVE: 'INACTIVE',
-  BANNED: 'BANNED',
-} as const;
-export const UserMode = {
-  SINGLE: 'SINGLE',
-  PUBLIC: 'PUBLIC',
-  ADMIN: 'ADMIN',
-} as const;
-
 export type {
   User,
   PersonalAccessToken,
@@ -115,3 +95,21 @@ export type {
   PasswordResetToken,
   Invitation,
 } from '@prisma/client';
+
+export enum SiteRole {
+  ADMIN = 'ADMIN',
+  EMPLOYEE = 'EMPLOYEE',
+  CONTRACTOR = 'CONTRACTOR',
+}
+
+export enum UserStatus {
+  ACTIVE = 'ACTIVE',
+  INACTIVE = 'INACTIVE',
+  BANNED = 'BANNED',
+}
+
+export enum UserMode {
+  SINGLE = 'SINGLE',
+  PUBLIC = 'PUBLIC',
+  ADMIN = 'ADMIN',
+}

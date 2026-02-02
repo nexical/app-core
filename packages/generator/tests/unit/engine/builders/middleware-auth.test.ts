@@ -1,6 +1,7 @@
+/** @vitest-environment node */
 import { describe, it, expect } from 'vitest';
 import { Project } from 'ts-morph';
-import { MiddlewareBuilder } from '@nexical/generator/engine/builders/middleware-builder';
+import { MiddlewareBuilder } from '../../../../src/engine/builders/middleware-builder';
 import { type ModelDef } from '../../../../src/engine/types';
 
 describe('MiddlewareBuilder Auth Logic', () => {
@@ -8,12 +9,14 @@ describe('MiddlewareBuilder Auth Logic', () => {
     const userModel: ModelDef = {
       name: 'User',
       db: true,
+      api: true,
       fields: {
         id: { type: 'Int', isRequired: true, isList: false, api: true, attributes: ['@id'] },
         name: { type: 'String', isRequired: true, isList: false, api: true, attributes: [] },
       },
       actor: {
         name: 'User',
+        strategy: 'bearer',
         prefix: 'sk_live_',
         fields: {
           tokenModel: 'Session',
@@ -25,6 +28,7 @@ describe('MiddlewareBuilder Auth Logic', () => {
     const sessionModel: ModelDef = {
       name: 'Session',
       db: true,
+      api: true,
       fields: {
         id: { type: 'Int', isRequired: true, isList: false, api: true, attributes: ['@id'] },
         tokenValue: { type: 'String', isRequired: true, isList: false, api: true, attributes: [] },
@@ -56,12 +60,14 @@ describe('MiddlewareBuilder Auth Logic', () => {
     const apiKeyModel: ModelDef = {
       name: 'ApiKey',
       db: true,
+      api: true,
       fields: {
         id: { type: 'String', isRequired: true, isList: false, api: true, attributes: ['@id'] },
         hashedKey: { type: 'String', isRequired: true, isList: false, api: true, attributes: [] },
       },
       actor: {
         name: 'ApiKey',
+        strategy: 'api-key',
         prefix: 'pk_',
         fields: {
           keyField: 'hashedKey', // contains 'hash' -> trigger hashing
@@ -84,6 +90,7 @@ describe('MiddlewareBuilder Auth Logic', () => {
     const userModel: ModelDef = {
       name: 'User',
       db: true,
+      api: true,
       fields: {
         id: { type: 'Int', isRequired: true, isList: false, api: true, attributes: ['@id'] },
         status: { type: 'String', isRequired: true, isList: false, api: true, attributes: [] },
@@ -111,6 +118,7 @@ describe('MiddlewareBuilder Auth Logic', () => {
     const userModel: ModelDef = {
       name: 'User',
       db: true,
+      api: true,
       fields: {
         id: { type: 'Int', isRequired: true, isList: false, api: true, attributes: ['@id'] },
         status: { type: 'String', isRequired: true, isList: false, api: true, attributes: [] },

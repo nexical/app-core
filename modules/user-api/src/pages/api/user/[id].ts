@@ -4,14 +4,13 @@ import { ApiGuard } from '@/lib/api/api-guard';
 import { z } from 'zod';
 import { UserService } from '@modules/user-api/src/services/user-service';
 import { SiteRole, UserStatus } from '@modules/user-api/src/sdk';
-import { HookSystem } from '@/lib/modules/hooks';
+
 // GENERATED CODE - DO NOT MODIFY
 export const GET = defineApi(
   async (context) => {
     const { id } = context.params;
-    if (!id) return new Response(null, { status: 404 });
 
-    // Pre-check
+    // Security Check
     await ApiGuard.protect(context, 'admin', { ...context.params });
 
     const select = {
@@ -27,18 +26,23 @@ export const GET = defineApi(
       createdAt: true,
       updatedAt: true,
     };
-    const result = await UserService.get(id, select);
+    const actor = context.locals.actor;
 
-    if (!result.success || !result.data) {
-      return new Response(null, { status: 404 });
+    const result = await UserService.get(id, select, actor);
+
+    if (!result.success) {
+      if (result.error?.code === 'NOT_FOUND') {
+        return new Response(JSON.stringify({ error: result.error }), { status: 404 });
+      }
+      return new Response(JSON.stringify({ error: result.error }), { status: 500 });
     }
 
-    // Post-check (Data ownership)
-    await ApiGuard.protect(context, 'admin', { ...context.params }, result.data);
-
-    // Analytics Hook
-    const actor = context.locals.actor;
-    await HookSystem.dispatch('user.viewed', { id, actorId: actor?.id || 'anonymous' });
+    if (!result.data) {
+      return new Response(
+        JSON.stringify({ error: { code: 'NOT_FOUND', message: 'User not found' } }),
+        { status: 404 },
+      );
+    }
 
     return { success: true, data: result.data };
   },
@@ -77,21 +81,10 @@ export const GET = defineApi(
 export const PUT = defineApi(
   async (context) => {
     const { id } = context.params;
-    if (!id) return new Response(null, { status: 404 });
-
     const body = await context.request.json();
 
-    // Pre-check
+    // Security Check
     await ApiGuard.protect(context, 'admin', { ...context.params, ...body });
-
-    // Fetch for Post-check ownership
-    const existing = await UserService.get(id);
-    if (!existing.success || !existing.data) {
-      return new Response(null, { status: 404 });
-    }
-
-    // Post-check
-    await ApiGuard.protect(context, 'admin', { ...context.params, ...body }, existing.data);
 
     // Zod Validation
     const schema = z
@@ -106,6 +99,7 @@ export const PUT = defineApi(
         status: z.nativeEnum(UserStatus).optional(),
       })
       .partial();
+
     const validated = schema.parse(body);
     const select = {
       id: true,
@@ -125,10 +119,13 @@ export const PUT = defineApi(
     const result = await UserService.update(id, validated, select, actor);
 
     if (!result.success) {
+      if (result.error?.code === 'NOT_FOUND') {
+        return new Response(JSON.stringify({ error: result.error }), { status: 404 });
+      }
       return new Response(JSON.stringify({ error: result.error }), { status: 400 });
     }
 
-    return { success: true, data: result.data };
+    return new Response(JSON.stringify({ success: true, data: result.data }), { status: 200 });
   },
   {
     summary: 'Update User',
@@ -187,24 +184,18 @@ export const PUT = defineApi(
 export const DELETE = defineApi(
   async (context) => {
     const { id } = context.params;
-    if (!id) return new Response(null, { status: 404 });
 
-    // Pre-check
+    // Security Check
     await ApiGuard.protect(context, 'admin', { ...context.params });
 
-    // Fetch for Post-check ownership
-    const existing = await UserService.get(id);
-    if (!existing.success || !existing.data) {
-      return new Response(null, { status: 404 });
-    }
-
-    // Post-check
-    await ApiGuard.protect(context, 'admin', { ...context.params }, existing.data);
-
-    const result = await UserService.delete(id);
+    const actor = context.locals.actor;
+    const result = await UserService.delete(id, actor);
 
     if (!result.success) {
-      return new Response(JSON.stringify({ error: result.error }), { status: 400 });
+      if (result.error?.code === 'NOT_FOUND') {
+        return new Response(JSON.stringify({ error: result.error }), { status: 404 });
+      }
+      return new Response(JSON.stringify({ error: result.error }), { status: 500 });
     }
 
     return { success: true };

@@ -6,7 +6,7 @@ import {
   ModuleDeclaration,
 } from 'ts-morph';
 import { BasePrimitive } from '../core/base-primitive.js';
-import { type FunctionConfig } from '../../types.js';
+import { type FunctionConfig, type ParsedStatement } from '../../types.js';
 import { type ValidationResult } from '../contracts.js';
 import { StatementFactory } from '../statements/factory.js';
 import { Normalizer } from '../../../utils/normalizer.js';
@@ -126,10 +126,35 @@ export class FunctionPrimitive extends BasePrimitive<FunctionDeclaration, Functi
         continue;
       }
 
+      if (stmtConfig && typeof stmtConfig === 'object' && 'getNodes' in stmtConfig) {
+        const stmt = stmtConfig as ParsedStatement;
+        const raw = stmt.raw || '';
+        const bodyText = node.getBodyText() || '';
+        const normalizedBody = Normalizer.normalize(bodyText);
+
+        if (raw) {
+          const normalizedConfig = Normalizer.normalize(raw);
+          if (normalizedBody.includes(normalizedConfig)) continue;
+        }
+
+        const nodes = stmtConfig.getNodes(node.getProject());
+        for (const n of nodes) {
+          const text = n.getText();
+          const normalizedNode = Normalizer.normalize(text);
+          if (!normalizedBody.includes(normalizedNode)) {
+            node.addStatements(text);
+          }
+        }
+        if (nodes.length > 0) nodes[0].getSourceFile().delete();
+        continue;
+      }
+
       if ((stmtConfig as { isDefault?: boolean }).isDefault === false) {
         // Force overwrite/insert logic here if we wanted to enforce "system" statements
         // For now, let's focus on preserving "default" ones
       }
+
+      if (!('kind' in stmtConfig)) continue;
 
       if (stmtConfig.kind === 'variable') {
         const varName = stmtConfig.declarations[0]?.name;

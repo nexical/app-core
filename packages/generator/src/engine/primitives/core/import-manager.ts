@@ -1,47 +1,21 @@
 import { SourceFile, ImportDeclaration } from 'ts-morph';
 import { BasePrimitive } from './base-primitive.js';
 import { type ImportConfig } from '../../types.js';
+import { Normalizer } from '../../../utils/normalizer.js';
 
 export class ImportPrimitive extends BasePrimitive<ImportDeclaration, ImportConfig> {
-  private normalizeModuleSpecifier(specifier: string): string {
-    // 1. Remove extensions
-    let normalized = specifier.replace(/\.(ts|js|mjs|cjs)$/, '');
-
-    // 2. Strip /index
-    normalized = normalized.replace(/\/index$/, '');
-
-    // 3. Apply legacy mapping
-    const legacyMapping: Record<string, string> = {
-      '@/lib/api-docs': '@/lib/api/api-docs',
-      '@/lib/api-guard': '@/lib/api/api-guard',
-      '@/lib/hooks': '@/lib/modules/hooks',
-      '@/lib/api-query': '@/lib/api/api-query',
-      '@/lib/utils': '@/lib/core/utils',
-      '@/lib/db': '@/lib/core/db',
-    };
-    normalized = legacyMapping[normalized] || normalized;
-
-    // 4. Standardize SDK subpaths to canonical SDK root if it's the same logical target
-    // e.g., @modules/user-api/src/sdk/types -> @modules/user-api/src/sdk
-    if (normalized.includes('/src/sdk/')) {
-      normalized = normalized.split('/src/sdk/')[0] + '/src/sdk';
-    }
-
-    return normalized;
-  }
-
   find(parent: SourceFile) {
-    const normalizedTarget = this.normalizeModuleSpecifier(this.config.moduleSpecifier);
+    const normalizedTarget = Normalizer.normalizeImport(this.config.moduleSpecifier);
 
     return parent.getImportDeclaration((decl) => {
-      const normalizedExisting = this.normalizeModuleSpecifier(decl.getModuleSpecifierValue());
+      const normalizedExisting = Normalizer.normalizeImport(decl.getModuleSpecifierValue());
       return normalizedExisting === normalizedTarget;
     });
   }
 
   create(parent: SourceFile) {
     return parent.addImportDeclaration({
-      moduleSpecifier: this.normalizeModuleSpecifier(this.config.moduleSpecifier),
+      moduleSpecifier: Normalizer.normalizeImport(this.config.moduleSpecifier),
       defaultImport: this.config.defaultImport,
       namedImports: this.config.namedImports,
       isTypeOnly: this.config.isTypeOnly,
@@ -50,7 +24,7 @@ export class ImportPrimitive extends BasePrimitive<ImportDeclaration, ImportConf
 
   update(node: ImportDeclaration) {
     const sourceFile = node.getSourceFile();
-    const normalizedTarget = this.normalizeModuleSpecifier(this.config.moduleSpecifier);
+    const normalizedTarget = Normalizer.normalizeImport(this.config.moduleSpecifier);
 
     // 0. Deduplicate: Find OTHER imports that normalize to the same target OR provide the same symbols
     const targetSymbols = this.config.namedImports || [];
@@ -58,7 +32,7 @@ export class ImportPrimitive extends BasePrimitive<ImportDeclaration, ImportConf
     sourceFile.getImportDeclarations().forEach((decl) => {
       if (decl === node) return;
 
-      const normalizedExisting = this.normalizeModuleSpecifier(decl.getModuleSpecifierValue());
+      const normalizedExisting = Normalizer.normalizeImport(decl.getModuleSpecifierValue());
 
       // Case A: Same module (normalized)
       if (normalizedExisting === normalizedTarget) {
@@ -188,8 +162,8 @@ export class ImportPrimitive extends BasePrimitive<ImportDeclaration, ImportConf
     const issues: string[] = [];
 
     // Check module specifier
-    const normalizedTarget = this.normalizeModuleSpecifier(this.config.moduleSpecifier);
-    const normalizedExisting = this.normalizeModuleSpecifier(node.getModuleSpecifierValue());
+    const normalizedTarget = Normalizer.normalizeImport(this.config.moduleSpecifier);
+    const normalizedExisting = Normalizer.normalizeImport(node.getModuleSpecifierValue());
     if (normalizedExisting !== normalizedTarget) {
       issues.push(
         `Import module specifier mismatch. Expected: ${normalizedTarget} (normalized), Found: ${normalizedExisting}`,

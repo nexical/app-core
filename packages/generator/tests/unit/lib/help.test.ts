@@ -1,3 +1,4 @@
+/** @vitest-environment node */
 /* eslint-disable */
 import { describe, it, expect, vi } from 'vitest';
 import { CustomHelp } from '@nexical/generator/lib/help';

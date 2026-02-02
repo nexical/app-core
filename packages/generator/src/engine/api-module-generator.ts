@@ -13,7 +13,11 @@ import { FactoryBuilder } from './builders/factory-builder.js';
 import { ActorBuilder } from './builders/actor-builder.js';
 import { ActorTypeBuilder } from './builders/actor-type-builder.js';
 import { MiddlewareBuilder } from './builders/middleware-builder.js';
-import { type CustomRoute, type ModelDef } from './types.js';
+import { EmailBuilder } from './builders/email-builder.js';
+import { AgentBuilder } from './builders/agent-builder.js';
+import { HookBuilder } from './builders/hook-builder.js';
+import { type CustomRoute, type ModelDef, type ModuleConfig } from './types.js';
+import { toKebabCase } from '../utils/string.js';
 import path from 'node:path';
 import fs from 'node:fs';
 import { parse } from 'yaml';
@@ -26,225 +30,92 @@ export class ApiModuleGenerator extends ModuleGenerator {
     const { models, enums, config } = ModelParser.parse(modelsYamlPath);
 
     if (models.length === 0) {
-      if (models.length === 0) {
-        if (this.command) {
-          this.command.info('No models found in models.yaml. Skipping generation.');
-        } else {
-          logger.info('No models found in models.yaml. Skipping generation.');
-        }
-        return;
+      if (this.command) {
+        this.command.info('No models found in models.yaml. Skipping generation.');
+      } else {
+        logger.info('No models found in models.yaml. Skipping generation.');
+      }
+      return;
+    }
+
+    const customRoutes: Record<string, CustomRoute[]> = fs.existsSync(apiYamlPath)
+      ? parse(fs.readFileSync(apiYamlPath, 'utf-8'))
+      : {};
+
+    // 1. Types
+    const typesFile = this.getOrCreateFile('src/sdk/types.ts');
+    new TypeBuilder(models, enums).ensure(typesFile);
+
+    const processedModels = new Set(models.map((m) => m.name));
+
+    // 2. Services, API Pages, SDK
+    for (const model of models) {
+      // Skip if explicitly disabled
+      if (!model.db && !model.api) continue;
+      const name = model.name;
+      const kebabName = toKebabCase(name);
+
+      // Services
+      if (model.db && !model.extended) {
+        const serviceFile = this.getOrCreateFile(`src/services/${kebabName}-service.ts`);
+        new ServiceBuilder(model).ensure(serviceFile);
       }
 
-      const customRoutes: Record<string, CustomRoute[]> = fs.existsSync(apiYamlPath)
-        ? parse(fs.readFileSync(apiYamlPath, 'utf-8'))
-        : {};
+      // APIs
+      if (model.api && !model.extended) {
+        if (model.db) {
+          const apiColFile = this.getOrCreateFile(`src/pages/api/${kebabName}/index.ts`);
+          new ApiBuilder(model, models, this.moduleName, 'collection').ensure(apiColFile);
 
-      // 1. Types
-      const typesFile = this.getOrCreateFile('src/sdk/types.ts');
-      new TypeBuilder(models, enums).ensure(typesFile);
-
-      const processedModels = new Set(models.map((m) => m.name));
-
-      // 2. Services, API Pages, SDK
-      for (const model of models) {
-        // Skip if explicitly disabled
-        if (!model.db && !model.api) continue;
-        const name = model.name;
-        const kebabName = name
-          .replace(/([a-z])([A-Z])/g, '$1-$2')
-          .replace(/[\s_]+/g, '-')
-          .toLowerCase();
-
-        // Services
-        if (model.db && !model.extended) {
-          const serviceFile = this.getOrCreateFile(`src/services/${kebabName}-service.ts`);
-          new ServiceBuilder(model).ensure(serviceFile);
+          const apiIndFile = this.getOrCreateFile(`src/pages/api/${kebabName}/[id].ts`);
+          new ApiBuilder(model, models, this.moduleName, 'individual').ensure(apiIndFile);
         }
 
-        // APIs
-        if (model.api && !model.extended) {
-          if (model.db) {
-            const apiColFile = this.getOrCreateFile(`src/pages/api/${kebabName}/index.ts`);
-            new ApiBuilder(model, models, this.moduleName, 'collection').ensure(apiColFile);
-
-            const apiIndFile = this.getOrCreateFile(`src/pages/api/${kebabName}/[id].ts`);
-            new ApiBuilder(model, models, this.moduleName, 'individual').ensure(apiIndFile);
-          }
-
-          // Custom Routes
-          const modelRoutes = customRoutes[name] || [];
-          const groupedRoutes: Record<string, CustomRoute[]> = {};
-          for (const route of modelRoutes) {
-            // Robust normalization of Verb
-            const validVerbs = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'];
-            if (!route.verb && route.method && validVerbs.includes(route.method.toUpperCase())) {
-              route.verb = route.method.toUpperCase() as 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
-            }
-            if (!route.verb) route.verb = 'POST';
-
-            const routePath = route.path.startsWith('/') ? route.path.slice(1) : route.path;
-            if (!groupedRoutes[routePath]) groupedRoutes[routePath] = [];
-            groupedRoutes[routePath].push(route);
-          }
-
-          for (const [routePath, routes] of Object.entries(groupedRoutes)) {
-            const apiFile = this.getOrCreateFile(`src/pages/api/${kebabName}/${routePath}.ts`);
-            new ApiBuilder(model, models, this.moduleName, 'custom', routes).ensure(apiFile);
-
-            for (const route of routes) {
-              // Validation: Strict Schema Enforcement
-              if (!route.input) {
-                throw new Error(
-                  `[Strict Schema] Route '${route.verb} ${route.path}' in model '${name}' is missing 'input'. Use 'input: none' if no input is required.`,
-                );
-              }
-              if (!route.output) {
-                throw new Error(
-                  `[Strict Schema] Route '${route.verb} ${route.path}' in model '${name}' is missing 'output'. Use 'output: none' if no output is returned.`,
-                );
-              }
-
-              // Action Stub
-              const actionBase =
-                route.action ||
-                `${route.method.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()}-${kebabName}`;
-              const actionPath = `src/actions/${actionBase}.ts`;
-              const actionFile = this.getOrCreateFile(actionPath);
-              const actionName = route.action
-                ? route.action
-                  .split('-')
-                  .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-                  .join('') + 'Action'
-                : `${route.method.charAt(0).toUpperCase() + route.method.slice(1)}${name}Action`;
-
-              // Support "none" keyword mapped to "void"
-              const inputType = route.input === 'none' ? 'void' : route.input;
-              const outputType = route.output === 'none' ? 'void' : route.output;
-
-              new ActionBuilder(actionName, inputType, outputType).ensure(actionFile);
-            }
-          }
-
-          // SDK
-          if (!model.extended) {
-            const sdkFile = this.getOrCreateFile(`src/sdk/${kebabName}-sdk.ts`);
-            new SdkBuilder(model, modelRoutes).ensure(sdkFile);
-          }
-
-          // Tests
-          if (model.db && !model.extended) {
-            const ops: ('create' | 'list' | 'get' | 'update' | 'delete')[] = [
-              'create',
-              'list',
-              'get',
-              'update',
-              'delete',
-            ];
-            for (const op of ops) {
-              let role = 'member';
-              if (model.role) {
-                if (typeof model.role === 'string') {
-                  role = model.role;
-                } else {
-                  const roleMap = model.role as Record<string, string>;
-                  role = roleMap[op] || 'member';
-                }
-              }
-
-              // Skip if role is explicit 'none'
-              if (role === 'none') continue;
-
-              const testFile = this.getOrCreateFile(
-                `tests/integration/api/generated/${kebabName}/${op}.test.ts`,
-              );
-              new TestBuilder(model, this.moduleName, op, config.test?.roles || {}).ensure(testFile);
-            }
-          }
-        }
-      }
-
-      // 3. Virtual Resources
-      const virtualModels: ModelDef[] = [];
-      for (const [entityName, routes] of Object.entries(customRoutes)) {
-        logger.debug(
-          `Checking virtual model: ${entityName} Processed: ${processedModels.has(entityName)}`
-        );
-        if (processedModels.has(entityName)) continue;
-
-        const kebabEntity = entityName
-          .replace(/([a-z])([A-Z])/g, '$1-$2')
-          .replace(/[\s_]+/g, '-')
-          .toLowerCase();
-        const isRoot = entityName === 'Root';
-
-        const virtualModel: ModelDef = {
-          name: entityName,
-          api: true,
-          db: false,
-          fields: {},
-        };
-        virtualModels.push(virtualModel);
-
-        // API Routes
-        const groupedVirtualRoutes: Record<string, CustomRoute[]> = {};
-        for (const route of routes) {
+        // Custom Routes
+        const modelRoutes = customRoutes[name] || [];
+        const groupedRoutes: Record<string, CustomRoute[]> = {};
+        for (const route of modelRoutes) {
           // Robust normalization of Verb
-          if (
-            !route.verb &&
-            ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'].includes(route.method?.toUpperCase())
-          ) {
-            route.verb = route.method.toUpperCase() as CustomRoute['verb'];
+          const validVerbs = ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'];
+          if (!route.verb && route.method && validVerbs.includes(route.method.toUpperCase())) {
+            route.verb = route.method.toUpperCase() as 'GET' | 'POST' | 'PUT' | 'DELETE' | 'PATCH';
           }
           if (!route.verb) route.verb = 'POST';
 
           const routePath = route.path.startsWith('/') ? route.path.slice(1) : route.path;
-          const fileName = routePath === '' ? 'index' : routePath;
-          if (!groupedVirtualRoutes[fileName]) groupedVirtualRoutes[fileName] = [];
-          groupedVirtualRoutes[fileName].push(route);
+          if (!groupedRoutes[routePath]) groupedRoutes[routePath] = [];
+          groupedRoutes[routePath].push(route);
         }
 
-        for (const [fileName, routes] of Object.entries(groupedVirtualRoutes)) {
-          let apiPath: string;
-          if (isRoot) {
-            apiPath = `src/pages/api/${fileName}.ts`;
-          } else {
-            apiPath = `src/pages/api/${kebabEntity}/${fileName}.ts`;
-          }
-
-          const apiFile = this.getOrCreateFile(apiPath);
-          new ApiBuilder(
-            virtualModel,
-            [...models, ...virtualModels],
-            this.moduleName,
-            'custom',
-            routes,
-          ).ensure(apiFile);
+        for (const [routePath, routes] of Object.entries(groupedRoutes)) {
+          const apiFile = this.getOrCreateFile(`src/pages/api/${kebabName}/${routePath}.ts`);
+          new ApiBuilder(model, models, this.moduleName, 'custom', routes).ensure(apiFile);
 
           for (const route of routes) {
             // Validation: Strict Schema Enforcement
             if (!route.input) {
               throw new Error(
-                `[Strict Schema] Route '${route.verb} ${route.path}' in virtual model '${entityName}' is missing 'input'. Use 'input: none' if no input is required.`,
+                `[Strict Schema] Route '${route.verb} ${route.path}' in model '${name}' is missing 'input'. Use 'input: none' if no input is required.`,
               );
             }
             if (!route.output) {
               throw new Error(
-                `[Strict Schema] Route '${route.verb} ${route.path}' in virtual model '${entityName}' is missing 'output'. Use 'output: none' if no output is returned.`,
+                `[Strict Schema] Route '${route.verb} ${route.path}' in model '${name}' is missing 'output'. Use 'output: none' if no output is returned.`,
               );
             }
 
-            // Action
+            // Action Stub
             const actionBase =
               route.action ||
-              `${route.method.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()}-${kebabEntity}`;
+              `${route.method.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()}-${kebabName}`;
             const actionPath = `src/actions/${actionBase}.ts`;
             const actionFile = this.getOrCreateFile(actionPath);
             const actionName = route.action
               ? route.action
-                .split('-')
-                .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-                .join('') + 'Action'
-              : `${route.method.charAt(0).toUpperCase() + route.method.slice(1)}${entityName}Action`;
+                  .split('-')
+                  .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+                  .join('') + 'Action'
+              : `${route.method.charAt(0).toUpperCase() + route.method.slice(1)}${name}Action`;
 
             // Support "none" keyword mapped to "void"
             const inputType = route.input === 'none' ? 'void' : route.input;
@@ -255,44 +126,184 @@ export class ApiModuleGenerator extends ModuleGenerator {
         }
 
         // SDK
-        const sdkPath = isRoot ? `src/sdk/root-sdk.ts` : `src/sdk/${kebabEntity}-sdk.ts`;
-        const sdkFile = this.getOrCreateFile(sdkPath);
-        new SdkBuilder(virtualModel, routes).ensure(sdkFile);
+        if (!model.extended) {
+          const sdkFile = this.getOrCreateFile(`src/sdk/${kebabName}-sdk.ts`);
+          new SdkBuilder(model, modelRoutes).ensure(sdkFile);
+        }
+
+        // Tests
+        if (model.db && !model.extended) {
+          const ops: ('create' | 'list' | 'get' | 'update' | 'delete')[] = [
+            'create',
+            'list',
+            'get',
+            'update',
+            'delete',
+          ];
+          for (const op of ops) {
+            let role = 'member';
+            if (model.role) {
+              if (typeof model.role === 'string') {
+                role = model.role;
+              } else {
+                const roleMap = model.role as Record<string, string>;
+                role = roleMap[op] || 'member';
+              }
+            }
+
+            // Skip if role is explicit 'none'
+            if (role === 'none') continue;
+
+            const testFile = this.getOrCreateFile(
+              `tests/integration/api/generated/${kebabName}/${op}.test.ts`,
+            );
+            new TestBuilder(model, this.moduleName, op, config.test?.roles || {}).ensure(testFile);
+          }
+        }
+      }
+    }
+
+    // 3. Virtual Resources
+    const virtualModels: ModelDef[] = [];
+    for (const [entityName, routes] of Object.entries(customRoutes)) {
+      logger.debug(
+        `Checking virtual model: ${entityName} Processed: ${processedModels.has(entityName)}`,
+      );
+      if (processedModels.has(entityName)) continue;
+
+      const kebabEntity = toKebabCase(entityName);
+      const isRoot = entityName === 'Root';
+
+      const virtualModel: ModelDef = {
+        name: entityName,
+        api: true,
+        db: false,
+        fields: {},
+      };
+      virtualModels.push(virtualModel);
+
+      // API Routes
+      const groupedVirtualRoutes: Record<string, CustomRoute[]> = {};
+      for (const route of routes) {
+        // Robust normalization of Verb
+        if (
+          !route.verb &&
+          ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'].includes(route.method?.toUpperCase())
+        ) {
+          route.verb = route.method.toUpperCase() as CustomRoute['verb'];
+        }
+        if (!route.verb) route.verb = 'POST';
+
+        const routePath = route.path.startsWith('/') ? route.path.slice(1) : route.path;
+        const fileName = routePath === '' ? 'index' : routePath;
+        if (!groupedVirtualRoutes[fileName]) groupedVirtualRoutes[fileName] = [];
+        groupedVirtualRoutes[fileName].push(route);
       }
 
-      // 4. SDK Index
-      const sdkIndexFile = this.getOrCreateFile('src/sdk/index.ts');
-      new SdkIndexBuilder([...models, ...virtualModels], this.moduleName).ensure(sdkIndexFile);
+      for (const [fileName, routes] of Object.entries(groupedVirtualRoutes)) {
+        let apiPath: string;
+        if (isRoot) {
+          apiPath = `src/pages/api/${fileName}.ts`;
+        } else {
+          apiPath = `src/pages/api/${kebabEntity}/${fileName}.ts`;
+        }
 
-      // 4. Test Utilities (Factories/Actors)
-      const factoryFile = this.getOrCreateFile('tests/integration/factory.ts');
-      new FactoryBuilder(models).ensure(factoryFile);
+        const apiFile = this.getOrCreateFile(apiPath);
+        new ApiBuilder(
+          virtualModel,
+          [...models, ...virtualModels],
+          this.moduleName,
+          'custom',
+          routes,
+        ).ensure(apiFile);
 
-      const actorFile = this.getOrCreateFile('tests/integration/actors.ts');
-      new ActorBuilder(models).ensure(actorFile);
+        for (const route of routes) {
+          // Validation: Strict Schema Enforcement
+          if (!route.input) {
+            throw new Error(
+              `[Strict Schema] Route '${route.verb} ${route.path}' in virtual model '${entityName}' is missing 'input'. Use 'input: none' if no input is required.`,
+            );
+          }
+          if (!route.output) {
+            throw new Error(
+              `[Strict Schema] Route '${route.verb} ${route.path}' in virtual model '${entityName}' is missing 'output'. Use 'output: none' if no output is returned.`,
+            );
+          }
 
-      const actorTypeFile = this.getOrCreateFile('src/types.d.ts');
-      new ActorTypeBuilder(models).ensure(actorTypeFile);
+          // Action
+          const actionBase =
+            route.action ||
+            `${route.method.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()}-${kebabEntity}`;
+          const actionPath = `src/actions/${actionBase}.ts`;
+          const actionFile = this.getOrCreateFile(actionPath);
+          const actionName = route.action
+            ? route.action
+                .split('-')
+                .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+                .join('') + 'Action'
+            : `${route.method.charAt(0).toUpperCase() + route.method.slice(1)}${entityName}Action`;
 
-      // 6. Init File (Server)
-      const serverInitFile = this.getOrCreateFile('src/server-init.ts');
-      new InitBuilder('server').ensure(serverInitFile);
+          // Support "none" keyword mapped to "void"
+          const inputType = route.input === 'none' ? 'void' : route.input;
+          const outputType = route.output === 'none' ? 'void' : route.output;
 
-      // 7. Middleware
-      const middlewareFile = this.getOrCreateFile('src/middleware.ts');
-      new MiddlewareBuilder(models).ensure(middlewareFile);
+          new ActionBuilder(actionName, inputType, outputType).ensure(actionFile);
+        }
+      }
 
-      // 5. Cleanup
-      this.cleanup('src/services', /\.ts$/);
-      this.cleanup('src/pages/api', /\.ts$/);
-      this.cleanup('src/sdk', /\.ts$/);
-      this.cleanup('tests/integration/api/generated', /\.test\.ts$/);
-
-      // Remove old duplicated actor-types if they exist
-      const oldActorTypes = path.join(this.modulePath, 'tests/integration/actor-types.ts');
-      if (fs.existsSync(oldActorTypes)) fs.unlinkSync(oldActorTypes);
-
-      await this.saveAll();
+      // SDK
+      const sdkPath = isRoot ? `src/sdk/root-sdk.ts` : `src/sdk/${kebabEntity}-sdk.ts`;
+      const sdkFile = this.getOrCreateFile(sdkPath);
+      new SdkBuilder(virtualModel, routes).ensure(sdkFile);
     }
+
+    // 4. SDK Index
+    const sdkIndexFile = this.getOrCreateFile('src/sdk/index.ts');
+    new SdkIndexBuilder([...models, ...virtualModels], this.moduleName).ensure(sdkIndexFile);
+
+    // 4. Test Utilities (Factories/Actors)
+    const factoryFile = this.getOrCreateFile('tests/integration/factory.ts');
+    new FactoryBuilder(models).ensure(factoryFile);
+
+    const actorFile = this.getOrCreateFile('tests/integration/actors.ts');
+    new ActorBuilder(models).ensure(actorFile);
+
+    const actorTypeFile = this.getOrCreateFile('src/types.d.ts');
+    new ActorTypeBuilder(models).ensure(actorTypeFile);
+
+    // 6. Init File (Server)
+    const serverInitFile = this.getOrCreateFile('src/server-init.ts');
+    new InitBuilder('server').ensure(serverInitFile);
+
+    // 7. Communications & Distributed Services
+    const allCustomRoutes = Object.values(customRoutes).flat();
+    await new EmailBuilder(this.moduleName, config as unknown as ModuleConfig).build(
+      this.project,
+      undefined,
+    );
+    await new AgentBuilder(this.moduleName, config as unknown as ModuleConfig).build(
+      this.project,
+      undefined,
+    );
+    await new HookBuilder(this.moduleName, config as unknown as ModuleConfig).build(
+      this.project,
+      undefined,
+    );
+
+    // 8. Middleware
+    const middlewareFile = this.getOrCreateFile('src/middleware.ts');
+    new MiddlewareBuilder(models, allCustomRoutes).ensure(middlewareFile);
+
+    // 5. Cleanup
+    this.cleanup('src/services', /\.ts$/);
+    this.cleanup('src/pages/api', /\.ts$/);
+    this.cleanup('src/sdk', /\.ts$/);
+    this.cleanup('tests/integration/api/generated', /\.test\.ts$/);
+
+    // Remove old duplicated actor-types if they exist
+    const oldActorTypes = path.join(this.modulePath, 'tests/integration/actor-types.ts');
+    if (fs.existsSync(oldActorTypes)) fs.unlinkSync(oldActorTypes);
+
+    await this.saveAll();
   }
 }

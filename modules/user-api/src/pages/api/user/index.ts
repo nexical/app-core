@@ -4,8 +4,9 @@ import { ApiGuard } from '@/lib/api/api-guard';
 import { parseQuery } from '@/lib/api/api-query';
 import { z } from 'zod';
 import { UserService } from '@modules/user-api/src/services/user-service';
-import { SiteRole, UserStatus } from '@modules/user-api/src/sdk';
 import { HookSystem } from '@/lib/modules/hooks';
+import { SiteRole, UserStatus } from '@modules/user-api/src/sdk';
+
 // GENERATED CODE - DO NOT MODIFY
 export const GET = defineApi(
   async (context) => {

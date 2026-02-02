@@ -1,11 +1,13 @@
+/** @vitest-environment node */
 import { describe, it, expect } from 'vitest';
-import { SdkBuilder } from '@nexical/generator/engine/builders/sdk-builder';
+import { SdkBuilder } from '../../../../src/engine/builders/sdk-builder';
 import {
   type ModelDef,
   type CustomRoute,
   type FileDefinition,
   type ImportConfig,
-} from '@nexical/generator/engine/types';
+  type ParsedStatement,
+} from '../../../../src/engine/types';
 
 describe('SdkBuilder Sweeper', () => {
   const getMethods = (file: FileDefinition) => {
@@ -116,8 +118,10 @@ describe('SdkBuilder Sweeper', () => {
     // Verify path param replacement logic
     const cls = file.classes?.[0];
     const runMethod = cls?.methods?.find((m) => m.name === 'runAction');
-    const statement = (runMethod?.statements?.[0] as string) || '';
+    const statement = runMethod?.statements?.[0];
+    const rawContent =
+      typeof statement === 'string' ? statement : (statement as ParsedStatement)?.raw || '';
     // Expect template literal with ${actionId} and resolved endpoint 'process'
-    expect(statement).toContain('`/process/run/${actionId}`');
+    expect(rawContent).toContain('`/process/run/${actionId}`');
   });
 });

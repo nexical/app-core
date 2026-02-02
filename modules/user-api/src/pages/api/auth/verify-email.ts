@@ -4,17 +4,18 @@ import { ApiGuard } from '@/lib/api/api-guard';
 import { HookSystem } from '@/lib/modules/hooks';
 import { VerifyEmailAuthAction } from '@modules/user-api/src/actions/verify-email-auth';
 import type { VerifyEmailDTO } from '@modules/user-api/src/sdk';
+
 export const POST = defineApi(
   async (context) => {
     // 1. Body Parsing (Input)
     const body = (await context.request.json()) as VerifyEmailDTO;
+
     const query = Object.fromEntries(new URL(context.request.url).searchParams);
 
     // 2. Hook: Filter Input
     const input: VerifyEmailDTO = await HookSystem.filter('auth.verifyEmail.input', body);
 
     // 3. Security Check
-    // Pass merged input
     const combinedInput = { ...context.params, ...query, ...input };
     await ApiGuard.protect(context, 'anonymous', combinedInput);
 

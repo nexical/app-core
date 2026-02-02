@@ -5,8 +5,7 @@ import {
   type EnumConfig,
   type NodeContainer,
   type ImportConfig,
-  type VariableConfig,
-  type TypeConfig,
+  type StatementConfig,
 } from '../types.js';
 import { BaseBuilder } from './base-builder.js';
 
@@ -26,26 +25,17 @@ export class TypeBuilder extends BaseBuilder {
     const imports: ImportConfig[] = [];
     const exportsConfig = [];
 
-    const enumVariables: VariableConfig[] = [];
-    const enumTypes: TypeConfig[] = [];
-
-    for (const enumDef of this.enums) {
-      // 1. Generate const object
-      const initializerBody = enumDef.members.map((m) => `    ${m.name}: '${m.value}'`).join(',\n');
-      enumVariables.push({
-        name: enumDef.name,
-        declarationKind: 'const',
-        isExported: true,
-        initializer: `{\n${initializerBody}\n} as const`,
-      });
-
-      // 2. Generate Type
-      enumTypes.push({
-        name: enumDef.name,
-        isExported: true,
-        type: `(typeof ${enumDef.name})[keyof typeof ${enumDef.name}]`,
-      });
+    // Deduplicate enums by name
+    const enums: EnumConfig[] = [];
+    const enumNames = new Set<string>();
+    for (const e of this.enums) {
+      if (!enumNames.has(e.name)) {
+        enums.push(e);
+        enumNames.add(e.name);
+      }
     }
+
+    const statements: (string | StatementConfig)[] = [];
 
     if (dbModels.length > 0) {
       exportsConfig.push({
@@ -96,9 +86,9 @@ export class TypeBuilder extends BaseBuilder {
       header: '// GENERATED CODE - DO NOT MODIFY BY HAND',
       imports: imports,
       exports: exportsConfig,
+      enums: enums,
       interfaces: interfaces,
-      variables: enumVariables,
-      types: enumTypes,
+      statements: statements,
     };
   }
 }

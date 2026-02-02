@@ -1,3 +1,4 @@
+/** @vitest-environment node */
 /* eslint-disable */
 import { describe, it, expect } from 'vitest';
 import { Project, SyntaxKind } from 'ts-morph';
@@ -304,10 +305,10 @@ describe('Coverage Gap Sweeper', () => {
   });
 
   describe('TestBuilder Internals', () => {
-    it('should throw if actor missing in config', () => {
+    it('should fallback to user if actor missing in config', () => {
       const model = { name: 'User', fields: {} };
       const builder = new TestBuilder(model as any, 'mod', 'create');
-      expect(() => (builder as any).getTestActorModelName()).toThrow('missing required');
+      expect((builder as any).getTestActorModelName()).toBe('user');
     });
 
     it('should handle public role checks', () => {

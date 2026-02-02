@@ -5,6 +5,7 @@ import {
   type NodeContainer,
 } from '../types.js';
 import { BaseBuilder } from './base-builder.js';
+import { TemplateLoader } from '../../utils/template-loader.js';
 
 type TestOperation = 'create' | 'list' | 'get' | 'update' | 'delete';
 
@@ -31,9 +32,10 @@ export class TestBuilder extends BaseBuilder {
     const testConfig = this.model.test;
     const actor = testConfig?.actor;
     if (!actor) {
-      throw new Error(
-        `Model [${this.model.name}] is missing required 'test.actor' configuration. No default actor is provided.`,
+      console.warn(
+        `[TestBuilder] Warning: Model [${this.model.name}] is missing 'test.actor' config. Falling back to 'user'.`,
       );
+      return 'user';
     }
     return actor;
   }
@@ -70,10 +72,10 @@ export class TestBuilder extends BaseBuilder {
 
     // Check config first
     if (this.roleConfig[requiredRole]) {
-      const opts = JSON.stringify(this.roleConfig[requiredRole])
+      const optsArray = JSON.stringify(this.roleConfig[requiredRole])
         .replace(/"([^"]+)":/g, '$1:')
         .replace(/"/g, "'");
-      return `${!isUsed ? '// eslint-disable-next-line @typescript-eslint/no-unused-vars\n      ' : ''}const actor = await client.as('${actorName}', ${opts});`;
+      return `${!isUsed ? '// eslint-disable-next-line @typescript-eslint/no-unused-vars\n      ' : ''}const actor = await client.as('${actorName}', ${optsArray});`;
     }
 
     // Fallback
@@ -237,6 +239,8 @@ export class TestBuilder extends BaseBuilder {
     const actorRelationField = this.getActorRelationFieldName();
 
     let dependencySetup = '';
+    // ... logic for payloadConstruction remains ...
+    // Constructing payload string manually here to match existing logic exactly or reusing valid parts
     let payloadConstruction = `const payload = ${JSON.stringify(mockData, null, 8)
       .replace(/"([^"]+)":/g, '$1:')
       .replace(/"__DATE_NOW__"/g, 'new Date().toISOString()')};`;
@@ -269,49 +273,35 @@ export class TestBuilder extends BaseBuilder {
             }; `;
     }
 
-    const isActorUsed = requiredFKs.some((fk) => fk.model === 'Job');
+    const isActorUsed = requiredFKs.some((fk) => fk.model === 'Job') || !!actorRelationField;
+    const actorStatement = this.getActorStatement('create', isActorUsed);
 
-    return `
-// POST /api/${kebabEntity}
-describe('POST /api/${kebabEntity}', () => {
-  it('should allow ${this.getRole('create')} to create ${camelEntity}', async () => {
-      ${this.getActorStatement('create', isActorUsed)}
-            
-            ${dependencySetup}
-            ${payloadConstruction}
+    const assertionBlock = Object.keys(mockData)
+      .filter((k) => k !== 'id')
+      .map((k) => {
+        const field = this.model.fields[k];
+        if (field && field.type === 'DateTime') {
+          return `expect(res.body.data.${k}).toBe(payload.${k}); // API returns ISO string`;
+        }
+        if (field && (field.isList || field.type === 'Json')) {
+          return `expect(res.body.data.${k}).toStrictEqual(payload.${k});`;
+        }
+        return `expect(res.body.data.${k}).toBe(payload.${k});`;
+      })
+      .join('\n    ');
 
-    const res = await client.post('/api/${kebabEntity}', payload);
+    const negativeActorStatement = this.getNegativeActorStatement('create');
 
-    expect(res.status).toBe(201);
-    expect(res.body.data).toBeDefined();
-            ${Object.keys(mockData)
-              .filter((k) => k !== 'id')
-              .map((k) => {
-                const field = this.model.fields[k];
-                if (field && field.type === 'DateTime') {
-                  return `expect(res.body.data.${k}).toBe(payload.${k}); // API returns ISO string`;
-                }
-                if (field && (field.isList || field.type === 'Json')) {
-                  return `expect(res.body.data.${k}).toStrictEqual(payload.${k});`;
-                }
-                return `expect(res.body.data.${k}).toBe(payload.${k});`;
-              })
-              .join('\n            ')}
-
-    const created = await Factory.prisma.${camelEntity}.findUnique({
-      where: { id: res.body.data.id }
-    });
-    expect(created).toBeDefined();
-  });
-
-  it('should forbid non-admin/unauthorized users', async () => {
-            ${this.getNegativeActorStatement('create')}
-            ${dependencySetup ? dependencySetup : ''}
-            ${payloadConstruction}
-    const res = await client.post('/api/${kebabEntity}', payload);
-    expect([401, 403, 404]).toContain(res.status);
-  });
-}); `;
+    return TemplateLoader.load('test/create.tsf', {
+      kebabEntity,
+      camelEntity,
+      role: this.getRole('create'),
+      actorStatement,
+      dependencySetup,
+      payloadConstruction,
+      assertionBlock,
+      negativeActorStatement,
+    }).raw;
   }
 
   private findActorForeignKey(): string | null {
@@ -342,8 +332,14 @@ describe('POST /api/${kebabEntity}', () => {
     const isActorModel = this.model.name.toLowerCase() === actorModelName.toLowerCase();
     const actorFK = this.findActorForeignKey();
 
+    const baseDataConfig = JSON.stringify(mockData).replace(
+      /"__DATE_NOW__"/g,
+      'new Date().toISOString()',
+    );
+
     const filterTests = Object.keys(this.model.fields)
       .filter(
+        // Reuse existing filter logic
         (f) =>
           !['id', 'createdAt', 'updatedAt', 'actorId', 'userId', 'actorType'].includes(f) &&
           this.model.fields[f].type === 'String' &&
@@ -358,33 +354,34 @@ describe('POST /api/${kebabEntity}', () => {
         let uniqueInjectionB = '';
 
         if (uniqueField && uniqueField !== field) {
-          const isEmail = uniqueField === 'email';
-          const suffix = isEmail ? '@example.com' : '';
-          uniqueInjectionA = `, ${uniqueField}: 'filter_a_' + Date.now() + '${suffix}'`;
-          uniqueInjectionB = `, ${uniqueField}: 'filter_b_' + Date.now() + '${suffix}'`;
+          const _listSuffix = uniqueField === 'email' ? '@example.com' : '';
+          uniqueInjectionA = `, ${uniqueField}: 'filter_a_' + Date.now() + '${_listSuffix}'`;
+          uniqueInjectionB = `, ${uniqueField}: 'filter_b_' + Date.now() + '${_listSuffix}'`;
         }
 
+        // Note: Template literal inside loop string generation
         return `
-it('should filter by ${field}', async () => {
-  // Wait to avoid collisions
-  await new Promise(r => setTimeout(r, 10));
-            // Reuse getActorStatement to ensure correct actor context
-            ${this.getActorStatement('list')}
-            ${this.model.test?.actor === 'user' && this.model.role && typeof this.model.role === 'object' && this.model.role.list !== 'admin' ? `// Note: Ensure role allows filtering if restricted` : ''}
+  it('should filter by ${field}', async () => {
+    // Wait to avoid collisions
+    await new Promise(r => setTimeout(r, 10));
+    // Reuse getActorStatement to ensure correct actor context
+    ${this.getActorStatement('list', !!this.getActorRelationSnippet())}
+    ${this.model.test?.actor === 'user' && this.model.role && typeof this.model.role === 'object' && this.model.role.list !== 'admin' ? `// Note: Ensure role allows filtering if restricted` : ''}
 
-  const val2 = '${field}_' + Date.now() + '_B${field === 'email' ? '@example.com' : ''}';
+    const val1 = '${field}_' + Date.now() + '_A${field === 'email' ? '@example.com' : ''}';
+    const val2 = '${field}_' + Date.now() + '_B${field === 'email' ? '@example.com' : ''}';
 
-const data1 = { ...baseData, ${field}: val1${uniqueInjectionA} };
-const data2 = { ...baseData, ${field}: val2${uniqueInjectionB} };
+    const data1 = { ...baseData, ${field}: val1${uniqueInjectionA} };
+    const data2 = { ...baseData, ${field}: val2${uniqueInjectionB} };
 
-await Factory.create('${camelEntity}', { ...data1${this.getActorRelationSnippet()} });
-await Factory.create('${camelEntity}', { ...data2${this.getActorRelationSnippet()} });
+    await Factory.create('${camelEntity}', { ...data1${this.getActorRelationSnippet()} });
+    await Factory.create('${camelEntity}', { ...data2${this.getActorRelationSnippet()} });
 
-const res = await client.get('/api/${kebabEntity}?${field}=' + val1);
-expect(res.status).toBe(200);
-expect(res.body.data).toHaveLength(1);
-expect(res.body.data[0].${field}).toBe(val1);
-        }); `;
+    const res = await client.get('/api/${kebabEntity}?${field}=' + val1);
+    expect(res.status).toBe(200);
+    expect(res.body.data).toHaveLength(1);
+    expect(res.body.data[0].${field}).toBe(val1);
+  });`;
       })
       .join('\n');
 
@@ -404,93 +401,67 @@ expect(res.body.data[0].${field}).toBe(val1);
       cleanupClause = `await Factory.prisma.${camelEntity}.deleteMany(); `;
     }
 
-    const isActorUsed = shouldPreserve || !!this.getActorRelationSnippet();
+    const isActorUsed =
+      shouldPreserve || !!this.getActorRelationSnippet() || !!this.getActorRelationFieldName();
+    const actorStatement = this.getActorStatement('list', isActorUsed);
+    const actorStatementNeg = this.getActorStatement('list', false);
 
-    return `
-// GET /api/${kebabEntity}
-describe('GET /api/${kebabEntity}', () => {
-  const baseData = ${JSON.stringify(mockData).replace(
-    /"__DATE_NOW__"/g,
-    'new Date().toISOString()',
-  )};
+    const seedClause = (() => {
+      const unique = this.getUniqueField();
+      const rel = this.getActorRelationSnippet();
+      if (unique) {
+        const s = unique === 'email' ? '@example.com' : '';
+        return `await Factory.create('${camelEntity}', { ...baseData, ${unique}: 'list_1_' + _listSuffix + '${s}'${rel} });
+             await Factory.create('${camelEntity}', { ...baseData, ${unique}: 'list_2_' + _listSuffix + '${s}'${rel} });`;
+      }
+      return `await Factory.create('${camelEntity}', { ...baseData${rel} });
+             await Factory.create('${camelEntity}', { ...baseData${rel} });`;
+    })();
 
-it('should allow ${this.getRole('list')} to list ${camelEntity}s', async () => {
-             ${this.getActorStatement('list', isActorUsed)}
+    // Pagination Seed Logic
+    const field = isActorModel ? 'id' : this.findActorForeignKey() || 'userId';
+    const currentCountLogic = cleanupClause.includes('where')
+      ? `currentCount = await Factory.prisma.${camelEntity}.count({ where: { ${field}: actor.id } });`
+      : '';
 
-             // Cleanup first to ensure clean state
-             ${cleanupClause}
-
-  // Seed data
-  const suffix = Date.now();
-            ${(() => {
-              const unique = this.getUniqueField();
-              const rel = this.getActorRelationSnippet();
-              if (unique) {
-                const s = unique === 'email' ? '@example.com' : '';
-                return `await Factory.create('${camelEntity}', { ...baseData, ${unique}: 'list_1_' + suffix + '${s}'${rel} });
-            await Factory.create('${camelEntity}', { ...baseData, ${unique}: 'list_2_' + suffix + '${s}'${rel} });`;
-              }
-              return `await Factory.create('${camelEntity}', { ...baseData${rel} });
-            await Factory.create('${camelEntity}', { ...baseData${rel} });`;
-            })()}
-
-  const res = await client.get('/api/${kebabEntity}');
-
-  expect(res.status).toBe(200);
-  expect(Array.isArray(res.body.data)).toBe(true);
-  expect(res.body.data.length).toBeGreaterThanOrEqual(2);
-  expect(res.body.meta).toBeDefined();
-});
-
-it('should verify pagination metadata', async () => {
-            ${this.getActorStatement('list')}
-
-            // Cleanup and seed specific count
-            ${cleanupClause}
-
-  const suffix = Date.now();
-  const createdIds: string[] = [];
-  const totalTarget = 15;
-  let currentCount = 0;
-            ${(() => {
-              if (cleanupClause.includes('where')) {
-                const field = isActorModel ? 'id' : this.findActorForeignKey() || 'userId';
-                return `currentCount = await Factory.prisma.${camelEntity}.count({ where: { ${field}: actor.id } });`;
-              }
-              return '';
-            })()}
-
-  const toCreate = totalTarget - currentCount;
-
-  for (let i = 0; i < toCreate; i++) {
-                ${(() => {
-                  const unique = this.getUniqueField();
-                  const rel = this.getActorRelationSnippet();
-                  if (unique) {
-                    const s = unique === 'email' ? '@example.com' : '';
-                    return `const rec = await Factory.create('${camelEntity}', { ...baseData, ${unique}: \`page_\${i}_\${suffix}${s}\`${rel} });
+    const loopBody = (() => {
+      const unique = this.getUniqueField();
+      const rel = this.getActorRelationSnippet();
+      if (unique) {
+        const s = unique === 'email' ? '@example.com' : '';
+        return `const rec = await Factory.create('${camelEntity}', { ...baseData, ${unique}: \`page_\${i}_\${_listSuffix}${s}\`${rel} });
                             createdIds.push(rec.id);`;
-                  }
-                  return `const rec = await Factory.create('${camelEntity}', { ...baseData${rel} });
+      }
+      return `const rec = await Factory.create('${camelEntity}', { ...baseData${rel} });
                         createdIds.push(rec.id);`;
-                })()}
-  }
+    })();
 
-  // Page 1
-  const res1 = await client.get('/api/${kebabEntity}?take=5&skip=0');
-  expect(res1.status).toBe(200);
-  expect(res1.body.data.length).toBe(5);
-  expect(res1.body.meta.total).toBe(15);
+    const paginationSeedClause = `
+    const _listSuffix = Date.now();
+    ${currentCountLogic ? `let currentCount = 0;\n    ${currentCountLogic}` : 'const currentCount = 0;'}
+    const toCreate = totalTarget - currentCount;
 
-  // Page 2
-  const res2 = await client.get('/api/${kebabEntity}?take=5&skip=5');
-  expect(res2.status).toBe(200);
-  expect(res2.body.data.length).toBe(5);
-  expect(res2.body.data[0].id).not.toBe(res1.body.data[0].id);
-});
+    for (let i = 0; i < toCreate; i++) {
+        ${loopBody}
+    }
+    `;
 
-        ${filterTests}
-    }); `;
+    const isActorUsedInPagination = shouldPreserve;
+    const actorStatementPagination = this.getActorStatement('list', isActorUsedInPagination);
+
+    return TemplateLoader.load('test/list.tsf', {
+      kebabEntity,
+      camelEntity,
+      role: this.getRole('list'),
+      actorStatement,
+      actorStatementPagination,
+      actorStatementNeg,
+      cleanupClause,
+      seedClause,
+      paginationSeedClause,
+      filterTests,
+      baseDataConfig,
+    }).raw;
   }
 
   private generateGetTests(
@@ -535,26 +506,17 @@ it('should verify pagination metadata', async () => {
 const target = await Factory.create('${camelEntity}', { ...${JSON.stringify(mockData).replace(/"__DATE_NOW__"/g, 'new Date().toISOString()')}${this.getActorRelationSnippet()}${overrides} }); `;
     }
 
-    return `
-// GET /api/${kebabEntity}/[id]
-describe('GET /api/${kebabEntity}/[id]', () => {
-  it('should retrieve a specific ${camelEntity}', async () => {
-            ${this.getActorStatement('get', !!this.getActorRelationSnippet())}
-            
-            ${setupSnippet}
+    const isActorUsed = isActorModel || !!this.getActorRelationSnippet();
+    const actorStatement = this.getActorStatement('get', isActorUsed);
+    const actorStatementNeg = this.getActorStatement('get', false);
 
-    const res = await client.get(\`/api/${kebabEntity}/\${target.id}\`);
-
-            expect(res.status).toBe(200);
-            expect(res.body.id).toBe(target.id);
-        });
-
-        it('should return 404 for missing id', async () => {
-             ${this.getActorStatement('get')}
-             const res = await client.get('/api/${kebabEntity}/missing-id-123');
-             expect(res.status).toBe(404);
-        });
-    });`;
+    return TemplateLoader.load('test/get.tsf', {
+      kebabEntity,
+      camelEntity,
+      actorStatement,
+      actorStatementNeg,
+      setupSnippet,
+    }).raw;
   }
 
   private generateUpdateTests(
@@ -608,35 +570,29 @@ describe('GET /api/${kebabEntity}/[id]', () => {
       requiredFKs.some((fk) => fk.model === 'Job') ||
       !!this.getActorRelationSnippet();
 
-    return `
-    // PUT /api/${kebabEntity}/[id]
-    describe('PUT /api/${kebabEntity}/[id]', () => {
-        it('should update ${camelEntity}', async () => {
-            ${this.getActorStatement('update', isActorUsed)}
-            
-            ${setupSnippet}
+    const actorStatement = this.getActorStatement('update', isActorUsed);
 
-            const updatePayload = ${updatePayload};
+    const assertionBlock = Object.keys(updateData)
+      .map((k) => {
+        const field = this.model.fields[k];
+        if (field && field.type === 'DateTime') {
+          return `expect(updated?.${k}.toISOString()).toBe(updatePayload.${k}); // Compare as ISO strings`;
+        }
+        if (field && (field.isList || field.type === 'Json')) {
+          return `expect(updated?.${k}).toStrictEqual(updatePayload.${k});`;
+        }
+        return `expect(updated?.${k}).toBe(updatePayload.${k});`;
+      })
+      .join('\n            ');
 
-            const res = await client.put(\`/api/${kebabEntity}/\${target.id}\`, updatePayload);
-
-            expect(res.status).toBe(200);
-            
-            const updated = await Factory.prisma.${camelEntity}.findUnique({ where: { id: target.id } });
-            ${Object.keys(updateData)
-              .map((k) => {
-                const field = this.model.fields[k];
-                if (field && field.type === 'DateTime') {
-                  return `expect(updated?.${k}.toISOString()).toBe(updatePayload.${k}); // Compare as ISO strings`;
-                }
-                if (field && (field.isList || field.type === 'Json')) {
-                  return `expect(updated?.${k}).toStrictEqual(updatePayload.${k});`;
-                }
-                return `expect(updated?.${k}).toBe(updatePayload.${k});`;
-              })
-              .join('\n            ')}
-        });
-    });`;
+    return TemplateLoader.load('test/update.tsf', {
+      kebabEntity,
+      camelEntity,
+      actorStatement,
+      setupSnippet,
+      updatePayload,
+      assertionBlock,
+    }).raw;
   }
 
   private generateDeleteTests(
@@ -681,22 +637,15 @@ describe('GET /api/${kebabEntity}/[id]', () => {
             const target = await Factory.create('${camelEntity}', { ...${JSON.stringify(mockData).replace(/"__DATE_NOW__"/g, 'new Date().toISOString()')}${this.getActorRelationSnippet()}${overrides} });`;
     }
 
-    return `
-    // DELETE /api/${kebabEntity}/[id]
-    describe('DELETE /api/${kebabEntity}/[id]', () => {
-        it('should delete ${camelEntity}', async () => {
-            ${this.getActorStatement('delete', isActorModel || !!this.getActorRelationSnippet())}
-            
-            ${setupSnippet}
+    const isActorUsed = isActorModel || !!this.getActorRelationSnippet();
+    const actorStatement = this.getActorStatement('delete', isActorUsed);
 
-            const res = await client.delete(\`/api/${kebabEntity}/\${target.id}\`);
-
-            expect(res.status).toBe(200);
-
-            const check = await Factory.prisma.${camelEntity}.findUnique({ where: { id: target.id } });
-            expect(check).toBeNull();
-        });
-    });`;
+    return TemplateLoader.load('test/delete.tsf', {
+      kebabEntity,
+      camelEntity,
+      actorStatement,
+      setupSnippet,
+    }).raw;
   }
 
   private generateMockData(): Record<string, unknown> {

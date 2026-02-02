@@ -1,3 +1,4 @@
+/** @vitest-environment node */
 import { describe, it, expect } from 'vitest';
 import { IfStatementPrimitive } from '@nexical/generator/engine/primitives/statements/if';
 import { type IfStatementConfig } from '@nexical/generator/engine/types';

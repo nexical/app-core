@@ -4,17 +4,18 @@ import { ApiGuard } from '@/lib/api/api-guard';
 import { HookSystem } from '@/lib/modules/hooks';
 import { DeleteTokenUserAction } from '@modules/user-api/src/actions/delete-token-user';
 import type { DeleteTokenDTO } from '@modules/user-api/src/sdk';
+
 export const DELETE = defineApi(
   async (context) => {
     // 1. Body Parsing (Input)
     const body = (await context.request.json()) as DeleteTokenDTO;
+
     const query = Object.fromEntries(new URL(context.request.url).searchParams);
 
     // 2. Hook: Filter Input
     const input: DeleteTokenDTO = await HookSystem.filter('user.deleteToken.input', body);
 
     // 3. Security Check
-    // Pass merged input
     const combinedInput = { ...context.params, ...query, ...input };
     await ApiGuard.protect(context, 'member', combinedInput);
 

@@ -8,6 +8,7 @@ import {
   type NodeContainer,
 } from '../types.js';
 import { BaseBuilder } from './base-builder.js';
+import { TemplateLoader } from '../../utils/template-loader.js';
 
 export class SdkBuilder extends BaseBuilder {
   constructor(
@@ -51,17 +52,7 @@ export class SdkBuilder extends BaseBuilder {
               optional: true,
             },
           ],
-          statements: [
-            `let orderBy = params?.orderBy;`,
-            `if (orderBy && typeof orderBy === 'object') {`,
-            `    const keys = Object.keys(orderBy);`,
-            `    if (keys.length > 0) {`,
-            `        orderBy = \`\${keys[0]}:\${orderBy[keys[0]]}\`;`,
-            `    }`,
-            `}`,
-            `const query = this.buildQuery({ ...params?.filters, search: params?.search, take: params?.take, skip: params?.skip, orderBy });`,
-            `return this._request('GET', \`/${endpoint}\${query}\`);`,
-          ],
+          statements: [TemplateLoader.load('sdk/list.tsf', { endpoint })],
           overwriteBody: true,
         });
       }
@@ -74,7 +65,7 @@ export class SdkBuilder extends BaseBuilder {
           isStatic: false,
           returnType: `Promise<{ success: boolean; data: ${entityName}; error?: string }>`,
           parameters: [{ name: 'id', type: 'string' }],
-          statements: [`return this._request('GET', \`/${endpoint}/\${id}\`);`],
+          statements: [TemplateLoader.load('sdk/get.tsf', { endpoint })],
           overwriteBody: true,
         });
       }
@@ -87,7 +78,7 @@ export class SdkBuilder extends BaseBuilder {
           isStatic: false,
           returnType: `Promise<{ success: boolean; data: ${entityName}; error?: string }>`,
           parameters: [{ name: 'data', type: `Partial<${entityName}>` }],
-          statements: [`return this._request('POST', \`/${endpoint}\`, data);`],
+          statements: [TemplateLoader.load('sdk/create.tsf', { endpoint })],
           overwriteBody: true,
         });
       }
@@ -103,7 +94,7 @@ export class SdkBuilder extends BaseBuilder {
             { name: 'id', type: 'string' },
             { name: 'data', type: `Partial<${entityName}>` },
           ],
-          statements: [`return this._request('PUT', \`/${endpoint}/\${id}\`, data);`],
+          statements: [TemplateLoader.load('sdk/update.tsf', { endpoint })],
           overwriteBody: true,
         });
       }
@@ -116,7 +107,7 @@ export class SdkBuilder extends BaseBuilder {
           isStatic: false,
           returnType: `Promise<{ success: boolean; error?: string }>`,
           parameters: [{ name: 'id', type: 'string' }],
-          statements: [`return this._request('DELETE', \`/${endpoint}/\${id}\`);`],
+          statements: [TemplateLoader.load('sdk/delete.tsf', { endpoint })],
           overwriteBody: true,
         });
       }
@@ -146,14 +137,19 @@ export class SdkBuilder extends BaseBuilder {
       if (['POST', 'PUT', 'PATCH'].includes(route.verb) && route.input !== 'none') {
         const inputType = route.input || 'unknown';
         methodConfig.parameters!.push({ name: 'data', type: inputType });
-        methodConfig.statements!.push(
-          `return this._request('${route.verb}', \`/${endpoint}${url}\`, data);`,
-        );
-      } else {
-        methodConfig.statements!.push(
-          `return this._request('${route.verb}', \`/${endpoint}${url}\`);`,
-        );
       }
+
+      const dataArg =
+        ['POST', 'PUT', 'PATCH'].includes(route.verb) && route.input !== 'none' ? ', data' : '';
+
+      methodConfig.statements!.push(
+        TemplateLoader.load('sdk/custom.tsf', {
+          verb: route.verb,
+          endpoint,
+          url,
+          dataArg,
+        }),
+      );
       methodConfig.overwriteBody = true; // Force update to ensure sync
 
       methods.push(methodConfig);

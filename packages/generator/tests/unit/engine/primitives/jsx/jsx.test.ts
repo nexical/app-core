@@ -1,3 +1,4 @@
+/** @vitest-environment node */
 /* eslint-disable */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { Project, SourceFile } from 'ts-morph';

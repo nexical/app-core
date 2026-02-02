@@ -1,3 +1,4 @@
+/** @vitest-environment node */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { Project, SourceFile, Scope, GetAccessorDeclaration } from 'ts-morph';
 import { AccessorPrimitive } from '@nexical/generator/engine/primitives/nodes/accessor';

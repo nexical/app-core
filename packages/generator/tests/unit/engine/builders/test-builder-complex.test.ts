@@ -1,6 +1,7 @@
+/** @vitest-environment node */
 import { describe, it, expect } from 'vitest';
 import { Project } from 'ts-morph';
-import { TestBuilder } from '@nexical/generator/engine/builders/test-builder';
+import { TestBuilder } from '../../../../src/engine/builders/test-builder';
 import { type ModelDef } from '../../../../src/engine/types';
 
 describe('TestBuilder Complex Scenarios', () => {
@@ -8,6 +9,7 @@ describe('TestBuilder Complex Scenarios', () => {
   const complexModel: ModelDef = {
     name: 'ComplexDoc',
     db: true,
+    api: true,
     fields: {
       id: { type: 'String', isRequired: true, isList: false, api: true, attributes: ['@id'] },
       createdAt: { type: 'DateTime', isRequired: true, isList: false, api: true, attributes: [] }, // Should skip in payload
@@ -48,6 +50,7 @@ describe('TestBuilder Complex Scenarios', () => {
         attributes: ['@relation(fields: [assigneeId])'],
       },
     },
+    api: true,
     test: { actor: 'User' },
   };
 
@@ -123,6 +126,7 @@ describe('TestBuilder Complex Scenarios', () => {
         },
         bio: { type: 'String', isRequired: true, isList: false, api: true, attributes: [] },
       },
+      api: true,
       test: { actor: 'User' },
     };
 

@@ -1,6 +1,11 @@
-import { Scope, SourceFile, ModuleDeclaration } from 'ts-morph';
+import { Scope, SourceFile, ModuleDeclaration, Project, Statement } from 'ts-morph';
 
 export type NodeContainer = SourceFile | ModuleDeclaration;
+
+export interface ParsedStatement {
+  raw: string;
+  getNodes(project: Project): Statement[];
+}
 
 export interface ModelField {
   type: string;
@@ -62,6 +67,35 @@ export interface CustomRoute {
   output?: string;
   role?: string; // Role required (default: 'member' typically handled by builder)
   action?: string; // Optional custom action file path/name
+}
+
+// --- UI Module Configurations ---
+
+export interface PageDefinition {
+  path: string;
+  component: string;
+  guard: string[];
+}
+
+export interface ShellDefinition {
+  name: string;
+  matcher: Record<string, unknown>; // Map of rules for ShellContext
+}
+
+export interface RegistryItemDefinition {
+  name: string;
+  priority: number;
+  component: string;
+  guard: string[];
+  matcher: Record<string, unknown>;
+}
+
+export interface UiModuleConfig {
+  backend?: string;
+  prefix?: string;
+  pages?: PageDefinition[];
+  shells?: ShellDefinition[];
+  registries?: Record<string, RegistryItemDefinition[]>;
 }
 
 // --- Statement Configurations ---
@@ -139,6 +173,7 @@ export interface JsxElementConfig extends BaseStatementConfig {
 
 export type StatementConfig =
   | string // Legacy/Raw string support
+  | ParsedStatement
   | VariableStatementConfig
   | ReturnStatementConfig
   | ExpressionStatementConfig
@@ -272,7 +307,7 @@ export interface TypeConfig {
 export interface VariableConfig {
   name: string;
   type?: string;
-  initializer?: string;
+  initializer?: string | ParsedStatement;
   declarationKind?: 'const' | 'let' | 'var';
   isExported?: boolean;
 }
@@ -304,5 +339,20 @@ export interface FileDefinition {
   functions?: FunctionConfig[];
   types?: TypeConfig[];
   variables?: VariableConfig[];
+  components?: ComponentConfig[];
   modules?: ModuleConfig[];
+}
+
+export interface ComponentProp {
+  name: string;
+  type: string;
+}
+
+export interface ComponentConfig {
+  name: string;
+  isExported?: boolean;
+  isDefaultExport?: boolean;
+  props?: ComponentProp[];
+  // The render logic, loaded via TemplateLoader (returns a ReturnStatement with JSX)
+  render: ParsedStatement;
 }

@@ -1,6 +1,7 @@
+/** @vitest-environment node */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { Project, SourceFile } from 'ts-morph';
-import { InitBuilder } from '@nexical/generator/engine/builders/init-builder';
+import { InitBuilder } from '../../../../src/engine/builders/init-builder';
 
 describe('InitBuilder', () => {
   let project: Project;
@@ -20,6 +21,7 @@ describe('InitBuilder', () => {
     expect(text).toContain('roleRegistry');
     expect(text).toContain('import.meta.glob("./roles/*.ts"');
     expect(text).toContain('import.meta.glob("./hooks/*.ts"');
+    expect(text).toContain('import.meta.glob("./emails/init.ts"');
   });
 
   it('should generate client init function', () => {

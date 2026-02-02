@@ -1,6 +1,7 @@
+/** @vitest-environment node */
 import { describe, it, expect } from 'vitest';
 import { Project } from 'ts-morph';
-import { FactoryBuilder } from '@nexical/generator/engine/builders/factory-builder';
+import { FactoryBuilder } from '../../../../src/engine/builders/factory-builder';
 import { type ModelDef } from '../../../../src/engine/types';
 
 describe('FactoryBuilder', () => {
@@ -9,6 +10,7 @@ describe('FactoryBuilder', () => {
       {
         name: 'User',
         db: true,
+        api: true,
         fields: {
           id: {
             type: 'Int',
@@ -42,6 +44,7 @@ describe('FactoryBuilder', () => {
       {
         name: 'Team',
         db: true,
+        api: true,
         fields: {
           id: { type: 'Int', isRequired: true, isList: false, api: true, attributes: ['@id'] },
           name: { type: 'String', isRequired: true, isList: false, api: true, attributes: [] },
@@ -50,6 +53,7 @@ describe('FactoryBuilder', () => {
       {
         name: 'User',
         db: true,
+        api: true,
         fields: {
           id: { type: 'Int', isRequired: true, isList: false, api: true, attributes: ['@id'] },
           username: {

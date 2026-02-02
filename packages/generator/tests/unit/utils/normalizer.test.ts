@@ -1,3 +1,4 @@
+/** @vitest-environment node */
 import { describe, it, expect } from 'vitest';
 import { Normalizer } from '@nexical/generator/utils/normalizer';
 
@@ -26,6 +27,12 @@ describe('Normalizer', () => {
 
     it('should remove import qualifiers', () => {
       expect(Normalizer.normalizeType('import("foo").Bar')).toBe('Bar');
+    });
+
+    it('should be quote-agnostic', () => {
+      const type1 = "Record<string, 'asc' | 'desc'>";
+      const type2 = 'Record<string, "asc" | "desc">';
+      expect(Normalizer.normalizeType(type1)).toBe(Normalizer.normalizeType(type2));
     });
 
     it('should handle empty input', () => {

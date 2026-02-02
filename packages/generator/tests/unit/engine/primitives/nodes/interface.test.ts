@@ -1,3 +1,4 @@
+/** @vitest-environment node */
 import { describe, it, expect } from 'vitest';
 import { createTestProject } from '@nexical/generator-tests/helpers/test-project';
 import { InterfacePrimitive } from '@nexical/generator/engine/primitives/nodes/interface';

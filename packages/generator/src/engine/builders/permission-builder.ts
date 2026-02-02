@@ -5,6 +5,7 @@ import {
   type ImportConfig,
 } from '../types.js';
 import { Reconciler } from '../reconciler.js';
+import { TemplateLoader } from '../../utils/template-loader.js';
 
 export class PermissionBuilder {
   constructor(
@@ -31,15 +32,7 @@ export class PermissionBuilder {
           ],
           returnType: 'Promise<void>',
           statements: [
-            {
-              kind: 'if',
-              condition: '!context.locals?.actor && !context.user',
-              then: {
-                kind: 'throw',
-                expression: `new Error("Unauthorized: User must be logged in to access ${this.actionName}")`,
-              },
-              isDefault: true,
-            },
+            TemplateLoader.load('permission/check.tsf', { actionName: this.actionName }),
           ],
         },
       ],

@@ -1,6 +1,22 @@
-import { SourceFile, StatementedNode, Node } from 'ts-morph';
+import {
+  SourceFile,
+  StatementedNode,
+  Node,
+  ClassDeclaration,
+  InterfaceDeclaration,
+  EnumDeclaration,
+  FunctionDeclaration,
+  TypeAliasDeclaration,
+  VariableStatement,
+  ModuleDeclaration,
+} from 'ts-morph';
 import { GeneratorError } from './errors.js';
-import { type FileDefinition, type NodeContainer } from './types.js';
+import {
+  type FileDefinition,
+  type NodeContainer,
+  type StatementConfig,
+  type ParsedStatement,
+} from './types.js';
 import { ImportPrimitive } from './primitives/core/import-manager.js';
 import { ExportPrimitive } from './primitives/core/export-manager.js';
 import { ClassPrimitive } from './primitives/nodes/class.js';
@@ -14,13 +30,12 @@ import { PropertyPrimitive } from './primitives/nodes/property.js';
 import { ConstructorPrimitive } from './primitives/nodes/constructor.js';
 import { AccessorPrimitive } from './primitives/nodes/accessor.js';
 import { ModulePrimitive } from './primitives/nodes/module.js';
+import { ComponentPrimitive } from './primitives/nodes/component.js';
+
 import { Normalizer } from '../utils/normalizer.js';
 
 export class Reconciler {
   static reconcile(sourceFile: NodeContainer, definition: FileDefinition): void {
-    const filePath =
-      'getFilePath' in sourceFile ? (sourceFile as SourceFile).getFilePath() : 'namespace';
-    console.info(`[Reconciler] Reconciling ${filePath}`);
     try {
       // 0. Handle Header
       if (definition.header && 'insertStatements' in sourceFile) {
@@ -41,9 +56,128 @@ export class Reconciler {
       // Typically imports are top-level only in basic usage, but namespaces can have imports? No, usually not ES imports.
       // Let's check instance.
       if ('getImportDeclarations' in sourceFile) {
-        definition.imports?.forEach((config) =>
-          new ImportPrimitive(config).ensure(sourceFile as SourceFile),
-        );
+        const source = sourceFile as SourceFile;
+        const targetConfigs = definition.imports || [];
+
+        // 1a. Ensure required imports exist or are updated
+        targetConfigs.forEach((config) => new ImportPrimitive(config).ensure(source));
+
+        // 1b. Prune imports that are no longer in the definition
+        // We only prune if it's a GENERATED file (has our marker) to be safe,
+        // or if we're in a strictly-managed part of the definition.
+        const sourceText = source.getFullText();
+        if (sourceText.includes('GENERATED CODE')) {
+          source.getImportDeclarations().forEach((decl) => {
+            const specifier = decl.getModuleSpecifierValue();
+            const normalizedSpecifier = Normalizer.normalizeImport(specifier);
+
+            const isRequired = targetConfigs.some((config) => {
+              const targetSpecifier = Normalizer.normalizeImport(config.moduleSpecifier);
+              return targetSpecifier === normalizedSpecifier;
+            });
+
+            if (!isRequired) {
+              console.info(`[Reconciler] Pruning unused import: ${specifier}`);
+              decl.remove();
+            }
+          });
+        }
+      }
+
+      // --- Pruning Pass (Only for GENERATED files) ---
+      const sourceText =
+        'getFullText' in sourceFile
+          ? (sourceFile as SourceFile | ModuleDeclaration).getFullText()
+          : '';
+      const isGenerated = sourceText.includes('GENERATED CODE');
+
+      if (isGenerated) {
+        // Class Pruning
+        if ('getClasses' in sourceFile) {
+          const container = sourceFile as StatementedNode;
+          const targetNames = definition.classes?.map((c) => c.name) || [];
+          [...container.getClasses()].forEach((node: ClassDeclaration) => {
+            const name = node.getName();
+            if (name && !targetNames.includes(name)) {
+              console.info(`[Reconciler] Pruning class: ${name}`);
+              node.remove();
+            }
+          });
+        }
+
+        // Interface Pruning
+        if ('getInterfaces' in sourceFile) {
+          const container = sourceFile as StatementedNode;
+          const targetNames = definition.interfaces?.map((i) => i.name) || [];
+          [...container.getInterfaces()].forEach((node: InterfaceDeclaration) => {
+            const name = node.getName();
+            if (name && !targetNames.includes(name)) {
+              console.info(`[Reconciler] Pruning interface: ${name}`);
+              node.remove();
+            }
+          });
+        }
+
+        // Enum Pruning
+        if ('getEnums' in sourceFile) {
+          const container = sourceFile as StatementedNode;
+          const targetNames = definition.enums?.map((e) => e.name) || [];
+          [...container.getEnums()].forEach((node: EnumDeclaration) => {
+            const name = node.getName();
+            if (name && !targetNames.includes(name)) {
+              console.info(`[Reconciler] Pruning enum: ${name}`);
+              node.remove();
+            }
+          });
+        }
+
+        // Function Pruning
+        if ('getFunctions' in sourceFile) {
+          const container = sourceFile as StatementedNode;
+          const targetNames = [
+            ...(definition.functions?.map((f) => f.name) || []),
+            ...(definition.components?.map((c) => c.name) || []),
+          ];
+          [...container.getFunctions()].forEach((node: FunctionDeclaration) => {
+            const name = node.getName();
+            if (name && !targetNames.includes(name)) {
+              console.info(`[Reconciler] Pruning function: ${name}`);
+              node.remove();
+            }
+          });
+        }
+
+        // Type Pruning
+        if ('getTypeAliases' in sourceFile) {
+          const container = sourceFile as StatementedNode;
+          const targetNames = definition.types?.map((t) => t.name) || [];
+          [...container.getTypeAliases()].forEach((node: TypeAliasDeclaration) => {
+            const name = node.getName();
+            if (name && !targetNames.includes(name)) {
+              console.info(`[Reconciler] Pruning type: ${name}`);
+              node.remove();
+            }
+          });
+        }
+
+        // Variable Pruning
+        if ('getVariableStatements' in sourceFile) {
+          const container = sourceFile as StatementedNode;
+          const targetNames = [
+            ...(definition.variables?.map((v) => v.name) || []),
+            ...(definition.components?.map((c) => c.name) || []),
+          ];
+          [...container.getVariableStatements()].forEach((node: VariableStatement) => {
+            const declarations = node.getDeclarationList().getDeclarations();
+            const names = declarations.map((d) => d.getName());
+
+            const isRequired = names.some((name: string) => targetNames.includes(name));
+            if (!isRequired) {
+              console.info(`[Reconciler] Pruning variable: ${names.join(', ')}`);
+              node.remove();
+            }
+          });
+        }
       }
 
       // 2. Handle Classes
@@ -86,6 +220,11 @@ export class Reconciler {
       // 7. Handle Variables
       definition.variables?.forEach((varDef) => new VariablePrimitive(varDef).ensure(sourceFile));
 
+      // 7.5 Handle Components
+      definition.components?.forEach((compDef) =>
+        new ComponentPrimitive(compDef).ensure(sourceFile),
+      );
+
       // 8. Handle Modules (Namespaces)
       definition.modules?.forEach((modDef) => new ModulePrimitive(modDef).ensure(sourceFile));
 
@@ -98,13 +237,63 @@ export class Reconciler {
 
       // 9. Handle Raw Statements (Explicitly added for flexibility)
       if ('statements' in definition && Array.isArray(definition.statements)) {
-        const stmts = definition.statements as string[];
+        const rawStatements = (definition.statements as (string | StatementConfig)[]).map((s) => {
+          if (typeof s === 'string') return s;
+          if ('raw' in s) return (s as ParsedStatement).raw;
+          return ''; // Or handle other structural configs if needed
+        });
+
         if ('addStatements' in sourceFile) {
-          const existingText = Normalizer.normalize((sourceFile as unknown as Node).getFullText());
-          // Filter out statements that already exist perfectly in the file
-          const uniqueStmts = stmts.filter(
-            (stmt) => !existingText.includes(Normalizer.normalize(stmt)),
-          );
+          const sourceText = (sourceFile as unknown as Node).getFullText();
+          const normalizedExisting = Normalizer.normalize(sourceText);
+
+          const uniqueStmts: string[] = [];
+          let currentNormalizedExisting = normalizedExisting;
+
+          rawStatements.forEach((stmt) => {
+            const trimmedStmt = stmt.trim();
+            if (!trimmedStmt) return;
+
+            const normalizedStmt = Normalizer.normalize(trimmedStmt);
+            if (currentNormalizedExisting.includes(normalizedStmt)) return;
+
+            // Smart check for blocks: extract the "signature" (first meaningful line)
+            // e.g. "export enum Status {", "export function foo(", "defineApi("
+            const lines = trimmedStmt.split('\n');
+            const signature = lines.find((l) => l.trim().length > 0)?.trim();
+
+            if (signature) {
+              const normalizedSignature = Normalizer.normalize(signature);
+              // For declarations or common patterns, check if the signature already exists
+              const isDeclaration =
+                /^(export\s+)?(enum|function|class|const|let|interface)\s+/.test(signature);
+              const isDefineApi = signature.startsWith('defineApi(');
+
+              if (isDeclaration || isDefineApi) {
+                if (currentNormalizedExisting.includes(normalizedSignature)) {
+                  console.info(`[Reconciler] Skipping existing block by signature: ${signature}`);
+                  return;
+                }
+              }
+            }
+
+            // Fallback: Smart check for describe/it blocks
+            const firstLine = lines[0].trim();
+            if (firstLine.startsWith('describe(') || firstLine.startsWith('it(')) {
+              // Extract the signature: describe('...', () =>
+              const signatureMatch = firstLine.match(/^(describe|it)\(['"`]([^'"`]+)['"`]/);
+              if (signatureMatch) {
+                const searchPattern = `${signatureMatch[1]}("${signatureMatch[2]}"`;
+                if (currentNormalizedExisting.includes(searchPattern)) {
+                  console.info(`[Reconciler] Skipping existing block: ${signatureMatch[2]}`);
+                  return;
+                }
+              }
+            }
+
+            uniqueStmts.push(stmt);
+            currentNormalizedExisting += ' ' + normalizedStmt;
+          });
 
           if (uniqueStmts.length > 0) {
             (sourceFile as StatementedNode).addStatements(uniqueStmts);
@@ -267,6 +456,17 @@ export class Reconciler {
       const node = primitive.find(sourceFile);
       if (!node) {
         issues.push(`Variable '${varDef.name}' is missing.`);
+      } else {
+        collect(primitive.validate(node));
+      }
+    });
+
+    // 7.5 Components
+    definition.components?.forEach((compDef) => {
+      const primitive = new ComponentPrimitive(compDef);
+      const node = primitive.find(sourceFile);
+      if (!node) {
+        issues.push(`Component '${compDef.name}' is missing.`);
       } else {
         collect(primitive.validate(node));
       }

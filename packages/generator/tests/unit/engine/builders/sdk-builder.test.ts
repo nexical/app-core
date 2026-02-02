@@ -1,7 +1,8 @@
+/** @vitest-environment node */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { Project, SourceFile } from 'ts-morph';
-import { SdkBuilder } from '@nexical/generator/engine/builders/sdk-builder';
-import { type ModelDef, type CustomRoute } from '@nexical/generator/engine/types';
+import { SdkBuilder } from '../../../../src/engine/builders/sdk-builder';
+import { type ModelDef, type CustomRoute } from '../../../../src/engine/types';
 
 describe('SdkBuilder', () => {
   let project: Project;

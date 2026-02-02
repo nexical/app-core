@@ -1,0 +1,15 @@
+{
+  "name": "@modules/orchestrator-api",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "exports": {
+    "./*": "./src/*",
+    "./tests/*": "./tests/*"
+  },
+  "dependencies": {
+    "@nexical/agent": "*",
+    "@prisma/client": "7.3.0",
+    "zod": "^3.22.4"
+  }
+}

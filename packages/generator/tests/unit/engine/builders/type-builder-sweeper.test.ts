@@ -1,12 +1,13 @@
+/** @vitest-environment node */
 import { describe, it, expect } from 'vitest';
-import { TypeBuilder } from '@nexical/generator/engine/builders/type-builder';
+import { TypeBuilder } from '../../../../src/engine/builders/type-builder';
 import {
   type ModelDef,
   type FileDefinition,
   type ExportConfig,
   type InterfaceConfig,
   type PropertyConfig,
-} from '@nexical/generator/engine/types';
+} from '../../../../src/engine/types';
 
 describe('TypeBuilder Sweeper', () => {
   it('should generate Prisma client exports for DB models', () => {
@@ -61,8 +62,9 @@ describe('TypeBuilder Sweeper', () => {
     const builder = new TypeBuilder([], enums);
     const file = (builder as unknown as { getSchema: () => FileDefinition }).getSchema();
 
-    expect(file.variables?.[0].name).toBe('Role');
-    expect(file.types?.[0].name).toBe('Role');
-    expect(file.types?.[0].type).toContain('keyof typeof Role');
+    const enumsResult = file.enums || [];
+    expect(enumsResult).toHaveLength(1);
+    expect(enumsResult[0].name).toBe('Role');
+    expect(enumsResult[0].members).toContainEqual({ name: 'ADMIN', value: 'ADMIN' });
   });
 });

@@ -1,6 +1,7 @@
+/** @vitest-environment node */
 import { describe, it, expect } from 'vitest';
 import { Project } from 'ts-morph';
-import { TypeBuilder } from '@nexical/generator/engine/builders/type-builder';
+import { TypeBuilder } from '../../../../src/engine/builders/type-builder';
 import { type ModelDef, type EnumConfig } from '../../../../src/engine/types';
 
 describe('TypeBuilder', () => {
@@ -9,8 +10,9 @@ describe('TypeBuilder', () => {
       {
         name: 'VirtualUser',
         db: false,
+        api: true,
         fields: {
-          name: { type: 'String', isRequired: true },
+          name: { type: 'String', isRequired: true, isList: false, attributes: [], api: true },
         },
       },
     ];
@@ -44,14 +46,11 @@ describe('TypeBuilder', () => {
 
     builder.ensure(sourceFile);
 
-    const variable = sourceFile.getVariableStatement('SiteRole');
-    expect(variable).toBeDefined();
-    expect(variable?.getDeclarations()[0].getType().getText()).toContain(
-      '{ readonly ADMIN: "ADMIN"; readonly USER: "USER"; }',
-    );
+    const enumNode = sourceFile.getEnum('SiteRole');
+    expect(enumNode).toBeDefined();
+    expect(enumNode?.getMember('ADMIN')?.getValue()).toBe('ADMIN');
+    expect(enumNode?.getMember('USER')?.getValue()).toBe('USER');
 
-    const typeAlias = sourceFile.getTypeAlias('SiteRole');
-    expect(typeAlias).toBeDefined();
-    expect(typeAlias?.getTypeNode()?.getText()).toBe('(typeof SiteRole)[keyof typeof SiteRole]');
+    expect(enumNode?.getMember('USER')?.getValue()).toBe('USER');
   });
 });

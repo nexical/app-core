@@ -1,11 +1,9 @@
-/* eslint-disable */
+/** @vitest-environment node */
 import { describe, it, expect, beforeEach } from 'vitest';
 import { Project, SourceFile } from 'ts-morph';
-import ts from 'typescript';
-import { ZodSchemaGenerator } from '@nexical/generator/ast-builders/schema-gen';
-import { type PlatformDefinition } from '@nexical/generator/schema';
-import { ApiBuilder } from '@nexical/generator/engine/builders/api-builder';
-import { type ModelDef } from '@nexical/generator/engine/types';
+// import { ZodSchemaGenerator } from '@nexical/generator/ast-builders/schema-gen'; // TODO: Locate this
+import { ApiBuilder } from '../../../../src/engine/builders/api-builder.js';
+import { type ModelDef } from '../../../../src/engine/types.js';
 
 describe('ApiBuilder', () => {
   let project: Project;
@@ -52,9 +50,9 @@ describe('ApiBuilder', () => {
     expect(text).toContain('export const GET = defineApi');
     expect(text).toContain('export const PUT = defineApi');
     expect(text).toContain('export const DELETE = defineApi');
-    expect(text).toContain('UserService.get(id, select)');
+    expect(text).toContain('UserService.get(id, select, actor)');
     expect(text).toContain('UserService.update(id, validated, select, actor)');
-    expect(text).toContain('UserService.delete(id)');
+    expect(text).toContain('UserService.delete(id, actor)');
   });
 
   it('should generate custom schema for actions', () => {
@@ -76,6 +74,11 @@ describe('ApiBuilder', () => {
     expect(text).toContain('ResetPasswordUserAction.run');
     expect(text).toContain(
       'import { ResetPasswordUserAction } from "@modules/user-api/src/actions/reset-password-user"',
+    );
+    // Verify strong typing restoration
+    expect(text).toContain('const body = await context.request.json() as ResetPasswordInput;');
+    expect(text).toContain(
+      "const input: ResetPasswordInput = await HookSystem.filter('user.resetPassword.input', body);",
     );
   });
 
@@ -126,6 +129,8 @@ describe('ApiBuilder', () => {
 
     const text = sourceFile.getFullText();
     expect(text).toContain('import type { UserStatsResponse } from "@modules/user-api/src/sdk"');
+    // Verify GET routes have empty body with correct type (unknown default)
+    expect(text).toContain('const body = {} as unknown;');
   });
   it('should handle complex field types (Float, DateTime, Json)', () => {
     const complexModel: ModelDef = {

@@ -1,3 +1,4 @@
+/** @vitest-environment node */
 /* eslint-disable */
 import { describe, it, expect } from 'vitest';
 import { VariableStatementPrimitive } from '@nexical/generator/engine/primitives/statements/variable';

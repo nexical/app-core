@@ -7,6 +7,7 @@ import {
 import { BasePrimitive } from '../core/base-primitive.js';
 import { type VariableConfig } from '../../types.js';
 import { type ValidationResult } from '../contracts.js';
+import { Normalizer } from '../../../utils/normalizer.js';
 
 export class VariablePrimitive extends BasePrimitive<VariableStatement, VariableConfig> {
   find(parent: SourceFile | ModuleDeclaration) {
@@ -25,7 +26,7 @@ export class VariablePrimitive extends BasePrimitive<VariableStatement, Variable
         {
           name: this.config.name,
           type: this.config.type,
-          initializer: this.config.initializer,
+          initializer: this.getInitializerText(this.config.initializer),
         },
       ],
     });
@@ -44,13 +45,27 @@ export class VariablePrimitive extends BasePrimitive<VariableStatement, Variable
       node.setDeclarationKind(kind);
     }
 
-    if (this.config.type && decl.getType().getText() !== this.config.type) {
+    if (
+      this.config.type &&
+      Normalizer.normalizeType(decl.getType().getText()) !==
+        Normalizer.normalizeType(this.config.type)
+    ) {
       decl.setType(this.config.type);
     }
 
-    if (this.config.initializer && decl.getInitializer()?.getText() !== this.config.initializer) {
-      decl.setInitializer(this.config.initializer);
+    const initText = this.getInitializerText(this.config.initializer);
+    if (initText) {
+      const currentInit = decl.getInitializer()?.getText() || '';
+      if (Normalizer.normalize(currentInit) !== Normalizer.normalize(initText)) {
+        decl.setInitializer(initText);
+      }
     }
+  }
+
+  private getInitializerText(initializer?: string | { raw: string }): string | undefined {
+    if (!initializer) return undefined;
+    if (typeof initializer === 'string') return initializer;
+    return initializer.raw;
   }
 
   validate(node: VariableStatement): ValidationResult {

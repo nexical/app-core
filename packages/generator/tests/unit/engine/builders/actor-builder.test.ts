@@ -1,8 +1,9 @@
+/** @vitest-environment node */
 /* eslint-disable */
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { Project, SourceFile } from 'ts-morph';
-import { ActorBuilder } from '@nexical/generator/engine/builders/actor-builder';
-import { type ModelDef } from '@nexical/generator/engine/types';
+import { ActorBuilder } from '../../../../src/engine/builders/actor-builder';
+import { type ModelDef } from '../../../../src/engine/types';
 
 describe('ActorBuilder', () => {
   let project: Project;

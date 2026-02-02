@@ -6,6 +6,7 @@ import {
   type NodeContainer,
 } from '../types.js';
 import { BaseBuilder } from './base-builder.js';
+import { TemplateLoader } from '../../utils/template-loader.js';
 
 export class ActorBuilder extends BaseBuilder {
   constructor(private models: ModelDef[]) {
@@ -20,14 +21,7 @@ export class ActorBuilder extends BaseBuilder {
 
   protected getSchema(node?: NodeContainer): FileDefinition {
     const actorsBody: string[] = [];
-    const imports: ImportConfig[] = [
-      { moduleSpecifier: '@tests/integration/lib/factory', namedImports: ['Factory'] },
-      {
-        moduleSpecifier: '@tests/integration/lib/client',
-        isTypeOnly: true,
-        namedImports: ['ApiClient'],
-      },
-    ];
+    const imports: ImportConfig[] = [];
 
     let needsDb = false;
     let needsCrypto = false;
@@ -51,38 +45,12 @@ export class ActorBuilder extends BaseBuilder {
         const idField = config.fields?.identifier || 'email';
         const secretField = config.fields?.secret || 'password';
 
-        body = `async (client: ApiClient, params: Record<string, unknown> = {}) => {
-        const password = params.${secretField} || 'Password123!';
-
-        // 1. Get or Create ${model.name}
-        let actor;
-        if (params.id) {
-            actor = await Factory.prisma.${actorName}.findUnique({ where: { id: params.id } });
-        } else if (params.${idField}) {
-            actor = await Factory.prisma.${actorName}.findUnique({ where: { ${idField}: params.${idField} } });
-        }
-
-        if (!actor) {
-             const factoryParams = { ...params };
-             if (params.password) delete factoryParams.password; 
-             
-            actor = await Factory.create('${actorName}', {
-                ...factoryParams,
-            });
-        }
-
-        // 2. Authenticate
-        const res = await client.useSession().post('/api/login', {
-            email: actor.${idField},
-            password: password
-        });
-
-        if (res.status >= 400) {
-            throw new Error(\`${model.name} actor login failed with status \${res.status}: \${JSON.stringify(res.body)}\`);
-        }
-        
-        return actor;
-    }`;
+        body = TemplateLoader.load('actor/login.tsf', {
+          secretField,
+          modelName: model.name,
+          actorName,
+          idField,
+        }).raw;
       } else if (config.strategy === 'api-key') {
         const keyModel = config.fields?.keyModel;
         const ownerField = config.fields?.ownerField;
@@ -96,35 +64,11 @@ export class ActorBuilder extends BaseBuilder {
 
         const keyModelProp = keyModel.charAt(0).toLowerCase() + keyModel.slice(1);
 
-        body = `async (client: ApiClient, params: Record<string, unknown> = {}) => {
-        let actor;
-        if (params.id) {
-            actor = await Factory.prisma.${actorName}.findUnique({ where: { id: params.id } });
-        }
-
-        if (!actor) {
-            actor = await Factory.create('${actorName}', params);
-        }
-
-        const randomHex = crypto.randomBytes(32).toString('hex');
-        const rawKey = \`ne_test_\${randomHex}\`;
-        
-        const hashedKey = crypto.createHash('sha256').update(rawKey).digest('hex');
-
-        await db.${keyModelProp}.create({
-            data: {
-                ${ownerField}: actor.id,
-                name: 'Test Key',
-                hashedKey: hashedKey,
-                prefix: 'ne_test_',
-                status: 'ACTIVE'
-            } as unknown as object
-        });
-
-        client.useToken(rawKey);
-
-        return actor;
-    }`;
+        body = TemplateLoader.load('actor/api-key.tsf', {
+          actorName,
+          keyModelProp,
+          ownerField,
+        }).raw;
       } else if (config.strategy === 'bearer') {
         const tokenModel = config.fields?.tokenModel || model.name;
         const ownerField = config.fields?.ownerField;
@@ -155,43 +99,18 @@ export class ActorBuilder extends BaseBuilder {
           }
         }
 
-        body = `async (client: ApiClient, params: Record<string, unknown> = {}) => {
-        let actor;
-        if (params.id) {
-            actor = await Factory.prisma.${actorName}.findUnique({ where: { id: params.id } });
-        } else if (params.email) {
-             actor = await Factory.prisma.${actorName}.findFirst({ where: { email: params.email } });
-        }
+        const hashLogic = keyField.includes('hash')
+          ? `dbKey = crypto.createHash('sha256').update(rawKey).digest('hex');`
+          : '';
 
-        if (!actor) {
-             const factoryParams = { ...params };
-             if (params.strategy) delete factoryParams.strategy;
-             if (params.password) delete factoryParams.password;
-            actor = await Factory.create('${actorName}', factoryParams);
-        }
-
-        const rawKey = \`${prefix}\${Date.now()}\`;
-        let dbKey = rawKey;
-        
-        ${
-          keyField.includes('hash')
-            ? `
-        dbKey = crypto.createHash('sha256').update(rawKey).digest('hex');
-        `
-            : ''
-        }
-        
-        await Factory.create('${tokenModelLocal}', {
-            ${relationFieldStr}
-            name: 'Test Token',
-            ${keyField}: dbKey,
-            prefix: '${prefix}'
-        });
-
-        client.useToken(rawKey);
-        
-        return actor;
-    }`;
+        body = TemplateLoader.load('actor/bearer.tsf', {
+          actorName,
+          prefix,
+          tokenModelLocal,
+          relationFieldStr,
+          keyField,
+          hashLogic,
+        }).raw;
       }
 
       if (body) {
@@ -207,6 +126,18 @@ export class ActorBuilder extends BaseBuilder {
     ${actorsBody.join(',\n    ')}
 }`,
     };
+
+    if (actorsBody.length > 0) {
+      imports.push({
+        moduleSpecifier: '@tests/integration/lib/factory',
+        namedImports: ['Factory'],
+      });
+      imports.push({
+        moduleSpecifier: '@tests/integration/lib/client',
+        isTypeOnly: true,
+        namedImports: ['ApiClient'],
+      });
+    }
 
     if (needsDb) {
       imports.push({ moduleSpecifier: '@/lib/core/db', namedImports: ['db'] });

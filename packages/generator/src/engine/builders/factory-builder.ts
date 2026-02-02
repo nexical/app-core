@@ -6,6 +6,7 @@ import {
   type NodeContainer,
 } from '../types.js';
 import { BaseBuilder } from './base-builder.js';
+import { TemplateLoader } from '../../utils/template-loader.js';
 
 export class FactoryBuilder extends BaseBuilder {
   constructor(private models: ModelDef[]) {
@@ -111,39 +112,45 @@ export class FactoryBuilder extends BaseBuilder {
       }
 
       const modelCamelName = model.name.charAt(0).toLowerCase() + model.name.slice(1);
-      factoriesBody.push(`${modelCamelName}: (index: number) => {
-                return {
-                    ${fields.join(',\n                    ')}
-                };
-            }`);
+      factoriesBody.push(
+        TemplateLoader.load('factory/entry.tsf', {
+          modelCamelName,
+          fields: fields.join(',\n                    '),
+        }).raw,
+      );
     }
 
     const factoryVariable: VariableConfig = {
       name: 'factories',
       declarationKind: 'const',
       isExported: true,
-      initializer: `{
-            ${factoriesBody.join(',\n            ')}
-        }`,
+      initializer: TemplateLoader.load('factory/collection.tsf', {
+        entries: factoriesBody.join(',\n            '),
+      }),
     };
 
     const hashPasswordFunc: FunctionConfig = {
       name: 'hashPassword',
       isExported: true,
+      overwriteBody: true,
       parameters: [{ name: 'password', type: 'string' }],
       returnType: 'string',
-      statements: [
-        `const salt = bcrypt.genSaltSync(10);`,
-        `return bcrypt.hashSync(password, salt);`,
-      ],
+      statements: [TemplateLoader.load('factory/utils.tsf')],
     };
 
+    const imports = [
+      { moduleSpecifier: 'bcryptjs', defaultImport: 'bcrypt' },
+      { moduleSpecifier: '@tests/integration/lib/factory', namedImports: ['Factory'] },
+    ];
+
+    const allFactoriesBody = factoriesBody.join('\n');
+    if (allFactoriesBody.includes('crypto.')) {
+      imports.unshift({ moduleSpecifier: 'node:crypto', defaultImport: 'crypto' });
+    }
+
     return {
-      imports: [
-        { moduleSpecifier: 'node:crypto', defaultImport: 'crypto' },
-        { moduleSpecifier: 'bcryptjs', defaultImport: 'bcrypt' },
-        { moduleSpecifier: '@tests/integration/lib/factory', namedImports: ['Factory'] },
-      ],
+      header: '// GENERATED CODE - DO NOT MODIFY',
+      imports,
       functions: [hashPasswordFunc],
       variables: [factoryVariable],
     };
