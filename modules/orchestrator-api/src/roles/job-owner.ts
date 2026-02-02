@@ -2,11 +2,10 @@ import type { RolePolicy } from '@/lib/registries/role-registry';
 import type { APIContext, AstroGlobal } from 'astro';
 
 export class IsJobOwner implements RolePolicy {
-   
   async check(
     context: AstroGlobal | APIContext,
     input: Record<string, unknown>,
-    data?: any,
+    data?: unknown,
   ): Promise<void> {
     // 1. Basic Authentication Check
     const actor = context.locals?.actor;
@@ -26,68 +25,46 @@ export class IsJobOwner implements RolePolicy {
     // 4. Ownership Check (Resource Level)
     // If we are operating on a specific resource (data is present)
     if (data) {
+      const typedData = data as Record<string, unknown>;
       let isOwner =
-        (data.actorId && data.actorId === actor.id) || (data.userId && data.userId === actor.id);
+        (typedData.actorId && typedData.actorId === actor.id) ||
+        (typedData.userId && typedData.userId === actor.id);
 
       // Handle Child Resources (e.g. JobLog) that reference a job
-      if (!isOwner && data.jobId) {
+      if (!isOwner && typedData.jobId) {
         const db = (await import('@/lib/core/db')).db;
         const job = await db.job.findUnique({
-          where: { id: data.jobId },
+          where: { id: typedData.jobId as string },
           select: { actorId: true, userId: true, actorType: true },
         });
         if (job) {
           isOwner =
             (job.actorId && job.actorId === actor.id) || (job.userId && job.userId === actor.id);
-
-          if (!isOwner && job.actorId && actor.id) {
-            // Check Team Membership
-            const membership = await db.teamMember.findFirst({
-              where: { teamId: job.actorId, userId: actor.id },
-            });
-            if (membership) isOwner = true;
-          }
         }
       }
 
       // Handle ID-only operations (DELETE/GET single)
-      if (!isOwner && data.id) {
+      if (!isOwner && typedData.id) {
         const db = (await import('@/lib/core/db')).db;
         const url = context.request.url;
 
         if (url.includes('/api/job-log/')) {
           // It's a JobLog
           const log = await db.jobLog.findUnique({
-            where: { id: data.id },
+            where: { id: typedData.id as string },
             select: { job: { select: { actorId: true, userId: true, actorType: true } } },
           });
           if (log?.job) {
             isOwner = log.job.actorId === actor.id || log.job.userId === actor.id;
-
-            if (!isOwner && log.job.actorId && actor.id) {
-              // Check Team Membership
-              const membership = await db.teamMember.findFirst({
-                where: { teamId: log.job.actorId, userId: actor.id },
-              });
-              if (membership) isOwner = true;
-            }
           }
         } else if (url.includes('/api/job/')) {
           // It's a Job
           const job = await db.job.findUnique({
-            where: { id: data.id },
+            where: { id: typedData.id as string },
             select: { actorId: true, userId: true, actorType: true },
           });
           if (job) {
             isOwner = job.actorId === actor.id || job.userId === actor.id;
-
-            if (!isOwner && job.actorId && actor.id) {
-              // Check Team Membership
-              const membership = await db.teamMember.findFirst({
-                where: { teamId: job.actorId, userId: actor.id },
-              });
-              if (membership) isOwner = true;
-            }
           }
         }
       }
@@ -102,16 +79,9 @@ export class IsJobOwner implements RolePolicy {
     // If no specific data is loaded (e.g. creating or listing), we check the input parameters
     // to ensure they aren't trying to create/list for someone else.
     if (input) {
-      // If specifying an actorId, it must match OR be a team the user belongs to
+      // If specifying an actorId, it must match
       if (input.actorId && input.actorId !== actor.id) {
-        const db = (await import('@/lib/core/db')).db;
-        const membership = await db.teamMember.findFirst({
-          where: { teamId: input.actorId, userId: actor.id },
-        });
-
-        if (!membership) {
-          throw new Error('Forbidden: Cannot act on behalf of another actor');
-        }
+        throw new Error('Forbidden: Cannot act on behalf of another actor');
       }
       // If specifying a userId, it must match
       if (input.userId && input.userId !== actor.id) {

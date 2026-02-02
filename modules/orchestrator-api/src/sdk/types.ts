@@ -26,18 +26,6 @@ export interface RegisterAgentDTO {
   capabilities: string[];
 }
 
-export const JobStatus = {
-  PENDING: 'PENDING',
-  RUNNING: 'RUNNING',
-  COMPLETED: 'COMPLETED',
-  FAILED: 'FAILED',
-} as const;
-export const AgentStatus = {
-  ONLINE: 'ONLINE',
-  OFFLINE: 'OFFLINE',
-  BUSY: 'BUSY',
-} as const;
-
 export type { Job, JobLog, Agent } from '@prisma/client';
 
 export enum JobStatus {

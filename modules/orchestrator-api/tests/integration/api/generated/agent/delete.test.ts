@@ -1,3 +1,4 @@
+// GENERATED CODE - DO NOT MODIFY
 import { describe, it, expect, beforeEach } from 'vitest';
 import { ApiClient } from '@tests/integration/lib/client';
 import { TestServer } from '@tests/integration/lib/server';

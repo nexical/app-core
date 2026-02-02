@@ -44,7 +44,9 @@ export class OrchestrationService {
             where: { status: 'PENDING' },
             select: { id: true, type: true, actorId: true, actorType: true },
           });
-          Logger.info(`[OrchestrationService.poll] No job found. Pending jobs in DB:`, allPending);
+          Logger.info(`[OrchestrationService.poll] No job found. Pending jobs in DB:`, {
+            jobs: allPending,
+          });
           return null;
         }
 
@@ -119,7 +121,7 @@ export class OrchestrationService {
         where: { id },
         data: {
           status: 'COMPLETED',
-          result,
+          result: result as Prisma.InputJsonValue,
           completedAt: new Date(),
           progress: 100,
         },
