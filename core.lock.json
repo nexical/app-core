@@ -19,9 +19,9 @@
   "compose.db.yml": "02bfbea36a6a1bb0bb1a97e349ccd237d8d01fe7226cff4978cac935b5be562d",
   "compose.yml": "8ee04293447409293fd16f1ed2c79a6e33dacc4c1a71b1fb4d7e936046fe6804",
   "docker/entrypoint.sh": "fe02187893fc10cb4a67378a8befe231663b9dfb499c54665d8a5c46300257e3",
-  "eslint.config.mjs": "d87f5977092afdd23c327d9a2c3b76d02135c6249a43f2b33c607b5c59a68118",
+  "eslint.config.mjs": "b225802a7b5f43cd78eae8e47fed5bd8871c37b976f22d77f8245ddd4201705a",
   "locales/en.json": "d74870d03848ce89547a6e1020a41309f85521306bb4d98dcec8ca7abdc354bd",
-  "package.json": "c3f1e827242588b891f239261fe46443e8321c5f3f9f0a114517eae9626c9242",
+  "package.json": "83c4afea9383d48239fe5eb586937b83044a00a542caa28e696ac6c72b866b07",
   "packages/agent/Dockerfile": "285e22532bd53bd39a1a8157d62e71fc6ea487314ee835d84149bc7e82d9fb25",
   "packages/agent/README.md": "4bcf92fc00c2a931cc156237def713b0b9e23f5bd8724cae1e7649861b9dafc5",
   "packages/agent/package.json": "c057b668a2fd049e89a391731d749a42a9560500c8cbe0c5bdf7a082bf108b96",
@@ -499,5 +499,5 @@
   "tsconfig.json": "fbcc466709ccec559267606767e6fb8a8a7896e030a8a6a180e07dcaa7a2646b",
   "vitest.agent.config.ts": "7c9ed9105c6aedc837eb57293accc6ce30e5daac8534cc2a9c9a321e7c3402d1",
   "vitest.integration.config.ts": "7c7423fdcdfdf0c2b7ee959b606f98948226052667ed48744d5c1221060229d9",
-  "vitest.unit.config.ts": "707360c08001a117b7613fac5ea248da7ad760fdf2da740ddf2679437708fc16"
+  "vitest.unit.config.ts": "11d6e1146271f0edf861c3d12622819c05d65b569264e0bde82417ab39939efe"
 }
