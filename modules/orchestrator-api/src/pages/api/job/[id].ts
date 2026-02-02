@@ -30,6 +30,9 @@ export const GET = defineApi(
       completedAt: true,
       createdAt: true,
       updatedAt: true,
+      retryCount: true,
+      maxRetries: true,
+      nextRetryAt: true,
       logs: { take: 10 },
     };
     const actor = context.locals.actor;
@@ -80,6 +83,9 @@ export const GET = defineApi(
                 completedAt: { type: 'string', format: 'date-time' },
                 createdAt: { type: 'string', format: 'date-time' },
                 updatedAt: { type: 'string', format: 'date-time' },
+                retryCount: { type: 'number' },
+                maxRetries: { type: 'number' },
+                nextRetryAt: { type: 'string', format: 'date-time' },
                 logs: { type: 'array', items: { type: 'string' } },
               },
               required: ['type', 'updatedAt', 'logs'],
@@ -114,6 +120,9 @@ export const PUT = defineApi(
         lockedAt: z.string().datetime().optional(),
         startedAt: z.string().datetime().optional(),
         completedAt: z.string().datetime().optional(),
+        retryCount: z.number().int().optional(),
+        maxRetries: z.number().int().optional(),
+        nextRetryAt: z.string().datetime().optional(),
       })
       .partial();
 
@@ -135,6 +144,9 @@ export const PUT = defineApi(
       completedAt: true,
       createdAt: true,
       updatedAt: true,
+      retryCount: true,
+      maxRetries: true,
+      nextRetryAt: true,
       logs: { take: 10 },
     };
     const actor = context.locals.actor;
@@ -176,6 +188,9 @@ export const PUT = defineApi(
               completedAt: { type: 'string', format: 'date-time' },
               createdAt: { type: 'string', format: 'date-time' },
               updatedAt: { type: 'string', format: 'date-time' },
+              retryCount: { type: 'number' },
+              maxRetries: { type: 'number' },
+              nextRetryAt: { type: 'string', format: 'date-time' },
               logs: { type: 'array', items: { type: 'string' } },
             },
           },
@@ -206,6 +221,9 @@ export const PUT = defineApi(
                 completedAt: { type: 'string', format: 'date-time' },
                 createdAt: { type: 'string', format: 'date-time' },
                 updatedAt: { type: 'string', format: 'date-time' },
+                retryCount: { type: 'number' },
+                maxRetries: { type: 'number' },
+                nextRetryAt: { type: 'string', format: 'date-time' },
                 logs: { type: 'array', items: { type: 'string' } },
               },
               required: ['type', 'updatedAt', 'logs'],

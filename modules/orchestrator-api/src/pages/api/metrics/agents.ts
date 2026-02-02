@@ -2,23 +2,22 @@
 import { defineApi } from '@/lib/api/api-docs';
 import { ApiGuard } from '@/lib/api/api-guard';
 import { HookSystem } from '@/lib/modules/hooks';
-import type { RegisterAgentDTO } from '@modules/orchestrator-api/src/sdk';
-import { RegisterAgentAction } from '@modules/orchestrator-api/src/actions/register-agent';
+import { GetAgentMetricsAction } from '@modules/orchestrator-api/src/actions/get-agent-metrics';
 
 // GENERATED CODE - DO NOT MODIFY
-export const POST = defineApi(
+export const GET = defineApi(
   async (context) => {
     // 1. Body Parsing (Input)
-    const body = (await context.request.json()) as RegisterAgentDTO;
+    const body = {} as none;
 
     const query = Object.fromEntries(new URL(context.request.url).searchParams);
 
     // 2. Hook: Filter Input
-    const input: RegisterAgentDTO = await HookSystem.filter('agent.registerAgent.input', body);
+    const input: none = await HookSystem.filter('metrics.getAgentMetrics.input', body);
 
     // 3. Security Check
     const combinedInput = { ...context.params, ...query, ...input };
-    await ApiGuard.protect(context, 'public', combinedInput);
+    await ApiGuard.protect(context, 'admin', combinedInput);
 
     // Inject userId from context for protected routes
     const user = context.locals.actor;
@@ -27,10 +26,10 @@ export const POST = defineApi(
     }
 
     // 4. Action Execution
-    const result = await RegisterAgentAction.run(combinedInput, context);
+    const result = await GetAgentMetricsAction.run(combinedInput, context);
 
     // 5. Hook: Filter Output
-    const filteredResult = await HookSystem.filter('agent.registerAgent.output', result);
+    const filteredResult = await HookSystem.filter('metrics.getAgentMetrics.output', result);
 
     // 6. Response
     if (!filteredResult.success) {
@@ -40,15 +39,9 @@ export const POST = defineApi(
     return { success: true, data: filteredResult.data };
   },
   {
-    summary: 'Register or update an agent',
-    tags: ['Agent'],
-    requestBody: {
-      content: {
-        'application/json': {
-          schema: { type: 'object' },
-        },
-      },
-    },
+    summary: 'Get agent metrics',
+    tags: ['Metrics'],
+
     responses: {
       200: {
         description: 'OK',
@@ -57,14 +50,13 @@ export const POST = defineApi(
             schema: {
               type: 'object',
               properties: {
-                id: { type: 'string' },
-                hostname: { type: 'string' },
-                capabilities: { type: 'array', items: { type: 'string' } },
-                lastHeartbeat: { type: 'string', format: 'date-time' },
-                status: { type: 'string' },
-                createdAt: { type: 'string', format: 'date-time' },
+                total: { type: 'number' },
+                online: { type: 'number' },
+                offline: { type: 'number' },
+                busy: { type: 'number' },
+                jobsProcessedLast24h: { type: 'number' },
               },
-              required: ['hostname', 'capabilities'],
+              required: ['total', 'online', 'offline', 'busy', 'jobsProcessedLast24h'],
             },
           },
         },

@@ -5,6 +5,7 @@ enums:
       - RUNNING
       - COMPLETED
       - FAILED
+      - CANCELLED
   AgentStatus:
     values:
       - ONLINE
@@ -71,6 +72,18 @@ models:
         type: DateTime
         attributes:
           - '@updatedAt'
+      # Retry mechanism fields
+      retryCount:
+        type: Int
+        attributes:
+          - '@default(0)'
+      maxRetries:
+        type: Int
+        attributes:
+          - '@default(3)'
+      nextRetryAt:
+        type: DateTime
+        isRequired: false
       logs:
         type: JobLog
         isList: true
@@ -131,6 +144,41 @@ models:
         attributes:
           - '@default(now())'
 
+  # Dead-letter queue for permanently failed jobs
+  DeadLetterJob:
+    role: admin
+    test:
+      actor: admin
+    fields:
+      id:
+        type: String
+        attributes:
+          - '@id'
+          - '@default(cuid())'
+      originalJobId:
+        type: String
+      type:
+        type: String
+      payload:
+        type: Json
+      error:
+        type: Json
+      failedAt:
+        type: DateTime
+        attributes:
+          - '@default(now())'
+      retryCount:
+        type: Int
+      reason:
+        type: String
+        isRequired: false
+      actorId:
+        type: String
+        isRequired: false
+      actorType:
+        type: String
+        isRequired: false
+
   # DTOs
   CreateJobDTO:
     db: false
@@ -156,36 +204,95 @@ models:
     db: false
     api: false
     fields:
+      agentId:
+        type: String
+        isRequired: true
       capabilities:
         type: String
         isList: true
 
+  UpdateProgressDTO:
+    db: false
+    api: false
+    fields:
+      progress:
+        type: Int
+        isRequired: true
+
+  JobMetrics:
+    db: false
+    api: false
+    fields:
+      total:
+        type: Int
+      pending:
+        type: Int
+      running:
+        type: Int
+      completed:
+        type: Int
+      failed:
+        type: Int
+      cancelled:
+        type: Int
+      avgCompletionTimeMs:
+        type: Float
+        isRequired: false
+      retryRate:
+        type: Float
+      successRate:
+        type: Float
+
+  AgentMetrics:
+    db: false
+    api: false
+    fields:
+      total:
+        type: Int
+      online:
+        type: Int
+      offline:
+        type: Int
+      busy:
+        type: Int
+      jobsProcessedLast24h:
+        type: Int
+
+  # Job Action DTOs
   CompleteJobDTO:
-    db: false
-    api: false
-    fields:
-      result:
-        type: Json
-        isRequired: true
-
-  FailJobDTO:
-    db: false
-    api: false
-    fields:
-      error:
-        type: Json
-        isRequired: true
-
-  RegisterAgentDTO:
     db: false
     api: false
     fields:
       id:
         type: String
+        isRequired: true
+      result:
+        type: Json
         isRequired: false
-      hostname:
+
+  FailJobDTO:
+    db: false
+    api: false
+    fields:
+      id:
         type: String
         isRequired: true
-      capabilities:
+      error:
+        type: Json
+        isRequired: false
+
+  CancelJobDTO:
+    db: false
+    api: false
+    fields:
+      id:
         type: String
-        isList: true
+        isRequired: true
+
+  HeartbeatDTO:
+    db: false
+    api: false
+    fields:
+      id:
+        type: String
+        isRequired: true

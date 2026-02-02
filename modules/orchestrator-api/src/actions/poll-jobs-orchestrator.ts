@@ -1,8 +1,8 @@
-import { OrchestrationService } from '../services/orchestration-service';
+// GENERATED CODE - DO NOT MODIFY
 import type { ServiceResponse } from '@/types/service';
 import type { PollJobsDTO, Job } from '../sdk/types';
 import type { APIContext } from 'astro';
-import type { ApiActor } from '@/lib/api/api-docs';
+import { OrchestrationService } from '../services/orchestration-service';
 
 export class PollJobsOrchestratorAction {
   public static async run(

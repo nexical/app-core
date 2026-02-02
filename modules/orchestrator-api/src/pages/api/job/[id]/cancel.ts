@@ -1,20 +1,20 @@
 // GENERATED CODE - DO NOT MODIFY
+// Manual Route - Cancel Job
 import { defineApi } from '@/lib/api/api-docs';
 import { ApiGuard } from '@/lib/api/api-guard';
 import { HookSystem } from '@/lib/modules/hooks';
-import type { FailJobDTO } from '@modules/orchestrator-api/src/sdk';
-import { FailJobAction } from '@modules/orchestrator-api/src/actions/fail-job';
+import { CancelJobAction } from '@modules/orchestrator-api/src/actions/cancel-job';
+import type { CancelJobDTO } from '@modules/orchestrator-api/src/sdk';
 
-// GENERATED CODE - DO NOT MODIFY
 export const POST = defineApi(
   async (context) => {
     // 1. Body Parsing (Input)
-    const body = (await context.request.json()) as FailJobDTO;
+    const body = (await context.request.json()) as CancelJobDTO;
 
     const query = Object.fromEntries(new URL(context.request.url).searchParams);
 
     // 2. Hook: Filter Input
-    const input: FailJobDTO = await HookSystem.filter('job.failJob.input', body);
+    const input: CancelJobDTO = await HookSystem.filter('job.cancelJob.input', body);
 
     // 3. Security Check
     const combinedInput = { ...context.params, ...query, ...input };
@@ -27,10 +27,10 @@ export const POST = defineApi(
     }
 
     // 4. Action Execution
-    const result = await FailJobAction.run(combinedInput, context);
+    const result = await CancelJobAction.run(combinedInput, context);
 
     // 5. Hook: Filter Output
-    const filteredResult = await HookSystem.filter('job.failJob.output', result);
+    const filteredResult = await HookSystem.filter('job.cancelJob.output', result);
 
     // 6. Response
     if (!filteredResult.success) {
@@ -40,7 +40,7 @@ export const POST = defineApi(
     return { success: true, data: filteredResult.data };
   },
   {
-    summary: 'Mark job as failed',
+    summary: 'Cancel a job',
     tags: ['Job'],
     requestBody: {
       content: {
@@ -49,7 +49,6 @@ export const POST = defineApi(
             type: 'object',
             properties: {
               id: { type: 'string' },
-              error: { type: 'object' },
             },
             required: ['id'],
           },

@@ -48,9 +48,10 @@ export const POST = defineApi(
           schema: {
             type: 'object',
             properties: {
+              agentId: { type: 'string' },
               capabilities: { type: 'array', items: { type: 'string' } },
             },
-            required: ['capabilities'],
+            required: ['agentId', 'capabilities'],
           },
         },
       },
@@ -81,6 +82,9 @@ export const POST = defineApi(
                   completedAt: { type: 'string', format: 'date-time' },
                   createdAt: { type: 'string', format: 'date-time' },
                   updatedAt: { type: 'string', format: 'date-time' },
+                  retryCount: { type: 'number' },
+                  maxRetries: { type: 'number' },
+                  nextRetryAt: { type: 'string', format: 'date-time' },
                   logs: { type: 'array', items: { type: 'string' } },
                 },
                 required: ['type', 'updatedAt', 'logs'],

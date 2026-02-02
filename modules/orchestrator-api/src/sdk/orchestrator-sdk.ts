@@ -9,4 +9,8 @@ export class OrchestratorSDK extends BaseResource {
   ): Promise<{ success: boolean; data: Job[]; error?: string }> {
     return this._request('POST', `/orchestrator/poll`, data);
   }
+
+  public async checkStaleAgents(): Promise<{ success: boolean; data: void; error?: string }> {
+    return this._request('POST', `/orchestrator/check-stale`);
+  }
 }

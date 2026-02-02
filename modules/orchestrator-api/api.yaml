@@ -15,6 +15,22 @@ Job:
     output: Job
     role: job-owner
 
+  - path: /[id]/cancel
+    verb: POST
+    method: cancelJob
+    summary: Cancel a job
+    input: CancelJobDTO
+    output: Job
+    role: job-owner
+
+  - path: /[id]/progress
+    verb: POST
+    method: updateProgress
+    summary: Update job progress
+    input: UpdateProgressDTO
+    output: none
+    role: job-owner
+
 Orchestrator:
   - path: /poll
     verb: POST
@@ -24,11 +40,44 @@ Orchestrator:
     output: Job[]
     role: job-owner
 
+  - path: /check-stale
+    verb: POST
+    method: checkStaleAgents
+    summary: Check for and handle stale agents
+    input: none
+    output: none
+    role: admin
+
 Agent:
   - path: /register
     verb: POST
-    method: register
+    method: registerAgent
     summary: Register or update an agent
     input: RegisterAgentDTO
     output: Agent
     role: public
+
+  - path: /[id]/heartbeat
+    verb: POST
+    method: heartbeat
+    summary: Update agent heartbeat
+    input: HeartbeatDTO
+    output: none
+    role: public
+
+Metrics:
+  - path: /jobs
+    verb: GET
+    method: getJobMetrics
+    summary: Get job metrics
+    input: none
+    output: JobMetrics
+    role: admin
+
+  - path: /agents
+    verb: GET
+    method: getAgentMetrics
+    summary: Get agent metrics
+    input: none
+    output: AgentMetrics
+    role: admin
