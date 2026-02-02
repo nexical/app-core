@@ -1,4 +1,4 @@
-import { describe, beforeAll, afterAll, test, expect } from 'vitest';
+import { describe, beforeEach, beforeAll, afterAll, test, expect } from 'vitest';
 import { ApiClient } from '@tests/integration/lib/client';
 import { TestServer } from '@tests/integration/lib/server';
 
