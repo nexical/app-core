@@ -21,7 +21,7 @@
   "docker/entrypoint.sh": "fe02187893fc10cb4a67378a8befe231663b9dfb499c54665d8a5c46300257e3",
   "eslint.config.mjs": "b225802a7b5f43cd78eae8e47fed5bd8871c37b976f22d77f8245ddd4201705a",
   "locales/en.json": "d74870d03848ce89547a6e1020a41309f85521306bb4d98dcec8ca7abdc354bd",
-  "package.json": "478bbc02d375a2a7b144715993618fa1cd912b6fe12bc958dce2b20cf33ec431",
+  "package.json": "c3f1e827242588b891f239261fe46443e8321c5f3f9f0a114517eae9626c9242",
   "packages/agent/Dockerfile": "285e22532bd53bd39a1a8157d62e71fc6ea487314ee835d84149bc7e82d9fb25",
   "packages/agent/README.md": "4bcf92fc00c2a931cc156237def713b0b9e23f5bd8724cae1e7649861b9dafc5",
   "packages/agent/package.json": "c057b668a2fd049e89a391731d749a42a9560500c8cbe0c5bdf7a082bf108b96",
