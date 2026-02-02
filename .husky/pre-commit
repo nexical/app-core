@@ -1,2 +1,2 @@
-npm run core:check
 npx lint-staged
+npm run core:check
