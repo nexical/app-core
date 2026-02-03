@@ -1,0 +1,38 @@
+# nexical/app-core/modules/user-api/access.yaml
+
+# 1. Role Definitions (Replaces src/roles/*.ts)
+roles:
+  ADMIN:
+    description: 'System administrator with unrestricted access.'
+    inherits: [EMPLOYEE] # Supports role hierarchy
+  EMPLOYEE:
+    description: 'Internal staff members.'
+    inherits: [MEMBER]
+  MEMBER:
+    description: 'Standard registered users.'
+    inherits: [ANONYMOUS]
+  ANONYMOUS:
+    description: 'Unauthenticated public visitors.'
+
+# 2. Functional Permissions mapping
+permissions:
+  # User Management
+  'user:list': [ADMIN, EMPLOYEE]
+  'user:view': [ADMIN, EMPLOYEE, MYSELF] # 'MYSELF' is a dynamic context role
+  'user:create': [ADMIN]
+  'user:update': [ADMIN, MYSELF]
+  'user:delete': [ADMIN]
+
+  # Authentication Actions
+  'auth:login': [ANONYMOUS]
+  'auth:register': [ANONYMOUS]
+  'auth:invite': [ADMIN]
+
+  # System Settings
+  'system:configure': [ADMIN]
+  'tokens:manage': [ADMIN, MYSELF]
+
+# 3. Automatic Guard Routes (Optional shorthand for builders)
+guards:
+  '/admin/**': [ADMIN]
+  '/settings/**': [MEMBER]
