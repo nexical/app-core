@@ -35,9 +35,26 @@ describe('JobProcessor', () => {
 
     const api = processor.getApi();
     expect(api).toBeDefined();
-    // We can't easily check private properties of the client without casting
     expect((api as unknown as { config: { baseUrl: string } }).config.baseUrl).toBe(
       'http://test-api',
     );
+  });
+
+  it('should have correct jobType', () => {
+    const processor = new TestProcessor({
+      apiUrl: 'http://test-api',
+      apiToken: 'test-token',
+    });
+    expect(processor.jobType).toBe('test.job');
+  });
+
+  it('should have a schema', () => {
+    const processor = new TestProcessor({
+      apiUrl: 'http://test-api',
+      apiToken: 'test-token',
+    });
+    expect(processor.schema).toBeDefined();
+    const result = processor.schema.safeParse({ foo: 'bar' });
+    expect(result.success).toBe(true);
   });
 });

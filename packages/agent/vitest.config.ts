@@ -8,6 +8,19 @@ export default defineConfig({
     include: ['tests/**/*.test.ts'],
     // Override root setupFiles if they don't apply, or fix the path
     setupFiles: [],
+    coverage: {
+      enabled: true,
+      provider: 'v8',
+      reporter: ['text', 'json', 'html'],
+      include: ['src/**/*.ts'],
+      exclude: ['src/index.ts', 'src/core/types.ts', '**/node_modules/**', '**/dist/**'],
+      thresholds: {
+        lines: 100,
+        functions: 100,
+        branches: 100,
+        statements: 100,
+      },
+    },
   },
   resolve: {
     alias: {
