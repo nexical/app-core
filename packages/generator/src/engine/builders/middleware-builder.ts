@@ -4,10 +4,12 @@ import {
   type ImportConfig,
   type FunctionConfig,
   type CustomRoute,
+  type StatementConfig,
 } from '../types.js';
 import { BaseBuilder } from './base-builder.js';
 import { TemplateLoader } from '../../utils/template-loader.js';
 import { SourceFile, ModuleDeclaration } from 'ts-morph';
+import { ts } from '../primitives/statements/factory.js';
 
 export class MiddlewareBuilder extends BaseBuilder {
   constructor(
@@ -18,7 +20,7 @@ export class MiddlewareBuilder extends BaseBuilder {
   }
 
   protected getSchema(node?: SourceFile | ModuleDeclaration): FileDefinition {
-    let authLogic = '';
+    const authLogic: StatementConfig[] = [];
 
     for (const model of this.models) {
       if (!model.actor || !model.actor.prefix) continue;
@@ -66,11 +68,13 @@ export class MiddlewareBuilder extends BaseBuilder {
         assignment,
       });
 
-      authLogic += TemplateLoader.load('middleware/auth.tsf', {
-        prefix,
-        lookupLogic: lookupLogic.raw,
-        name: name || 'actor',
-      }).raw;
+      authLogic.push(
+        TemplateLoader.load('middleware/auth.tsf', {
+          prefix,
+          lookupLogic: lookupLogic.raw,
+          name: name || 'actor',
+        }),
+      );
     }
 
     const imports: ImportConfig[] = [
@@ -82,7 +86,7 @@ export class MiddlewareBuilder extends BaseBuilder {
     ];
 
     const hasActors = this.models.some((m) => m.actor && m.actor.prefix);
-    const hasAuthLogic = authLogic.trim().length > 0;
+    const hasAuthLogic = authLogic.length > 0;
 
     if (hasActors && hasAuthLogic) {
       imports.push({ moduleSpecifier: '@/lib/core/db', namedImports: ['db'] });
@@ -90,7 +94,7 @@ export class MiddlewareBuilder extends BaseBuilder {
     }
 
     // Scan for actor with validStatus or login strategy to implement Bouncer Pattern
-    let sessionCheck = `
+    let sessionCheck: StatementConfig = ts`
             // Check if actor was set by previous middleware (e.g. session)
             if (context.locals.actor) return next();`;
 
@@ -112,37 +116,36 @@ export class MiddlewareBuilder extends BaseBuilder {
       sessionCheck = TemplateLoader.load('middleware/bouncer.tsf', {
         modelName,
         statusCheck,
-      }).raw;
+      });
     }
 
     const onRequest: FunctionConfig = {
       name: 'onRequest',
       isAsync: true,
       isExported: true,
-      overwriteBody: true,
       parameters: [
         { name: 'context', type: 'APIContext' },
         { name: 'next', type: 'MiddlewareNext' },
       ],
       statements: [
-        `const publicRoutes = [${this.routes
+        ts`const publicRoutes = [${this.routes
           .filter((r) => r.role === 'anonymous')
           .map((r) => `"${r.path}"`)
           .join(', ')}];`,
-        `if (publicRoutes.some(route => context.url.pathname.startsWith(route))) return next();`,
-        hasAuthLogic ? `const authHeader = context.request.headers.get("Authorization");` : null,
-        authLogic,
-        `// Dynamic Bouncer Pattern: Validate Actor Status`,
+        ts`if (publicRoutes.some(route => context.url.pathname.startsWith(route))) return next();`,
+        hasAuthLogic ? ts`const authHeader = context.request.headers.get("Authorization");` : null,
+        ...authLogic,
+        ts`// Dynamic Bouncer Pattern: Validate Actor Status`,
         sessionCheck,
-        `return next();`,
-      ].filter(Boolean) as string[],
+        ts`return next();`,
+      ].filter(Boolean) as StatementConfig[],
     };
 
     return {
       header: '// GENERATED CODE - DO NOT MODIFY',
       imports,
       functions: [onRequest],
-      statements: ['export default { onRequest };'],
+      statements: [ts`export default { onRequest };`],
     };
   }
 }

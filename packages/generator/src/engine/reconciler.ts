@@ -320,6 +320,15 @@ export class Reconciler {
       if (!result.valid) issues.push(...result.issues);
     };
 
+    // 0. Header
+    if (definition.header && 'insertStatements' in sourceFile) {
+      const headerTrimmed = definition.header.trim();
+      const sourceText = (sourceFile as SourceFile).getFullText().trimStart();
+      if (!sourceText.startsWith(headerTrimmed)) {
+        issues.push('File header mismatch or missing.');
+      }
+    }
+
     // 1. Imports
     if ('getImportDeclarations' in sourceFile) {
       definition.imports?.forEach((config) => {
@@ -395,8 +404,6 @@ export class Reconciler {
       // Recursive: Methods
       methods?.forEach((methodDef) => {
         const methodPrimitive = new MethodPrimitive(methodDef);
-
-        // We need to pass the classNode to find/validate the method
         const methodNode = methodPrimitive.find(classNode);
         if (!methodNode) {
           issues.push(`Method '${methodDef.name}' is missing in ${classConfig.name}.`);

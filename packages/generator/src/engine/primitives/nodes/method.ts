@@ -11,7 +11,7 @@ import { BasePrimitive } from '../core/base-primitive.js';
 import { DecoratorPrimitive } from './decorator.js';
 import { JSDocPrimitive } from './docs.js';
 import { type ValidationResult } from '../contracts.js';
-import { type MethodConfig } from '../../types.js';
+import { type MethodConfig, type ParsedStatement } from '../../types.js';
 import { StatementFactory } from '../statements/factory.js';
 import { Normalizer } from '../../../utils/normalizer.js';
 
@@ -90,11 +90,7 @@ export class MethodPrimitive extends BasePrimitive<MethodDeclaration, MethodConf
     }
 
     // Body Reconciliation
-    if (this.config.overwriteBody && structure.statements) {
-      node.setBodyText(structure.statements as string);
-    } else {
-      this.reconcileBody(node);
-    }
+    this.reconcileBody(node);
 
     // Update Decorators
     this.config.decorators?.forEach((deco) => {
@@ -221,50 +217,71 @@ export class MethodPrimitive extends BasePrimitive<MethodDeclaration, MethodConf
   }
 
   private reconcileBody(node: MethodDeclaration) {
-    if (!this.config.statements || this.config.overwriteBody) {
+    if (!this.config.statements) {
       return;
     }
 
     const project = node.getProject();
 
     for (const stmtConfig of this.config.statements) {
-      if (typeof stmtConfig === 'string') {
-        const normalizedConfig = Normalizer.normalize(stmtConfig);
-        const sourceText = Normalizer.normalize(node.getBodyText() || '');
-        if (sourceText.includes(normalizedConfig)) continue;
-        node.addStatements(stmtConfig);
-        continue;
-      }
-
+      // 1. Handle ParsedStatement (Template fragments)
       if (stmtConfig && typeof stmtConfig === 'object' && 'getNodes' in stmtConfig) {
-        const newStatements = stmtConfig.getNodes(project);
+        const newStatements = (stmtConfig as ParsedStatement).getNodes(project);
 
         for (const newStmt of newStatements) {
           const match = this.findStructuralMatch(node.getStatements(), newStmt);
-
-          if (match) {
-            // Found structural match - Preserve user changes (Phase 1)
-            continue;
-          } else {
-            node.addStatements(newStmt.getText());
-          }
+          if (match) continue;
+          node.addStatements(newStmt.getText());
         }
 
-        // Clean up temp file
         if (newStatements.length > 0) {
           newStatements[0].getSourceFile().delete();
         }
         continue;
       }
 
-      // Logic for other statement types (reused conceptually from FunctionPrimitive)
-      // Ideally we extract this to a shared 'StatementReconciler' but for now duplication is safer than major refactor
+      // 2. Handle Structured StatementConfig
+      if (typeof stmtConfig === 'object' && 'kind' in stmtConfig) {
+        const targetText = StatementFactory.generate(stmtConfig);
+        const project = node.getProject();
+        const tempFile = project.createSourceFile('__temp_stmt.ts', targetText, {
+          overwrite: true,
+        });
+        const targetNode = tempFile.getStatements()[0];
 
-      if ((stmtConfig as { isDefault?: boolean }).isDefault === false) {
-        // handle enforced updates
+        try {
+          const match = this.findStructuralMatch(node.getStatements(), targetNode);
+
+          if (match) {
+            // Found structural match
+            if (stmtConfig.isDefault) {
+              // It's a default statement - leave user version alone
+              continue;
+            } else {
+              // It's a required statement - ensure it matches exactly
+              const normalizedExisting = Normalizer.normalize(match.getText());
+              const normalizedTarget = Normalizer.normalize(targetText);
+              if (normalizedExisting !== normalizedTarget) {
+                match.replaceWithText(targetText);
+              }
+            }
+          } else {
+            // Missing -> Append
+            node.addStatements(targetText);
+          }
+        } finally {
+          tempFile.delete();
+        }
+        continue;
       }
 
-      // Reuse logic if we copy-paste significantly, but for now simple string append is key requirement
+      // 3. Fallback: Raw string (Legacy support within StatementConfig type for now)
+      if (typeof stmtConfig === 'string') {
+        const normalizedConfig = Normalizer.normalize(stmtConfig);
+        const sourceText = Normalizer.normalize(node.getBodyText() || '');
+        if (sourceText.includes(normalizedConfig)) continue;
+        node.addStatements(stmtConfig);
+      }
     }
   }
 
@@ -275,9 +292,15 @@ export class MethodPrimitive extends BasePrimitive<MethodDeclaration, MethodConf
 
       // Variable Matching (by name)
       if (Node.isVariableStatement(s) && Node.isVariableStatement(target)) {
-        const sName = s.getDeclarationList().getDeclarations()[0]?.getName();
-        const tName = target.getDeclarationList().getDeclarations()[0]?.getName();
-        return sName === tName;
+        const sNames = s
+          .getDeclarationList()
+          .getDeclarations()
+          .map((d) => d.getName());
+        const tNames = target
+          .getDeclarationList()
+          .getDeclarations()
+          .map((d) => d.getName());
+        return sNames.length > 0 && tNames.length > 0 && sNames[0] === tNames[0];
       }
 
       // If Matching (by condition)
@@ -288,8 +311,13 @@ export class MethodPrimitive extends BasePrimitive<MethodDeclaration, MethodConf
         );
       }
 
-      // Return Matching (assume singleton or simple match)
+      // Return Matching (assume singleton or simple match if it's a small block)
       if (Node.isReturnStatement(s) && Node.isReturnStatement(target)) {
+        return true;
+      }
+
+      // Throw Matching
+      if (Node.isThrowStatement(s) && Node.isThrowStatement(target)) {
         return true;
       }
 

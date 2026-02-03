@@ -6,6 +6,7 @@ import {
 } from '../types.js';
 import { BaseBuilder } from './base-builder.js';
 import { TemplateLoader } from '../../utils/template-loader.js';
+import { ts } from '../primitives/statements/factory.js';
 
 type TestOperation = 'create' | 'list' | 'get' | 'update' | 'delete';
 
@@ -169,7 +170,7 @@ export class TestBuilder extends BaseBuilder {
       imports: imports,
       variables: [],
       statements: [
-        `describe('${entityName} API - ${this.operation.charAt(0).toUpperCase() + this.operation.slice(1)}', () => {
+        ts`describe('${entityName} API - ${this.operation.charAt(0).toUpperCase() + this.operation.slice(1)}', () => {
     let client: ApiClient;
 
     beforeEach(async () => {

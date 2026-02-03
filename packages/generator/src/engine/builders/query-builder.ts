@@ -3,6 +3,7 @@ import { UiBaseBuilder } from './ui/ui-base-builder.js';
 import { type FileDefinition, type ModelDef, type ModuleConfig } from '../types.js';
 import { Reconciler } from '../reconciler.js';
 import { toCamelCase, toKebabCase, toPascalCase } from '../../utils/string.js';
+import { ts } from '../primitives/statements/factory.js';
 
 export class QueryBuilder extends UiBaseBuilder {
   constructor(
@@ -59,9 +60,6 @@ export class QueryBuilder extends UiBaseBuilder {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const route = r as any;
       const actionName = route.action || `${route.verb}${route.modelName}${route.path}`; // simplified fallback
-      // clean name
-      // normalize name logic needs to be robust. ApiBuilder has logic.
-      // Using simplified kebab for filename.
 
       const hookName = `use${toPascalCase(actionName)}`;
       const fileName = `src/hooks/use-${toKebabCase(actionName)}.tsx`;
@@ -93,24 +91,15 @@ export class QueryBuilder extends UiBaseBuilder {
     }
   }
 
-  // --- HTML Generators (JSX-Aware) ---
-  // Hooks return generic logic, but we use tsx factory if we needed JSX.
-  // Here we output pure functions with hooks inside.
-
-  // --- HTML Generators (JSX-Aware) ---
-  // Hooks return generic logic, but we use tsx factory if we needed JSX.
-  // Here we output pure functions with hooks inside.
-
   private generateUseQuery(model: ModelDef) {
     const modelName = toPascalCase(model.name);
     const kebabName = toKebabCase(model.name);
-    // use[Model]Query
     return {
       name: `use${modelName}Query`,
       isExported: true,
-      parameters: [], // Optional filters later
+      parameters: [],
       statements: [
-        `return useQuery({ queryKey: ['${kebabName}', 'list'], queryFn: () => api.${toCamelCase(model.name)}.findMany() });`,
+        ts`return useQuery({ queryKey: ['${kebabName}', 'list'], queryFn: () => api.${toCamelCase(model.name)}.findMany() });`,
       ],
     };
   }
@@ -121,8 +110,8 @@ export class QueryBuilder extends UiBaseBuilder {
       name: `useCreate${modelName}`,
       isExported: true,
       statements: [
-        `const queryClient = useQueryClient();`,
-        `return useMutation({ mutationFn: (data: unknown) => api.${toCamelCase(model.name)}.create(data), onSuccess: () => queryClient.invalidateQueries({ queryKey: ['${toKebabCase(model.name)}'] }) });`,
+        ts`const queryClient = useQueryClient();`,
+        ts`return useMutation({ mutationFn: (data: unknown) => api.${toCamelCase(model.name)}.create(data), onSuccess: () => queryClient.invalidateQueries({ queryKey: ['${toKebabCase(model.name)}'] }) });`,
       ],
     };
   }
@@ -133,8 +122,8 @@ export class QueryBuilder extends UiBaseBuilder {
       name: `useUpdate${modelName}`,
       isExported: true,
       statements: [
-        `const queryClient = useQueryClient();`,
-        `return useMutation({ mutationFn: ({ id, data }: { id: string, data: unknown }) => api.${toCamelCase(model.name)}.update(id, data), onSuccess: () => queryClient.invalidateQueries({ queryKey: ['${toKebabCase(model.name)}'] }) });`,
+        ts`const queryClient = useQueryClient();`,
+        ts`return useMutation({ mutationFn: ({ id, data }: { id: string, data: unknown }) => api.${toCamelCase(model.name)}.update(id, data), onSuccess: () => queryClient.invalidateQueries({ queryKey: ['${toKebabCase(model.name)}'] }) });`,
       ],
     };
   }
@@ -145,25 +134,18 @@ export class QueryBuilder extends UiBaseBuilder {
       name: `useDelete${modelName}`,
       isExported: true,
       statements: [
-        `const queryClient = useQueryClient();`,
-        `return useMutation({ mutationFn: (id: string) => api.${toCamelCase(model.name)}.delete(id), onSuccess: () => queryClient.invalidateQueries({ queryKey: ['${toKebabCase(model.name)}'] }) });`,
+        ts`const queryClient = useQueryClient();`,
+        ts`return useMutation({ mutationFn: (id: string) => api.${toCamelCase(model.name)}.delete(id), onSuccess: () => queryClient.invalidateQueries({ queryKey: ['${toKebabCase(model.name)}'] }) });`,
       ],
     };
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private generateCustomActionHook(route: any): string {
+  private generateCustomActionHook(route: any) {
     const camelModel = toCamelCase(route.modelName);
-    // SDK uses: api.user.promote() for example.
-    // If route has 'action: promote', SDK method is 'promote'.
-    // If route is generic GET/POST without specific action name (custom route), SDK builder logic applies.
-    // Assuming SDK builder maps using 'action' property if present.
     const sdkMethod = toCamelCase(route.action || `${route.verb}${route.modelName}`);
 
-    // This is tricky without knowing exact SDK mapping.
-    // But let's assume standard 'action' name usage.
-
-    return `() => {
+    return ts`() => {
     const queryClient = useQueryClient();
     return useMutation({
         mutationFn: (data: unknown) => (api as Record<string, Record<string, (data: unknown) => Promise<unknown>>>).${camelModel}.${sdkMethod}(data),

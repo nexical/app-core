@@ -172,7 +172,6 @@ export interface JsxElementConfig extends BaseStatementConfig {
 }
 
 export type StatementConfig =
-  | string // Legacy/Raw string support
   | ParsedStatement
   | VariableStatementConfig
   | ReturnStatementConfig
@@ -197,7 +196,6 @@ export interface MethodConfig {
   parameters?: { name: string; type: string; optional?: boolean; decorators?: DecoratorConfig[] }[];
   statements?: StatementConfig[];
   scope?: Scope;
-  overwriteBody?: boolean;
   decorators?: DecoratorConfig[];
   docs?: string[];
 }
@@ -233,7 +231,7 @@ export interface PropertyConfig {
   optional?: boolean;
   readonly?: boolean;
   isStatic?: boolean;
-  initializer?: string;
+  initializer?: string | ParsedStatement;
   scope?: Scope;
   decorators?: DecoratorConfig[];
   docs?: string[];
@@ -295,7 +293,6 @@ export interface FunctionConfig {
   returnType?: string;
   parameters?: { name: string; type: string; optional?: boolean }[];
   statements?: StatementConfig[];
-  overwriteBody?: boolean;
 }
 
 export interface TypeConfig {
@@ -316,7 +313,7 @@ export interface ModuleConfig {
   name: string;
   isExported?: boolean;
   isDeclaration?: boolean;
-  statements?: (string | StatementConfig)[];
+  statements?: StatementConfig[];
   imports?: ImportConfig[];
   classes?: ClassDefinition[];
   interfaces?: InterfaceConfig[];
@@ -332,7 +329,7 @@ export interface FileDefinition {
   header?: string;
   imports?: ImportConfig[];
   exports?: ExportConfig[];
-  statements?: (string | StatementConfig)[]; // Added raw statements support
+  statements?: StatementConfig[]; // Added raw statements support
   classes?: ClassDefinition[];
   interfaces?: InterfaceConfig[];
   enums?: EnumConfig[];
