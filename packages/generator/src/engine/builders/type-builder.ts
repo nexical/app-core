@@ -38,6 +38,11 @@ export class TypeBuilder extends BaseBuilder {
     const statements: (string | StatementConfig)[] = [];
 
     if (dbModels.length > 0) {
+      imports.push({
+        moduleSpecifier: '@prisma/client',
+        namedImports: dbModels.map((m) => m.name),
+        isTypeOnly: true,
+      });
       exportsConfig.push({
         moduleSpecifier: '@prisma/client',
         exportClause: dbModels.map((m) => m.name),

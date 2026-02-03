@@ -199,7 +199,7 @@ export class SdkBuilder extends BaseBuilder {
 
     if (namedImports.length > 0 || otherTypes.size > 0) {
       imports.push({
-        moduleSpecifier: './types',
+        moduleSpecifier: './types.js',
         namedImports: [...namedImports, ...Array.from(otherTypes)],
         isTypeOnly: true,
       });

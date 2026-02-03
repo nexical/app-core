@@ -42,11 +42,11 @@ export class Normalizer {
     // 1. Remove quotes if present
     let normalized = specifier.replace(/['"]/g, '');
 
-    // 2. Remove extensions
-    normalized = normalized.replace(/\.(ts|js|mjs|cjs)$/, '');
+    // 2. DO NOT Remove extensions - NodeNext requires them
+    // normalized = normalized.replace(/\.(ts|js|mjs|cjs)$/, '');
 
-    // 3. Strip /index
-    normalized = normalized.replace(/\/index$/, '');
+    // 3. DO NOT Strip /index - Explicit subpaths are required in ESM
+    // normalized = normalized.replace(/\/index$/, '');
 
     // 4. Standardize legacy mappings
     const legacyMapping: Record<string, string> = {
