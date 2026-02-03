@@ -48,9 +48,10 @@ export const POST = defineApi(
           schema: {
             type: 'object',
             properties: {
+              id: { type: 'string' },
               progress: { type: 'number' },
             },
-            required: ['progress'],
+            required: ['id', 'progress'],
           },
         },
       },

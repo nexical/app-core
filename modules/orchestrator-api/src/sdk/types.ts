@@ -15,6 +15,7 @@ export interface PollJobsDTO {
 
 export interface UpdateProgressDTO {
   progress: number;
+  id: string;
 }
 
 export interface JobMetrics {
