@@ -21,8 +21,7 @@ describe('Core Logger', () => {
   it('should log error messages with error object as JSON', () => {
     const error = new Error('boom');
     Logger.error('error message', error, { extra: 'data' });
-    // eslint-disable-next-line no-console
-    console.log('Test output');
+    Logger.info('Test output');
     const call = (console.error as Mock).mock.calls[0][0] as string;
     const parsed = JSON.parse(call);
 
@@ -57,6 +56,7 @@ describe('Core Logger', () => {
     expect(console.debug).toHaveBeenCalledWith(
       expect.stringMatching(/"level":"debug","message":"debug message","context":"test"/),
     );
+    // eslint-disable-next-line no-console
     expect(JSON.parse((console.debug as Mock).mock.calls[0][0])).toHaveProperty('timestamp');
   });
 });

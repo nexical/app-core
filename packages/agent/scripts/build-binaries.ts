@@ -19,8 +19,8 @@ if (!fs.existsSync(binDir)) {
   fs.mkdirSync(binDir, { recursive: true });
 }
 
-console.log(`🚀 Starting cross-platform build for @nexical/agent...`);
-console.log(`📂 Output directory: ${binDir}\n`);
+console.info(`🚀 Starting cross-platform build for @nexical/agent...`);
+console.info(`📂 Output directory: ${binDir}\n`);
 
 // Use the explicit path to bun since it might not be in the initial PATH
 const bunPath = path.join(os.homedir(), '.bun', 'bin', 'bun');
@@ -32,7 +32,7 @@ for (const target of targets) {
     `agent-${target.split('-').slice(1).join('-')}${isWin ? '.exe' : ''}`,
   );
 
-  console.log(`📦 Building for ${target}...`);
+  console.info(`📦 Building for ${target}...`);
 
   const result = spawnSync(
     bunPath,
@@ -49,4 +49,4 @@ for (const target of targets) {
   }
 }
 
-console.log(`\n✅ All binaries built successfully in ${binDir}`);
+console.info(`\n✅ All binaries built successfully in ${binDir}`);
