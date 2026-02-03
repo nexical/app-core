@@ -110,9 +110,7 @@ export class OrchestrationService {
 
         // Authorization: Owner or Locker
         // Allow completion if actor OWNS the job OR if actor LOCKED the job (Agent logic)
-        const isOwner =
-          job.actorId === actorId ||
-          (actorType && job.actorType === actorType && job.actorId === actorId);
+        const isOwner = job.actorId === actorId;
         const isLocker = job.lockedBy === actorId;
 
         if (!isOwner && !isLocker) {
