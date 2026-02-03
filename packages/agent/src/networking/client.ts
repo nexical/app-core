@@ -61,7 +61,7 @@ export class AgentClient {
   }): Promise<AgentJob> {
     const response = await this.client.orchestrator.job.create({
       type: data.type,
-      payload: data.payload,
+      payload: data.payload as never,
       actorId: data.actorId,
       actorType: data.actorType,
       maxRetries: data.maxRetries,
