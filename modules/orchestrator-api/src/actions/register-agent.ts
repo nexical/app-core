@@ -1,4 +1,4 @@
-import { db } from '@/lib/core/db';
+// GENERATED CODE - DO NOT MODIFY
 import type { ServiceResponse } from '@/types/service';
 import type { APIContext } from 'astro';
 import type { RegisterAgentDTO, Agent } from '../sdk/types';

@@ -1,4 +1,4 @@
-import { ApiClient } from './client';
+import { ApiClient } from './client.js';
 
 export abstract class BaseResource {
   constructor(protected client: ApiClient) {}

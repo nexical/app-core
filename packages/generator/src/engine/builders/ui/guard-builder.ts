@@ -102,7 +102,7 @@ export class GuardBuilder extends UiBaseBuilder {
           namedImports: ['ReactNode'],
         },
         {
-          moduleSpecifier: './RoleGuard',
+          moduleSpecifier: './RoleGuard.js',
           namedImports: ['RoleGuard'],
         },
       ],

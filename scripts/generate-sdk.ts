@@ -25,13 +25,10 @@ async function generate() {
       effectiveName
         .split(/[-_]/)
         .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-        .join('') + 'SDK';
+        .join('') + 'Module';
 
-    // relative path from packages/sdk/src/registry.generated.ts to modules/...
-    // registry is in packages/sdk/src
-    // module is in modules/user/src/sdk/index.ts
-    // Use alias for robust resolution
-    const importPath = `@modules/${moduleName}/src/sdk/index`;
+    // Use relative path from packages/sdk/src to modules/{name}/src/sdk/index.ts
+    const importPath = `../../../modules/${moduleName}/src/sdk/index.js`;
 
     // Strip "-api" suffix from property name if present
     const propertyName = moduleName.endsWith('-api') ? moduleName.replace(/-api$/, '') : moduleName;

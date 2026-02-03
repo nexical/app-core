@@ -2,8 +2,8 @@
 import { defineApi } from '@/lib/api/api-docs';
 import { ApiGuard } from '@/lib/api/api-guard';
 import { HookSystem } from '@/lib/modules/hooks';
-import { FailJobJobAction } from '@modules/orchestrator-api/src/actions/fail-job-job';
 import type { FailJobDTO } from '@modules/orchestrator-api/src/sdk';
+import { FailJobAction } from '@modules/orchestrator-api/src/actions/fail-job';
 
 // GENERATED CODE - DO NOT MODIFY
 export const POST = defineApi(
@@ -27,7 +27,7 @@ export const POST = defineApi(
     }
 
     // 4. Action Execution
-    const result = await FailJobJobAction.run(combinedInput, context);
+    const result = await FailJobAction.run(combinedInput, context);
 
     // 5. Hook: Filter Output
     const filteredResult = await HookSystem.filter('job.failJob.output', result);
@@ -48,9 +48,10 @@ export const POST = defineApi(
           schema: {
             type: 'object',
             properties: {
+              id: { type: 'string' },
               error: { type: 'object' },
             },
-            required: ['error'],
+            required: ['id'],
           },
         },
       },
@@ -79,6 +80,9 @@ export const POST = defineApi(
                 completedAt: { type: 'string', format: 'date-time' },
                 createdAt: { type: 'string', format: 'date-time' },
                 updatedAt: { type: 'string', format: 'date-time' },
+                retryCount: { type: 'number' },
+                maxRetries: { type: 'number' },
+                nextRetryAt: { type: 'string', format: 'date-time' },
                 logs: { type: 'array', items: { type: 'string' } },
               },
               required: ['type', 'updatedAt', 'logs'],

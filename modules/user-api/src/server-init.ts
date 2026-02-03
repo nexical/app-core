@@ -32,4 +32,13 @@ export async function init() {
       await mod.init();
     }
   }
+
+  // 3. Initialize Emails from src/emails/init.ts
+  const emailInitModules = import.meta.glob('./emails/init.ts', { eager: true });
+  for (const path in emailInitModules) {
+    const mod = emailInitModules[path] as { initEmails?: () => Promise<void> | void };
+    if (typeof mod.initEmails === 'function') {
+      await mod.initEmails();
+    }
+  }
 }

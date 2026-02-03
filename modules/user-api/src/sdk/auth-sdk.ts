@@ -14,7 +14,7 @@ import type {
   ResetPasswordResponseDTO,
   ValidateResetTokenDTO,
   ValidateResetTokenResponseDTO,
-} from './types';
+} from './types.js';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 /** SDK client for Auth. */

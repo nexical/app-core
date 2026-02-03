@@ -5,6 +5,7 @@ import {
   type ModuleConfig,
   type PropertyConfig,
   type MethodConfig,
+  type ConstructorConfig,
 } from '../types.js';
 import { Reconciler } from '../reconciler.js';
 import { readFileSync, existsSync } from 'node:fs';
@@ -67,7 +68,7 @@ export class AgentBuilder extends BaseBuilder {
     const imports = [
       {
         moduleSpecifier: importPath,
-        namedImports: [baseClass],
+        namedImports: isJob ? [baseClass, 'ProcessorConfig', 'AgentJob'] : [baseClass],
       },
     ];
 
@@ -76,7 +77,6 @@ export class AgentBuilder extends BaseBuilder {
         moduleSpecifier: 'zod',
         namedImports: ['z'],
       });
-      imports[0].namedImports?.push('AgentJob');
     }
 
     const definition: FileDefinition = {
@@ -89,18 +89,10 @@ export class AgentBuilder extends BaseBuilder {
           extends: isJob ? `${baseClass}<unknown>` : baseClass,
           properties: this.generateProperties(agent),
           methods: this.generateMethods(agent),
+          constructorDef: isJob ? this.generateConstructor() : undefined,
         },
       ],
     };
-
-    // Add worker export as expected by generate-agent-registry.ts
-    definition.variables = [
-      {
-        name: 'worker',
-        isExported: true,
-        initializer: `new ${toPascalCase(agent.name)}()`,
-      },
-    ];
 
     Reconciler.reconcile(file, definition);
   }
@@ -159,6 +151,13 @@ ${Object.entries(agent.payload || {})
         },
       ];
     }
+  }
+
+  private generateConstructor(): ConstructorConfig {
+    return {
+      parameters: [{ name: 'config', type: 'ProcessorConfig' }],
+      statements: ['super(config);'],
+    };
   }
 
   private getHeader(): string {

@@ -1,10 +1,7 @@
+// GENERATED CODE - DO NOT MODIFY
 import type { ServiceResponse } from '@/types/service';
 import type { CreateTokenDTO, CreateTokenResponseDTO } from '../sdk/types';
-import { PersonalAccessTokenService } from '../services/personal-access-token-service';
-import { randomBytes, createHash } from 'node:crypto';
 import type { APIContext } from 'astro';
-
-const TOKEN_PREFIX = 'ne_user_';
 
 export class CreateTokenUserAction {
   public static async run(

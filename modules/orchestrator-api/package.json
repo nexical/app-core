@@ -9,7 +9,6 @@
   },
   "dependencies": {
     "@nexical/agent": "*",
-    "@prisma/client": "7.3.0",
-    "zod": "^3.22.4"
+    "zod": "^4.3.0"
   }
 }

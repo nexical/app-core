@@ -2,8 +2,8 @@
 import { defineApi } from '@/lib/api/api-docs';
 import { ApiGuard } from '@/lib/api/api-guard';
 import { HookSystem } from '@/lib/modules/hooks';
-import { CompleteJobJobAction } from '@modules/orchestrator-api/src/actions/complete-job-job';
 import type { CompleteJobDTO } from '@modules/orchestrator-api/src/sdk';
+import { CompleteJobAction } from '@modules/orchestrator-api/src/actions/complete-job';
 
 // GENERATED CODE - DO NOT MODIFY
 export const POST = defineApi(
@@ -27,7 +27,7 @@ export const POST = defineApi(
     }
 
     // 4. Action Execution
-    const result = await CompleteJobJobAction.run(combinedInput, context);
+    const result = await CompleteJobAction.run(combinedInput, context);
 
     // 5. Hook: Filter Output
     const filteredResult = await HookSystem.filter('job.completeJob.output', result);
@@ -48,9 +48,10 @@ export const POST = defineApi(
           schema: {
             type: 'object',
             properties: {
+              id: { type: 'string' },
               result: { type: 'object' },
             },
-            required: ['result'],
+            required: ['id'],
           },
         },
       },
@@ -79,6 +80,9 @@ export const POST = defineApi(
                 completedAt: { type: 'string', format: 'date-time' },
                 createdAt: { type: 'string', format: 'date-time' },
                 updatedAt: { type: 'string', format: 'date-time' },
+                retryCount: { type: 'number' },
+                maxRetries: { type: 'number' },
+                nextRetryAt: { type: 'string', format: 'date-time' },
                 logs: { type: 'array', items: { type: 'string' } },
               },
               required: ['type', 'updatedAt', 'logs'],

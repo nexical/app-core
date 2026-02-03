@@ -2,8 +2,8 @@
 import { defineApi } from '@/lib/api/api-docs';
 import { ApiGuard } from '@/lib/api/api-guard';
 import { HookSystem } from '@/lib/modules/hooks';
-import { RegisterAgentAction } from '@modules/orchestrator-api/src/actions/register-agent';
 import type { RegisterAgentDTO } from '@modules/orchestrator-api/src/sdk';
+import { RegisterAgentAction } from '@modules/orchestrator-api/src/actions/register-agent';
 
 // GENERATED CODE - DO NOT MODIFY
 export const POST = defineApi(
@@ -14,7 +14,7 @@ export const POST = defineApi(
     const query = Object.fromEntries(new URL(context.request.url).searchParams);
 
     // 2. Hook: Filter Input
-    const input: RegisterAgentDTO = await HookSystem.filter('agent.register.input', body);
+    const input: RegisterAgentDTO = await HookSystem.filter('agent.registerAgent.input', body);
 
     // 3. Security Check
     const combinedInput = { ...context.params, ...query, ...input };
@@ -30,7 +30,7 @@ export const POST = defineApi(
     const result = await RegisterAgentAction.run(combinedInput, context);
 
     // 5. Hook: Filter Output
-    const filteredResult = await HookSystem.filter('agent.register.output', result);
+    const filteredResult = await HookSystem.filter('agent.registerAgent.output', result);
 
     // 6. Response
     if (!filteredResult.success) {

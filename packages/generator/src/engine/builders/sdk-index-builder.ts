@@ -28,7 +28,7 @@ export class SdkIndexBuilder extends BaseBuilder {
     const cleanName = this.moduleName.endsWith('-api')
       ? this.moduleName.replace(/-api$/, '')
       : this.moduleName;
-    const mainSdkName = `${toPascalCase(cleanName)}SDK`;
+    const mainSdkName = `${toPascalCase(cleanName)}Module`;
 
     const classExtends = defaultModel ? `Base${defaultModel.name}SDK` : 'BaseResource';
     const needsBaseResource = !defaultModel;
@@ -39,7 +39,7 @@ export class SdkIndexBuilder extends BaseBuilder {
         namedImports: needsBaseResource ? ['BaseResource', 'ApiClient'] : ['ApiClient'],
       },
       ...apiModels.map((m) => ({
-        moduleSpecifier: `./${toKebabCase(m.name)}-sdk`,
+        moduleSpecifier: `./${toKebabCase(m.name)}-sdk.js`,
         namedImports: [`${m.name}SDK as Base${m.name}SDK`],
       })),
     ];
@@ -70,10 +70,10 @@ export class SdkIndexBuilder extends BaseBuilder {
 
     const exports = [
       ...apiModels.map((m) => ({
-        moduleSpecifier: `./${toKebabCase(m.name)}-sdk`,
+        moduleSpecifier: `./${toKebabCase(m.name)}-sdk.js`,
         exportClause: '*',
       })),
-      { moduleSpecifier: './types', exportClause: '*' },
+      { moduleSpecifier: './types.js', exportClause: '*' },
     ];
 
     return {

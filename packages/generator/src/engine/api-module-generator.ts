@@ -105,17 +105,21 @@ export class ApiModuleGenerator extends ModuleGenerator {
             }
 
             // Action Stub
+            const kebabMethod = route.method.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
             const actionBase =
               route.action ||
-              `${route.method.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()}-${kebabName}`;
+              (kebabMethod.includes(kebabName) ? kebabMethod : `${kebabMethod}-${kebabName}`);
+
             const actionPath = `src/actions/${actionBase}.ts`;
             const actionFile = this.getOrCreateFile(actionPath);
+
+            const methodPascal = route.method.charAt(0).toUpperCase() + route.method.slice(1);
             const actionName = route.action
               ? route.action
                   .split('-')
                   .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
                   .join('') + 'Action'
-              : `${route.method.charAt(0).toUpperCase() + route.method.slice(1)}${name}Action`;
+              : (methodPascal.includes(name) ? methodPascal : `${methodPascal}${name}`) + 'Action';
 
             // Support "none" keyword mapped to "void"
             const inputType = route.input === 'none' ? 'void' : route.input;
@@ -231,17 +235,22 @@ export class ApiModuleGenerator extends ModuleGenerator {
           }
 
           // Action
+          const kebabMethod = route.method.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase();
           const actionBase =
             route.action ||
-            `${route.method.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()}-${kebabEntity}`;
+            (kebabMethod.includes(kebabEntity) ? kebabMethod : `${kebabMethod}-${kebabEntity}`);
+
           const actionPath = `src/actions/${actionBase}.ts`;
           const actionFile = this.getOrCreateFile(actionPath);
+
+          const methodPascal = route.method.charAt(0).toUpperCase() + route.method.slice(1);
           const actionName = route.action
             ? route.action
                 .split('-')
                 .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
                 .join('') + 'Action'
-            : `${route.method.charAt(0).toUpperCase() + route.method.slice(1)}${entityName}Action`;
+            : (methodPascal.includes(entityName) ? methodPascal : `${methodPascal}${entityName}`) +
+              'Action';
 
           // Support "none" keyword mapped to "void"
           const inputType = route.input === 'none' ? 'void' : route.input;
@@ -295,6 +304,7 @@ export class ApiModuleGenerator extends ModuleGenerator {
     new MiddlewareBuilder(models, allCustomRoutes).ensure(middlewareFile);
 
     // 5. Cleanup
+    this.cleanup('src/actions', /\.ts$/);
     this.cleanup('src/services', /\.ts$/);
     this.cleanup('src/pages/api', /\.ts$/);
     this.cleanup('src/sdk', /\.ts$/);

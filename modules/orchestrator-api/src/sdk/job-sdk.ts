@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 import { BaseResource } from '@nexical/sdk-core';
-import type { Job, CompleteJobDTO, FailJobDTO } from './types';
+import type { Job, CompleteJobDTO, FailJobDTO, CancelJobDTO, UpdateProgressDTO } from './types.js';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 /** SDK client for Job. */
@@ -62,5 +62,19 @@ export class JobSDK extends BaseResource {
     data: FailJobDTO,
   ): Promise<{ success: boolean; data: Job; error?: string }> {
     return this._request('POST', `/job/${id}/fail`, data);
+  }
+
+  public async cancelJob(
+    id: string,
+    data: CancelJobDTO,
+  ): Promise<{ success: boolean; data: Job; error?: string }> {
+    return this._request('POST', `/job/${id}/cancel`, data);
+  }
+
+  public async updateProgress(
+    id: string,
+    data: UpdateProgressDTO,
+  ): Promise<{ success: boolean; data: void; error?: string }> {
+    return this._request('POST', `/job/${id}/progress`, data);
   }
 }

@@ -23,7 +23,7 @@ export class ActorTypeBuilder extends BaseBuilder {
     for (const model of actorModels) {
       // Import the model type
       imports.push({
-        moduleSpecifier: './sdk/types',
+        moduleSpecifier: './sdk/types.js',
         isTypeOnly: true,
         namedImports: [model.name],
       });

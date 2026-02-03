@@ -1,9 +1,17 @@
 import { z } from 'zod';
 
+export type JobStatus = 'PENDING' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
+
 export interface AgentJob<T = unknown> {
   id: string;
   type: string;
   payload: T;
+  status?: JobStatus;
+  progress?: number;
+  result?: unknown;
+  error?: unknown;
+  retryCount?: number;
+  maxRetries?: number;
 }
 
 export interface AgentContext {

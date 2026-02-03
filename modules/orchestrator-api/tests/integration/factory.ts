@@ -19,6 +19,9 @@ export const factories = {
       lockedAt: new Date(),
       startedAt: new Date(),
       completedAt: new Date(),
+      retryCount: index,
+      maxRetries: index,
+      nextRetryAt: new Date(),
     };
   },
   jobLog: (index: number) => {
@@ -36,6 +39,17 @@ export const factories = {
       hostname: `hostname_${index}`,
       capabilities: [`capabilities_${index}`],
       lastHeartbeat: new Date(),
+    };
+  },
+  deadLetterJob: (index: number) => {
+    return {
+      originalJobId: `originalJobId_${index}`,
+      type: `type_${index}`,
+      failedAt: new Date(),
+      retryCount: index,
+      reason: `reason_${index}`,
+      actorId: `actorId_${index}`,
+      actorType: `actorType_${index}`,
     };
   },
 };

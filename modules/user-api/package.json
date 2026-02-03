@@ -7,7 +7,6 @@
     "./*": "./src/*"
   },
   "dependencies": {
-    "@prisma/client": "7.3.0",
     "bcryptjs": "^3.0.3",
     "zod": "^3.22.4"
   },

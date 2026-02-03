@@ -37,7 +37,27 @@ export class TypeBuilder extends BaseBuilder {
 
     const statements: (string | StatementConfig)[] = [];
 
+    // 1. Identify used database models in virtual model fields
+    const usedDbModels = new Set<string>();
+    for (const model of virtualModels) {
+      for (const field of Object.values(model.fields)) {
+        if (dbModels.some((dm) => dm.name === field.type)) {
+          usedDbModels.add(field.type);
+        }
+      }
+    }
+
     if (dbModels.length > 0) {
+      const namedImports = dbModels.map((m) => m.name).filter((name) => usedDbModels.has(name));
+
+      if (namedImports.length > 0) {
+        imports.push({
+          moduleSpecifier: '@prisma/client',
+          namedImports: namedImports,
+          isTypeOnly: true,
+        });
+      }
+
       exportsConfig.push({
         moduleSpecifier: '@prisma/client',
         exportClause: dbModels.map((m) => m.name),
