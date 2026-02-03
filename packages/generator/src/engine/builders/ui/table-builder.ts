@@ -32,37 +32,110 @@ export class TableBuilder extends UiBaseBuilder {
 
       const file = project.createSourceFile(fileName, '', { overwrite: true });
 
+      // Determine Table Configuration
+      const tableConfig = this.uiConfig.tables?.[model.name] || {};
+      const editMode = tableConfig.editMode || 'sheet'; // Default to sheet
+
+      const imports = [
+        {
+          moduleSpecifier: 'react',
+          namedImports: ['useState'],
+        },
+        {
+          moduleSpecifier: `@/hooks/use-${toKebabCase(model.name)}`,
+          namedImports: [
+            `use${toPascalCase(model.name)}Query`,
+            `useDelete${toPascalCase(model.name)}`,
+          ],
+        },
+        {
+          moduleSpecifier: `@modules/${this.uiConfig.backend || this.moduleName}/permissions`,
+          namedImports: ['Permission'],
+        },
+        {
+          moduleSpecifier: '@/hooks/use-auth',
+          namedImports: ['useAuth'],
+        },
+        {
+          moduleSpecifier: '@tanstack/react-table',
+          namedImports: ['type ColumnDef'],
+        },
+        {
+          moduleSpecifier: '@/components/ui/data-table/data-table',
+          namedImports: ['DataTable'],
+        },
+        {
+          moduleSpecifier: '@/components/ui/data-table/data-table-column-header',
+          namedImports: ['DataTableColumnHeader'],
+        },
+        {
+          moduleSpecifier: '@/components/ui/button',
+          namedImports: ['Button'],
+        },
+        {
+          moduleSpecifier: 'lucide-react',
+          namedImports: ['MoreHorizontal', 'Trash', 'Pencil'],
+        },
+        {
+          moduleSpecifier: '@/components/ui/dropdown-menu',
+          namedImports: [
+            'DropdownMenu',
+            'DropdownMenuContent',
+            'DropdownMenuItem',
+            'DropdownMenuLabel',
+            'DropdownMenuSeparator',
+            'DropdownMenuTrigger',
+          ],
+        },
+        {
+          moduleSpecifier: `@modules/${this.uiConfig.backend || this.moduleName}/src/sdk`,
+          namedImports: [`type ${toPascalCase(model.name)}`],
+        },
+        {
+          moduleSpecifier: '@/components/ui/confirm-form-deletion',
+          namedImports: ['ConfirmFormDeletion'],
+        },
+        // Import Form for Editing
+        {
+          moduleSpecifier: `./${toPascalCase(model.name)}Form`,
+          namedImports: [`${toPascalCase(model.name)}Form`],
+        },
+      ];
+
+      // Import Dialog or Sheet based on editMode
+      if (editMode === 'sheet') {
+        imports.push({
+          moduleSpecifier: '@/components/ui/sheet',
+          namedImports: ['Sheet', 'SheetContent', 'SheetHeader', 'SheetTitle', 'SheetDescription'],
+        });
+      } else {
+        imports.push({
+          moduleSpecifier: '@/components/ui/dialog',
+          namedImports: [
+            'Dialog',
+            'DialogContent',
+            'DialogHeader',
+            'DialogTitle',
+            'DialogDescription',
+          ],
+        });
+      }
+
       const definition: FileDefinition = {
         header: this.getHeader(),
-        imports: [
-          {
-            moduleSpecifier: 'react',
-            namedImports: ['useState'],
-          },
-          {
-            moduleSpecifier: `@/hooks/use-${toKebabCase(model.name)}`,
-            namedImports: [
-              `use${toPascalCase(model.name)}Query`,
-              `useDelete${toPascalCase(model.name)}`,
-            ],
-          },
-          {
-            moduleSpecifier: `@modules/${this.uiConfig.backend || this.moduleName}/permissions`,
-            namedImports: ['Permission'],
-          },
-          {
-            moduleSpecifier: '@/hooks/use-auth',
-            namedImports: ['useAuth'],
-          },
-        ],
-        functions: [this.generateFunctionConfig(model, componentName)],
+        imports: imports,
+        functions: [this.generateFunctionConfig(model, componentName, editMode)],
       };
 
       Reconciler.reconcile(file, definition);
     }
   }
 
-  private generateFunctionConfig(model: ModelDef, componentName: string): any {
+  private generateFunctionConfig(
+    model: ModelDef,
+    componentName: string,
+    editMode: 'sheet' | 'dialog',
+  ): any {
     const modelName = toPascalCase(model.name);
     const hookName = `use${modelName}Query`;
     const deleteHookName = `useDelete${modelName}`;
@@ -96,6 +169,31 @@ export class TableBuilder extends UiBaseBuilder {
             name: 'canDelete',
             initializer: `Permission.check('${model.name.toLowerCase()}:delete', user?.role || 'ANONYMOUS')`,
           },
+          {
+            name: 'canUpdate',
+            initializer: `Permission.check('${model.name.toLowerCase()}:update', user?.role || 'ANONYMOUS')`,
+          },
+        ],
+      },
+      // State for Edit/Delete
+      {
+        kind: 'variable',
+        declarationKind: 'const',
+        declarations: [
+          {
+            name: '[editingItem, setEditingItem]',
+            initializer: `useState<${modelName} | null>(null)`,
+          },
+        ],
+      },
+      {
+        kind: 'variable',
+        declarationKind: 'const',
+        declarations: [
+          {
+            name: '[deletingItem, setDeletingItem]',
+            initializer: `useState<${modelName} | null>(null)`,
+          },
         ],
       },
       {
@@ -112,71 +210,152 @@ export class TableBuilder extends UiBaseBuilder {
       },
     ];
 
-    // Build Table Headers JSX
-    const headers = columns.map((col) => ({
-      kind: 'jsx',
-      tagName: 'th',
-      attributes: [
+    // Define columns
+    const columnsDefinition = `[
+      ${columns
+        .map(
+          (col) => `{
+        accessorKey: '${col}',
+        header: ({ column }) => (
+          <DataTableColumnHeader column={column} title="${toPascalCase(col)}" />
+        ),
+        cell: ({ row }) => <div>{String(row.getValue('${col}') || '')}</div>,
+      }`,
+        )
+        .join(',\n')},
+      {
+        id: 'actions',
+        cell: ({ row }) => {
+          const item = row.original;
+          return (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" className="h-8 w-8 p-0">
+                  <span className="sr-only">Open menu</span>
+                  <MoreHorizontal className="h-4 w-4" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                {canUpdate && (
+                  <DropdownMenuItem onClick={() => setEditingItem(item)}>
+                    <Pencil className="mr-2 h-4 w-4" />
+                    Edit
+                  </DropdownMenuItem>
+                )}
+                {canDelete && (
+                  <DropdownMenuItem
+                    className="text-red-600 focus:text-red-600"
+                    onClick={() => setDeletingItem(item)}
+                  >
+                    <Trash className="mr-2 h-4 w-4" />
+                    Delete
+                  </DropdownMenuItem>
+                )}
+              </DropdownMenuContent>
+            </DropdownMenu>
+          );
+        },
+      },
+    ]`;
+
+    statements.push({
+      kind: 'variable',
+      declarationKind: 'const',
+      declarations: [
         {
-          name: 'className',
-          value: 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider',
+          name: 'columns',
+          type: `ColumnDef<${modelName}>[]`,
+          initializer: columnsDefinition,
         },
       ],
-      children: [col],
-    }));
-    headers.push({
-      kind: 'jsx',
-      tagName: 'th',
-      attributes: [
-        {
-          name: 'className',
-          value: 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider',
-        },
-      ],
-      children: ['Actions'],
     });
 
-    // Build Table Body Rows Mapper
-    const rowMapper = `data?.data?.map((item: any) => (
-      <tr key={item.id}>
-        ${columns.map((col) => `<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{String(item.${col})}</td>`).join('\n')}
-        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-          {canDelete && (
-             <button className="text-red-600 hover:text-red-900" onClick={() => deleteMutation.mutate(item.id)}>Delete</button>
-          )}
-        </td>
-      </tr>
-    ))`;
+    // Helper to generate Edit Container (Sheet or Dialog)
+    const editContainer =
+      editMode === 'sheet'
+        ? `<Sheet open={!!editingItem} onOpenChange={(open) => !open && setEditingItem(null)}>
+            <SheetContent>
+              <SheetHeader>
+                <SheetTitle>Edit ${modelName}</SheetTitle>
+                <SheetDescription>Make changes to the ${modelName.toLowerCase()}.</SheetDescription>
+              </SheetHeader>
+              <div className="mt-4">
+               {editingItem && (
+                 <${modelName}Form 
+                    id={editingItem.id} 
+                    initialData={editingItem} 
+                    onSuccess={() => setEditingItem(null)} 
+                 />
+               )}
+              </div>
+            </SheetContent>
+           </Sheet>`
+        : `<Dialog open={!!editingItem} onOpenChange={(open) => !open && setEditingItem(null)}>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Edit ${modelName}</DialogTitle>
+                <DialogDescription>Make changes to the ${modelName.toLowerCase()}.</DialogDescription>
+              </DialogHeader>
+              {editingItem && (
+                 <${modelName}Form 
+                    id={editingItem.id} 
+                    initialData={editingItem} 
+                    onSuccess={() => setEditingItem(null)} 
+                 />
+               )}
+            </DialogContent>
+           </Dialog>`;
 
+    // Return with Data Table AND Modals
     statements.push({
       kind: 'return',
       expression: {
         kind: 'jsx',
         tagName: 'div',
-        attributes: [{ name: 'className', value: 'overflow-x-auto' }],
+        attributes: [{ name: 'className', value: 'space-y-4' }],
         children: [
           {
             kind: 'jsx',
-            tagName: 'table',
-            attributes: [{ name: 'className', value: 'min-w-full divide-y divide-gray-200' }],
-            children: [
+            tagName: 'DataTable',
+            attributes: [
+              { name: 'columns', value: { kind: 'expression', expression: 'columns' } },
+              { name: 'data', value: { kind: 'expression', expression: 'data || []' } },
+            ],
+            selfClosing: true,
+          },
+          // Edit Modal/Sheet
+          {
+            kind: 'expression',
+            expression: editContainer,
+          },
+          // Delete Confirmation Dialog
+          {
+            kind: 'jsx',
+            tagName: 'ConfirmFormDeletion',
+            selfClosing: true,
+            attributes: [
+              { name: 'isOpen', value: { kind: 'expression', expression: '!!deletingItem' } },
               {
-                kind: 'jsx',
-                tagName: 'thead',
-                attributes: [{ name: 'className', value: 'bg-gray-50' }],
-                children: [
-                  {
-                    kind: 'jsx',
-                    tagName: 'tr',
-                    children: headers,
-                  },
-                ],
+                name: 'onOpenChange',
+                value: {
+                  kind: 'expression',
+                  expression: '(open) => !open && setDeletingItem(null)',
+                },
+              },
+              { name: 'resourceName', value: `'${modelName}'` },
+              {
+                name: 'resourceIdentifier',
+                value: { kind: 'expression', expression: 'deletingItem?.id || ""' },
               },
               {
-                kind: 'jsx',
-                tagName: 'tbody',
-                attributes: [{ name: 'className', value: 'bg-white divide-y divide-gray-200' }],
-                children: [{ kind: 'expression', expression: rowMapper }],
+                name: 'onConfirm',
+                value: {
+                  kind: 'expression',
+                  expression:
+                    '() => { if (deletingItem) deleteMutation.mutate(deletingItem.id); setDeletingItem(null); }',
+                },
               },
             ],
           },

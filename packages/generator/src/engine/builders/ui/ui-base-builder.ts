@@ -19,6 +19,8 @@ export interface UiConfig {
   pages?: PageDefinition[];
   shells?: ShellDefinition[];
   registries?: Record<string, RegistryItemDefinition[]>;
+  forms?: Record<string, Record<string, any>>; // Simplified for internal use, or import stricter type
+  tables?: Record<string, any>;
 }
 
 export abstract class UiBaseBuilder extends BaseBuilder {

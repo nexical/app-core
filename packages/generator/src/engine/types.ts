@@ -90,12 +90,26 @@ export interface RegistryItemDefinition {
   matcher: Record<string, unknown>;
 }
 
+export interface FormFieldConfig {
+  component?: {
+    name: string;
+    path: string;
+    props?: Record<string, unknown>; // Optional props to pass
+  };
+}
+
+export interface TableConfig {
+  editMode?: 'sheet' | 'dialog';
+}
+
 export interface UiModuleConfig {
   backend?: string;
   prefix?: string;
   pages?: PageDefinition[];
   shells?: ShellDefinition[];
   registries?: Record<string, RegistryItemDefinition[]>;
+  forms?: Record<string, Record<string, FormFieldConfig>>; // ModelName -> FieldName -> Config
+  tables?: Record<string, TableConfig>; // ModelName -> Config
 }
 
 // --- Statement Configurations ---

@@ -29,6 +29,13 @@ export class FormBuilder extends UiBaseBuilder {
     const allModels = models;
 
     for (const model of models) {
+      // ONLY generate forms if listed in uiConfig.forms
+      if (!this.uiConfig.forms || !this.uiConfig.forms[model.name]) {
+        continue;
+      }
+
+      const formConfig = this.uiConfig.forms[model.name];
+
       if (!model.api) continue;
 
       const componentName = `${toPascalCase(model.name)}Form`;
@@ -42,42 +49,64 @@ export class FormBuilder extends UiBaseBuilder {
 
       const file = project.createSourceFile(fileName, '', { overwrite: true });
 
+      // Collect custom component imports
+      const customImports: Set<string> = new Set();
+      Object.values(formConfig).forEach((fieldConfig: any) => {
+        if (fieldConfig.component && fieldConfig.component.path) {
+          // We need to handle named imports. Assuming component.name is the named export.
+          // Store as JSON string to dedupe, then parse back.
+          customImports.add(
+            JSON.stringify({
+              moduleSpecifier: fieldConfig.component.path,
+              namedImports: [fieldConfig.component.name],
+            }),
+          );
+        }
+      });
+
+      const imports = [
+        {
+          moduleSpecifier: 'react',
+          namedImports: ['useEffect'],
+        },
+        {
+          moduleSpecifier: 'react-hook-form',
+          namedImports: ['useForm'],
+        },
+        {
+          moduleSpecifier: '@hookform/resolvers/zod',
+          namedImports: ['zodResolver'],
+        },
+        {
+          moduleSpecifier: 'zod',
+          namedImports: ['z'],
+        },
+        {
+          moduleSpecifier: `@/hooks/use-${toKebabCase(model.name)}`,
+          namedImports: [
+            `useCreate${toPascalCase(model.name)}`,
+            `useUpdate${toPascalCase(model.name)}`,
+          ],
+        },
+        {
+          moduleSpecifier: `@modules/${this.uiConfig.backend || this.moduleName}/permissions`,
+          namedImports: ['Permission'],
+        },
+        {
+          moduleSpecifier: '@/hooks/use-auth',
+          namedImports: ['useAuth'],
+        },
+      ];
+
+      // Add custom imports
+      customImports.forEach((json) => {
+        imports.push(JSON.parse(json));
+      });
+
       const definition: FileDefinition = {
         header: this.getHeader(),
-        imports: [
-          {
-            moduleSpecifier: 'react',
-            namedImports: ['useEffect'],
-          },
-          {
-            moduleSpecifier: 'react-hook-form',
-            namedImports: ['useForm'],
-          },
-          {
-            moduleSpecifier: '@hookform/resolvers/zod',
-            namedImports: ['zodResolver'],
-          },
-          {
-            moduleSpecifier: 'zod',
-            namedImports: ['z'],
-          },
-          {
-            moduleSpecifier: `@/hooks/use-${toKebabCase(model.name)}`,
-            namedImports: [
-              `useCreate${toPascalCase(model.name)}`,
-              `useUpdate${toPascalCase(model.name)}`,
-            ],
-          },
-          {
-            moduleSpecifier: `@modules/${this.uiConfig.backend || this.moduleName}/permissions`,
-            namedImports: ['Permission'],
-          },
-          {
-            moduleSpecifier: '@/hooks/use-auth',
-            namedImports: ['useAuth'],
-          },
-        ],
-        functions: [this.generateFunctionConfig(model, allModels, componentName)],
+        imports: imports,
+        functions: [this.generateFunctionConfig(model, allModels, componentName, formConfig)],
       };
 
       Reconciler.reconcile(file, definition);
@@ -88,6 +117,7 @@ export class FormBuilder extends UiBaseBuilder {
     model: ModelDef,
     allModels: ModelDef[],
     componentName: string,
+    formConfig: Record<string, any>,
   ): any {
     const modelName = toPascalCase(model.name);
     const zodSchema = ZodHelper.generateSchema(model, allModels);
@@ -136,6 +166,7 @@ export class FormBuilder extends UiBaseBuilder {
         register,
         handleSubmit,
         reset,
+        control,
         formState: { errors, isSubmitting },
     } = useForm<FormData>({
         resolver: zodResolver(schema),
@@ -164,7 +195,7 @@ export class FormBuilder extends UiBaseBuilder {
     ];
 
     // Build JSX Fields
-    const fieldElements = this.generateFieldElements(model);
+    const fieldElements = this.generateFieldElements(model, formConfig);
 
     // Submit Button
     const submitButton: JsxElementConfig = {
@@ -220,11 +251,12 @@ export class FormBuilder extends UiBaseBuilder {
     };
   }
 
-  private generateFieldElements(model: ModelDef): any[] {
+  private generateFieldElements(model: ModelDef, formConfig: Record<string, any>): any[] {
     return Object.entries(model.fields)
       .filter(
         ([name, f]) =>
-          !f.private &&
+          // Include if not private OR if explicitly configured in formConfig
+          (!f.private || (formConfig && formConfig[name])) &&
           f.type !== 'Json' &&
           !f.isRelation &&
           !['id', 'createdAt', 'updatedAt'].includes(name),
@@ -233,12 +265,58 @@ export class FormBuilder extends UiBaseBuilder {
         const label = toPascalCase(name)
           .replace(/([A-Z])/g, ' $1')
           .trim();
+
+        // Check for Custom Component Override
+        const fieldConfig = formConfig[name];
+        if (fieldConfig && fieldConfig.component) {
+          return {
+            kind: 'jsx',
+            tagName: 'div',
+            children: [
+              {
+                kind: 'jsx',
+                tagName: 'label',
+                attributes: [
+                  { name: 'htmlFor', value: name },
+                  { name: 'className', value: 'block text-sm font-medium text-gray-700' },
+                ],
+                children: [label],
+              },
+              {
+                kind: 'jsx',
+                tagName: 'div',
+                attributes: [{ name: 'className', value: 'mt-1' }],
+                children: [
+                  {
+                    kind: 'jsx',
+                    tagName: fieldConfig.component.name,
+                    selfClosing: true,
+                    attributes: [
+                      { name: 'id', value: name },
+                      {
+                        name: 'error',
+                        value: {
+                          kind: 'expression',
+                          expression: `errors.${name}?.message as string`,
+                        },
+                      },
+                      // Spread register props correctly
+                      { name: `{...register('${name}')}` },
+                      // Allow props injection if needed, but for now assumption is standard interface
+                    ],
+                  },
+                ],
+              },
+            ],
+          };
+        }
+
         let inputType = 'text';
         if (f.type === 'Int' || f.type === 'Float') inputType = 'number';
-        if (f.type === 'Boolean') inputType = 'checkbox'; // TODO: Checkbox needs different structure
+        if (f.type === 'Boolean') inputType = 'checkbox';
         if (f.type === 'DateTime') inputType = 'datetime-local';
 
-        // Simplify for Demo: Standard Input
+        // Standard Input
         return {
           kind: 'jsx',
           tagName: 'div',
@@ -265,8 +343,7 @@ export class FormBuilder extends UiBaseBuilder {
                     { name: 'type', value: inputType },
                     { name: 'id', value: name },
                     {
-                      name: '{...register',
-                      value: `('${name}'${inputType === 'number' ? ', { valueAsNumber: true }' : ''})}`,
+                      name: `{...register('${name}'${inputType === 'number' ? ', { valueAsNumber: true }' : ''})}`,
                     },
                     {
                       name: 'className',
