@@ -33,12 +33,19 @@ async function generate() {
   // For persistent agents, import the class directly too
   const imports = agents
     .map((a) => {
-      // Extract class name from file name (same as variableName but PascalCase)
-      const className = a.variableName
+      const parts = a.key.split('.');
+      const fileName = parts[1];
+      const originalClassName = fileName
+        .split('-')
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join('');
+
+      const prefixedClassName = a.variableName
         .split('_')
         .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
         .join('');
-      return `import { ${className} } from '${a.importPath}';`;
+
+      return `import { ${originalClassName} as ${prefixedClassName} } from '${a.importPath}';`;
     })
     .join('\n');
 
