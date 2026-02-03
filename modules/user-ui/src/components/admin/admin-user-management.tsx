@@ -37,6 +37,7 @@ import { UserActionsMenu } from './user-actions-menu';
 import { isSingleMode } from '@modules/user-api/src/config';
 
 import { type User } from '@modules/user-api/src/sdk';
+import { Permission } from '@modules/user-api/permissions';
 
 function AdminUserManagementContent({ currentUser }: { currentUser?: User }) {
   const { t } = useTranslation();
@@ -106,6 +107,11 @@ function AdminUserManagementContent({ currentUser }: { currentUser?: User }) {
     );
   });
 
+  const { t } = useTranslation();
+  // Ensure we have current user role for permission check
+  const role = currentUser?.role || 'ANONYMOUS';
+  const canInvite = Permission.check('user:invite', role);
+
   const isSingleUserMode = isSingleMode();
 
   return (
@@ -116,7 +122,7 @@ function AdminUserManagementContent({ currentUser }: { currentUser?: User }) {
           <p className="text-subtle">{t('user.admin.user_management.description')}</p>
         </div>
         <div className="shrink-0 flex items-center gap-2">
-          {!isSingleUserMode && (
+          {!isSingleUserMode && canInvite && (
             <Dialog open={inviteOpen} onOpenChange={setInviteOpen}>
               <DialogTrigger asChild>
                 <Button

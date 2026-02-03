@@ -47,5 +47,8 @@ export async function onRequest(context: APIContext, next: MiddlewareNext) {
     return next();
   }
   return next();
+  if (publicRoutes.some((route) => context.url.pathname.startsWith(route))) return next();
+  if (publicRoutes.some((route) => context.url.pathname.startsWith(route))) return next();
+  if (publicRoutes.some((route) => context.url.pathname.startsWith(route))) return next();
 }
 export default { onRequest };
