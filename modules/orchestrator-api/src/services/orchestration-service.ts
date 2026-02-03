@@ -160,17 +160,18 @@ export class OrchestrationService {
         }
       }
 
-      const newRetryCount = job.retryCount + 1;
-      const canRetry = newRetryCount <= job.maxRetries;
+      const jobAny = job as any;
+      const newRetryCount = jobAny.retryCount + 1;
+      const canRetry = newRetryCount <= jobAny.maxRetries;
 
       if (canRetry) {
         // Schedule retry with exponential backoff: 2^retryCount * baseDelay (1000ms)
         const baseDelayMs = 1000;
-        const delayMs = Math.pow(2, job.retryCount) * baseDelayMs;
+        const delayMs = Math.pow(2, jobAny.retryCount) * baseDelayMs;
         const nextRetryAt = new Date(Date.now() + delayMs);
 
         Logger.info(
-          `[OrchestrationService.fail] Scheduling retry ${newRetryCount}/${job.maxRetries} for job ${id} at ${nextRetryAt.toISOString()}`,
+          `[OrchestrationService.fail] Scheduling retry ${newRetryCount}/${jobAny.maxRetries} for job ${id} at ${nextRetryAt.toISOString()}`,
         );
 
         const updated = await db.job.update({
@@ -195,7 +196,7 @@ export class OrchestrationService {
 
       // Permanent failure - exhausted retries
       Logger.warn(
-        `[OrchestrationService.fail] Job ${id} failed permanently after ${job.retryCount} retries`,
+        `[OrchestrationService.fail] Job ${id} failed permanently after ${(job as any).retryCount} retries`,
       );
 
       const updated = await db.job.update({

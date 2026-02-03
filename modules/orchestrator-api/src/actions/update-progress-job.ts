@@ -9,16 +9,13 @@ import { OrchestrationService } from '../services/orchestration-service';
  * Action to update job progress.
  */
 export class UpdateProgressJobAction {
-  static schema = UpdateProgressSchema;
-
   public static async run(
-    input: UpdateProgressDTO,
+    input: UpdateProgressDTO & { id: string },
     context: APIContext,
   ): Promise<ServiceResponse<void>> {
-    const parsed = this.schema.parse(input);
     const actor = context.locals.actor;
 
-    const result = await OrchestrationService.updateProgress(parsed.id, parsed.progress, actor?.id);
+    const result = await OrchestrationService.updateProgress(input.id, input.progress, actor?.id);
 
     return result.success ? { success: true } : { success: false, error: result.error };
   }
