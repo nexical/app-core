@@ -3,6 +3,8 @@ import { JobMetricsService } from '../../../src/services/job-metrics-service';
 import { db } from '@/lib/core/db';
 import { Logger } from '@/lib/core/logger';
 import { HookSystem } from '@/lib/modules/hooks';
+// Removed unused Agent, Job imports
+import type { JobMetrics, AgentMetrics } from '../../../src/services/job-metrics-service';
 
 vi.mock('@/lib/core/db', () => ({
   db: {
@@ -38,21 +40,21 @@ describe('JobMetricsService', () => {
 
   describe('getJobMetrics', () => {
     it('should calculate job metrics correctly', async () => {
-      (db.job.count as unknown)
+      vi.mocked(db.job.count)
         .mockResolvedValueOnce(100) // total
         .mockResolvedValueOnce(10); // retryData
 
-      (db.job.groupBy as unknown).mockResolvedValue([
+      vi.mocked(db.job.groupBy).mockResolvedValue([
         { status: 'PENDING', _count: { id: 20 } },
         { status: 'RUNNING', _count: { id: 10 } },
         { status: 'COMPLETED', _count: { id: 50 } },
         { status: 'FAILED', _count: { id: 15 } },
         { status: 'CANCELLED', _count: { id: 5 } },
-      ]);
+      ] as unknown as Awaited<ReturnType<typeof db.job.groupBy>>);
 
-      (db.job.aggregate as unknown).mockResolvedValue({
+      vi.mocked(db.job.aggregate).mockResolvedValue({
         _avg: { progress: 85 },
-      });
+      } as unknown as Awaited<ReturnType<typeof db.job.aggregate>>);
 
       const metrics = await JobMetricsService.getJobMetrics();
 
@@ -67,9 +69,9 @@ describe('JobMetricsService', () => {
     });
 
     it('should handle zero jobs', async () => {
-      (db.job.count as unknown).mockResolvedValue(0);
-      (db.job.groupBy as unknown).mockResolvedValue([]);
-      (db.job.aggregate as unknown).mockResolvedValue({});
+      vi.mocked(db.job.groupBy).mockResolvedValue(
+        [] as unknown as Awaited<ReturnType<typeof db.job.groupBy>>,
+      );
 
       const metrics = await JobMetricsService.getJobMetrics();
 
@@ -80,7 +82,7 @@ describe('JobMetricsService', () => {
 
     it('should throw and log on errors', async () => {
       const error = new Error('DB error');
-      (db.job.count as unknown).mockRejectedValue(error);
+      vi.mocked(db.job.count).mockRejectedValue(error);
 
       await expect(JobMetricsService.getJobMetrics()).rejects.toThrow(error);
       expect(Logger.error).toHaveBeenCalledWith('JobMetricsService.getJobMetrics Error:', error);
@@ -89,13 +91,13 @@ describe('JobMetricsService', () => {
 
   describe('getAgentMetrics', () => {
     it('should calculate agent metrics correctly', async () => {
-      (db.agent.count as unknown).mockResolvedValue(10);
-      (db.agent.groupBy as unknown).mockResolvedValue([
+      vi.mocked(db.agent.count).mockResolvedValue(10);
+      vi.mocked(db.agent.groupBy).mockResolvedValue([
         { status: 'ONLINE', _count: { id: 5 } },
         { status: 'OFFLINE', _count: { id: 3 } },
         { status: 'BUSY', _count: { id: 2 } },
-      ]);
-      (db.job.count as unknown).mockResolvedValue(50); // jobsProcessedLast24h
+      ] as unknown as Awaited<ReturnType<typeof db.agent.groupBy>>);
+      vi.mocked(db.job.count).mockResolvedValue(50); // jobsProcessedLast24h
 
       const metrics = await JobMetricsService.getAgentMetrics();
 
@@ -107,9 +109,11 @@ describe('JobMetricsService', () => {
     });
 
     it('should handle missing statuses', async () => {
-      (db.agent.count as unknown).mockResolvedValue(10);
-      (db.agent.groupBy as unknown).mockResolvedValue([{ status: 'ONLINE', _count: { id: 5 } }]);
-      (db.job.count as unknown).mockResolvedValue(50);
+      vi.mocked(db.agent.count).mockResolvedValue(10);
+      vi.mocked(db.agent.groupBy).mockResolvedValue([
+        { status: 'ONLINE', _count: { id: 5 } },
+      ] as unknown as Awaited<ReturnType<typeof db.agent.groupBy>>);
+      vi.mocked(db.job.count).mockResolvedValue(50);
 
       const metrics = await JobMetricsService.getAgentMetrics();
 
@@ -121,7 +125,7 @@ describe('JobMetricsService', () => {
 
     it('should throw and log on errors', async () => {
       const error = new Error('DB error');
-      (db.agent.count as unknown).mockRejectedValue(error);
+      vi.mocked(db.agent.count).mockRejectedValue(error);
 
       await expect(JobMetricsService.getAgentMetrics()).rejects.toThrow(error);
       expect(Logger.error).toHaveBeenCalledWith('JobMetricsService.getAgentMetrics Error:', error);
@@ -130,8 +134,12 @@ describe('JobMetricsService', () => {
 
   describe('emitMetrics', () => {
     it('should collect and dispatch metrics', async () => {
-      vi.spyOn(JobMetricsService, 'getJobMetrics').mockResolvedValue({ total: 10 } as unknown);
-      vi.spyOn(JobMetricsService, 'getAgentMetrics').mockResolvedValue({ total: 5 } as unknown);
+      vi.spyOn(JobMetricsService, 'getJobMetrics').mockResolvedValue({
+        total: 10,
+      } as unknown as JobMetrics);
+      vi.spyOn(JobMetricsService, 'getAgentMetrics').mockResolvedValue({
+        total: 5,
+      } as unknown as AgentMetrics);
 
       await JobMetricsService.emitMetrics();
 

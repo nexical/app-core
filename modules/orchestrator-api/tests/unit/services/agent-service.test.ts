@@ -2,6 +2,7 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { AgentService } from '../../../src/services/agent-service';
 import { db } from '@/lib/core/db';
 import { HookSystem } from '@/lib/modules/hooks';
+import type { Agent, Prisma } from '@prisma/client';
 
 vi.mock('@/lib/core/db', () => ({
   db: {
@@ -31,8 +32,8 @@ describe('AgentService', () => {
 
   describe('list', () => {
     it('should list agents with pagination', async () => {
-      const mockAgents = [{ id: '1' }, { id: '2' }];
-      (db.$transaction as unknown).mockResolvedValue([mockAgents, 10]);
+      const mockAgents = [{ id: '1' }, { id: '2' }] as unknown as Agent[];
+      vi.mocked(db.$transaction).mockResolvedValue([mockAgents, 10]);
 
       const result = await AgentService.list({ take: 2, skip: 0 });
 
@@ -43,7 +44,7 @@ describe('AgentService', () => {
     });
 
     it('should handle list errors', async () => {
-      (db.$transaction as unknown).mockRejectedValue(new Error('DB Error'));
+      vi.mocked(db.$transaction).mockRejectedValue(new Error('DB Error'));
       const result = await AgentService.list();
       expect(result.success).toBe(false);
       expect(result.error).toBe('agent.service.error.list_failed');
@@ -52,8 +53,8 @@ describe('AgentService', () => {
 
   describe('get', () => {
     it('should get an agent by ID', async () => {
-      const mockAgent = { id: '1' };
-      (db.agent.findUnique as unknown).mockResolvedValue(mockAgent);
+      const mockAgent = { id: '1' } as unknown as Agent;
+      vi.mocked(db.agent.findUnique).mockResolvedValue(mockAgent);
 
       const result = await AgentService.get('1');
 
@@ -63,14 +64,14 @@ describe('AgentService', () => {
     });
 
     it('should return not found if agent does not exist', async () => {
-      (db.agent.findUnique as unknown).mockResolvedValue(null);
+      vi.mocked(db.agent.findUnique).mockResolvedValue(null);
       const result = await AgentService.get('1');
       expect(result.success).toBe(false);
       expect(result.error).toBe('agent.service.error.not_found');
     });
 
     it('should handle get errors', async () => {
-      (db.agent.findUnique as unknown).mockRejectedValue(new Error('DB Error'));
+      vi.mocked(db.agent.findUnique).mockRejectedValue(new Error('DB Error'));
       const result = await AgentService.get('1');
       expect(result.success).toBe(false);
     });
@@ -79,11 +80,14 @@ describe('AgentService', () => {
   describe('create', () => {
     it('should create an agent', async () => {
       const input = { hostname: 'host' };
-      const created = { id: '1', ...input };
-      (db.$transaction as unknown).mockImplementation(async (cb: unknown) => cb(db));
-      (db.agent.create as unknown).mockResolvedValue(created);
+      const created = { id: '1', ...input } as unknown as Agent;
+      vi.mocked(db.$transaction).mockImplementation(
+        async (cb: (tx: Prisma.TransactionClient) => Promise<unknown>) =>
+          cb(db as unknown as Prisma.TransactionClient),
+      );
+      vi.mocked(db.agent.create).mockResolvedValue(created);
 
-      const result = await AgentService.create(input as unknown);
+      const result = await AgentService.create(input as unknown as Agent);
 
       expect(result.success).toBe(true);
       expect(result.data).toEqual(created);
@@ -92,8 +96,8 @@ describe('AgentService', () => {
     });
 
     it('should handle create errors', async () => {
-      (db.$transaction as unknown).mockRejectedValue(new Error('DB Error'));
-      const result = await AgentService.create({} as unknown);
+      vi.mocked(db.$transaction).mockRejectedValue(new Error('DB Error'));
+      const result = await AgentService.create({} as unknown as Agent);
       expect(result.success).toBe(false);
     });
   });
@@ -101,11 +105,14 @@ describe('AgentService', () => {
   describe('update', () => {
     it('should update an agent', async () => {
       const input = { hostname: 'new-host' };
-      const updated = { id: '1', ...input };
-      (db.$transaction as unknown).mockImplementation(async (cb: unknown) => cb(db));
-      (db.agent.update as unknown).mockResolvedValue(updated);
+      const updated = { id: '1', ...input } as unknown as Agent;
+      vi.mocked(db.$transaction).mockImplementation(
+        async (cb: (tx: Prisma.TransactionClient) => Promise<unknown>) =>
+          cb(db as unknown as Prisma.TransactionClient),
+      );
+      vi.mocked(db.agent.update).mockResolvedValue(updated);
 
-      const result = await AgentService.update('1', input as unknown);
+      const result = await AgentService.update('1', input as unknown as Partial<Agent>);
 
       expect(result.success).toBe(true);
       expect(result.data).toEqual(updated);
@@ -114,16 +121,19 @@ describe('AgentService', () => {
     });
 
     it('should handle update errors', async () => {
-      (db.$transaction as unknown).mockRejectedValue(new Error('DB Error'));
-      const result = await AgentService.update('1', {} as unknown);
+      vi.mocked(db.$transaction).mockRejectedValue(new Error('DB Error'));
+      const result = await AgentService.update('1', {} as unknown as Partial<Agent>);
       expect(result.success).toBe(false);
     });
   });
 
   describe('delete', () => {
     it('should delete an agent', async () => {
-      (db.$transaction as unknown).mockImplementation(async (cb: unknown) => cb(db));
-      (db.agent.delete as unknown).mockResolvedValue({});
+      vi.mocked(db.$transaction).mockImplementation(
+        async (cb: (tx: Prisma.TransactionClient) => Promise<unknown>) =>
+          cb(db as unknown as Prisma.TransactionClient),
+      );
+      vi.mocked(db.agent.delete).mockResolvedValue({} as unknown as Agent);
 
       const result = await AgentService.delete('1');
 
@@ -132,7 +142,7 @@ describe('AgentService', () => {
     });
 
     it('should handle delete errors', async () => {
-      (db.$transaction as unknown).mockRejectedValue(new Error('DB Error'));
+      vi.mocked(db.$transaction).mockRejectedValue(new Error('DB Error'));
       const result = await AgentService.delete('1');
       expect(result.success).toBe(false);
     });

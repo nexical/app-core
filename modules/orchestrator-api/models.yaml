@@ -215,6 +215,9 @@ models:
     db: false
     api: false
     fields:
+      id:
+        type: String
+        isRequired: true
       progress:
         type: Int
         isRequired: true

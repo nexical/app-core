@@ -9,6 +9,7 @@ import { CancelJobAction } from '../../../../../src/actions/cancel-job';
 import { UpdateProgressJobAction } from '../../../../../src/actions/update-progress-job';
 import { ApiGuard } from '@/lib/api/api-guard';
 import { createMockAstroContext } from '@tests/unit/helpers';
+import type { APIContext } from 'astro';
 
 vi.mock('../../../../../src/actions/complete-job');
 vi.mock('../../../../../src/actions/fail-job');
@@ -19,7 +20,7 @@ vi.mock('@/lib/api/api-guard');
 describe('Job RPC Endpoints', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (ApiGuard.protect as any).mockResolvedValue(true);
+    vi.mocked(ApiGuard.protect).mockResolvedValue(undefined);
   });
 
   describe('POST job/[id]/complete', () => {
@@ -28,13 +29,16 @@ describe('Job RPC Endpoints', () => {
         params: { id: 'j1' },
         url: 'http://localhost/api/job/j1/complete',
         locals: { actor: { id: 'u1' } },
-      });
-      (mockContext as any).request = new Request('http://localhost/api/job/j1/complete', {
+      }) as unknown as APIContext;
+      mockContext.request = new Request('http://localhost/api/job/j1/complete', {
         method: 'POST',
         body: JSON.stringify({ result: { ok: true } }),
       });
 
-      (CompleteJobAction.run as any).mockResolvedValue({ success: true, data: { id: 'j1' } });
+      vi.mocked(CompleteJobAction.run).mockResolvedValue({
+        success: true,
+        data: { id: 'j1' },
+      } as unknown as Awaited<ReturnType<typeof CompleteJobAction.run>>);
 
       const response = (await completePOST(mockContext)) as Response;
       const data = await response.json();
@@ -49,13 +53,16 @@ describe('Job RPC Endpoints', () => {
         params: { id: 'j1' },
         url: 'http://localhost/api/job/j1/complete',
         locals: { actor: { id: 'u1' } },
-      });
-      (mockContext as any).request = new Request('http://localhost/api/job/j1/complete', {
+      }) as unknown as APIContext;
+      mockContext.request = new Request('http://localhost/api/job/j1/complete', {
         method: 'POST',
         body: JSON.stringify({}),
       });
 
-      (CompleteJobAction.run as any).mockResolvedValue({ success: false, error: 'fail' });
+      vi.mocked(CompleteJobAction.run).mockResolvedValue({
+        success: false,
+        error: 'fail',
+      } as Awaited<ReturnType<typeof CompleteJobAction.run>>);
 
       const response = await completePOST(mockContext);
       expect(response).toBeInstanceOf(Response);
@@ -69,13 +76,15 @@ describe('Job RPC Endpoints', () => {
         params: { id: 'j1' },
         url: 'http://localhost/api/job/j1/fail',
         locals: { actor: { id: 'u1' } },
-      });
-      (mockContext as any).request = new Request('http://localhost/api/job/j1/fail', {
+      }) as unknown as APIContext;
+      mockContext.request = new Request('http://localhost/api/job/j1/fail', {
         method: 'POST',
         body: JSON.stringify({ error: 'boom' }),
       });
 
-      (FailJobAction.run as any).mockResolvedValue({ success: true });
+      vi.mocked(FailJobAction.run).mockResolvedValue({ success: true } as Awaited<
+        ReturnType<typeof FailJobAction.run>
+      >);
 
       const response = (await failPOST(mockContext)) as Response;
       const data = await response.json();
@@ -86,12 +95,14 @@ describe('Job RPC Endpoints', () => {
       const mockContext = createMockAstroContext({
         params: { id: 'j1' },
         locals: { actor: { id: 'u1' } },
-      });
-      (mockContext as any).request = new Request('http://localhost/api/job/j1/fail', {
+      }) as unknown as APIContext;
+      mockContext.request = new Request('http://localhost/api/job/j1/fail', {
         method: 'POST',
         body: JSON.stringify({ error: 'boom' }),
       });
-      (FailJobAction.run as any).mockResolvedValue({ success: false, error: 'fail' });
+      vi.mocked(FailJobAction.run).mockResolvedValue({ success: false, error: 'fail' } as Awaited<
+        ReturnType<typeof FailJobAction.run>
+      >);
       const response = await failPOST(mockContext);
       expect(response.status).toBe(400);
     });
@@ -103,13 +114,15 @@ describe('Job RPC Endpoints', () => {
         params: { id: 'j1' },
         url: 'http://localhost/api/job/j1/cancel',
         locals: { actor: { id: 'u1' } },
-      });
-      (mockContext as any).request = new Request('http://localhost/api/job/j1/cancel', {
+      }) as unknown as APIContext;
+      mockContext.request = new Request('http://localhost/api/job/j1/cancel', {
         method: 'POST',
         body: JSON.stringify({}),
       });
 
-      (CancelJobAction.run as any).mockResolvedValue({ success: true });
+      vi.mocked(CancelJobAction.run).mockResolvedValue({ success: true } as Awaited<
+        ReturnType<typeof CancelJobAction.run>
+      >);
 
       const response = (await cancelPOST(mockContext)) as Response;
       const data = await response.json();
@@ -120,12 +133,14 @@ describe('Job RPC Endpoints', () => {
       const mockContext = createMockAstroContext({
         params: { id: 'j1' },
         locals: { actor: { id: 'u1' } },
-      });
-      (mockContext as any).request = new Request('http://localhost/api/job/j1/cancel', {
+      }) as unknown as APIContext;
+      mockContext.request = new Request('http://localhost/api/job/j1/cancel', {
         method: 'POST',
         body: JSON.stringify({}),
       });
-      (CancelJobAction.run as any).mockResolvedValue({ success: false, error: 'fail' });
+      vi.mocked(CancelJobAction.run).mockResolvedValue({ success: false, error: 'fail' } as Awaited<
+        ReturnType<typeof CancelJobAction.run>
+      >);
       const response = await cancelPOST(mockContext);
       expect(response.status).toBe(400);
     });
@@ -137,13 +152,15 @@ describe('Job RPC Endpoints', () => {
         params: { id: 'j1' },
         url: 'http://localhost/api/job/j1/progress',
         locals: { actor: { id: 'u1' } },
-      });
-      (mockContext as any).request = new Request('http://localhost/api/job/j1/progress', {
+      }) as unknown as APIContext;
+      mockContext.request = new Request('http://localhost/api/job/j1/progress', {
         method: 'POST',
         body: JSON.stringify({ progress: 50 }),
       });
 
-      (UpdateProgressJobAction.run as any).mockResolvedValue({ success: true });
+      vi.mocked(UpdateProgressJobAction.run).mockResolvedValue({ success: true } as Awaited<
+        ReturnType<typeof UpdateProgressJobAction.run>
+      >);
 
       const response = (await progressPOST(mockContext)) as Response;
       const data = await response.json();
@@ -154,12 +171,15 @@ describe('Job RPC Endpoints', () => {
       const mockContext = createMockAstroContext({
         params: { id: 'j1' },
         locals: { actor: { id: 'u1' } },
-      });
-      (mockContext as any).request = new Request('http://localhost/api/job/j1/progress', {
+      }) as unknown as APIContext;
+      mockContext.request = new Request('http://localhost/api/job/j1/progress', {
         method: 'POST',
         body: JSON.stringify({ progress: 50 }),
       });
-      (UpdateProgressJobAction.run as any).mockResolvedValue({ success: false, error: 'fail' });
+      vi.mocked(UpdateProgressJobAction.run).mockResolvedValue({
+        success: false,
+        error: 'fail',
+      } as Awaited<ReturnType<typeof UpdateProgressJobAction.run>>);
       const response = await progressPOST(mockContext);
       expect(response.status).toBe(400);
     });

@@ -3,6 +3,8 @@ import { OrchestrationService } from '../../../src/services/orchestration-servic
 import { db } from '@/lib/core/db';
 import { Logger } from '@/lib/core/logger';
 import { HookSystem } from '@/lib/modules/hooks';
+import type { Agent, Job, Prisma } from '@prisma/client';
+// Removed unused AgentJobType import
 
 vi.mock('@/lib/core/db', () => ({
   db: {
@@ -49,16 +51,18 @@ describe('OrchestrationService', () => {
       const mockJob = { id: 'job-1', type: 'TYPE_A', payload: {} };
       const mockUpdatedJob = { ...mockJob, status: 'RUNNING' };
 
-      (db.$transaction as unknown).mockImplementation(async (cb: unknown) => {
-        return cb({
-          job: {
-            findFirst: vi.fn().mockResolvedValue(mockJob),
-            update: vi.fn().mockResolvedValue(mockUpdatedJob),
-          },
-        });
-      });
+      vi.mocked(db.$transaction).mockImplementation(
+        async (cb: (tx: Prisma.TransactionClient) => Promise<unknown>) => {
+          return cb({
+            job: {
+              findFirst: vi.fn().mockResolvedValue(mockJob as unknown as Job),
+              update: vi.fn().mockResolvedValue(mockUpdatedJob as unknown as Job),
+            },
+          } as unknown as Prisma.TransactionClient);
+        },
+      );
 
-      (db.agent.update as unknown).mockResolvedValue({});
+      vi.mocked(db.agent.update).mockResolvedValue({} as unknown as Agent);
 
       const result = await OrchestrationService.poll('agent-1', ['TYPE_A']);
 
@@ -76,14 +80,16 @@ describe('OrchestrationService', () => {
     });
 
     it('should return null if no job is available', async () => {
-      (db.$transaction as unknown).mockImplementation(async (cb: unknown) => {
-        return cb({
-          job: {
-            findFirst: vi.fn().mockResolvedValue(null),
-            findMany: vi.fn().mockResolvedValue([]),
-          },
-        });
-      });
+      vi.mocked(db.$transaction).mockImplementation(
+        async (cb: (tx: Prisma.TransactionClient) => Promise<unknown>) => {
+          return cb({
+            job: {
+              findFirst: vi.fn().mockResolvedValue(null),
+              findMany: vi.fn().mockResolvedValue([] as unknown as Job[]),
+            },
+          } as unknown as Prisma.TransactionClient);
+        },
+      );
 
       const result = await OrchestrationService.poll('agent-1', ['TYPE_A']);
 
@@ -92,7 +98,7 @@ describe('OrchestrationService', () => {
     });
 
     it('should handle errors during polling', async () => {
-      (db.$transaction as unknown).mockRejectedValue(new Error('DB Error'));
+      vi.mocked(db.$transaction).mockRejectedValue(new Error('DB Error'));
 
       const result = await OrchestrationService.poll('agent-1', ['TYPE_A']);
 
@@ -103,8 +109,8 @@ describe('OrchestrationService', () => {
 
     it('should swallow errors if agent heartbeat update fails', async () => {
       const mockJob = { id: 'job-1', type: 'TYPE_A', payload: {} };
-      (db.$transaction as unknown).mockResolvedValue(mockJob);
-      (db.agent.update as unknown).mockRejectedValue(new Error('Update failed'));
+      vi.mocked(db.$transaction).mockResolvedValue(mockJob as unknown as Job);
+      vi.mocked(db.agent.update).mockRejectedValue(new Error('Update failed'));
 
       const result = await OrchestrationService.poll('agent-1', ['TYPE_A']);
 
@@ -114,30 +120,32 @@ describe('OrchestrationService', () => {
     });
 
     it('should skip heartbeat update if agentId is not provided', async () => {
-      (db.$transaction as unknown).mockResolvedValue({ id: 'job-1' });
+      vi.mocked(db.$transaction).mockResolvedValue({ id: 'job-1' } as unknown as Job);
       await OrchestrationService.poll('', ['TYPE_A']);
       expect(db.agent.update).not.toHaveBeenCalled();
     });
 
     it('should use actor filtering if provided', async () => {
-      (db.$transaction as unknown).mockImplementation(async (cb: unknown) => {
-        const tx = {
-          job: {
-            findFirst: vi.fn().mockResolvedValue(null),
-            findMany: vi.fn().mockResolvedValue([]),
-          },
-        };
-        await cb(tx);
-        expect(tx.job.findFirst).toHaveBeenCalledWith(
-          expect.objectContaining({
-            where: expect.objectContaining({
-              actorId: 'actor-1',
-              actorType: 'user',
+      vi.mocked(db.$transaction).mockImplementation(
+        async (cb: (tx: Prisma.TransactionClient) => Promise<unknown>) => {
+          const tx = {
+            job: {
+              findFirst: vi.fn().mockResolvedValue(null),
+              findMany: vi.fn().mockResolvedValue([]),
+            },
+          } as unknown as Prisma.TransactionClient;
+          await cb(tx);
+          expect(tx.job.findFirst).toHaveBeenCalledWith(
+            expect.objectContaining({
+              where: expect.objectContaining({
+                actorId: 'actor-1',
+                actorType: 'user',
+              }),
             }),
-          }),
-        );
-        return null;
-      });
+          );
+          return null;
+        },
+      );
 
       await OrchestrationService.poll('agent-1', ['TYPE_A'], 'actor-1', 'user');
     });
@@ -146,7 +154,7 @@ describe('OrchestrationService', () => {
   describe('complete', () => {
     it('should complete a job', async () => {
       const mockJob = { id: 'job-1', status: 'COMPLETED' };
-      (db.job.update as unknown).mockResolvedValue(mockJob);
+      vi.mocked(db.job.update).mockResolvedValue(mockJob as unknown as Job);
 
       const result = await OrchestrationService.complete('job-1', { result: 'ok' });
 
@@ -157,8 +165,11 @@ describe('OrchestrationService', () => {
 
     it('should perform security check if actorId is provided (authorized)', async () => {
       const mockJob = { id: 'job-1', actorId: 'actor-1', lockedBy: 'agent-1' };
-      (db.job.findUnique as unknown).mockResolvedValue(mockJob);
-      (db.job.update as unknown).mockResolvedValue({ ...mockJob, status: 'COMPLETED' });
+      vi.mocked(db.job.findUnique).mockResolvedValue(mockJob as unknown as Job);
+      vi.mocked(db.job.update).mockResolvedValue({
+        ...mockJob,
+        status: 'COMPLETED',
+      } as unknown as Job);
 
       const result = await OrchestrationService.complete('job-1', { result: 'ok' }, 'actor-1');
 
@@ -168,8 +179,11 @@ describe('OrchestrationService', () => {
 
     it('should perform security check with actorType', async () => {
       const mockJob = { id: 'job-1', actorId: 'actor-1', actorType: 'user', lockedBy: 'agent-1' };
-      (db.job.findUnique as unknown).mockResolvedValue(mockJob);
-      (db.job.update as unknown).mockResolvedValue({ ...mockJob, status: 'COMPLETED' });
+      vi.mocked(db.job.findUnique).mockResolvedValue(mockJob as unknown as Job);
+      vi.mocked(db.job.update).mockResolvedValue({
+        ...mockJob,
+        status: 'COMPLETED',
+      } as unknown as Job);
 
       const result = await OrchestrationService.complete(
         'job-1',
@@ -187,8 +201,11 @@ describe('OrchestrationService', () => {
       // Actually because of short-circuit, we can't make it true unless first part is false.
       // But we can test it anyway with various actorType combinations.
       const mockJob = { id: 'job-1', actorId: 'actor-1', actorType: 'user', lockedBy: 'agent-1' };
-      (db.job.findUnique as unknown).mockResolvedValue(mockJob);
-      (db.job.update as unknown).mockResolvedValue({ ...mockJob, status: 'COMPLETED' });
+      vi.mocked(db.job.findUnique).mockResolvedValue(mockJob as unknown as Job);
+      vi.mocked(db.job.update).mockResolvedValue({
+        ...mockJob,
+        status: 'COMPLETED',
+      } as unknown as Job);
 
       await OrchestrationService.complete('job-1', {}, 'actor-1', 'other-type');
       expect(db.job.update).toHaveBeenCalled();
@@ -196,8 +213,11 @@ describe('OrchestrationService', () => {
 
     it('should allow completion if actor is the locker', async () => {
       const mockJob = { id: 'job-1', actorId: 'owner-1', lockedBy: 'actor-1' };
-      (db.job.findUnique as unknown).mockResolvedValue(mockJob);
-      (db.job.update as unknown).mockResolvedValue({ ...mockJob, status: 'COMPLETED' });
+      vi.mocked(db.job.findUnique).mockResolvedValue(mockJob as unknown as Job);
+      vi.mocked(db.job.update).mockResolvedValue({
+        ...mockJob,
+        status: 'COMPLETED',
+      } as unknown as Job);
 
       const result = await OrchestrationService.complete('job-1', { result: 'ok' }, 'actor-1');
 
@@ -206,7 +226,7 @@ describe('OrchestrationService', () => {
 
     it('should fail if actor is unauthorized', async () => {
       const mockJob = { id: 'job-1', actorId: 'owner-1', lockedBy: 'agent-1' };
-      (db.job.findUnique as unknown).mockResolvedValue(mockJob);
+      vi.mocked(db.job.findUnique).mockResolvedValue(mockJob as unknown as Job);
 
       const result = await OrchestrationService.complete('job-1', { result: 'ok' }, 'not-owner');
 
@@ -215,7 +235,7 @@ describe('OrchestrationService', () => {
     });
 
     it('should fail if job not found', async () => {
-      (db.job.findUnique as unknown).mockResolvedValue(null);
+      vi.mocked(db.job.findUnique).mockResolvedValue(null);
 
       const result = await OrchestrationService.complete('job-1', { result: 'ok' }, 'actor-1');
 
@@ -224,7 +244,7 @@ describe('OrchestrationService', () => {
     });
 
     it('should handle update errors', async () => {
-      (db.job.update as unknown).mockRejectedValue(new Error('Update failed'));
+      vi.mocked(db.job.update).mockRejectedValue(new Error('Update failed'));
 
       const result = await OrchestrationService.complete('job-1', { result: 'ok' });
 
@@ -243,12 +263,12 @@ describe('OrchestrationService', () => {
     };
 
     it('should schedule a retry if retries are available', async () => {
-      (db.job.findUnique as unknown).mockResolvedValue(mockJob);
-      (db.job.update as unknown).mockResolvedValue({
+      vi.mocked(db.job.findUnique).mockResolvedValue(mockJob as unknown as Job);
+      vi.mocked(db.job.update).mockResolvedValue({
         ...mockJob,
         retryCount: 1,
         status: 'PENDING',
-      });
+      } as unknown as Job);
 
       const result = await OrchestrationService.fail('job-1', 'error');
 
@@ -266,8 +286,11 @@ describe('OrchestrationService', () => {
 
     it('should mark as FAILED if retries are exhausted', async () => {
       const exhaustedJob = { ...mockJob, retryCount: 3, maxRetries: 3 };
-      (db.job.findUnique as unknown).mockResolvedValue(exhaustedJob);
-      (db.job.update as unknown).mockResolvedValue({ ...exhaustedJob, status: 'FAILED' });
+      vi.mocked(db.job.findUnique).mockResolvedValue(exhaustedJob as unknown as Job);
+      vi.mocked(db.job.update).mockResolvedValue({
+        ...exhaustedJob,
+        status: 'FAILED',
+      } as unknown as Job);
 
       const result = await OrchestrationService.fail('job-1', 'error');
 
@@ -283,8 +306,8 @@ describe('OrchestrationService', () => {
     });
 
     it('should handle security checks (authorized)', async () => {
-      (db.job.findUnique as unknown).mockResolvedValue(mockJob);
-      (db.job.update as unknown).mockResolvedValue(mockJob);
+      vi.mocked(db.job.findUnique).mockResolvedValue(mockJob as unknown as Job);
+      vi.mocked(db.job.update).mockResolvedValue(mockJob as unknown as Job);
 
       const result = await OrchestrationService.fail('job-1', 'error', 'actor-1');
 
@@ -292,7 +315,7 @@ describe('OrchestrationService', () => {
     });
 
     it('should handle security checks (unauthorized)', async () => {
-      (db.job.findUnique as unknown).mockResolvedValue(mockJob);
+      vi.mocked(db.job.findUnique).mockResolvedValue(mockJob as unknown as Job);
 
       const result = await OrchestrationService.fail('job-1', 'error', 'wrong-actor');
 
@@ -301,14 +324,14 @@ describe('OrchestrationService', () => {
     });
 
     it('should return not found', async () => {
-      (db.job.findUnique as unknown).mockResolvedValue(null);
+      vi.mocked(db.job.findUnique).mockResolvedValue(null);
       const result = await OrchestrationService.fail('job-1', 'error');
       expect(result.success).toBe(false);
       expect(result.error).toBe('orchestrator.service.error.not_found');
     });
 
     it('should handle errors during fail action', async () => {
-      (db.job.findUnique as unknown).mockRejectedValue(new Error('DB error'));
+      vi.mocked(db.job.findUnique).mockRejectedValue(new Error('DB error'));
       const result = await OrchestrationService.fail('job-1', 'error');
       expect(result.success).toBe(false);
       expect(Logger.error).toHaveBeenCalled();
@@ -318,8 +341,11 @@ describe('OrchestrationService', () => {
   describe('cancel', () => {
     it('should cancel a PENDING job', async () => {
       const mockJob = { id: 'job-1', status: 'PENDING', actorId: 'actor-1' };
-      (db.job.findUnique as unknown).mockResolvedValue(mockJob);
-      (db.job.update as unknown).mockResolvedValue({ ...mockJob, status: 'CANCELLED' });
+      vi.mocked(db.job.findUnique).mockResolvedValue(mockJob as unknown as Job);
+      vi.mocked(db.job.update).mockResolvedValue({
+        ...mockJob,
+        status: 'CANCELLED',
+      } as unknown as Job);
 
       const result = await OrchestrationService.cancel('job-1');
 
@@ -329,7 +355,7 @@ describe('OrchestrationService', () => {
 
     it('should not cancel a COMPLETED job', async () => {
       const mockJob = { id: 'job-1', status: 'COMPLETED' };
-      (db.job.findUnique as unknown).mockResolvedValue(mockJob);
+      vi.mocked(db.job.findUnique).mockResolvedValue(mockJob as unknown as Job);
 
       const result = await OrchestrationService.cancel('job-1');
 
@@ -339,7 +365,7 @@ describe('OrchestrationService', () => {
 
     it('should enforce owner check if actorId provided', async () => {
       const mockJob = { id: 'job-1', status: 'PENDING', actorId: 'owner' };
-      (db.job.findUnique as unknown).mockResolvedValue(mockJob);
+      vi.mocked(db.job.findUnique).mockResolvedValue(mockJob as unknown as Job);
 
       const result = await OrchestrationService.cancel('job-1', 'not-owner');
 
@@ -348,14 +374,14 @@ describe('OrchestrationService', () => {
     });
 
     it('should return not found for non-existent job during cancel', async () => {
-      (db.job.findUnique as unknown).mockResolvedValue(null);
+      vi.mocked(db.job.findUnique).mockResolvedValue(null);
       const result = await OrchestrationService.cancel('job-non-existent');
       expect(result.success).toBe(false);
       expect(result.error).toBe('orchestrator.service.error.not_found');
     });
 
     it('should handle errors during cancellation', async () => {
-      (db.job.findUnique as unknown).mockRejectedValue(new Error('DB error'));
+      vi.mocked(db.job.findUnique).mockRejectedValue(new Error('DB error'));
       const result = await OrchestrationService.cancel('job-1');
       expect(result.success).toBe(false);
       expect(Logger.error).toHaveBeenCalled();
@@ -365,7 +391,7 @@ describe('OrchestrationService', () => {
   describe('registerAgent', () => {
     it('should upsert agent if ID is provided', async () => {
       const agentData = { id: 'agent-1', hostname: 'host' };
-      (db.agent.upsert as unknown).mockResolvedValue(agentData);
+      vi.mocked(db.agent.upsert).mockResolvedValue(agentData as unknown as Agent);
 
       const result = await OrchestrationService.registerAgent(agentData);
 
@@ -374,8 +400,11 @@ describe('OrchestrationService', () => {
     });
 
     it('should create agent if ID is not provided', async () => {
-      const agentData = { hostname: 'host' } as unknown;
-      (db.agent.create as unknown).mockResolvedValue({ id: 'new-id', ...agentData });
+      const agentData = { hostname: 'host' } as unknown as Prisma.AgentCreateInput;
+      vi.mocked(db.agent.create).mockResolvedValue({
+        id: 'new-id',
+        ...agentData,
+      } as unknown as Agent);
 
       const result = await OrchestrationService.registerAgent(agentData);
 
@@ -384,8 +413,10 @@ describe('OrchestrationService', () => {
     });
 
     it('should handle registration errors', async () => {
-      (db.agent.create as unknown).mockRejectedValue(new Error('DB error'));
-      const result = await OrchestrationService.registerAgent({} as unknown);
+      vi.mocked(db.agent.create).mockRejectedValue(new Error('DB error'));
+      const result = await OrchestrationService.registerAgent(
+        {} as unknown as Prisma.AgentCreateInput,
+      );
       expect(result.success).toBe(false);
       expect(Logger.error).toHaveBeenCalled();
     });
@@ -396,9 +427,9 @@ describe('OrchestrationService', () => {
       const mockJobPending = { id: 'job-1', status: 'PENDING' };
       const mockJobCompleted = { id: 'job-1', status: 'COMPLETED' };
 
-      (db.job.findUnique as unknown)
-        .mockResolvedValueOnce(mockJobPending)
-        .mockResolvedValueOnce(mockJobCompleted);
+      vi.mocked(db.job.findUnique)
+        .mockResolvedValueOnce(mockJobPending as unknown as Job)
+        .mockResolvedValueOnce(mockJobCompleted as unknown as Job);
 
       // Speed up the test by mocking setTimeout
       vi.useFakeTimers();
@@ -418,7 +449,7 @@ describe('OrchestrationService', () => {
 
     it('should return error if job fails', async () => {
       const mockJobFailed = { id: 'job-1', status: 'FAILED', error: 'boom' };
-      (db.job.findUnique as unknown).mockResolvedValue(mockJobFailed);
+      vi.mocked(db.job.findUnique).mockResolvedValue(mockJobFailed as unknown as Job);
 
       const result = await OrchestrationService.waitFor('job-1');
 
@@ -427,7 +458,7 @@ describe('OrchestrationService', () => {
     });
 
     it('should timeout if job stays RUNNING', async () => {
-      (db.job.findUnique as unknown).mockResolvedValue({ status: 'RUNNING' });
+      vi.mocked(db.job.findUnique).mockResolvedValue({ status: 'RUNNING' } as unknown as Job);
 
       vi.useFakeTimers();
       const waitPromise = OrchestrationService.waitFor('job-1', 2000);
@@ -443,7 +474,7 @@ describe('OrchestrationService', () => {
     });
 
     it('should handle errors in waitFor', async () => {
-      (db.job.findUnique as unknown).mockRejectedValue(new Error('DB error'));
+      vi.mocked(db.job.findUnique).mockRejectedValue(new Error('DB error'));
       const result = await OrchestrationService.waitFor('job-1');
       expect(result.success).toBe(false);
       expect(Logger.error).toHaveBeenCalled();
@@ -453,9 +484,13 @@ describe('OrchestrationService', () => {
   describe('checkStaleAgents', () => {
     it('should mark stale agents as OFFLINE and release jobs', async () => {
       const staleAgents = [{ id: 'agent-1', hostname: 'host-1' }];
-      (db.agent.findMany as unknown).mockResolvedValue(staleAgents);
-      (db.agent.updateMany as unknown).mockResolvedValue({ count: 1 });
-      (db.job.updateMany as unknown).mockResolvedValue({ count: 2 });
+      vi.mocked(db.agent.findMany).mockResolvedValue(staleAgents as unknown as Agent[]);
+      vi.mocked(db.agent.updateMany).mockResolvedValue({
+        count: 1,
+      } as unknown as Prisma.BatchPayload);
+      vi.mocked(db.job.updateMany).mockResolvedValue({
+        count: 2,
+      } as unknown as Prisma.BatchPayload);
 
       const result = await OrchestrationService.checkStaleAgents(1000);
 
@@ -466,7 +501,7 @@ describe('OrchestrationService', () => {
     });
 
     it('should return early if no stale agents', async () => {
-      (db.agent.findMany as unknown).mockResolvedValue([]);
+      vi.mocked(db.agent.findMany).mockResolvedValue([] as unknown as Agent[]);
 
       const result = await OrchestrationService.checkStaleAgents();
 
@@ -475,7 +510,7 @@ describe('OrchestrationService', () => {
     });
 
     it('should handle errors in checkStaleAgents', async () => {
-      (db.agent.findMany as unknown).mockRejectedValue(new Error('DB error'));
+      vi.mocked(db.agent.findMany).mockRejectedValue(new Error('DB error'));
       const result = await OrchestrationService.checkStaleAgents();
       expect(result.success).toBe(false);
       expect(Logger.error).toHaveBeenCalled();
@@ -484,7 +519,7 @@ describe('OrchestrationService', () => {
 
   describe('heartbeat', () => {
     it('should update agent heartbeat', async () => {
-      (db.agent.update as unknown).mockResolvedValue({});
+      vi.mocked(db.agent.update).mockResolvedValue({} as unknown as Agent);
 
       const result = await OrchestrationService.heartbeat('agent-1');
 
@@ -493,7 +528,7 @@ describe('OrchestrationService', () => {
     });
 
     it('should handle heartbeat errors', async () => {
-      (db.agent.update as unknown).mockRejectedValue(new Error('DB error'));
+      vi.mocked(db.agent.update).mockRejectedValue(new Error('DB error'));
       const result = await OrchestrationService.heartbeat('agent-1');
       expect(result.success).toBe(false);
       expect(Logger.error).toHaveBeenCalled();
@@ -503,8 +538,8 @@ describe('OrchestrationService', () => {
   describe('updateProgress', () => {
     it('should update job progress', async () => {
       const mockJob = { id: 'job-1', lockedBy: 'agent-1' };
-      (db.job.findUnique as unknown).mockResolvedValue(mockJob);
-      (db.job.update as unknown).mockResolvedValue({});
+      vi.mocked(db.job.findUnique).mockResolvedValue(mockJob as unknown as Job);
+      vi.mocked(db.job.update).mockResolvedValue({} as unknown as Job);
 
       const result = await OrchestrationService.updateProgress('job-1', 50, 'agent-1');
 
@@ -518,7 +553,7 @@ describe('OrchestrationService', () => {
 
     it('should clamp progress value', async () => {
       const mockJob = { id: 'job-1', lockedBy: 'agent-1' };
-      (db.job.findUnique as unknown).mockResolvedValue(mockJob);
+      vi.mocked(db.job.findUnique).mockResolvedValue(mockJob as unknown as Job);
 
       await OrchestrationService.updateProgress('job-1', 150, 'agent-1');
       expect(db.job.update).toHaveBeenCalledWith(
@@ -537,7 +572,7 @@ describe('OrchestrationService', () => {
 
     it('should fail if unauthorized', async () => {
       const mockJob = { id: 'job-1', lockedBy: 'agent-1' };
-      (db.job.findUnique as unknown).mockResolvedValue(mockJob);
+      vi.mocked(db.job.findUnique).mockResolvedValue(mockJob as unknown as Job);
 
       const result = await OrchestrationService.updateProgress('job-1', 50, 'wrong-agent');
 
@@ -546,15 +581,15 @@ describe('OrchestrationService', () => {
     });
 
     it('should return error if job not found', async () => {
-      (db.job.findUnique as unknown).mockResolvedValue(null);
+      vi.mocked(db.job.findUnique).mockResolvedValue(null);
       const result = await OrchestrationService.updateProgress('job-1', 50);
       expect(result.success).toBe(false);
       expect(result.error).toBe('orchestrator.service.error.not_found');
     });
 
     it('should handle update errors', async () => {
-      (db.job.findUnique as unknown).mockResolvedValue({ id: 'job-1' });
-      (db.job.update as unknown).mockRejectedValue(new Error('DB error'));
+      vi.mocked(db.job.findUnique).mockResolvedValue({ id: 'job-1' } as unknown as Job);
+      vi.mocked(db.job.update).mockRejectedValue(new Error('DB error'));
       const result = await OrchestrationService.updateProgress('job-1', 50);
       expect(result.success).toBe(false);
       expect(Logger.error).toHaveBeenCalled();

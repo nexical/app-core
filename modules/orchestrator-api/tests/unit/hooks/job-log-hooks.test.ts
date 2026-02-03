@@ -2,6 +2,7 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { init } from '../../../src/hooks/job-log-hooks';
 import { HookSystem } from '@/lib/modules/hooks';
 import { db } from '@/lib/core/db';
+import type { JobLog } from '@prisma/client';
 
 vi.mock('@/lib/core/db', () => ({
   db: {
@@ -13,17 +14,17 @@ vi.mock('@/lib/core/db', () => ({
 
 describe('job log hooks', () => {
   beforeEach(async () => {
-    (HookSystem as unknown).listeners.clear();
+    (HookSystem as unknown as { listeners: Map<string, unknown> }).listeners.clear();
     await init();
     vi.clearAllMocks();
   });
 
   it('should dispatch job.log.error if fetched log level is ERROR', async () => {
-    (db.jobLog.findUnique as unknown).mockResolvedValue({
+    vi.mocked(db.jobLog.findUnique).mockResolvedValue({
       id: 'l1',
       level: 'ERROR',
       message: 'fail',
-    });
+    } as unknown as JobLog);
     const dispatchSpy = vi.spyOn(HookSystem, 'dispatch');
 
     await HookSystem.dispatch('jobLog.created', { id: 'l1', actorId: 'system' });
@@ -40,7 +41,10 @@ describe('job log hooks', () => {
   });
 
   it('should NOT dispatch job.log.error if fetched log level is NOT ERROR', async () => {
-    (db.jobLog.findUnique as unknown).mockResolvedValue({ id: 'l1', level: 'INFO' });
+    vi.mocked(db.jobLog.findUnique).mockResolvedValue({
+      id: 'l1',
+      level: 'INFO',
+    } as unknown as JobLog);
     const dispatchSpy = vi.spyOn(HookSystem, 'dispatch');
 
     await HookSystem.dispatch('jobLog.created', { id: 'l1' });
@@ -49,7 +53,7 @@ describe('job log hooks', () => {
   });
 
   it('should handle log not found', async () => {
-    (db.jobLog.findUnique as unknown).mockResolvedValue(null);
+    vi.mocked(db.jobLog.findUnique).mockResolvedValue(null);
     const dispatchSpy = vi.spyOn(HookSystem, 'dispatch');
 
     await HookSystem.dispatch('jobLog.created', { id: 'l1' });

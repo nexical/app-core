@@ -12,10 +12,7 @@ describe('Metrics and Health Actions', () => {
 
   describe('GetAgentMetricsAction', () => {
     it('should return success (placeholder)', async () => {
-      const result = await GetAgentMetricsAction.run(
-        undefined as unknown,
-        createMockAstroContext(),
-      );
+      const result = await GetAgentMetricsAction.run(undefined, createMockAstroContext());
       expect(result.success).toBe(true);
       expect(result.data).toEqual({});
     });
@@ -23,7 +20,7 @@ describe('Metrics and Health Actions', () => {
 
   describe('GetJobMetricsAction', () => {
     it('should return success (placeholder)', async () => {
-      const result = await GetJobMetricsAction.run(undefined as unknown, createMockAstroContext());
+      const result = await GetJobMetricsAction.run(undefined, createMockAstroContext());
       expect(result.success).toBe(true);
       expect(result.data).toEqual({});
     });
@@ -39,7 +36,7 @@ describe('Metrics and Health Actions', () => {
   describe('CheckStaleAgentsOrchestratorAction', () => {
     it('should return success (placeholder)', async () => {
       const result = await CheckStaleAgentsOrchestratorAction.run(
-        undefined as unknown,
+        undefined,
         createMockAstroContext(),
       );
       expect(result.success).toBe(true);

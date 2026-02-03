@@ -7,6 +7,8 @@ import { JobLogService } from '../../../../../src/services/job-log-service';
 import { DeadLetterJobService } from '../../../../../src/services/dead-letter-job-service';
 import { ApiGuard } from '@/lib/api/api-guard';
 import { createMockAstroContext } from '@tests/unit/helpers';
+import type { ServiceResponse } from '@/types/service';
+import type { JobLog, DeadLetterJob } from '@prisma/client';
 
 vi.mock('../../../../../src/services/job-log-service');
 vi.mock('../../../../../src/services/dead-letter-job-service');
@@ -15,7 +17,7 @@ vi.mock('@/lib/api/api-guard');
 describe('Log and Dead Letter Endpoints', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (ApiGuard.protect as any).mockResolvedValue(true);
+    vi.mocked(ApiGuard.protect).mockResolvedValue(undefined as void);
   });
 
   describe('Job Logs', () => {
@@ -23,7 +25,10 @@ describe('Log and Dead Letter Endpoints', () => {
       const mockContext = createMockAstroContext({
         locals: { actor: { id: 'u1' } },
       });
-      (JobLogService.list as any).mockResolvedValue({ success: true, data: [] });
+      vi.mocked(JobLogService.list).mockResolvedValue({
+        success: true,
+        data: [],
+      } as unknown as ServiceResponse<JobLog[]>);
       await logListGET(mockContext);
       expect(JobLogService.list).toHaveBeenCalled();
     });
@@ -33,7 +38,10 @@ describe('Log and Dead Letter Endpoints', () => {
         params: { id: 'l1' },
         locals: { actor: { id: 'u1' } },
       });
-      (JobLogService.get as any).mockResolvedValue({ success: true, data: {} });
+      vi.mocked(JobLogService.get).mockResolvedValue({
+        success: true,
+        data: {},
+      } as unknown as ServiceResponse<JobLog | null>);
       await logGetGET(mockContext);
       expect(JobLogService.get).toHaveBeenCalledWith('l1', expect.any(Object), { id: 'u1' });
     });
@@ -44,7 +52,10 @@ describe('Log and Dead Letter Endpoints', () => {
       const mockContext = createMockAstroContext({
         locals: { actor: { id: 'u1' } },
       });
-      (DeadLetterJobService.list as any).mockResolvedValue({ success: true, data: [] });
+      vi.mocked(DeadLetterJobService.list).mockResolvedValue({
+        success: true,
+        data: [],
+      } as unknown as ServiceResponse<DeadLetterJob[]>);
       await dlListGET(mockContext);
       expect(DeadLetterJobService.list).toHaveBeenCalled();
     });
@@ -54,7 +65,10 @@ describe('Log and Dead Letter Endpoints', () => {
         params: { id: 'd1' },
         locals: { actor: { id: 'u1' } },
       });
-      (DeadLetterJobService.get as any).mockResolvedValue({ success: true, data: {} });
+      vi.mocked(DeadLetterJobService.get).mockResolvedValue({
+        success: true,
+        data: {},
+      } as unknown as ServiceResponse<DeadLetterJob | null>);
       await dlGetGET(mockContext);
       expect(DeadLetterJobService.get).toHaveBeenCalledWith('d1', expect.any(Object), { id: 'u1' });
     });

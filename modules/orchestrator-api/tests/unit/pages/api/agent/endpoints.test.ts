@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import type { APIContext } from 'astro';
 import { GET as jobMetricsGET } from '../../../../../src/pages/api/metrics/jobs';
 import { GET as agentMetricsGET } from '../../../../../src/pages/api/metrics/agents';
 import { POST as agentRegisterPOST } from '../../../../../src/pages/api/agent/register';
@@ -19,15 +20,18 @@ vi.mock('@/lib/api/api-guard');
 describe('Metrics and Agent Endpoints', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (ApiGuard.protect as any).mockResolvedValue(true);
+    vi.mocked(ApiGuard.protect).mockResolvedValue(undefined);
   });
 
   describe('GET api/metrics/jobs', () => {
     it('should return job metrics', async () => {
       const mockContext = createMockAstroContext({
         locals: { actor: { id: 'u1', role: 'admin' } },
-      });
-      (GetJobMetricsAction.run as any).mockResolvedValue({ success: true, data: {} });
+      }) as unknown as APIContext;
+      vi.mocked(GetJobMetricsAction.run).mockResolvedValue({
+        success: true,
+        data: {},
+      } as unknown as Awaited<ReturnType<typeof GetJobMetricsAction.run>>);
       const response = (await jobMetricsGET(mockContext)) as Response;
       const data = await response.json();
       expect(data.success).toBe(true);
@@ -38,8 +42,11 @@ describe('Metrics and Agent Endpoints', () => {
     it('should return agent metrics', async () => {
       const mockContext = createMockAstroContext({
         locals: { actor: { id: 'u1', role: 'admin' } },
-      });
-      (GetAgentMetricsAction.run as any).mockResolvedValue({ success: true, data: {} });
+      }) as unknown as APIContext;
+      vi.mocked(GetAgentMetricsAction.run).mockResolvedValue({
+        success: true,
+        data: {},
+      } as unknown as Awaited<ReturnType<typeof GetAgentMetricsAction.run>>);
       const response = (await agentMetricsGET(mockContext)) as Response;
       const data = await response.json();
       expect(data.success).toBe(true);
@@ -51,12 +58,14 @@ describe('Metrics and Agent Endpoints', () => {
       const mockContext = createMockAstroContext({
         url: 'http://localhost/api/agent/register',
         locals: { actor: { id: 'u1' } },
-      });
-      (mockContext as any).request = new Request('http://localhost/api/agent/register', {
+      }) as unknown as APIContext;
+      mockContext.request = new Request('http://localhost/api/agent/register', {
         method: 'POST',
         body: JSON.stringify({ hostname: 'h1' }),
       });
-      (RegisterAgentAction.run as any).mockResolvedValue({ success: true });
+      vi.mocked(RegisterAgentAction.run).mockResolvedValue({
+        success: true,
+      } as unknown as Awaited<ReturnType<typeof RegisterAgentAction.run>>);
       const response = (await agentRegisterPOST(mockContext)) as Response;
       const data = await response.json();
       expect(data.success).toBe(true);
@@ -69,12 +78,14 @@ describe('Metrics and Agent Endpoints', () => {
         params: { id: 'a1' },
         url: 'http://localhost/api/agent/a1/heartbeat',
         locals: { actor: { id: 'u1' } },
-      });
-      (mockContext as any).request = new Request('http://localhost/api/agent/a1/heartbeat', {
+      }) as unknown as APIContext;
+      mockContext.request = new Request('http://localhost/api/agent/a1/heartbeat', {
         method: 'POST',
         body: JSON.stringify({}),
       });
-      (HeartbeatAgentAction.run as any).mockResolvedValue({ success: true });
+      vi.mocked(HeartbeatAgentAction.run).mockResolvedValue({
+        success: true,
+      } as unknown as Awaited<ReturnType<typeof HeartbeatAgentAction.run>>);
       const response = (await heartbeatPOST(mockContext)) as Response;
       const data = await response.json();
       expect(data.success).toBe(true);

@@ -8,6 +8,7 @@ import { PollJobsOrchestratorAction } from '../../../../../src/actions/poll-jobs
 import { CheckStaleAgentsOrchestratorAction } from '../../../../../src/actions/check-stale-agents-orchestrator';
 import { ApiGuard } from '@/lib/api/api-guard';
 import { createMockAstroContext } from '@tests/unit/helpers';
+import type { APIContext } from 'astro';
 
 vi.mock('../../../../../src/services/job-service');
 vi.mock('../../../../../src/actions/poll-jobs-orchestrator');
@@ -17,7 +18,7 @@ vi.mock('@/lib/api/api-guard');
 describe('Job CRUD and Orchestrator Endpoints', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    (ApiGuard.protect as any).mockResolvedValue(true);
+    vi.mocked(ApiGuard.protect).mockResolvedValue(undefined);
   });
 
   describe('GET api/job', () => {
@@ -25,9 +26,9 @@ describe('Job CRUD and Orchestrator Endpoints', () => {
       const mockContext = createMockAstroContext({
         url: 'http://localhost/api/job?take=10',
         locals: { actor: { id: 'u1' } },
-      });
-      (mockContext as any).request = new Request('http://localhost/api/job?take=10');
-      (JobService.list as any).mockResolvedValue({ success: true, data: [] });
+      }) as unknown as APIContext;
+      mockContext.request = new Request('http://localhost/api/job?take=10');
+      vi.mocked(JobService.list).mockResolvedValue({ success: true, data: [] });
       await jobListGET(mockContext);
       expect(JobService.list).toHaveBeenCalled();
     });
@@ -36,9 +37,9 @@ describe('Job CRUD and Orchestrator Endpoints', () => {
       const mockContext = createMockAstroContext({
         url: 'http://localhost/api/job',
         locals: { actor: { id: 'u1' } },
-      });
-      (mockContext as any).request = new Request('http://localhost/api/job');
-      (JobService.list as any).mockResolvedValue({ success: false, error: 'fail' });
+      }) as unknown as APIContext;
+      mockContext.request = new Request('http://localhost/api/job');
+      vi.mocked(JobService.list).mockResolvedValue({ success: false, error: 'fail' });
       const response = await jobListGET(mockContext);
       expect(response).toBeInstanceOf(Response);
     });
@@ -49,8 +50,11 @@ describe('Job CRUD and Orchestrator Endpoints', () => {
       const mockContext = createMockAstroContext({
         params: { id: 'j1' },
         locals: { actor: { id: 'u1' } },
-      });
-      (JobService.get as any).mockResolvedValue({ success: true, data: {} });
+      }) as unknown as APIContext;
+      vi.mocked(JobService.get).mockResolvedValue({
+        success: true,
+        data: {},
+      } as unknown as Awaited<ReturnType<typeof JobService.get>>);
       await jobGetGET(mockContext);
       expect(JobService.get).toHaveBeenCalled();
     });
@@ -61,12 +65,15 @@ describe('Job CRUD and Orchestrator Endpoints', () => {
       const mockContext = createMockAstroContext({
         url: 'http://localhost/api/orchestrator/poll',
         locals: { actor: { id: 'u1' } },
-      });
-      (mockContext as any).request = new Request('http://localhost/api/orchestrator/poll', {
+      }) as unknown as APIContext;
+      mockContext.request = new Request('http://localhost/api/orchestrator/poll', {
         method: 'POST',
         body: JSON.stringify({ capabilities: [] }),
       });
-      (PollJobsOrchestratorAction.run as any).mockResolvedValue({ success: true, data: null });
+      vi.mocked(PollJobsOrchestratorAction.run).mockResolvedValue({
+        success: true,
+        data: null,
+      } as unknown as Awaited<ReturnType<typeof PollJobsOrchestratorAction.run>>);
       await pollPOST(mockContext);
       expect(PollJobsOrchestratorAction.run).toHaveBeenCalled();
     });
@@ -77,12 +84,14 @@ describe('Job CRUD and Orchestrator Endpoints', () => {
       const mockContext = createMockAstroContext({
         url: 'http://localhost/api/orchestrator/check-stale',
         locals: { actor: { id: 'u1', role: 'admin' } },
-      });
-      (mockContext as any).request = new Request('http://localhost/api/orchestrator/check-stale', {
+      }) as unknown as APIContext;
+      mockContext.request = new Request('http://localhost/api/orchestrator/check-stale', {
         method: 'POST',
         body: JSON.stringify({}),
       });
-      (CheckStaleAgentsOrchestratorAction.run as any).mockResolvedValue({ success: true });
+      vi.mocked(CheckStaleAgentsOrchestratorAction.run).mockResolvedValue({
+        success: true,
+      } as unknown as Awaited<ReturnType<typeof CheckStaleAgentsOrchestratorAction.run>>);
       await checkStalePOST(mockContext);
       expect(CheckStaleAgentsOrchestratorAction.run).toHaveBeenCalled();
     });

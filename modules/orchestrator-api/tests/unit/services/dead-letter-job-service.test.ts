@@ -3,6 +3,7 @@ import { DeadLetterJobService } from '../../../src/services/dead-letter-job-serv
 import { db } from '@/lib/core/db';
 import { HookSystem } from '@/lib/modules/hooks';
 import { Logger } from '@/lib/core/logger';
+import type { DeadLetterJob, Prisma } from '@prisma/client';
 
 vi.mock('@/lib/core/db', () => ({
   db: {
@@ -38,13 +39,13 @@ describe('DeadLetterJobService', () => {
 
   describe('list', () => {
     it('should list dead letter jobs', async () => {
-      (db.$transaction as unknown).mockResolvedValue([[], 0]);
+      vi.mocked(db.$transaction).mockResolvedValue([[], 0]);
       await DeadLetterJobService.list();
       expect(HookSystem.filter).toHaveBeenCalledWith('deadLetterJob.beforeList', expect.anything());
     });
 
     it('should handle list errors', async () => {
-      (db.$transaction as unknown).mockRejectedValue(new Error('error'));
+      vi.mocked(db.$transaction).mockRejectedValue(new Error('error'));
       const result = await DeadLetterJobService.list();
       expect(result.success).toBe(false);
       expect(Logger.error).toHaveBeenCalled();
@@ -53,20 +54,22 @@ describe('DeadLetterJobService', () => {
 
   describe('get', () => {
     it('should get a dead letter job', async () => {
-      (db.deadLetterJob.findUnique as unknown).mockResolvedValue({ id: '1' });
+      vi.mocked(db.deadLetterJob.findUnique).mockResolvedValue({
+        id: '1',
+      } as unknown as DeadLetterJob);
       const result = await DeadLetterJobService.get('1');
       expect(result.success).toBe(true);
     });
 
     it('should handle get errors', async () => {
-      (db.deadLetterJob.findUnique as unknown).mockRejectedValue(new Error('error'));
+      vi.mocked(db.deadLetterJob.findUnique).mockRejectedValue(new Error('error'));
       const result = await DeadLetterJobService.get('1');
       expect(result.success).toBe(false);
       expect(Logger.error).toHaveBeenCalled();
     });
 
     it('should return not found', async () => {
-      (db.deadLetterJob.findUnique as unknown).mockResolvedValue(null);
+      vi.mocked(db.deadLetterJob.findUnique).mockResolvedValue(null);
       const result = await DeadLetterJobService.get('1');
       expect(result.success).toBe(false);
     });
@@ -74,46 +77,66 @@ describe('DeadLetterJobService', () => {
 
   describe('create', () => {
     it('should create a dead letter job', async () => {
-      (db.$transaction as unknown).mockImplementation(async (cb: unknown) => cb(db));
-      (db.deadLetterJob.create as unknown).mockResolvedValue({ id: '1' });
-      const result = await DeadLetterJobService.create({ type: 'test', error: 'boom' } as unknown);
+      vi.mocked(db.$transaction).mockImplementation(
+        async (cb: (tx: Prisma.TransactionClient) => Promise<unknown>) =>
+          cb(db as unknown as Prisma.TransactionClient),
+      );
+      vi.mocked(db.deadLetterJob.create).mockResolvedValue({ id: '1' } as unknown as DeadLetterJob);
+      const result = await DeadLetterJobService.create({
+        type: 'test',
+        error: 'boom',
+      } as unknown as Prisma.DeadLetterJobCreateInput);
       expect(result.success).toBe(true);
       expect(HookSystem.dispatch).toHaveBeenCalledWith('deadLetterJob.created', expect.anything());
     });
 
     it('should handle create errors', async () => {
-      (db.$transaction as unknown).mockRejectedValue(new Error('error'));
-      const result = await DeadLetterJobService.create({} as unknown);
+      vi.mocked(db.$transaction).mockRejectedValue(new Error('error'));
+      const result = await DeadLetterJobService.create(
+        {} as unknown as Prisma.DeadLetterJobCreateInput,
+      );
       expect(result.success).toBe(false);
     });
   });
 
   describe('update', () => {
     it('should update a dead letter job', async () => {
-      (db.$transaction as unknown).mockImplementation(async (cb: unknown) => cb(db));
-      (db.deadLetterJob.update as unknown).mockResolvedValue({ id: '1' });
-      const result = await DeadLetterJobService.update('1', { status: 'RESOLVED' } as unknown);
+      vi.mocked(db.$transaction).mockImplementation(
+        async (cb: (tx: Prisma.TransactionClient) => Promise<unknown>) =>
+          cb(db as unknown as Prisma.TransactionClient),
+      );
+      vi.mocked(db.deadLetterJob.update).mockResolvedValue({ id: '1' } as unknown as DeadLetterJob);
+      const result = await DeadLetterJobService.update('1', {
+        status: 'RESOLVED',
+      } as unknown as Prisma.DeadLetterJobUpdateInput);
       expect(result.success).toBe(true);
       expect(HookSystem.dispatch).toHaveBeenCalledWith('deadLetterJob.updated', expect.anything());
     });
 
     it('should handle update errors', async () => {
-      (db.$transaction as unknown).mockRejectedValue(new Error('error'));
-      const result = await DeadLetterJobService.update('1', {} as unknown);
+      vi.mocked(db.$transaction).mockRejectedValue(new Error('error'));
+      const result = await DeadLetterJobService.update(
+        '1',
+        {} as unknown as Prisma.DeadLetterJobUpdateInput,
+      );
       expect(result.success).toBe(false);
     });
   });
 
   describe('delete', () => {
     it('should delete a dead letter job', async () => {
-      (db.$transaction as unknown).mockImplementation(async (cb: unknown) => cb(db));
+      vi.mocked(db.$transaction).mockImplementation(
+        async (cb: (tx: Prisma.TransactionClient) => Promise<unknown>) =>
+          cb(db as unknown as Prisma.TransactionClient),
+      );
+      vi.mocked(db.deadLetterJob.delete).mockResolvedValue({ id: '1' } as unknown as DeadLetterJob);
       const result = await DeadLetterJobService.delete('1');
       expect(result.success).toBe(true);
       expect(HookSystem.dispatch).toHaveBeenCalledWith('deadLetterJob.deleted', { id: '1' });
     });
 
     it('should handle delete errors', async () => {
-      (db.$transaction as unknown).mockRejectedValue(new Error('error'));
+      vi.mocked(db.$transaction).mockRejectedValue(new Error('error'));
       const result = await DeadLetterJobService.delete('1');
       expect(result.success).toBe(false);
     });
