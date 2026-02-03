@@ -39,6 +39,14 @@ export class TableBuilder extends UiBaseBuilder {
               `useDelete${toPascalCase(model.name)}`,
             ],
           },
+          {
+            moduleSpecifier: '@/permissions',
+            namedImports: ['Permission'],
+          },
+          {
+            moduleSpecifier: '@/hooks/use-auth',
+            namedImports: ['useAuth'],
+          },
           // Add UI components imports here if needed, e.g. from @/components/ui/table
         ],
         variables: [
@@ -75,6 +83,8 @@ export class TableBuilder extends UiBaseBuilder {
     return `() => {
     const { data, isLoading } = ${hookName}();
     const deleteMutation = ${deleteHookName}();
+    const { user } = useAuth();
+    const canDelete = Permission.check('${model.name.toLowerCase()}:delete', user?.role || 'ANONYMOUS');
 
     if (isLoading) return <div>Loading...</div>;
 
@@ -92,7 +102,9 @@ export class TableBuilder extends UiBaseBuilder {
                         <tr key={item.id}>
                             ${columns.map((col) => `<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{String(item.${col})}</td>`).join('\n                            ')}
                             <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                <button className="text-red-600 hover:text-red-900" onClick={() => deleteMutation.mutate(item.id)}>Delete</button>
+                                {canDelete && (
+                                    <button className="text-red-600 hover:text-red-900" onClick={() => deleteMutation.mutate(item.id)}>Delete</button>
+                                )}
                             </td>
                         </tr>
                     ))}

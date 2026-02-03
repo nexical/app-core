@@ -20,6 +20,8 @@ import { toKebabCase } from '../utils/string.js';
 import path from 'node:path';
 import fs from 'node:fs';
 import { parse } from 'yaml';
+import { Reconciler } from './reconciler.js';
+import { type AccessConfig, type FileDefinition } from './types.js';
 
 export class ApiModuleGenerator extends ModuleGenerator {
   async run(): Promise<void> {
@@ -300,6 +302,72 @@ export class ApiModuleGenerator extends ModuleGenerator {
     // 8. Middleware
     const middlewareFile = this.getOrCreateFile('src/middleware.ts');
     new MiddlewareBuilder(models, allCustomRoutes).ensure(middlewareFile);
+
+    // 9. Access Control (Roles & Permissions)
+    const accessYamlPath = path.join(this.modulePath, 'access.yaml');
+    if (fs.existsSync(accessYamlPath)) {
+      console.log(`[ModuleGenerator] Found access.yaml. Generating Security Layer...`);
+      const accessConfig = parse(fs.readFileSync(accessYamlPath, 'utf-8')) as AccessConfig;
+
+      // 9a. Generate Role Files
+      if (accessConfig.roles) {
+        // Ensure BaseRole exists
+        const baseRoleFile = this.getOrCreateFile('src/roles/base-role.ts');
+        Reconciler.reconcile(baseRoleFile, {
+          header: '// GENERATED CODE - DO NOT MODIFY',
+          classes: [
+            {
+              name: 'BaseRole',
+              isExported: true,
+              isAbstract: true,
+              properties: [],
+              methods: [
+                {
+                  name: 'check',
+                  isAsync: true,
+                  parameters: [
+                    { name: 'context', type: 'any' }, // using any for now or Import types
+                    { name: 'permission', type: 'string' },
+                  ],
+                  returnType: 'Promise<boolean>',
+                  statements: [
+                    {
+                      kind: 'return',
+                      expression: 'true', // Default or valid logic
+                    },
+                  ],
+                },
+              ],
+            },
+          ],
+        });
+
+        for (const [roleName, roleDef] of Object.entries(accessConfig.roles)) {
+          console.log(`[ModuleGenerator] Generating Role: ${roleName}`);
+          const pascalName = roleName.charAt(0).toUpperCase() + roleName.slice(1).toLowerCase();
+          const roleFile = this.getOrCreateFile(`src/roles/${pascalName.toLowerCase()}.ts`);
+
+          const fileDef: FileDefinition = {
+            header: '// GENERATED CODE - DO NOT MODIFY',
+            role: {
+              name: roleName,
+              definition: roleDef,
+            },
+          };
+          Reconciler.reconcile(roleFile, fileDef);
+        }
+      }
+
+      // 9b. Generate Permission Registry
+      if (accessConfig.permissions) {
+        console.log(`[ModuleGenerator] Generating Permission Registry`);
+        const permFile = this.getOrCreateFile('src/permissions.ts');
+        Reconciler.reconcile(permFile, {
+          header: '// GENERATED CODE - DO NOT MODIFY',
+          permissions: accessConfig.permissions,
+        });
+      }
+    }
 
     // 5. Cleanup
     this.cleanup('src/actions', /\.ts$/);

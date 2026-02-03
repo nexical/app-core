@@ -56,6 +56,14 @@ export class FormBuilder extends UiBaseBuilder {
             ],
           },
           // Import UI components (Input, Button, etc)
+          {
+            moduleSpecifier: '@/permissions',
+            namedImports: ['Permission'],
+          },
+          {
+            moduleSpecifier: '@/hooks/use-auth',
+            namedImports: ['useAuth'],
+          },
         ],
         variables: [
           {
@@ -80,6 +88,9 @@ export class FormBuilder extends UiBaseBuilder {
     const isEdit = !!id;
     const createMutation = useCreate${modelName}();
     const updateMutation = useUpdate${modelName}();
+    const { user } = useAuth();
+    const canCreate = Permission.check('${model.name.toLowerCase()}:create', user?.role || 'ANONYMOUS');
+    const canUpdate = Permission.check('${model.name.toLowerCase()}:update', user?.role || 'ANONYMOUS');
     
     // Zod Schema
     const schema = ${zodSchema};
@@ -116,13 +127,15 @@ export class FormBuilder extends UiBaseBuilder {
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
             ${this.generateFields(model)}
             
-            <button
+            {(isEdit ? canUpdate : canCreate) && (
+              <button
                 type="submit"
                 disabled={isSubmitting}
                 className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
-            >
-                {isSubmitting ? 'Saving...' : (isEdit ? 'Update' : 'Create')}
-            </button>
+              >
+                  {isSubmitting ? 'Saving...' : (isEdit ? 'Update' : 'Create')}
+              </button>
+            )}
         </form>
     );
 }`;

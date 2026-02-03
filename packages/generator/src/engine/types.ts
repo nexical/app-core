@@ -223,6 +223,29 @@ export interface ExportConfig {
   isTypeOnly?: boolean;
 }
 
+// --- Access and Role Configurations ---
+
+export interface RoleDefinition {
+  description: string;
+  inherits?: string[];
+}
+
+export interface PermissionMap {
+  [permission: string]: string[]; // Permission name -> List of roles
+}
+
+export interface AccessConfig {
+  roles: Record<string, RoleDefinition>;
+  permissions: PermissionMap;
+  guards?: Record<string, string[]>;
+}
+
+export interface RoleConfig {
+  name: string; // The specific role name, e.g. 'ADMIN'
+  definition: RoleDefinition;
+  isDefault?: boolean;
+}
+
 // --- Declarative Schema ---
 
 export interface PropertyConfig {
@@ -338,6 +361,8 @@ export interface FileDefinition {
   variables?: VariableConfig[];
   components?: ComponentConfig[];
   modules?: ModuleConfig[];
+  role?: RoleConfig; // Configuration for generating a Role class
+  permissions?: PermissionMap; // Configuration for generating a Permission Registry
 }
 
 export interface ComponentProp {
