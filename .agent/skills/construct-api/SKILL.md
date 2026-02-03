@@ -62,6 +62,7 @@ We use a flexible Layered Architecture driven by schemas.
 ## 4. The Service Layer
 
 - **Generated CRUD**: Named `{model}-service.ts` (e.g., `user-service.ts`). Contains standard Prisma operations.
+  - **Hybrid Generation**: The `ServiceBuilder` preserves, but does not overwrite, existing manual methods found in the class. You MAY add custom static methods to this file if they are tightly coupled to the entity, but prefer a separate service if logic is complex.
 - **Manual Domain Logic**: Named `{kebab-case}-service.ts` (e.g., `profile-service.ts`).
 - **Note**: All public methods MUST be `static` and return `Promise<ServiceResponse<T>>` (from `@/types/service`).
 

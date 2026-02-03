@@ -84,10 +84,9 @@ describe('AgentSupervisor', () => {
     expect(spawn).toHaveBeenCalled();
 
     // Trigger error event
-    // @ts-expect-error accessing private
-    const errorCb = (mockChild.on as ReturnType<typeof vi.fn>).mock.calls.find(
-      (c: [string, (err: Error) => void]) => c[0] === 'error',
-    )![1];
+    const errorCb = (
+      (mockChild.on as ReturnType<typeof vi.fn>).mock.calls as Array<[string, (err: Error) => void]>
+    ).find((c) => c[0] === 'error')![1];
     errorCb(new Error('Spawn error'));
     expect(errorSpy).toHaveBeenCalledWith('[Child test-processor SPAWN ERROR]', expect.any(Error));
   });
@@ -162,10 +161,9 @@ describe('AgentSupervisor', () => {
     supervisor = new AgentSupervisor(mockProcessors, 'test.js');
     supervisor.start();
 
-    // @ts-expect-error accessing private
-    const sigintHandler = (processSpy as ReturnType<typeof vi.fn>).mock.calls.find(
-      (c: [string, () => Promise<void>]) => c[0] === 'SIGINT',
-    )![1];
+    const sigintHandler = (
+      (processSpy as ReturnType<typeof vi.fn>).mock.calls as Array<[string, () => Promise<void>]>
+    ).find((c) => c[0] === 'SIGINT')![1];
 
     // First shutdown
     const shutdownPromise = sigintHandler();

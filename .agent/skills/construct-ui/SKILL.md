@@ -48,7 +48,42 @@ UI components organized by sub-feature (auth, admin, settings) within the module
 - **Naming**: Kebab-case filenames.
 - **Rule**: Use sub-folders to isolate features (e.g. `src/components/auth/login-form.tsx`).
 
-## 3. Forms & Validation
+### Generated Components (`src/components/{Model}{Type}.tsx`)
+
+- **Table**: `{Model}Table.tsx` (TanStack Table).
+  - **Configuration**: Controlled by `tables` in `ui.yaml`.
+- **Form**: `{Model}Form.tsx` (React Hook Form + Zod).
+  - **Configuration**: Controlled by `forms` in `ui.yaml`.
+- **Rule**: Do not modify generated components directly.
+
+## 3. Hybrid Development (Manual + Generated)
+
+The generator enforces strict ownership of specific files via the `// GENERATED CODE` header.
+
+### The Injection Pattern (Composition)
+
+Instead of modifying generated forms, build standalone components and inject them via `ui.yaml`.
+
+1. **Create Manual Component**: `src/components/ui/custom-avatar.tsx`
+2. **Inject in `ui.yaml`**:
+   ```yaml
+   forms:
+     User:
+       avatarUrl:
+         component:
+           name: CustomAvatar
+           path: '@/components/ui/custom-avatar'
+   ```
+
+### The Ejection Pattern (Takeover)
+
+If a generated component restricts you too much:
+
+1. **Remove** the `// GENERATED CODE` header from the top of the file.
+2. The Reconciler will now treat this file as **Manual Code**.
+3. It will no longer receive updates from the generator. You own it completely.
+
+## 4. Forms & Validation
 
 Forms must use `react-hook-form` combined with `zod` for validation.
 
@@ -59,7 +94,7 @@ Forms must use `react-hook-form` combined with `zod` for validation.
   4.  Catch errors using the `ApiError` type and cast to extract structured server messages.
 - **Template**: `templates/form-component.tsx`
 
-## 4. Initialization (`src/init.ts`)
+## 5. Initialization (`src/init.ts`)
 
 Each module requires an isomorphic entry point to register its shells and assets.
 
@@ -74,7 +109,7 @@ export async function initUserModule() {
 initUserModule();
 ```
 
-## 5. Testing Protocols
+## 6. Testing Protocols
 
 ### End-to-End (E2E) - Page Object Model
 
@@ -91,7 +126,7 @@ Tests must use the Page Object Model (POM) to abstract interactions and ensure m
 - **Rule**: All interactive elements (buttons, inputs, links) MUST have a `data-testid` attribute.
 - **Do Not**: Rely on CSS classes or text content for selection.
 
-## 6. Styling (`styles.css`)
+## 7. Styling (`styles.css`)
 
 - **Semantic**: Use classes like `.surface-panel`, `.btn-primary`.
 - **Layered**: Wrap in `@layer components`.

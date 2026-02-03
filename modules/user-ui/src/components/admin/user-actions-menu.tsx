@@ -16,6 +16,7 @@ import { EditRoleDialog } from './edit-role-dialog';
 import { DeleteUserDialog } from './delete-user-dialog';
 
 import { type User, UserStatus } from '@modules/user-api/src/sdk';
+import { Permission } from '@modules/user-api/permissions';
 
 interface UserActionsMenuProps {
   user: User;
@@ -30,6 +31,9 @@ export function UserActionsMenu({ user, currentUser, onRefresh }: UserActionsMen
   const [isLoading, setIsLoading] = useState(false);
 
   const isSelf = currentUser?.id === user.id;
+  const role = currentUser?.role || 'ANONYMOUS';
+  const canEdit = Permission.check('user:update', role);
+  const canDelete = Permission.check('user:delete', role);
 
   const handleToggleStatus = async () => {
     setIsLoading(true);
@@ -83,14 +87,14 @@ export function UserActionsMenu({ user, currentUser, onRefresh }: UserActionsMen
             onClick={() => setShowRoleDialog(true)}
             className="admin-dropdown-item flex items-center gap-2 w-full cursor-pointer py-2"
             data-testid="admin-action-edit-role"
-            disabled={isSelf}
+            disabled={isSelf || !canEdit}
           >
             <Shield className="admin-icon-left h-4 w-4" />{' '}
             {t('user.admin.user_management.actions.edit_role')}
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={handleToggleStatus}
-            disabled={isLoading || isSelf}
+            disabled={isLoading || isSelf || !canEdit}
             className="admin-dropdown-item flex items-center gap-2 w-full cursor-pointer py-2"
             data-testid="admin-action-toggle-status"
           >
@@ -111,7 +115,7 @@ export function UserActionsMenu({ user, currentUser, onRefresh }: UserActionsMen
             onClick={() => setShowDeleteDialog(true)}
             className="admin-dropdown-destructive flex items-center gap-2 w-full cursor-pointer py-2"
             data-testid="admin-action-delete"
-            disabled={isSelf}
+            disabled={isSelf || !canDelete}
           >
             <Trash className="admin-icon-left h-4 w-4" />{' '}
             {t('user.admin.user_management.actions.delete')}

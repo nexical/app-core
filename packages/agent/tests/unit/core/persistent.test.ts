@@ -3,7 +3,7 @@ import { PersistentAgent } from '../../../src/core/persistent.js';
 
 // Mock NexicalClient and AgentAuthStrategy
 vi.mock('@nexical/sdk', () => ({
-  NexicalClient: vi.fn().mockImplementation(class {}),
+  NexicalClient: vi.fn(),
 }));
 
 vi.mock('../networking/auth.js', () => ({
