@@ -44,7 +44,7 @@
   "packages/agent/tests/unit/core/persistent.test.ts": "3db12b81ceb057258c6ee785a86c0130934ca834bcff7767134058b0a740ac82",
   "packages/agent/tests/unit/core/processor.test.ts": "a224830bd037841b843a61679561184c40f240308d16c460e83d528de3ab94e9",
   "packages/agent/tests/unit/main.test.ts": "6f6cc7ed29e9be410ed41f51bd6c0b87f2780169d730051e9f07973c33cd7ead",
-  "packages/agent/tests/unit/networking/client.test.ts": "e76bd575f11efc7fb899e1f5c97ef2ddc81c5ddd77e5dfd82f8181ed7b725426",
+  "packages/agent/tests/unit/networking/client.test.ts": "5126a6af23aac7803357bc89788af13f315a33df29df9651f1e39cc7466fe3bb",
   "packages/agent/tests/unit/registry.test.ts": "58c4a7d8787f95a2047faf71da08b6824fde8645f0d1c0bd94bb5f0228964f50",
   "packages/agent/tests/unit/runtime/executor.test.ts": "aaab63d5b9da8771fa979c9854c885c8a01e68b0fc572083030e5424121fde8a",
   "packages/agent/tests/unit/runtime/logger.test.ts": "152f7213417345f4424459278e78334bce53441477a653cd2713b6191df341e6",
