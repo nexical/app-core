@@ -468,7 +468,7 @@
   "tests/unit/lib/core/glob-helper.test.ts": "b89c9be66e7104f9ac2a8572a11d031aa610f95418f5ed68773ec63274fa4940",
   "tests/unit/lib/core/i18n-client.test.ts": "5bbb7af30fd44ac6712ccc4c73bfd78cf852c464acb0a037b5f930de360122a4",
   "tests/unit/lib/core/i18n.test.ts": "14ab78223b4d1c7e3795ba841b79615b8b0411e7779ded9c7558b6ed9f3495df",
-  "tests/unit/lib/core/logger.test.ts": "db4b5cd2aea904a2decda8653b21521c1efe70dbd1c7c0ebaf29c8292ea06ce6",
+  "tests/unit/lib/core/logger.test.ts": "70f7a0f9b071fcca23f616cade53760b06a0ec2b73c324877335bf9389d7a4bf",
   "tests/unit/lib/core/utils.test.ts": "46afe5c45c66b96097188131f4edc2f6b3b6645a8de53dc835bef24c9e8fd395",
   "tests/unit/lib/core/version.test.ts": "b1b7bb5525339c78f3d5402e8840209ca7b94692ee153e23cbeecc4cf4a90bab",
   "tests/unit/lib/email/email-registry.test.ts": "a77c1bd58c4cafaa2c61572ce776edc3c86e858896f5e95a3b2a08a3eef3fc4d",
