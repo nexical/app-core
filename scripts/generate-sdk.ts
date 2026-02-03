@@ -25,7 +25,7 @@ async function generate() {
       effectiveName
         .split(/[-_]/)
         .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-        .join('') + 'SDK';
+        .join('') + 'Module';
 
     // Use relative path from packages/sdk/src to modules/{name}/src/sdk/index.ts
     const importPath = `../../../modules/${moduleName}/src/sdk/index.js`;
