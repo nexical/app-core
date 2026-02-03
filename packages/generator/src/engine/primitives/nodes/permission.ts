@@ -1,10 +1,10 @@
-import { SourceFile } from 'ts-morph';
-import { PermissionMap } from '../../types.js';
+import type { SourceFile } from 'ts-morph';
+import type { PermissionMap } from '../../types.js';
 import { VariablePrimitive } from './variable.js';
 import { TypePrimitive } from './type.js';
 import { ClassPrimitive } from './class.js';
 import { MethodPrimitive } from './method.js';
-import { ValidationResult } from '../../primitives/contracts.js';
+import type { ValidationResult } from '../../primitives/contracts.js';
 
 export class PermissionPrimitive {
   constructor(private permissions: PermissionMap) {}
@@ -68,7 +68,7 @@ export class PermissionPrimitive {
     return sourceFile.getVariableDeclaration('PermissionRegistry');
   }
 
-  validate(node: any): ValidationResult {
+  validate(node: unknown): ValidationResult {
     return { valid: true, issues: [] };
   }
 }

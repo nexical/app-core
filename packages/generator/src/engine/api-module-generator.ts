@@ -306,7 +306,7 @@ export class ApiModuleGenerator extends ModuleGenerator {
     // 9. Access Control (Roles & Permissions)
     const accessYamlPath = path.join(this.modulePath, 'access.yaml');
     if (fs.existsSync(accessYamlPath)) {
-      console.log(`[ModuleGenerator] Found access.yaml. Generating Security Layer...`);
+      console.info(`[ModuleGenerator] Found access.yaml. Generating Security Layer...`);
       const accessConfig = parse(fs.readFileSync(accessYamlPath, 'utf-8')) as AccessConfig;
 
       // 9a. Generate Role Files
@@ -343,7 +343,7 @@ export class ApiModuleGenerator extends ModuleGenerator {
         });
 
         for (const [roleName, roleDef] of Object.entries(accessConfig.roles)) {
-          console.log(`[ModuleGenerator] Generating Role: ${roleName}`);
+          console.info(`[ModuleGenerator] Generating Role: ${roleName}`);
           const pascalName = roleName.charAt(0).toUpperCase() + roleName.slice(1).toLowerCase();
           const roleFile = this.getOrCreateFile(`src/roles/${pascalName.toLowerCase()}.ts`);
 
@@ -360,7 +360,7 @@ export class ApiModuleGenerator extends ModuleGenerator {
 
       // 9b. Generate Permission Registry
       if (accessConfig.permissions) {
-        console.log(`[ModuleGenerator] Generating Permission Registry`);
+        console.info(`[ModuleGenerator] Generating Permission Registry`);
         const permFile = this.getOrCreateFile('src/permissions.ts');
         Reconciler.reconcile(permFile, {
           header: '// GENERATED CODE - DO NOT MODIFY',

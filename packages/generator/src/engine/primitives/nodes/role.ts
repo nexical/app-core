@@ -1,9 +1,9 @@
-import { SourceFile } from 'ts-morph';
-import { RoleConfig } from '../../types.js';
+import type { SourceFile } from 'ts-morph';
+import type { RoleConfig } from '../../types.js';
 import { ClassPrimitive } from './class.js';
 import { ImportPrimitive } from '../core/import-manager.js';
 import { PropertyPrimitive } from './property.js';
-import { ValidationResult } from '../../primitives/contracts.js';
+import type { ValidationResult } from '../../primitives/contracts.js';
 
 export class RolePrimitive {
   constructor(private config: RoleConfig) {}
@@ -64,7 +64,7 @@ export class RolePrimitive {
     return sourceFile.getClass(className);
   }
 
-  validate(node: any): ValidationResult {
+  validate(node: unknown): ValidationResult {
     // Basic validation delegating to ClassPrimitive validation if we wanted,
     // but for now just return valid as logic is handled in ensure
     return { valid: true, issues: [] };
