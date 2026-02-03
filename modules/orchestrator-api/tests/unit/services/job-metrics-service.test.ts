@@ -69,9 +69,13 @@ describe('JobMetricsService', () => {
     });
 
     it('should handle zero jobs', async () => {
+      vi.mocked(db.job.count).mockResolvedValue(0);
       vi.mocked(db.job.groupBy).mockResolvedValue(
         [] as unknown as Awaited<ReturnType<typeof db.job.groupBy>>,
       );
+      vi.mocked(db.job.aggregate).mockResolvedValue({
+        _avg: { progress: null },
+      } as unknown as Awaited<ReturnType<typeof db.job.aggregate>>);
 
       const metrics = await JobMetricsService.getJobMetrics();
 

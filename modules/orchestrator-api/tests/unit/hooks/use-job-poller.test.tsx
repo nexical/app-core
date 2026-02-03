@@ -29,9 +29,9 @@ describe('useJobPoller', () => {
 
   it('should fetch and update status to COMPLETED', async () => {
     vi.mocked(api.orchestrator.job.get).mockResolvedValue({
-      success: true,
-      data: { status: 'COMPLETED', result: 'ok' },
-    } as JobServiceResponse);
+      status: 'COMPLETED',
+      result: 'ok',
+    } as never);
 
     const { result } = renderHook(() => useJobPoller('j1'));
 
@@ -41,9 +41,9 @@ describe('useJobPoller', () => {
 
   it('should handle FAILED status', async () => {
     vi.mocked(api.orchestrator.job.get).mockResolvedValue({
-      success: true,
-      data: { status: 'FAILED', error: 'boom' },
-    } as JobServiceResponse);
+      status: 'FAILED',
+      error: 'boom',
+    } as never);
 
     const { result } = renderHook(() => useJobPoller('j1'));
 
@@ -67,10 +67,7 @@ describe('useJobPoller', () => {
   });
 
   it('should handle job not found', async () => {
-    vi.mocked(api.orchestrator.job.get).mockResolvedValue({
-      success: true,
-      data: null,
-    } as JobServiceResponse);
+    vi.mocked(api.orchestrator.job.get).mockResolvedValue(null as never);
 
     const { result } = renderHook(() => useJobPoller('j1'));
 
