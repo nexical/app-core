@@ -1,5 +1,6 @@
 import { Project, SourceFile } from 'ts-morph';
 import { UiBaseBuilder } from './ui-base-builder.js';
+import path from 'node:path';
 import { type FileDefinition, type ModelDef, type ModuleConfig } from '../../types.js';
 import { Reconciler } from '../../reconciler.js';
 import { toKebabCase, toPascalCase } from '../../../utils/string.js';
@@ -21,7 +22,13 @@ export class TableBuilder extends UiBaseBuilder {
       if (!model.api) continue;
 
       const componentName = `${toPascalCase(model.name)}Table`;
-      const fileName = `src/components/${componentName}.tsx`;
+      const fileName = path.join(
+        process.cwd(),
+        'modules',
+        this.moduleName,
+        'src/components',
+        `${componentName}.tsx`,
+      );
 
       const file = project.createSourceFile(fileName, '', { overwrite: true });
 
@@ -40,79 +47,148 @@ export class TableBuilder extends UiBaseBuilder {
             ],
           },
           {
-            moduleSpecifier: '@/permissions',
+            moduleSpecifier: `@modules/${this.uiConfig.backend || this.moduleName}/permissions`,
             namedImports: ['Permission'],
           },
           {
             moduleSpecifier: '@/hooks/use-auth',
             namedImports: ['useAuth'],
           },
-          // Add UI components imports here if needed, e.g. from @/components/ui/table
         ],
-        variables: [
-          {
-            name: componentName,
-            isExported: true,
-            declarationKind: 'const',
-            initializer: this.generateComponent(model),
-          },
-        ],
+        functions: [this.generateFunctionConfig(model, componentName)],
       };
 
       Reconciler.reconcile(file, definition);
     }
   }
 
-  private generateComponent(model: ModelDef): string {
+  private generateFunctionConfig(model: ModelDef, componentName: string): any {
     const modelName = toPascalCase(model.name);
     const hookName = `use${modelName}Query`;
     const deleteHookName = `useDelete${modelName}`;
 
     // Fields for columns
     const columns = Object.entries(model.fields)
-      .filter(([name, f]) => !f.private && f.type !== 'Json' && !f.isRelation) // Simple columns for now
+      .filter(([name, f]) => !f.private && f.type !== 'Json' && !f.isRelation)
       .map(([name]) => name);
 
-    // JSX Construction
-    // We use string-based JSX construction via primitives if complex, or simple string if easier.
-    // Using 'tsx' factory would be ideal but it returns AST nodes. Reconciler expects string initializer for variables?
-    // Wait, Reconciler 'initializer' expects a STRING.
-    // So we can use `tsx` to generate AST then print it? Or just write code string.
-    // Writing code string is easier for block components. `tsx` is for granular AST.
+    const statements: any[] = [
+      {
+        kind: 'variable',
+        declarationKind: 'const',
+        declarations: [{ name: '{ data, isLoading }', initializer: `${hookName}()` }],
+      },
+      {
+        kind: 'variable',
+        declarationKind: 'const',
+        declarations: [{ name: 'deleteMutation', initializer: `${deleteHookName}()` }],
+      },
+      {
+        kind: 'variable',
+        declarationKind: 'const',
+        declarations: [{ name: '{ user }', initializer: 'useAuth()' }],
+      },
+      {
+        kind: 'variable',
+        declarationKind: 'const',
+        declarations: [
+          {
+            name: 'canDelete',
+            initializer: `Permission.check('${model.name.toLowerCase()}:delete', user?.role || 'ANONYMOUS')`,
+          },
+        ],
+      },
+      {
+        kind: 'if',
+        condition: 'isLoading',
+        then: {
+          kind: 'return',
+          expression: {
+            kind: 'jsx',
+            tagName: 'div',
+            children: ['Loading...'],
+          },
+        },
+      },
+    ];
 
-    return `() => {
-    const { data, isLoading } = ${hookName}();
-    const deleteMutation = ${deleteHookName}();
-    const { user } = useAuth();
-    const canDelete = Permission.check('${model.name.toLowerCase()}:delete', user?.role || 'ANONYMOUS');
+    // Build Table Headers JSX
+    const headers = columns.map((col) => ({
+      kind: 'jsx',
+      tagName: 'th',
+      attributes: [
+        {
+          name: 'className',
+          value: 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider',
+        },
+      ],
+      children: [col],
+    }));
+    headers.push({
+      kind: 'jsx',
+      tagName: 'th',
+      attributes: [
+        {
+          name: 'className',
+          value: 'px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider',
+        },
+      ],
+      children: ['Actions'],
+    });
 
-    if (isLoading) return <div>Loading...</div>;
+    // Build Table Body Rows Mapper
+    const rowMapper = `data?.data?.map((item: any) => (
+      <tr key={item.id}>
+        ${columns.map((col) => `<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{String(item.${col})}</td>`).join('\n')}
+        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+          {canDelete && (
+             <button className="text-red-600 hover:text-red-900" onClick={() => deleteMutation.mutate(item.id)}>Delete</button>
+          )}
+        </td>
+      </tr>
+    ))`;
 
-    return (
-        <div className="overflow-x-auto">
-            <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                    <tr>
-                        ${columns.map((col) => `<th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">${col}</th>`).join('\n                        ')}
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                    </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                    {data?.data?.map((item: any) => (
-                        <tr key={item.id}>
-                            ${columns.map((col) => `<td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{String(item.${col})}</td>`).join('\n                            ')}
-                            <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                {canDelete && (
-                                    <button className="text-red-600 hover:text-red-900" onClick={() => deleteMutation.mutate(item.id)}>Delete</button>
-                                )}
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
-    );
-}`;
+    statements.push({
+      kind: 'return',
+      expression: {
+        kind: 'jsx',
+        tagName: 'div',
+        attributes: [{ name: 'className', value: 'overflow-x-auto' }],
+        children: [
+          {
+            kind: 'jsx',
+            tagName: 'table',
+            attributes: [{ name: 'className', value: 'min-w-full divide-y divide-gray-200' }],
+            children: [
+              {
+                kind: 'jsx',
+                tagName: 'thead',
+                attributes: [{ name: 'className', value: 'bg-gray-50' }],
+                children: [
+                  {
+                    kind: 'jsx',
+                    tagName: 'tr',
+                    children: headers,
+                  },
+                ],
+              },
+              {
+                kind: 'jsx',
+                tagName: 'tbody',
+                attributes: [{ name: 'className', value: 'bg-white divide-y divide-gray-200' }],
+                children: [{ kind: 'expression', expression: rowMapper }],
+              },
+            ],
+          },
+        ],
+      },
+    });
+
+    return {
+      name: componentName,
+      isExported: true,
+      statements,
+    };
   }
 
   private getHeader(): string {

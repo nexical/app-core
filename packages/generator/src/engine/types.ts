@@ -226,17 +226,18 @@ export interface ExportConfig {
 // --- Access and Role Configurations ---
 
 export interface RoleDefinition {
-  description: string;
+  description?: string;
   inherits?: string[];
+  permissions?: string[];
 }
 
-export interface PermissionMap {
-  [permission: string]: string[]; // Permission name -> List of roles
+export interface PermissionDefinition {
+  description: string;
 }
 
 export interface AccessConfig {
   roles: Record<string, RoleDefinition>;
-  permissions: PermissionMap;
+  permissions: Record<string, PermissionDefinition>;
   guards?: Record<string, string[]>;
 }
 
@@ -362,7 +363,8 @@ export interface FileDefinition {
   components?: ComponentConfig[];
   modules?: ModuleConfig[];
   role?: RoleConfig; // Configuration for generating a Role class
-  permissions?: PermissionMap; // Configuration for generating a Permission Registry
+  permissions?: Record<string, PermissionDefinition>; // Configuration for generating a Permission Registry
+  rolePermissions?: Record<string, string[]>; // Map of Role -> Permissions for the check logic
 }
 
 export interface ComponentProp {

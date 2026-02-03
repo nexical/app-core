@@ -50,6 +50,12 @@ export class RolePrimitive {
         initializer: `[${(definition.inherits || []).map((r) => `'${r}'`).join(', ')}]`,
         readonly: true,
       },
+      {
+        name: 'permissions',
+        type: 'string[]',
+        initializer: `[${(definition.permissions || []).map((p) => `'${p}'`).join(', ')}]`,
+        readonly: true,
+      },
     ];
 
     properties.forEach((prop) => {
