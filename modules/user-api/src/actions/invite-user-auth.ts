@@ -1,9 +1,6 @@
+// GENERATED CODE - DO NOT MODIFY
 import type { ServiceResponse } from '@/types/service';
 import type { InviteUserDTO, Invitation } from '../sdk/types';
-import { db } from '@/lib/core/db';
-import { HookSystem } from '@/lib/modules/hooks';
-import { SiteRole } from '@modules/user-api/src/sdk';
-
 import type { APIContext } from 'astro';
 
 export class InviteUserAuthAction {

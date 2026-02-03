@@ -1,7 +1,6 @@
+// GENERATED CODE - DO NOT MODIFY
 import type { ServiceResponse } from '@/types/service';
 import type { LoginDTO, User } from '../sdk/types';
-import { db } from '@/lib/core/db';
-import bcrypt from 'bcryptjs';
 import type { APIContext } from 'astro';
 
 export class LoginAuthAction {

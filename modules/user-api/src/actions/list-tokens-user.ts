@@ -1,6 +1,6 @@
+// GENERATED CODE - DO NOT MODIFY
 import type { ServiceResponse } from '@/types/service';
 import type { PersonalAccessToken, ListTokensDTO } from '../sdk/types';
-import { PersonalAccessTokenService } from '../services/personal-access-token-service';
 import type { APIContext } from 'astro';
 
 export class ListTokensUserAction {

@@ -1,3 +1,4 @@
+// GENERATED CODE - DO NOT MODIFY
 import type { ServiceResponse } from '@/types/service';
 import type { LogoutDTO } from '../sdk/types';
 import type { APIContext } from 'astro';

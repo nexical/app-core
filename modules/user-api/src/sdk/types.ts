@@ -1,4 +1,7 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
+import type { PersonalAccessToken } from '@prisma/client';
+
+// GENERATED CODE - DO NOT MODIFY BY HAND
 export interface CreateUserDTO {
   email: string;
   password: string;
@@ -87,15 +90,6 @@ export interface ResetPasswordResponseDTO {
   userId: string;
 }
 
-export type {
-  User,
-  PersonalAccessToken,
-  Account,
-  VerificationToken,
-  PasswordResetToken,
-  Invitation,
-} from '@prisma/client';
-
 export enum SiteRole {
   ADMIN = 'ADMIN',
   EMPLOYEE = 'EMPLOYEE',
@@ -113,3 +107,12 @@ export enum UserMode {
   PUBLIC = 'PUBLIC',
   ADMIN = 'ADMIN',
 }
+
+export type {
+  User,
+  PersonalAccessToken,
+  Account,
+  VerificationToken,
+  PasswordResetToken,
+  Invitation,
+} from '@prisma/client';

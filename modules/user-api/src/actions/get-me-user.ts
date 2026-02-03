@@ -1,6 +1,6 @@
+// GENERATED CODE - DO NOT MODIFY
 import type { ServiceResponse } from '@/types/service';
 import type { User } from '../sdk/types';
-import { UserService } from '../services/user-service';
 import type { APIContext } from 'astro';
 
 export class GetMeUserAction {

@@ -6,7 +6,7 @@ import type {
   PersonalAccessToken,
   CreateTokenDTO,
   CreateTokenResponseDTO,
-} from './types';
+} from './types.js';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 /** SDK client for User. */

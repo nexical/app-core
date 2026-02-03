@@ -5,6 +5,15 @@ import type { APIContext, MiddlewareNext } from 'astro';
 
 // GENERATED CODE - DO NOT MODIFY
 export async function onRequest(context: APIContext, next: MiddlewareNext) {
+  const publicRoutes = [
+    '/register',
+    '/login',
+    '/verify-email',
+    '/password/request-reset',
+    '/password/reset',
+    '/password/validate-token',
+  ];
+  if (publicRoutes.some((route) => context.url.pathname.startsWith(route))) return next();
   const authHeader = context.request.headers.get('Authorization');
   if (authHeader?.startsWith('Bearer ne_pat_')) {
     const token = authHeader.substring(7);
