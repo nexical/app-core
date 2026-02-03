@@ -10,7 +10,7 @@ import { OrchestrationService } from '../services/orchestration-service';
  */
 export class UpdateProgressJobAction {
   public static async run(
-    input: UpdateProgressDTO & { id: string },
+    input: UpdateProgressDTO,
     context: APIContext,
   ): Promise<ServiceResponse<void>> {
     const actor = context.locals.actor;

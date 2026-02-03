@@ -27,7 +27,7 @@ export const POST = defineApi(
     }
 
     // 4. Action Execution
-    const result = await UpdateProgressJobAction.run(combinedInput as any, context);
+    const result = await UpdateProgressJobAction.run(combinedInput, context);
 
     // 5. Hook: Filter Output
     const filteredResult = await HookSystem.filter('job.updateProgress.output', result);

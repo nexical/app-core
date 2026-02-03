@@ -1,7 +1,8 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 import { BaseResource } from '@nexical/sdk-core';
-import type { PollJobsDTO, Job } from './types';
+import type { PollJobsDTO, Job } from './types.js';
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 /** SDK client for Orchestrator. */
 export class OrchestratorSDK extends BaseResource {
   public async pollJobs(

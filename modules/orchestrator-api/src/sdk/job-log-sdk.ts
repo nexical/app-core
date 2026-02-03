@@ -1,7 +1,8 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 import { BaseResource } from '@nexical/sdk-core';
-import type { JobLog } from './types';
+import type { JobLog } from './types.js';
 
+// GENERATED CODE - DO NOT MODIFY BY HAND
 /** SDK client for JobLog. */
 export class JobLogSDK extends BaseResource {
   public async list(params?: {

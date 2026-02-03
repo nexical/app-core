@@ -296,3 +296,17 @@ models:
       id:
         type: String
         isRequired: true
+
+  RegisterAgentDTO:
+    db: false
+    api: false
+    fields:
+      id:
+        type: String
+        isRequired: false
+      hostname:
+        type: String
+        isRequired: true
+      capabilities:
+        type: String
+        isList: true

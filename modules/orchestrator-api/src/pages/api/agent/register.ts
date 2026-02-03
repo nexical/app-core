@@ -45,7 +45,15 @@ export const POST = defineApi(
     requestBody: {
       content: {
         'application/json': {
-          schema: { type: 'object' },
+          schema: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              hostname: { type: 'string' },
+              capabilities: { type: 'array', items: { type: 'string' } },
+            },
+            required: ['hostname', 'capabilities'],
+          },
         },
       },
     },
