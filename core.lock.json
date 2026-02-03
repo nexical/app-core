@@ -32,7 +32,7 @@
   "packages/agent/src/index.ts": "c62b119193bfd6ff53ac28ade7e52af21d2af30535ca5dff34689d697bf025ff",
   "packages/agent/src/main.ts": "7fb50956b4316cfed81c30751b501cdcf57339614631400b13c2ccc70cc3d598",
   "packages/agent/src/networking/auth.ts": "59dc87b39ee29e1438fe342b32e298903eaa19876b2106a546a1de1caf8f585c",
-  "packages/agent/src/networking/client.ts": "ea05c5aeebf3f56179022f0adaec6fd11b5bdfde756438d968e5133685597069",
+  "packages/agent/src/networking/client.ts": "73e9cf1066eefa66660c9ff37615e955b9ab16dd136418261364f39fe12bec46",
   "packages/agent/src/runtime/executor.ts": "2aeec37cec0cb98bedd315caca48822e488231e8c12608dc1bad7783976d99f1",
   "packages/agent/src/runtime/logger.ts": "be59f4943b9b44832792e4931e5de5f75aedda5d68409cc7470b2eef8efeca61",
   "packages/agent/src/runtime/poller.ts": "42aa33b607939612540214a69480e85af5da5b20d03ab4ab0c442d93f3103b73",

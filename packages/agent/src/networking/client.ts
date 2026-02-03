@@ -46,18 +46,7 @@ export class AgentClient {
   }
 
   public async updateProgress(jobId: string, progress: number): Promise<void> {
-    // Direct fetch call since SDK job.updateProgress may not exist yet
-    const response = await fetch(`${this.apiUrl}/api/job/${jobId}/progress`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        // Auth headers will be added by the client if needed
-      },
-      body: JSON.stringify({ progress }),
-    });
-    if (!response.ok) {
-      throw new Error(`Failed to update progress: ${response.statusText}`);
-    }
+    await this.client.orchestrator.job.updateProgress(jobId, { progress });
   }
 
   /**
@@ -70,16 +59,19 @@ export class AgentClient {
     actorType?: string;
     maxRetries?: number;
   }): Promise<AgentJob> {
-    const response = await fetch(`${this.apiUrl}/api/job`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
+    const response = await this.client.orchestrator.job.create({
+      type: data.type,
+      payload: data.payload,
+      actorId: data.actorId,
+      actorType: data.actorType,
+      maxRetries: data.maxRetries,
     });
-    if (!response.ok) {
-      throw new Error(`Failed to create job: ${response.statusText}`);
+
+    if (response.error) {
+      throw new Error(`Failed to create job: ${response.error}`);
     }
-    const result = (await response.json()) as { success: boolean; data: AgentJob };
-    return result.data;
+
+    return response.data as unknown as AgentJob;
   }
 
   /**
@@ -92,14 +84,13 @@ export class AgentClient {
   ): Promise<AgentJob> {
     const start = Date.now();
     while (Date.now() - start < timeoutMs) {
-      const response = await fetch(`${this.apiUrl}/api/job/${jobId}`, {
-        headers: { 'Content-Type': 'application/json' },
-      });
-      if (!response.ok) {
-        throw new Error(`Failed to get job: ${response.statusText}`);
+      const response = await this.client.orchestrator.job.get(jobId);
+
+      if (response.error) {
+        throw new Error(`Failed to get job: ${response.error}`);
       }
-      const result = (await response.json()) as { success: boolean; data: AgentJob };
-      const job = result.data;
+
+      const job = response.data as unknown as AgentJob;
 
       if (job.status === 'COMPLETED' || job.status === 'FAILED') {
         return job;
