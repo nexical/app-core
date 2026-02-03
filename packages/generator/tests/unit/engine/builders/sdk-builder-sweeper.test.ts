@@ -108,7 +108,7 @@ describe('SdkBuilder Sweeper', () => {
     expect(methods).toContain('getStatus');
 
     // Check imports for custom types
-    const typeImport = file.imports?.find((i: ImportConfig) => i.moduleSpecifier === './types');
+    const typeImport = file.imports?.find((i: ImportConfig) => i.moduleSpecifier === './types.js');
     expect(typeImport).toBeDefined();
     // Should include 'ActionInput', 'StatusEnum'.
     // Should NOT include 'Process' (Entity type handled separately) or 'any'.

@@ -198,11 +198,16 @@ export class SdkBuilder extends BaseBuilder {
     }
 
     if (namedImports.length > 0 || otherTypes.size > 0) {
-      imports.push({
-        moduleSpecifier: './types.js',
-        namedImports: [...namedImports, ...Array.from(otherTypes)],
-        isTypeOnly: true,
-      });
+      const typesToImport = [...namedImports, ...Array.from(otherTypes)].filter(
+        (t) => t !== 'void' && t !== 'any',
+      );
+      if (typesToImport.length > 0) {
+        imports.push({
+          moduleSpecifier: './types.js',
+          namedImports: typesToImport,
+          isTypeOnly: true,
+        });
+      }
     }
 
     return {

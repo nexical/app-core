@@ -14,15 +14,15 @@ describe('ImportPrimitive', () => {
   });
 
   it('should normalize module specifiers', () => {
-    expect(Normalizer.normalizeImport('@/lib/utils.ts')).toBe('@/lib/core/utils');
+    expect(Normalizer.normalizeImport('@/lib/utils.ts')).toBe('@/lib/core/utils.ts');
     expect(Normalizer.normalizeImport('@modules/user-api/src/sdk/types.ts')).toBe(
       '@modules/user-api/src/sdk',
     );
   });
 
   it('should find an existing import with normalization', () => {
-    sourceFile.addImportDeclaration({ moduleSpecifier: '@/lib/utils.ts' });
-    const primitive = new ImportPrimitive({ moduleSpecifier: '@/lib/core/utils' });
+    sourceFile.addImportDeclaration({ moduleSpecifier: '@/lib/utils.js' });
+    const primitive = new ImportPrimitive({ moduleSpecifier: '@/lib/core/utils.js' });
     expect(primitive.find(sourceFile)).toBeDefined();
   });
 
@@ -119,14 +119,14 @@ describe('ImportPrimitive', () => {
     expect(result.issues[3]).toContain('type-only mismatch');
   });
 
-  it('should update module specifier if not normalized', () => {
+  it('should preserve module specifier extension', () => {
     const node = sourceFile.addImportDeclaration({
-      moduleSpecifier: './mod.ts',
+      moduleSpecifier: './mod.js',
       namedImports: ['A'],
     });
-    const primitive = new ImportPrimitive({ moduleSpecifier: './mod', namedImports: ['A'] });
+    const primitive = new ImportPrimitive({ moduleSpecifier: './mod.js', namedImports: ['A'] });
     primitive.update(node);
-    expect(node.getModuleSpecifierValue()).toBe('./mod');
+    expect(node.getModuleSpecifierValue()).toBe('./mod.js');
   });
 
   it('should cleanup "type" prefix in named imports when parent is type-only', () => {
