@@ -32,17 +32,27 @@ describe('AgentSupervisor', () => {
     vi.useRealTimers();
   });
 
-  const createMockChild = () => {
-    const child: any = {
+  type MockChildProcess = {
+    on: ReturnType<typeof vi.fn>;
+    exitCode: number | null;
+    killed: boolean;
+    kill: ReturnType<typeof vi.fn>;
+    exitCb?: (code: number | null, signal: string | null) => void;
+  };
+
+  const createMockChild = (): MockChildProcess => {
+    const child: MockChildProcess = {
       on: vi.fn(),
       exitCode: null,
       killed: false,
       kill: vi.fn(),
     };
-    child.on.mockImplementation((event: string, cb: any) => {
-      if (event === 'exit') child.exitCb = cb;
-      return child;
-    });
+    child.on.mockImplementation(
+      (event: string, cb: (code: number | null, signal: string | null) => void) => {
+        if (event === 'exit') child.exitCb = cb;
+        return child;
+      },
+    );
     child.kill.mockImplementation(() => {
       if (child.exitCb) child.exitCb(0, 'SIGTERM');
       child.killed = true;
@@ -65,7 +75,7 @@ describe('AgentSupervisor', () => {
 
   it('should spawn processors in TS mode and log errors', () => {
     const mockChild = createMockChild();
-    (spawn as any).mockReturnValue(mockChild);
+    (spawn as ReturnType<typeof vi.fn>).mockReturnValue(mockChild);
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     supervisor = new AgentSupervisor(mockProcessors, 'test.ts');
@@ -75,14 +85,16 @@ describe('AgentSupervisor', () => {
 
     // Trigger error event
     // @ts-expect-error accessing private
-    const errorCb = (mockChild.on as any).mock.calls.find((c: any) => c[0] === 'error')[1];
+    const errorCb = (mockChild.on as ReturnType<typeof vi.fn>).mock.calls.find(
+      (c: [string, (err: Error) => void]) => c[0] === 'error',
+    )![1];
     errorCb(new Error('Spawn error'));
     expect(errorSpy).toHaveBeenCalledWith('[Child test-processor SPAWN ERROR]', expect.any(Error));
   });
 
   it('should spawn processors in JS mode', () => {
     const mockChild = createMockChild();
-    (fork as any).mockReturnValue(mockChild);
+    (fork as ReturnType<typeof vi.fn>).mockReturnValue(mockChild);
 
     supervisor = new AgentSupervisor(mockProcessors, 'test.js');
     supervisor.start();
@@ -92,13 +104,13 @@ describe('AgentSupervisor', () => {
 
   it('should restart child on exit and handle shuttingDown check', async () => {
     const mockChild = createMockChild();
-    (fork as any).mockReturnValue(mockChild);
+    (fork as ReturnType<typeof vi.fn>).mockReturnValue(mockChild);
 
     supervisor = new AgentSupervisor(mockProcessors, 'test.js');
     supervisor.start();
 
     // Simulate exit
-    (mockChild as any).exitCb(1, null);
+    mockChild.exitCb?.(1, null);
 
     expect(fork).toHaveBeenCalledTimes(1);
 
@@ -109,7 +121,7 @@ describe('AgentSupervisor', () => {
     // Test shuttingDown check in exit handler
     // @ts-expect-error accessing private
     supervisor.shuttingDown = true;
-    (mockChild as any).exitCb(0, null);
+    mockChild.exitCb?.(0, null);
     // Should not call spawnProcessor again
     vi.runAllTimers();
     expect(fork).toHaveBeenCalledTimes(2);
@@ -126,7 +138,9 @@ describe('AgentSupervisor', () => {
       p2: class {},
     };
 
-    (fork as any).mockReturnValueOnce(mockChild1).mockReturnValueOnce(mockChild2);
+    (fork as ReturnType<typeof vi.fn>)
+      .mockReturnValueOnce(mockChild1)
+      .mockReturnValueOnce(mockChild2);
 
     supervisor = new AgentSupervisor(mockProcessors2, 'test.js');
     supervisor.start();
@@ -139,7 +153,7 @@ describe('AgentSupervisor', () => {
 
   it('should handle SIGINT and SIGTERM and not double shutdown', async () => {
     const mockChild = createMockChild();
-    (fork as any).mockReturnValue(mockChild);
+    (fork as ReturnType<typeof vi.fn>).mockReturnValue(mockChild);
 
     const processSpy = vi.spyOn(process, 'on').mockImplementation((event, cb) => {
       return process;
@@ -149,7 +163,9 @@ describe('AgentSupervisor', () => {
     supervisor.start();
 
     // @ts-expect-error accessing private
-    const sigintHandler = (processSpy as any).mock.calls.find((c: any) => c[0] === 'SIGINT')[1];
+    const sigintHandler = (processSpy as ReturnType<typeof vi.fn>).mock.calls.find(
+      (c: [string, () => Promise<void>]) => c[0] === 'SIGINT',
+    )![1];
 
     // First shutdown
     const shutdownPromise = sigintHandler();

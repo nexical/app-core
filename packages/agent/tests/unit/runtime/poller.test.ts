@@ -24,19 +24,35 @@ vi.mock('./executor.js', () => ({
   JobExecutor: MockJobExecutor,
 }));
 
+type MockAgentClientType = InstanceType<typeof MockAgentClient>;
+type MockJobExecutorType = InstanceType<typeof MockJobExecutor>;
+type MockProcessor = { jobType: string };
+
 describe('JobPoller', () => {
   let poller: JobPoller;
-  let mockClient: any;
-  let mockExecutor: any;
-  const mockProcessors = {
-    'test.job': { jobType: 'test.job' } as any,
+  let mockClient: MockAgentClientType;
+  let mockExecutor: MockJobExecutorType;
+  const mockProcessors: Record<string, MockProcessor> = {
+    'test.job': { jobType: 'test.job' },
   };
 
   beforeEach(() => {
     vi.clearAllMocks();
     mockClient = new MockAgentClient();
     mockExecutor = new MockJobExecutor();
-    poller = new JobPoller(mockClient as any, mockExecutor as any, mockProcessors, 'agent-1');
+    poller = new JobPoller(
+      mockClient as unknown as InstanceType<
+        typeof import('../../../src/networking/client.js').AgentClient
+      >,
+      mockExecutor as unknown as InstanceType<
+        typeof import('../../../src/runtime/executor.js').JobExecutor
+      >,
+      mockProcessors as Record<
+        string,
+        InstanceType<typeof import('../../../src/core/processor.js').JobProcessor<unknown>>
+      >,
+      'agent-1',
+    );
     // Don't use fake timers by default to avoid hanging promises in loops
   });
 

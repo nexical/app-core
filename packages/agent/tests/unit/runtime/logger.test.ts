@@ -3,8 +3,16 @@ import { JobRemoteLogger } from '../../../src/runtime/logger.js';
 
 const mockCreateLog = vi.fn();
 
+type MockNexicalClient = {
+  orchestrator: {
+    jobLog: {
+      create: typeof mockCreateLog;
+    };
+  };
+};
+
 vi.mock('@nexical/sdk', () => ({
-  NexicalClient: vi.fn().mockImplementation(function (this: any) {
+  NexicalClient: vi.fn().mockImplementation(function (this: MockNexicalClient) {
     this.orchestrator = {
       jobLog: {
         create: mockCreateLog,
@@ -15,7 +23,7 @@ vi.mock('@nexical/sdk', () => ({
 
 describe('JobRemoteLogger', () => {
   let logger: JobRemoteLogger;
-  let mockClient: any;
+  let mockClient: MockNexicalClient;
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -25,8 +33,11 @@ describe('JobRemoteLogger', () => {
           create: mockCreateLog,
         },
       },
-    } as any;
-    logger = new JobRemoteLogger(mockClient, 'job-1');
+    };
+    logger = new JobRemoteLogger(
+      mockClient as unknown as InstanceType<typeof import('@nexical/sdk').NexicalClient>,
+      'job-1',
+    );
   });
 
   it('should log info level', async () => {

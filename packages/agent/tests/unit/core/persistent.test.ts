@@ -103,7 +103,8 @@ describe('PersistentAgent', () => {
     // We need to stop it somehow since it will loop forever on error
     // Let's stop it after 1 tick
     let ticks = 0;
-    vi.spyOn(agent as any, 'tick').mockImplementation(async () => {
+    // @ts-expect-error accessing protected method for testing
+    vi.spyOn(agent, 'tick').mockImplementation(async () => {
       ticks++;
       if (ticks >= 1) agent.stop();
       throw new Error('Tick Failed');

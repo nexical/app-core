@@ -50,7 +50,7 @@ vi.mock('../../src/registry.js', () => ({
 describe('Main Entry Point', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.spyOn(process, 'exit').mockImplementation((code?: any) => {
+    vi.spyOn(process, 'exit').mockImplementation((code?: string | number | null | undefined) => {
       throw new Error(`Process.exit called with ${code}`);
     });
   });
@@ -79,12 +79,14 @@ describe('Main Entry Point', () => {
 
   it('should start supervisor mode by default and handle signals', async () => {
     const env = { AGENT_API_TOKEN: 'test-token' };
-    const processOnSpy = vi.spyOn(process, 'on').mockImplementation((event: string, cb: any) => {
-      if (event === 'SIGINT' || event === 'SIGTERM') {
-        // Capture but don't call immediately to test registration
-      }
-      return process;
-    });
+    const processOnSpy = vi
+      .spyOn(process, 'on')
+      .mockImplementation((event: string | symbol, cb: (...args: unknown[]) => void) => {
+        if (event === 'SIGINT' || event === 'SIGTERM') {
+          // Capture but don't call immediately to test registration
+        }
+        return process;
+      });
 
     await main(['node', 'agent.js'], env);
 
@@ -103,9 +105,11 @@ describe('Main Entry Point', () => {
 
   it('should start specific processor mode and handle SIGTERM', async () => {
     const env = { AGENT_API_TOKEN: 'test-token' };
-    const processOnSpy = vi.spyOn(process, 'on').mockImplementation((event: string, cb: any) => {
-      return process;
-    });
+    const processOnSpy = vi
+      .spyOn(process, 'on')
+      .mockImplementation((event: string | symbol, cb: (...args: unknown[]) => void) => {
+        return process;
+      });
 
     await main(['node', 'agent.js', '--processor', 'test-persistent'], env);
 
@@ -114,7 +118,9 @@ describe('Main Entry Point', () => {
 
     const sigtermHandler = processOnSpy.mock.calls.find((c) => c[0] === 'SIGTERM')![1];
     const registry = await import('../../src/registry.js');
-    const mockStop = (registry.processors['test-persistent'] as any).mockStop;
+    const mockStop = (
+      registry.processors['test-persistent'] as unknown as { mockStop: ReturnType<typeof vi.fn> }
+    ).mockStop;
 
     expect(() => sigtermHandler()).toThrow('Process.exit called with 0');
     expect(mockStop).toHaveBeenCalled();
@@ -123,9 +129,9 @@ describe('Main Entry Point', () => {
   it('should handle processor crash', async () => {
     const env = { AGENT_API_TOKEN: 'test-token' };
     const registry = await import('../../src/registry.js');
-    (registry.processors['test-persistent'] as any).mockStart.mockRejectedValueOnce(
-      new Error('Crash'),
-    );
+    (
+      registry.processors['test-persistent'] as unknown as { mockStart: ReturnType<typeof vi.fn> }
+    ).mockStart.mockRejectedValueOnce(new Error('Crash'));
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     await expect(main(['node', 'agent.js', '--processor', 'test-persistent'], env)).rejects.toThrow(
