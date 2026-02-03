@@ -13,8 +13,9 @@ describe('Core Logger', () => {
   it('should log info messages as JSON', () => {
     Logger.info('test message', { foo: 'bar' });
     expect(console.info).toHaveBeenCalledWith(
-      JSON.stringify({ level: 'info', message: 'test message', foo: 'bar' }),
+      expect.stringMatching(/"level":"info","message":"test message","foo":"bar"/),
     );
+    expect(JSON.parse((console.info as Mock).mock.calls[0][0])).toHaveProperty('timestamp');
   });
 
   it('should log error messages with error object as JSON', () => {
@@ -25,6 +26,7 @@ describe('Core Logger', () => {
     const call = (console.error as Mock).mock.calls[0][0] as string;
     const parsed = JSON.parse(call);
 
+    expect(parsed.timestamp).toBeDefined();
     expect(parsed.level).toBe('error');
     expect(parsed.message).toBe('error message');
     expect(parsed.error.message).toBe('boom');
@@ -35,15 +37,17 @@ describe('Core Logger', () => {
   it('should log error messages with non-Error as JSON', () => {
     Logger.error('error message', 'string error');
     expect(console.error).toHaveBeenCalledWith(
-      JSON.stringify({ level: 'error', message: 'error message', error: 'string error' }),
+      expect.stringMatching(/"level":"error","message":"error message","error":"string error"/),
     );
+    expect(JSON.parse((console.error as Mock).mock.calls[0][0])).toHaveProperty('timestamp');
   });
 
   it('should log warn messages as JSON', () => {
     Logger.warn('warn message', { type: 'alert' });
     expect(console.warn).toHaveBeenCalledWith(
-      JSON.stringify({ level: 'warn', message: 'warn message', type: 'alert' }),
+      expect.stringMatching(/"level":"warn","message":"warn message","type":"alert"/),
     );
+    expect(JSON.parse((console.warn as Mock).mock.calls[0][0])).toHaveProperty('timestamp');
   });
 
   it('should log debug messages in non-production environment', () => {
@@ -51,7 +55,8 @@ describe('Core Logger', () => {
     Logger.debug('debug message', { context: 'test' });
     // eslint-disable-next-line no-console
     expect(console.debug).toHaveBeenCalledWith(
-      JSON.stringify({ level: 'debug', message: 'debug message', context: 'test' }),
+      expect.stringMatching(/"level":"debug","message":"debug message","context":"test"/),
     );
+    expect(JSON.parse((console.debug as Mock).mock.calls[0][0])).toHaveProperty('timestamp');
   });
 });
