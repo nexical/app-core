@@ -75,7 +75,7 @@
   "packages/generator/src/engine/builders/test/pom-builder.ts": "76580b629c897ddcce319dd6d353d2d438490f783dc70dae73e8f7f17c9190db",
   "packages/generator/src/engine/builders/test/story-builder.ts": "4c38ff77a0bb3f36c6f8891f83901990705a771cd92723dcfdaad70a2144996c",
   "packages/generator/src/engine/builders/test/ui-test-builder.ts": "08a4033bc68bc77dac45a29d6757a6594312802d574d24c2db48081150515ab2",
-  "packages/generator/src/engine/builders/type-builder.ts": "e3c71d30159b1721fb40f76f9b8a953a25f2db31cb24ec714cd82118e176c1bb",
+  "packages/generator/src/engine/builders/type-builder.ts": "6b77c2d37408a1844a165a9f5d5d2f2637cb6c60fd489a305ade4b6af7e3a1e3",
   "packages/generator/src/engine/builders/ui/action-component-builder.ts": "f1d7f68aad5940d5e4c311feeb29a7d9faf3e2c6605666f0bf181f748ac5dacd",
   "packages/generator/src/engine/builders/ui/auth-builder.ts": "34fe347a2125c63f01708d69941334507119d46aed7fe02d16e79c48b9c451a8",
   "packages/generator/src/engine/builders/ui/form-builder.ts": "dc2cc2698f1595717c2f34b8c88ae5cc2777c9366653b5ddba2ba1e0374295d6",
