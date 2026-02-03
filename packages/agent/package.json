@@ -10,22 +10,13 @@
   "bin": {
     "agent": "dist/main.js"
   },
-  "pkg": {
-    "scripts": "dist/main.js",
-    "targets": [
-      "node18-linux-x64",
-      "node18-macos-x64",
-      "node18-win-x64"
-    ],
-    "outputPath": "bin"
-  },
   "scripts": {
-    "dev": "tsx src/main.ts",
-    "build": "tsup src/main.ts --format esm --clean --dts",
-    "bundle": "tsup src/main.ts --format cjs --clean",
-    "package": "npm run bundle && pkg .",
-    "start": "node dist/main.js",
-    "test": "npx vitest run"
+    "dev": "bun run src/main.ts",
+    "build": "bun build ./src/main.ts --outfile ./dist/main.js",
+    "compile": "bun build ./src/main.ts --compile --outfile ./bin/agent",
+    "compile:all": "bun run scripts/build-binaries.ts",
+    "start": "bun run dist/main.js",
+    "test": "bun test"
   },
   "dependencies": {
     "@nexical/sdk": "*",
@@ -33,7 +24,6 @@
     "zod": "^4.3.0"
   },
   "devDependencies": {
-    "pkg": "^5.8.1",
     "tsup": "^8.0.1",
     "tsx": "^4.7.0",
     "typescript": "^5.3.3"
