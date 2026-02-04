@@ -32,6 +32,6 @@ export const actors = {
 
     client.useToken(rawKey);
 
-    return actor;
+    return { ...actor, token: { rawKey } };
   },
 };

@@ -10,9 +10,9 @@ const mockCreateJob = vi.fn();
 const mockGetJob = vi.fn();
 
 vi.mock('@nexical/sdk', () => ({
-  NexicalClient: vi.fn().mockImplementation(
-    class {
-      orchestrator = {
+  NexicalClient: vi.fn().mockImplementation(function () {
+    return {
+      orchestrator: {
         orchestrator: {
           pollJobs: mockPollJobs,
         },
@@ -26,9 +26,9 @@ vi.mock('@nexical/sdk', () => ({
           create: mockCreateJob,
           get: mockGetJob,
         },
-      };
-    },
-  ),
+      },
+    };
+  }),
 }));
 
 describe('AgentClient', () => {

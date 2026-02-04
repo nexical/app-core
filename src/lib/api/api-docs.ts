@@ -2,8 +2,6 @@ import type { APIRoute, APIContext } from 'astro';
 
 import { getApiModules } from '../core/glob-helper';
 
-const allApiModules = getApiModules();
-
 export type ApiActor = App.Locals['actor'];
 
 export interface OpenAPIParameter {
@@ -180,6 +178,7 @@ export async function generateDocs(
   const paths: Record<string, Record<string, unknown>> = {};
   const modulePrefix = `/modules/${module.name}/src/pages/api`;
 
+  const allApiModules = getApiModules();
   for (const [fileIdentifier, mod] of Object.entries(allApiModules)) {
     // Filter by current module
     if (!fileIdentifier.includes(modulePrefix)) continue;
