@@ -102,6 +102,8 @@ export abstract class ModuleGenerator {
 
     for (const file of this.project.getSourceFiles()) {
       const filePath = file.getFilePath();
+      if (path.basename(filePath).startsWith('__temp_fragment_')) continue;
+
       const inSet = this.generatedFiles.has(filePath);
       const forgotten = (file as unknown as { wasForgotten(): boolean }).wasForgotten?.() || false;
 
@@ -117,6 +119,12 @@ export abstract class ModuleGenerator {
 
         // Format the content
         const formatted = await Formatter.format(content, filePath);
+
+        // Create directory if it doesn't exist
+        const dir = path.dirname(filePath);
+        if (!fs.existsSync(dir)) {
+          fs.mkdirSync(dir, { recursive: true });
+        }
 
         // Write to disk manually
         fs.writeFileSync(filePath, formatted);

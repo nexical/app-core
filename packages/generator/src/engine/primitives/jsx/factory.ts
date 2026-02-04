@@ -6,6 +6,7 @@ export function tsx(strings: TemplateStringsArray, ...values: unknown[]): Parsed
     return acc + str + (values[i] !== undefined ? values[i] : '');
   }, '');
 
+  let tempFile: import('ts-morph').SourceFile | undefined;
   return {
     raw,
     getNodes(project: Project): Statement[] {
@@ -14,9 +15,9 @@ export function tsx(strings: TemplateStringsArray, ...values: unknown[]): Parsed
       const fileName = `__temp_fragment_tsx_${Date.now()}_${Math.random().toString(36).substring(7)}.tsx`;
 
       // We must use .tsx extension for JSX parsing
-      const sourceFile = project.createSourceFile(fileName, wrapped, { overwrite: true });
+      tempFile = project.createSourceFile(fileName, wrapped, { overwrite: true });
 
-      const func = sourceFile.getFunction('_render');
+      const func = tempFile.getFunction('_render');
       if (!func) {
         throw new Error('Failed to parse JSX fragment: could not find wrapper function');
       }
@@ -40,6 +41,16 @@ export function tsx(strings: TemplateStringsArray, ...values: unknown[]): Parsed
 
       // We return the ReturnStatement.
       return [returnStmt];
+    },
+    cleanup() {
+      if (tempFile) {
+        try {
+          tempFile.delete();
+        } catch {
+          // Ignore if already deleted
+        }
+        tempFile = undefined;
+      }
     },
   };
 }

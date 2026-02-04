@@ -14,12 +14,23 @@ export function ts(strings: TemplateStringsArray, ...values: unknown[]): ParsedS
     return acc + str + (values[i] !== undefined ? values[i] : '');
   }, '');
 
+  let tempFile: import('ts-morph').SourceFile | undefined;
   return {
     raw,
     getNodes(project: Project): Statement[] {
       const fileName = `__temp_fragment_${Date.now()}_${Math.random().toString(36).substring(7)}.ts`;
-      const sourceFile = project.createSourceFile(fileName, raw, { overwrite: true });
-      return sourceFile.getStatements();
+      tempFile = project.createSourceFile(fileName, raw, { overwrite: true });
+      return tempFile.getStatements();
+    },
+    cleanup() {
+      if (tempFile) {
+        try {
+          tempFile.delete();
+        } catch {
+          // Ignore if already deleted
+        }
+        tempFile = undefined;
+      }
     },
   };
 }

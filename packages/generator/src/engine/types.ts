@@ -5,6 +5,7 @@ export type NodeContainer = SourceFile | ModuleDeclaration;
 export interface ParsedStatement {
   raw: string;
   getNodes(project: Project): Statement[];
+  cleanup?(): void;
 }
 
 export interface ModelField {
@@ -328,6 +329,7 @@ export interface FunctionConfig {
   name: string;
   isExported?: boolean;
   isAsync?: boolean;
+  overwriteBody?: boolean;
   returnType?: string;
   parameters?: { name: string; type: string; optional?: boolean }[];
   statements?: StatementConfig[];

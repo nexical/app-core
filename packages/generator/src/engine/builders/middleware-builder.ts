@@ -94,13 +94,30 @@ export class MiddlewareBuilder extends BaseBuilder {
     }
 
     // Scan for actor with validStatus or login strategy to implement Bouncer Pattern
-    let sessionCheck: StatementConfig = ts`
-            // Check if actor was set by previous middleware (e.g. session)
-            if (context.locals.actor) return next();`;
+    let sessionCheck: StatementConfig | null = null;
 
     const loginActorModel = this.models.find(
       (m) => m.actor?.validStatus || m.actor?.strategy === 'login',
     );
+
+    // Session Hydration Logic
+    if (loginActorModel) {
+      imports.push({ moduleSpecifier: '@/lib/auth-session', namedImports: ['getSession'] });
+      sessionCheck = ts`
+         // Session Hydration
+         try {
+           const session = await getSession(context.request);
+           if (session?.user) {
+             context.locals.actor = session.user;
+           }
+         } catch (e) {
+           console.error("Session hydration failed", e);
+         }
+       `;
+    }
+
+    // Dynamic Bouncer Pattern
+    let bouncerCheck: StatementConfig = ts`if (context.locals.actor) return next();`;
 
     // If we have a login actor, check for status field
     if (loginActorModel && loginActorModel.fields['status']) {
@@ -113,7 +130,7 @@ export class MiddlewareBuilder extends BaseBuilder {
         ? `!actorCheck || actorCheck.status !== '${validStatus}'`
         : `!actorCheck || actorCheck.status === 'BANNED' || actorCheck.status === 'INACTIVE'`;
 
-      sessionCheck = TemplateLoader.load('middleware/bouncer.tsf', {
+      bouncerCheck = TemplateLoader.load('middleware/bouncer.tsf', {
         modelName,
         statusCheck,
       });
@@ -122,6 +139,7 @@ export class MiddlewareBuilder extends BaseBuilder {
     const onRequest: FunctionConfig = {
       name: 'onRequest',
       isAsync: true,
+      overwriteBody: true,
       isExported: true,
       parameters: [
         { name: 'context', type: 'APIContext' },
@@ -135,8 +153,10 @@ export class MiddlewareBuilder extends BaseBuilder {
         ts`if (publicRoutes.some(route => context.url.pathname.startsWith(route))) return next();`,
         hasAuthLogic ? ts`const authHeader = context.request.headers.get("Authorization");` : null,
         ...authLogic,
-        ts`// Dynamic Bouncer Pattern: Validate Actor Status`,
+        ts`// Session Hydration`,
         sessionCheck,
+        ts`// Dynamic Bouncer Pattern: Validate Actor Status`,
+        bouncerCheck,
         ts`return next();`,
       ].filter(Boolean) as StatementConfig[],
     };

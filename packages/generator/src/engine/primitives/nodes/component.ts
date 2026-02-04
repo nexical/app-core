@@ -180,6 +180,12 @@ export class ComponentPrimitive extends BasePrimitive<
     // But we need to use the text first.
     // The nodes are in a temporary source file.
     // We extracted text. Now we can delete.
-    newReturn.getSourceFile().delete();
+    // We extracted text. Now we can delete.
+    if (renderConfig.cleanup) {
+      renderConfig.cleanup();
+    } else {
+      // Fallback for objects that might not have cleanup (legacy)
+      newReturn.getSourceFile().delete();
+    }
   }
 }

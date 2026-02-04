@@ -124,7 +124,10 @@ export class FunctionPrimitive extends BasePrimitive<FunctionDeclaration, Functi
         }
 
         if (newStatements.length > 0) {
-          newStatements[0].getSourceFile().delete();
+          // Manual delete logic removed in favor of cleanup()
+        }
+        if ((stmtConfig as ParsedStatement).cleanup) {
+          (stmtConfig as ParsedStatement).cleanup!();
         }
         continue;
       }

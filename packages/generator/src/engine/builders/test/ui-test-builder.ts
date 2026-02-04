@@ -3,6 +3,7 @@ import { UiBaseBuilder } from '../ui/ui-base-builder.js';
 import { type FileDefinition, type ModuleConfig } from '../../types.js';
 import { Reconciler } from '../../reconciler.js';
 import { toPascalCase } from '../../../utils/string.js';
+import { ts } from '../../primitives/statements/factory.js';
 
 export class UiTestBuilder extends UiBaseBuilder {
   constructor(
@@ -53,7 +54,7 @@ export class UiTestBuilder extends UiBaseBuilder {
         // We'll generate the test block differently or use statements
       ],
       statements: [
-        `describe('${componentName}', () => {
+        ts`describe('${componentName}', () => {
     it('renders correctly', () => {
         render(<${componentName} />);
         // Basic assertion - assuming table has some header or content
@@ -88,7 +89,7 @@ export class UiTestBuilder extends UiBaseBuilder {
         },
       ],
       statements: [
-        `describe('${componentName}', () => {
+        ts`describe('${componentName}', () => {
     it('renders form', () => {
         render(<${componentName} />);
         // expect(screen.getByRole('button', { name: /save/i })).toBeInTheDocument();

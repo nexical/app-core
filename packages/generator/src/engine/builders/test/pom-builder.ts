@@ -3,6 +3,7 @@ import { UiBaseBuilder } from '../ui/ui-base-builder.js';
 import { type FileDefinition, type ModuleConfig } from '../../types.js';
 import { Reconciler } from '../../reconciler.js';
 import { toPascalCase, toKebabCase } from '../../../utils/string.js';
+import { ts } from '../../primitives/statements/factory.js';
 
 export class PageObjectBuilder extends UiBaseBuilder {
   constructor(
@@ -38,7 +39,7 @@ export class PageObjectBuilder extends UiBaseBuilder {
         },
       ],
       statements: [
-        `export class ${className} {
+        ts`export class ${className} {
     readonly page: Page;
     readonly table: Locator;
     readonly createButton: Locator;

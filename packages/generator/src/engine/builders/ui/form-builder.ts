@@ -6,11 +6,16 @@ import {
   type ModelDef,
   type ModuleConfig,
   type JsxElementConfig,
+  type JsxExpressionConfig,
+  type StatementConfig,
+  type FormFieldConfig,
+  type FunctionConfig,
 } from '../../types.js';
 import { Reconciler } from '../../reconciler.js';
 import { toKebabCase, toPascalCase } from '../../../utils/string.js';
 import { ZodHelper } from '../utils/zod-helper.js';
 import { JsxElementPrimitive } from '../../primitives/jsx/element.js';
+import { LocaleRegistry } from '../../locales/locale-registry.js';
 
 export class FormBuilder extends UiBaseBuilder {
   constructor(
@@ -51,7 +56,7 @@ export class FormBuilder extends UiBaseBuilder {
 
       // Collect custom component imports
       const customImports: Set<string> = new Set();
-      Object.values(formConfig).forEach((fieldConfig: any) => {
+      Object.values(formConfig).forEach((fieldConfig: FormFieldConfig) => {
         if (fieldConfig.component && fieldConfig.component.path) {
           // We need to handle named imports. Assuming component.name is the named export.
           // Store as JSON string to dedupe, then parse back.
@@ -68,6 +73,10 @@ export class FormBuilder extends UiBaseBuilder {
         {
           moduleSpecifier: 'react',
           namedImports: ['useEffect'],
+        },
+        {
+          moduleSpecifier: 'react-i18next',
+          namedImports: ['useTranslation'],
         },
         {
           moduleSpecifier: 'react-hook-form',
@@ -117,12 +126,24 @@ export class FormBuilder extends UiBaseBuilder {
     model: ModelDef,
     allModels: ModelDef[],
     componentName: string,
-    formConfig: Record<string, any>,
-  ): any {
+    formConfig: Record<string, FormFieldConfig>,
+  ): FunctionConfig {
     const modelName = toPascalCase(model.name);
     const zodSchema = ZodHelper.generateSchema(model, allModels);
 
-    const statements: any[] = [
+    // Register generic button keys
+    const keys = {
+      saving: LocaleRegistry.register('common.status.saving', 'Saving...'),
+      update: LocaleRegistry.register('common.actions.update', 'Update'),
+      create: LocaleRegistry.register('common.actions.create', 'Create'),
+    };
+
+    const statements: StatementConfig[] = [
+      {
+        kind: 'variable',
+        declarationKind: 'const',
+        declarations: [{ name: '{ t }', initializer: 'useTranslation()' }],
+      },
       {
         kind: 'variable',
         declarationKind: 'const',
@@ -206,20 +227,19 @@ export class FormBuilder extends UiBaseBuilder {
         { name: 'disabled', value: '{isSubmitting}' },
         {
           name: 'className',
-          value:
-            'inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50',
+          value: 'btn-primary btn-dims-default w-full sm:w-auto',
         },
       ],
       children: [
         {
           kind: 'expression',
-          expression: "isSubmitting ? 'Saving...' : (isEdit ? 'Update' : 'Create')",
+          expression: `isSubmitting ? t('${keys.saving}') : (isEdit ? t('${keys.update}') : t('${keys.create}'))`,
         },
       ],
     };
 
     // Wrap button in permission logic
-    const conditionalButton = {
+    const conditionalButton: JsxExpressionConfig = {
       kind: 'expression',
       expression:
         '(isEdit ? canUpdate : canCreate) && ' + new JsxElementPrimitive(submitButton).generate(),
@@ -232,7 +252,7 @@ export class FormBuilder extends UiBaseBuilder {
         tagName: 'form',
         attributes: [
           { name: 'onSubmit', value: '{handleSubmit(onSubmit)}' },
-          { name: 'className', value: 'space-y-4' },
+          { name: 'className', value: 'space-y-4 form-container' },
         ],
         children: [...fieldElements, conditionalButton],
       },
@@ -251,7 +271,12 @@ export class FormBuilder extends UiBaseBuilder {
     };
   }
 
-  private generateFieldElements(model: ModelDef, formConfig: Record<string, any>): any[] {
+  private generateFieldElements(
+    model: ModelDef,
+    formConfig: Record<string, FormFieldConfig>,
+  ): JsxElementConfig[] {
+    const lowerModelName = model.name.toLowerCase();
+
     return Object.entries(model.fields)
       .filter(
         ([name, f]) =>
@@ -262,9 +287,13 @@ export class FormBuilder extends UiBaseBuilder {
           !['id', 'createdAt', 'updatedAt'].includes(name),
       )
       .map(([name, f]) => {
-        const label = toPascalCase(name)
-          .replace(/([A-Z])/g, ' $1')
-          .trim();
+        // Register field label
+        const key = LocaleRegistry.register(
+          `module.${lowerModelName}.field.${name}`,
+          toPascalCase(name)
+            .replace(/([A-Z])/g, ' $1')
+            .trim(),
+        );
 
         // Check for Custom Component Override
         const fieldConfig = formConfig[name];
@@ -278,9 +307,9 @@ export class FormBuilder extends UiBaseBuilder {
                 tagName: 'label',
                 attributes: [
                   { name: 'htmlFor', value: name },
-                  { name: 'className', value: 'block text-sm font-medium text-gray-700' },
+                  { name: 'className', value: 'input-label' },
                 ],
-                children: [label],
+                children: [{ kind: 'expression', expression: `t('${key}')` }],
               },
               {
                 kind: 'jsx',
@@ -320,15 +349,16 @@ export class FormBuilder extends UiBaseBuilder {
         return {
           kind: 'jsx',
           tagName: 'div',
+          attributes: [{ name: 'className', value: 'form-group space-y-group' }],
           children: [
             {
               kind: 'jsx',
               tagName: 'label',
               attributes: [
                 { name: 'htmlFor', value: name },
-                { name: 'className', value: 'block text-sm font-medium text-gray-700' },
+                { name: 'className', value: 'input-label' },
               ],
-              children: [label],
+              children: [{ kind: 'expression', expression: `t('${key}')` }],
             },
             {
               kind: 'jsx',
@@ -347,8 +377,7 @@ export class FormBuilder extends UiBaseBuilder {
                     },
                     {
                       name: 'className',
-                      value:
-                        'shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md',
+                      value: 'input-field w-full',
                     },
                   ],
                 },
@@ -356,7 +385,7 @@ export class FormBuilder extends UiBaseBuilder {
             },
             {
               kind: 'expression',
-              expression: `errors.${name} && <p className="mt-2 text-sm text-red-600">{errors.${name}?.message as string}</p>`,
+              expression: `errors.${name} && <p className="feedback-error-text mt-2">{errors.${name}?.message as string}</p>`,
             },
           ],
         };

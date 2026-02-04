@@ -25,7 +25,7 @@ export class RolePrimitive {
       name: className,
       extends: 'BaseRole',
       isExported: true,
-      docs: [definition.description],
+      docs: definition.description ? [definition.description] : [],
     });
 
     const classNode = classPrimitive.ensure(sourceFile);
@@ -41,7 +41,7 @@ export class RolePrimitive {
       {
         name: 'description',
         type: 'string',
-        initializer: `'${definition.description}'`,
+        initializer: `'${definition.description || ''}'`,
         readonly: true,
       },
       {

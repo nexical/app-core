@@ -1,9 +1,16 @@
 import { Project, SourceFile } from 'ts-morph';
 import { UiBaseBuilder } from './ui-base-builder.js';
 import path from 'node:path';
-import { type FileDefinition, type ModelDef, type ModuleConfig } from '../../types.js';
+import {
+  type FileDefinition,
+  type ModelDef,
+  type ModuleConfig,
+  type StatementConfig,
+  type FunctionConfig,
+} from '../../types.js';
 import { Reconciler } from '../../reconciler.js';
 import { toKebabCase, toPascalCase } from '../../../utils/string.js';
+import { LocaleRegistry } from '../../locales/locale-registry.js';
 
 export class TableBuilder extends UiBaseBuilder {
   constructor(
@@ -40,6 +47,10 @@ export class TableBuilder extends UiBaseBuilder {
         {
           moduleSpecifier: 'react',
           namedImports: ['useState'],
+        },
+        {
+          moduleSpecifier: 'react-i18next',
+          namedImports: ['useTranslation'],
         },
         {
           moduleSpecifier: `@/hooks/use-${toKebabCase(model.name)}`,
@@ -117,6 +128,7 @@ export class TableBuilder extends UiBaseBuilder {
             'DialogHeader',
             'DialogTitle',
             'DialogDescription',
+            'DialogTrigger',
           ],
         });
       }
@@ -135,17 +147,42 @@ export class TableBuilder extends UiBaseBuilder {
     model: ModelDef,
     componentName: string,
     editMode: 'sheet' | 'dialog',
-  ): any {
+  ): FunctionConfig {
     const modelName = toPascalCase(model.name);
     const hookName = `use${modelName}Query`;
     const deleteHookName = `useDelete${modelName}`;
+    const lowerModelName = model.name.toLowerCase();
+
+    // Register Localization Keys
+    const keyPrefix = `module.${lowerModelName}`;
+    const keys = {
+      loading: LocaleRegistry.register(`common.status.loading`, 'Loading...'),
+      editTitle: LocaleRegistry.register(`${keyPrefix}.edit.title`, `Edit ${modelName}`),
+      editDesc: LocaleRegistry.register(
+        `${keyPrefix}.edit.description`,
+        `Make changes to the ${lowerModelName}.`,
+      ),
+      actionsLabel: LocaleRegistry.register(`common.actions.label`, 'Actions'),
+      editAction: LocaleRegistry.register(`common.actions.edit`, 'Edit'),
+      deleteAction: LocaleRegistry.register(`common.actions.delete`, 'Delete'),
+      columnPrefix: `${keyPrefix}.field`,
+    };
 
     // Fields for columns
     const columns = Object.entries(model.fields)
       .filter(([name, f]) => !f.private && f.type !== 'Json' && !f.isRelation)
-      .map(([name]) => name);
+      .map(([name]) => {
+        // Register column header
+        LocaleRegistry.register(`${keys.columnPrefix}.${name}`, toPascalCase(name));
+        return name;
+      });
 
-    const statements: any[] = [
+    const statements: StatementConfig[] = [
+      {
+        kind: 'variable',
+        declarationKind: 'const',
+        declarations: [{ name: '{ t }', initializer: 'useTranslation()' }],
+      },
       {
         kind: 'variable',
         declarationKind: 'const',
@@ -167,11 +204,11 @@ export class TableBuilder extends UiBaseBuilder {
         declarations: [
           {
             name: 'canDelete',
-            initializer: `Permission.check('${model.name.toLowerCase()}:delete', user?.role || 'ANONYMOUS')`,
+            initializer: `Permission.check('${lowerModelName}:delete', user?.role || 'ANONYMOUS')`,
           },
           {
             name: 'canUpdate',
-            initializer: `Permission.check('${model.name.toLowerCase()}:update', user?.role || 'ANONYMOUS')`,
+            initializer: `Permission.check('${lowerModelName}:update', user?.role || 'ANONYMOUS')`,
           },
         ],
       },
@@ -204,7 +241,8 @@ export class TableBuilder extends UiBaseBuilder {
           expression: {
             kind: 'jsx',
             tagName: 'div',
-            children: ['Loading...'],
+            attributes: [{ name: 'className', value: 'layout-centered py-12 text-subtle' }],
+            children: [{ kind: 'expression', expression: `t('${keys.loading}')` }],
           },
         },
       },
@@ -217,9 +255,9 @@ export class TableBuilder extends UiBaseBuilder {
           (col) => `{
         accessorKey: '${col}',
         header: ({ column }) => (
-          <DataTableColumnHeader column={column} title="${toPascalCase(col)}" />
+          <DataTableColumnHeader column={column} title={t('${keys.columnPrefix}.${col}')} />
         ),
-        cell: ({ row }) => <div>{String(row.getValue('${col}') || '')}</div>,
+        cell: ({ row }) => <div className="text-body-sm">{String(row.getValue('${col}') || '')}</div>,
       }`,
         )
         .join(',\n')},
@@ -230,27 +268,27 @@ export class TableBuilder extends UiBaseBuilder {
           return (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" className="h-8 w-8 p-0">
+                <Button variant="ghost" className="btn-icon-sm btn-ghost">
                   <span className="sr-only">Open menu</span>
-                  <MoreHorizontal className="h-4 w-4" />
+                  <MoreHorizontal className="icon-sm" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuContent align="end" className="w-[160px]">
+                <DropdownMenuLabel className="text-subtle-xs uppercase">{t('${keys.actionsLabel}')}</DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {canUpdate && (
-                  <DropdownMenuItem onClick={() => setEditingItem(item)}>
-                    <Pencil className="mr-2 h-4 w-4" />
-                    Edit
+                  <DropdownMenuItem onClick={() => setEditingItem(item)} className="gap-2 cursor-pointer">
+                    <Pencil className="icon-xs text-muted-foreground" />
+                    {t('${keys.editAction}')}
                   </DropdownMenuItem>
                 )}
                 {canDelete && (
                   <DropdownMenuItem
-                    className="text-red-600 focus:text-red-600"
+                    className="gap-2 text-destructive focus:text-destructive cursor-pointer"
                     onClick={() => setDeletingItem(item)}
                   >
-                    <Trash className="mr-2 h-4 w-4" />
-                    Delete
+                    <Trash className="icon-xs" />
+                    {t('${keys.deleteAction}')}
                   </DropdownMenuItem>
                 )}
               </DropdownMenuContent>
@@ -276,12 +314,12 @@ export class TableBuilder extends UiBaseBuilder {
     const editContainer =
       editMode === 'sheet'
         ? `<Sheet open={!!editingItem} onOpenChange={(open) => !open && setEditingItem(null)}>
-            <SheetContent>
+            <SheetContent className="w-dialog-lg sm:max-w-xl">
               <SheetHeader>
-                <SheetTitle>Edit ${modelName}</SheetTitle>
-                <SheetDescription>Make changes to the ${modelName.toLowerCase()}.</SheetDescription>
+                <SheetTitle className="text-heading-md">{t('${keys.editTitle}')}</SheetTitle>
+                <SheetDescription className="text-subtle">{t('${keys.editDesc}')}</SheetDescription>
               </SheetHeader>
-              <div className="mt-4">
+              <div className="mt-8">
                {editingItem && (
                  <${modelName}Form 
                     id={editingItem.id} 
@@ -293,10 +331,10 @@ export class TableBuilder extends UiBaseBuilder {
             </SheetContent>
            </Sheet>`
         : `<Dialog open={!!editingItem} onOpenChange={(open) => !open && setEditingItem(null)}>
-            <DialogContent>
+            <DialogContent className="w-dialog-md">
               <DialogHeader>
-                <DialogTitle>Edit ${modelName}</DialogTitle>
-                <DialogDescription>Make changes to the ${modelName.toLowerCase()}.</DialogDescription>
+                <DialogTitle className="text-heading-md">{t('${keys.editTitle}')}</DialogTitle>
+                <DialogDescription className="text-subtle">{t('${keys.editDesc}')}</DialogDescription>
               </DialogHeader>
               {editingItem && (
                  <${modelName}Form 
@@ -314,7 +352,7 @@ export class TableBuilder extends UiBaseBuilder {
       expression: {
         kind: 'jsx',
         tagName: 'div',
-        attributes: [{ name: 'className', value: 'space-y-4' }],
+        attributes: [{ name: 'className', value: 'space-y-4 container-admin-table' }],
         children: [
           {
             kind: 'jsx',
