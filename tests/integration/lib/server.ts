@@ -164,7 +164,7 @@ export class ServerManager {
   }
 
   private async waitForServer(): Promise<void> {
-    const timeoutMs = 60000; // 60s
+    const timeoutMs = 120000; // 120s
     const startTime = Date.now();
     const interval = 500;
 

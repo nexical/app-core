@@ -19,9 +19,9 @@ export const factories = {
       lockedAt: new Date(),
       startedAt: new Date(),
       completedAt: new Date(),
-      retryCount: index,
-      maxRetries: index,
-      nextRetryAt: new Date(),
+      retryCount: 0,
+      maxRetries: 3,
+      nextRetryAt: null,
     };
   },
   jobLog: (index: number) => {
