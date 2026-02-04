@@ -277,6 +277,7 @@
   "packages/generator/tsconfig.json": "56e7a337c3cf8c0f219984c780a57d8e3de41033692ea6881332db88cd89ad95",
   "packages/generator/vitest.config.ts": "b6d0bb4f71defe57baba5423aa6d1ba845f04458455de46a66a6a00614c64ca3",
   "packages/generator/vitest.unit.config.ts": "b242f3f225f8a6239ff478760c54f40168251021d16e35c533435513d5251e95",
+  "packages/reskill/README.md": "334f10b2f2115cde9066b94a05ad47cb1c1b99bd38b500ebb59fc8983f7243de",
   "packages/reskill/package.json": "609e0f151fa1a4e10f3a51be78b844d9b321fcb720e1ca94d2a6d7debeba3c28",
   "packages/reskill/src/agents/AgentRunner.ts": "beecc1059b81194e4eea09a0791ff29f10b8b0617a26e5514b709849b61bb6c3",
   "packages/reskill/src/core/Architect.ts": "4cea00d404a94b4c512006c869d267c71d28b6bf0213a9031c75986ae9bf12b7",
