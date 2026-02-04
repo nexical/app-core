@@ -9,6 +9,8 @@ export interface AgentJobType {
   id: string;
   type: string;
   payload: unknown;
+  status: string;
+  retryCount: number;
 }
 
 export class OrchestrationService {
@@ -68,6 +70,8 @@ export class OrchestrationService {
           id: updated.id,
           type: updated.type,
           payload: updated.payload,
+          status: updated.status,
+          retryCount: updated.retryCount,
         };
       });
 
@@ -200,6 +204,7 @@ export class OrchestrationService {
         where: { id },
         data: {
           status: 'FAILED',
+          retryCount: newRetryCount,
           error: error as Prisma.InputJsonValue,
           completedAt: new Date(),
           progress: 0,
