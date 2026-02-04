@@ -6,9 +6,9 @@ export const actors = {
   user: async (client: ApiClient, params: Record<string, unknown> = {}) => {
     let actor;
     if (params.id) {
-      actor = await Factory.prisma.user.findUnique({ where: { id: params.id } });
+      actor = await Factory.prisma.user.findUnique({ where: { id: params.id as string } });
     } else if (params.email) {
-      actor = await Factory.prisma.user.findFirst({ where: { email: params.email } });
+      actor = await Factory.prisma.user.findFirst({ where: { email: params.email as string } });
     }
 
     if (!actor) {
