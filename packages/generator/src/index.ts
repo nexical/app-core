@@ -9,4 +9,6 @@ export * from './engine/reconciler.js';
 export * from './utils/formatter.js';
 export * from './utils/normalizer.js';
 export * from './utils/fragment-tag.js';
+export * from './commands/spec/init.js';
+export * from './commands/spec/update.js';
 export { ts } from './engine/primitives/statements/factory.js';
