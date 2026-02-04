@@ -35,7 +35,7 @@ export class TypeBuilder extends BaseBuilder {
       }
     }
 
-    const statements: (string | StatementConfig)[] = [];
+    const statements: StatementConfig[] = [];
 
     // 1. Identify used database models in virtual model fields
     const usedDbModels = new Set<string>();

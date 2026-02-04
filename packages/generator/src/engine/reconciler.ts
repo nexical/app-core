@@ -31,6 +31,8 @@ import { ConstructorPrimitive } from './primitives/nodes/constructor.js';
 import { AccessorPrimitive } from './primitives/nodes/accessor.js';
 import { ModulePrimitive } from './primitives/nodes/module.js';
 import { ComponentPrimitive } from './primitives/nodes/component.js';
+import { RolePrimitive } from './primitives/nodes/role.js';
+import { PermissionPrimitive } from './primitives/nodes/permission.js';
 
 import { Normalizer } from '../utils/normalizer.js';
 
@@ -228,6 +230,17 @@ export class Reconciler {
       // 8. Handle Modules (Namespaces)
       definition.modules?.forEach((modDef) => new ModulePrimitive(modDef).ensure(sourceFile));
 
+      if (definition.role) {
+        new RolePrimitive(definition.role).ensure(sourceFile as SourceFile);
+      }
+
+      // 10. Handle Permission
+      if (definition.permissions) {
+        new PermissionPrimitive(definition.permissions, definition.rolePermissions).ensure(
+          sourceFile as SourceFile,
+        );
+      }
+
       // 8.5 Handle Exports (Processed after major nodes to match conventional end-of-file exports)
       if ('getExportDeclarations' in sourceFile) {
         definition.exports?.forEach((config) =>
@@ -320,6 +333,15 @@ export class Reconciler {
       if (!result.valid) issues.push(...result.issues);
     };
 
+    // 0. Header
+    if (definition.header && 'insertStatements' in sourceFile) {
+      const headerTrimmed = definition.header.trim();
+      const sourceText = (sourceFile as SourceFile).getFullText().trimStart();
+      if (!sourceText.startsWith(headerTrimmed)) {
+        issues.push('File header mismatch or missing.');
+      }
+    }
+
     // 1. Imports
     if ('getImportDeclarations' in sourceFile) {
       definition.imports?.forEach((config) => {
@@ -395,8 +417,6 @@ export class Reconciler {
       // Recursive: Methods
       methods?.forEach((methodDef) => {
         const methodPrimitive = new MethodPrimitive(methodDef);
-
-        // We need to pass the classNode to find/validate the method
         const methodNode = methodPrimitive.find(classNode);
         if (!methodNode) {
           issues.push(`Method '${methodDef.name}' is missing in ${classConfig.name}.`);
@@ -482,6 +502,28 @@ export class Reconciler {
         collect(primitive.validate(node));
       }
     });
+
+    // 9. Role
+    if (definition.role) {
+      const primitive = new RolePrimitive(definition.role);
+      const node = primitive.find(sourceFile as SourceFile);
+      if (!node) {
+        issues.push(`Role '${definition.role.name}' is missing.`);
+      } else {
+        collect(primitive.validate(node));
+      }
+    }
+
+    // 10. Permission
+    if (definition.permissions) {
+      const primitive = new PermissionPrimitive(definition.permissions, definition.rolePermissions);
+      const node = primitive.find(sourceFile as SourceFile);
+      if (!node) {
+        issues.push(`PermissionRegistry is missing.`);
+      } else {
+        collect(primitive.validate(node));
+      }
+    }
 
     return { valid: issues.length === 0, issues };
   }

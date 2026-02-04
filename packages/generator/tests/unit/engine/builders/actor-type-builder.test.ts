@@ -24,7 +24,7 @@ describe('ActorTypeBuilder', () => {
     const text = sourceFile.getFullText();
     expect(text).not.toContain('existing content');
     // ts-morph uses double quotes for imports by default, but ActorTypeBuilder might be using single quotes for some internal parts
-    expect(text).toMatch(/import type \{ User \} from ".\/sdk\/types";/);
+    expect(text).toMatch(/import type \{ User \} from ".\/sdk\/types\.js";/);
     expect(text).toContain('namespace App');
     expect(text).toContain('interface ActorMap');
     expect(text).toContain("user: User & { type: 'user' };");

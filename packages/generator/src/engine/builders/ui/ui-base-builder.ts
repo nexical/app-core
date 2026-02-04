@@ -11,6 +11,7 @@ import {
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { parse } from 'yaml';
+import { ModelParser } from '../../model-parser.js';
 
 export interface UiConfig {
   backend?: string;
@@ -18,6 +19,8 @@ export interface UiConfig {
   pages?: PageDefinition[];
   shells?: ShellDefinition[];
   registries?: Record<string, RegistryItemDefinition[]>;
+  forms?: Record<string, Record<string, unknown>>; // Simplified for internal use, or import stricter type
+  tables?: Record<string, unknown>;
 }
 
 export abstract class UiBaseBuilder extends BaseBuilder {
@@ -58,20 +61,12 @@ export abstract class UiBaseBuilder extends BaseBuilder {
     const modelsPath = join(process.cwd(), 'modules', targetModule, 'models.yaml');
 
     if (!existsSync(modelsPath)) {
-      // Fallback or warning?
-      // If pure UI module without models, maybe fine to have empty models.
-      // But usually we need models.
-      // console.warn(`[UiBaseBuilder] No models.yaml found for ${targetModule}`);
       return [];
     }
 
     try {
-      const content = readFileSync(modelsPath, 'utf8');
-      const parsed = parse(content) as Record<string, unknown>;
-      return Object.entries(parsed).map(([name, def]) => ({
-        name,
-        ...(def as Record<string, unknown>),
-      })) as ModelDef[];
+      const { models } = ModelParser.parse(modelsPath);
+      return models;
     } catch {
       return [];
     }

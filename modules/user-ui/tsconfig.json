@@ -3,5 +3,5 @@
   "compilerOptions": {
     "baseUrl": "../../"
   },
-  "include": ["src/**/*", "../../src/**/*", "../../.astro/types.d.ts"]
+  "include": ["src/**/*", "../../src/**/*", "../../modules/*/src/types.d.ts"]
 }

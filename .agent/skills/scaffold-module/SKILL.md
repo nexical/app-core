@@ -47,12 +47,13 @@ We strictly separate concerns into distinct packages. Standard CRUD logic is man
   ```text
   modules/my-feature-ui/
   ├── package.json          # @modules/my-feature-ui
-  ├── styles.css            # Tailwind Layers (@layer components)
-  ├── src/
-  │   ├── registry/         # "Pins" for the Shell ({order}-{name}.tsx)
-  │   ├── components/       # Reusable Components
-  │   ├── pages/            # Astro Pages (Routing)
-  │   └── init.ts           # Isomorphic registration
+  │   ├── styles.css            # Tailwind Layers (@layer components)
+  │   ├── ui.yaml               # UI Generator Configuration (Feature, Forms, Tables)
+  │   ├── src/
+  │   │   ├── registry/         # "Pins" for the Shell ({order}-{name}.tsx)
+  │   │   ├── components/       # Reusable Components (Generated & Manual)
+  │   │   ├── pages/            # Astro Pages (Routing)
+  │   │   └── init.ts           # Isomorphic registration
   ```
 
 ## 2. Creation Workflow (CLI)
@@ -87,6 +88,44 @@ npx arc gen:api <name>
 
 - **Naming**: Files MUST follow `{order}-{kebab-name}.tsx` (e.g., `10-dashboard-widget.tsx`).
 - **Zones**: Components are "pinned" to Shell Zones defined in `ARCHITECTURE.md`.
+
+### UI Configuration (`ui.yaml`)
+
+- **Purpose**: A "Control Plane" that directs the generator.
+- **Rule**: Use `ui.yaml` to inject custom components into generated forms instead of editing the generated file directly.
+- **Structure**:
+
+  ```yaml
+  # 1. Feature Configuration
+  type: feature
+  order: 50
+
+  # 2. Forms Configuration (Map model fields to components)
+  forms:
+    User:
+      # Simple override
+      password:
+        component:
+          name: PasswordInput
+          path: '@/components/ui/password-input'
+      # Complex injection
+      avatarUrl:
+        component:
+          name: AvatarUpload
+          path: '@/components/ui/avatar-upload'
+
+  # 3. Tables Configuration
+  tables:
+    User:
+      editMode: sheet # 'sheet' (Side Panel) or 'dialog' (Modal Center)
+
+  # 4. Registry Configuration (The "Plugs")
+  registries:
+    nav-main:
+      - name: 'user-link'
+        component: '@/components/nav/UserLink'
+        guard: ['admin']
+  ```
 
 ## 4. Post-Scaffold Actions
 

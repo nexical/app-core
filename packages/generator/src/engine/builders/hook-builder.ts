@@ -5,6 +5,7 @@ import { Reconciler } from '../reconciler.js';
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { parse } from 'yaml';
+import { ts } from '../primitives/statements/factory.js';
 
 export interface HookTemplateConfig {
   event: string;
@@ -69,7 +70,7 @@ export class HookBuilder extends BaseBuilder {
           isExported: true,
           isAsync: true,
           statements: [
-            `HookSystem.${method}("${hook.event}", async (data: unknown) => {
+            ts`HookSystem.${method}("${hook.event}", async (data: unknown) => {
         console.info(\`[Hook] ${hook.event} triggered action ${hook.action}\`);
         // TODO: Implement hook logic
         return data;

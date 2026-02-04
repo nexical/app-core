@@ -4,9 +4,12 @@ import {
   type MethodConfig,
   type ImportConfig,
   type NodeContainer,
+  type StatementConfig,
+  type ParsedStatement,
 } from '../types.js';
 import { BaseBuilder } from './base-builder.js';
 import { TemplateLoader } from '../../utils/template-loader.js';
+import { ts } from '../primitives/statements/factory.js';
 
 export class ActionBuilder extends BaseBuilder {
   constructor(
@@ -19,7 +22,7 @@ export class ActionBuilder extends BaseBuilder {
 
   protected getSchema(node?: NodeContainer): FileDefinition {
     const capturedReturnType = `Promise<ServiceResponse<${this.outputType}>>`;
-    let existingStatements: string[] | undefined;
+    let existingStatements: StatementConfig[] | undefined;
 
     if (node && 'getClass' in node) {
       const cls = node.getClass(this.actionName);
@@ -30,7 +33,10 @@ export class ActionBuilder extends BaseBuilder {
           console.info(
             `[ActionBuilder] Found existing method 'run' (static: ${method.isStatic()}) in ${this.actionName}`,
           );
-          existingStatements = [method.getBodyText() || ''];
+          const body = method.getBodyText();
+          if (body) {
+            existingStatements = [ts`${body}`];
+          }
         } else {
           console.info(`[ActionBuilder] Method 'run' NOT found in ${this.actionName}`);
         }
@@ -82,14 +88,24 @@ export class ActionBuilder extends BaseBuilder {
       { moduleSpecifier: 'astro', namedImports: ['APIContext'], isTypeOnly: true },
     ];
 
-    if (existingStatements?.some((s) => s.includes('OrchestrationService'))) {
+    const hasOrchestrationService = existingStatements?.some((s) => {
+      const text = 'raw' in s ? (s as ParsedStatement).raw : '';
+      return text.includes('OrchestrationService');
+    });
+
+    if (hasOrchestrationService) {
       imports.push({
         moduleSpecifier: '../services/orchestration-service',
         namedImports: ['OrchestrationService'],
       });
     }
 
-    if (existingStatements?.some((s) => s.includes('z.'))) {
+    const hasZod = existingStatements?.some((s) => {
+      const text = 'raw' in s ? (s as ParsedStatement).raw : '';
+      return text.includes('z.');
+    });
+
+    if (hasZod) {
       imports.push({
         moduleSpecifier: 'zod',
         namedImports: ['z'],

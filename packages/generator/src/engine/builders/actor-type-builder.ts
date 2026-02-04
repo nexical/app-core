@@ -18,7 +18,7 @@ export class ActorTypeBuilder extends BaseBuilder {
     const actorModels = this.models.filter((m) => m.actor);
 
     const imports: ImportConfig[] = [];
-    const statements: (string | StatementConfig)[] = [];
+    const statements: StatementConfig[] = [];
 
     for (const model of actorModels) {
       // Import the model type

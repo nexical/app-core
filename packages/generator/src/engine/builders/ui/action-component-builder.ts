@@ -1,8 +1,9 @@
 import { Project, SourceFile } from 'ts-morph';
 import { UiBaseBuilder } from './ui-base-builder.js';
-import { type FileDefinition, type ModuleConfig } from '../../types.js';
+import { type FileDefinition, type ModuleConfig, type ParsedStatement } from '../../types.js';
 import { Reconciler } from '../../reconciler.js';
 import { toKebabCase, toPascalCase } from '../../../utils/string.js';
+import { ts } from '../../primitives/statements/factory.js';
 
 export class ActionComponentBuilder extends UiBaseBuilder {
   constructor(
@@ -58,13 +59,13 @@ export class ActionComponentBuilder extends UiBaseBuilder {
     }
   }
 
-  private generateComponent(route: unknown, hookName: string): string {
+  private generateComponent(route: unknown, hookName: string): ParsedStatement {
     const action = (route as Record<string, unknown>)['action'] as string;
     const label = toPascalCase(action)
       .replace(/([A-Z])/g, ' $1')
       .trim();
 
-    return `({ id, initialData, onSuccess, className }: { id?: string, initialData?: unknown, onSuccess?: () => void, className?: string }) => {
+    return ts`({ id, initialData, onSuccess, className }: { id?: string, initialData?: unknown, onSuccess?: () => void, className?: string }) => {
     const mutation = ${hookName}();
     
     const onClick = () => {

@@ -1,21 +1,20 @@
 import { Auth } from '@auth/core';
-import { authConfig } from '@modules/user-ui/auth.config';
+import type { Session } from '@auth/core/types';
+import { authConfig } from '../../auth.config';
 
-export async function getSession(request: Request) {
-  const url = new URL('/api/auth/session', request.url);
+export async function getSession(request: Request): Promise<Session | null> {
+  const url = new URL(request.url);
+  const isAuthRoute = url.pathname.startsWith('/api/auth');
+
+  // If we're already on an auth route, the session might not be ready or relevant in the same way
+  if (isAuthRoute) return null;
 
   try {
-    const response = await Auth(new Request(url, { headers: request.headers }), authConfig);
-    const { status = 200 } = response;
-
-    if (status !== 200) return null;
-
-    const data = await response.json();
-    if (!data || !Object.keys(data).length) return null;
-    return data;
-  } catch (e: unknown) {
-    const error = e as Error;
-    console.error('[AuthSession] getSession failed:', error.message);
+    const session = await Auth(request, authConfig);
+    // Explicitly cast the session to the expected type or null
+    return (session as unknown as Session) || null;
+  } catch (error) {
+    console.error('Failed to get session:', error);
     return null;
   }
 }

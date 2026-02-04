@@ -24,7 +24,6 @@ export class PermissionBuilder {
         {
           name: 'check',
           isAsync: true,
-          overwriteBody: false,
           isStatic: true,
           parameters: [
             { name: 'context', type: 'APIContext' },

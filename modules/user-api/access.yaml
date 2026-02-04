@@ -1,0 +1,34 @@
+config:
+  roles:
+    ADMIN:
+      permissions:
+        - user:list
+        - user:create
+        - user:update
+        - user:delete
+        - user:invite
+        - auth:sudo
+    EMPLOYEE:
+      permissions:
+        - user:read_self
+        - user:update_self
+    CONTRACTOR:
+      permissions:
+        - user:read_self
+  permissions:
+    user:list:
+      description: View list of all users
+    user:create:
+      description: Create a new user manually
+    user:update:
+      description: Update any user profile
+    user:delete:
+      description: Soft delete or ban a user
+    user:invite:
+      description: Invite new users via email
+    user:read_self:
+      description: View own profile
+    user:update_self:
+      description: Update own profile
+    auth:sudo:
+      description: Access administrative shells and menus

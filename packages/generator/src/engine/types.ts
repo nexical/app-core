@@ -5,6 +5,7 @@ export type NodeContainer = SourceFile | ModuleDeclaration;
 export interface ParsedStatement {
   raw: string;
   getNodes(project: Project): Statement[];
+  cleanup?(): void;
 }
 
 export interface ModelField {
@@ -90,12 +91,26 @@ export interface RegistryItemDefinition {
   matcher: Record<string, unknown>;
 }
 
+export interface FormFieldConfig {
+  component?: {
+    name: string;
+    path: string;
+    props?: Record<string, unknown>; // Optional props to pass
+  };
+}
+
+export interface TableConfig {
+  editMode?: 'sheet' | 'dialog';
+}
+
 export interface UiModuleConfig {
   backend?: string;
   prefix?: string;
   pages?: PageDefinition[];
   shells?: ShellDefinition[];
   registries?: Record<string, RegistryItemDefinition[]>;
+  forms?: Record<string, Record<string, FormFieldConfig>>; // ModelName -> FieldName -> Config
+  tables?: Record<string, TableConfig>; // ModelName -> Config
 }
 
 // --- Statement Configurations ---
@@ -172,7 +187,6 @@ export interface JsxElementConfig extends BaseStatementConfig {
 }
 
 export type StatementConfig =
-  | string // Legacy/Raw string support
   | ParsedStatement
   | VariableStatementConfig
   | ReturnStatementConfig
@@ -197,7 +211,6 @@ export interface MethodConfig {
   parameters?: { name: string; type: string; optional?: boolean; decorators?: DecoratorConfig[] }[];
   statements?: StatementConfig[];
   scope?: Scope;
-  overwriteBody?: boolean;
   decorators?: DecoratorConfig[];
   docs?: string[];
 }
@@ -225,6 +238,30 @@ export interface ExportConfig {
   isTypeOnly?: boolean;
 }
 
+// --- Access and Role Configurations ---
+
+export interface RoleDefinition {
+  description?: string;
+  inherits?: string[];
+  permissions?: string[];
+}
+
+export interface PermissionDefinition {
+  description: string;
+}
+
+export interface AccessConfig {
+  roles: Record<string, RoleDefinition>;
+  permissions: Record<string, PermissionDefinition>;
+  guards?: Record<string, string[]>;
+}
+
+export interface RoleConfig {
+  name: string; // The specific role name, e.g. 'ADMIN'
+  definition: RoleDefinition;
+  isDefault?: boolean;
+}
+
 // --- Declarative Schema ---
 
 export interface PropertyConfig {
@@ -233,7 +270,7 @@ export interface PropertyConfig {
   optional?: boolean;
   readonly?: boolean;
   isStatic?: boolean;
-  initializer?: string;
+  initializer?: string | ParsedStatement;
   scope?: Scope;
   decorators?: DecoratorConfig[];
   docs?: string[];
@@ -292,10 +329,10 @@ export interface FunctionConfig {
   name: string;
   isExported?: boolean;
   isAsync?: boolean;
+  overwriteBody?: boolean;
   returnType?: string;
   parameters?: { name: string; type: string; optional?: boolean }[];
   statements?: StatementConfig[];
-  overwriteBody?: boolean;
 }
 
 export interface TypeConfig {
@@ -316,7 +353,7 @@ export interface ModuleConfig {
   name: string;
   isExported?: boolean;
   isDeclaration?: boolean;
-  statements?: (string | StatementConfig)[];
+  statements?: StatementConfig[];
   imports?: ImportConfig[];
   classes?: ClassDefinition[];
   interfaces?: InterfaceConfig[];
@@ -332,7 +369,7 @@ export interface FileDefinition {
   header?: string;
   imports?: ImportConfig[];
   exports?: ExportConfig[];
-  statements?: (string | StatementConfig)[]; // Added raw statements support
+  statements?: StatementConfig[]; // Added raw statements support
   classes?: ClassDefinition[];
   interfaces?: InterfaceConfig[];
   enums?: EnumConfig[];
@@ -341,6 +378,9 @@ export interface FileDefinition {
   variables?: VariableConfig[];
   components?: ComponentConfig[];
   modules?: ModuleConfig[];
+  role?: RoleConfig; // Configuration for generating a Role class
+  permissions?: Record<string, PermissionDefinition>; // Configuration for generating a Permission Registry
+  rolePermissions?: Record<string, string[]>; // Map of Role -> Permissions for the check logic
 }
 
 export interface ComponentProp {

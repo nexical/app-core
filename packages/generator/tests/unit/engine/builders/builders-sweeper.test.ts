@@ -71,7 +71,9 @@ describe('Builders Sweeper', () => {
       } as any);
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const file = (builder as any).getSchema();
-      const content = file.statements?.[0] || '';
+      const statement = file.statements?.[0];
+      const content =
+        typeof statement === 'string' ? statement : (statement as ParsedStatement)?.raw || '';
 
       // Expect generated content (note: keys might be unquoted due to naive replacement in builder)
       expect(content).toContain('headers:');
@@ -96,7 +98,8 @@ describe('Builders Sweeper', () => {
       } as unknown as ModelDef;
       const b1 = new TestBuilder(teamModel, 'mod', 'create');
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const c1 = (b1 as any).getSchema().statements?.[0] || '';
+      const s1 = (b1 as any).getSchema().statements?.[0];
+      const c1 = typeof s1 === 'string' ? s1 : (s1 as ParsedStatement)?.raw || '';
       // Expect NOT to have actor override in payload for self-model?
       // Actually `generateCreateTests` checks `actorRelationField`.
       expect(c1).not.toContain('actorId: (actor ?');
@@ -113,7 +116,8 @@ describe('Builders Sweeper', () => {
       } as unknown as ModelDef;
       const b2 = new TestBuilder(jobModel, 'mod', 'create');
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const c2 = (b2 as any).getSchema().statements?.[0] || '';
+      const s2 = (b2 as any).getSchema().statements?.[0];
+      const c2 = typeof s2 === 'string' ? s2 : (s2 as ParsedStatement)?.raw || '';
       // For CREATE, it generates: manager: (actor ? actor.id : undefined)
       expect(c2).toContain('manager: (actor ? actor.id : undefined)');
 
@@ -129,7 +133,8 @@ describe('Builders Sweeper', () => {
       } as unknown as ModelDef;
       const b3 = new TestBuilder(postModel, 'mod', 'create');
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const c3 = (b3 as any).getSchema().statements?.[0] || '';
+      const s3 = (b3 as any).getSchema().statements?.[0];
+      const c3 = typeof s3 === 'string' ? s3 : (s3 as ParsedStatement)?.raw || '';
       expect(c3).toContain('userId: (actor ? actor.id : undefined)');
     });
 
@@ -153,7 +158,8 @@ describe('Builders Sweeper', () => {
       const builder = new TestBuilder(model, 'mod', 'list');
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const file = (builder as any).getSchema();
-      const content = file.statements?.[0] || '';
+      const s = file.statements?.[0];
+      const content = typeof s === 'string' ? s : (s as ParsedStatement)?.raw || '';
 
       expect(content).toContain('ownerId: { not: actor.id }');
     });
@@ -169,7 +175,8 @@ describe('Builders Sweeper', () => {
       const builder = new TestBuilder(model, 'mod', 'create');
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const file = (builder as any).getSchema();
-      const content = file.statements?.[0] || '';
+      const s = file.statements?.[0];
+      const content = typeof s === 'string' ? s : (s as ParsedStatement)?.raw || '';
 
       expect(content).toContain('Public access - no auth required');
     });
@@ -189,7 +196,8 @@ describe('Builders Sweeper', () => {
       const builder = new TestBuilder(model, 'mod', 'list');
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const file = (builder as any).getSchema();
-      const content = file.statements?.[0] || '';
+      const s = file.statements?.[0];
+      const content = typeof s === 'string' ? s : (s as ParsedStatement)?.raw || '';
 
       // filter by 'other', creating 'email' unique values
       expect(content).toContain("email: 'filter_a_'");

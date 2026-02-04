@@ -1,0 +1,75 @@
+# module: user-ui
+backend: user-api
+
+# 1. Feature Configuration
+prefix: /admin/users
+
+# 2. Forms Configuration
+forms:
+  User:
+    password:
+      component:
+        name: PasswordInput
+        path: '@/components/ui/password-input'
+
+# 3. Tables Configuration
+tables:
+  User:
+    editMode: sheet
+
+# 4. Shell Registration
+shells:
+  - name: AuthShell
+    matcher:
+      path: '/login*'
+  - name: AuthShell
+    matcher:
+      path: '/register*'
+  - name: AuthShell
+    matcher:
+      path: '/forgot-password*'
+  - name: AuthShell
+    matcher:
+      path: '/verify-email*'
+  - name: DashboardShell
+    matcher:
+      path: '/admin/*'
+  - name: DashboardShell
+    matcher:
+      path: '/settings/*'
+
+# 5. Pages
+pages:
+  - path: /login
+    layout: AuthShell
+    component: Login
+    meta:
+      title: 'Login'
+  - path: /register
+    layout: AuthShell
+    component: Register
+    meta:
+      title: 'Create Account'
+  - path: /forgot-password
+    layout: AuthShell
+    component: ForgotPassword
+    meta:
+      title: 'Forgot Password'
+  - path: /admin/users
+    layout: DashboardShell
+    component: AdminUserManagement
+    permissions: [auth:sudo]
+    meta:
+      title: 'User Management'
+  - path: /settings/profile
+    layout: DashboardShell
+    component: UserProfile
+    meta:
+      title: 'Profile Settings'
+
+# 6. Registry
+registry:
+  - zone: header-end
+    component: UserMenu
+    order: 20
+    permissions: []

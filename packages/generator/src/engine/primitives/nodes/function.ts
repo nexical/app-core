@@ -4,6 +4,8 @@ import {
   type OptionalKind,
   type FunctionDeclarationStructure,
   ModuleDeclaration,
+  Node,
+  Statement,
 } from 'ts-morph';
 import { BasePrimitive } from '../core/base-primitive.js';
 import { type FunctionConfig, type ParsedStatement } from '../../types.js';
@@ -61,11 +63,8 @@ export class FunctionPrimitive extends BasePrimitive<FunctionDeclaration, Functi
       // For now, strict index matching for generated code is acceptable.
     }
 
-    if (this.config.overwriteBody && structure.statements) {
-      node.setBodyText(structure.statements as string);
-    } else {
-      this.reconcileBody(node);
-    }
+    // Body Reconciliation
+    this.reconcileBody(node);
   }
 
   validate(node: FunctionDeclaration): ValidationResult {
@@ -107,135 +106,120 @@ export class FunctionPrimitive extends BasePrimitive<FunctionDeclaration, Functi
   }
 
   private reconcileBody(node: FunctionDeclaration) {
-    if (!this.config.statements || this.config.overwriteBody) {
-      return; // handled by standard update logic in lines 28-30 or no statements
+    if (!this.config.statements) {
+      return;
     }
 
-    // We only reconcile if overwriteBody is FALSE (default)
-    // We iterate CONFIG statements and ensure they exist or match
+    const project = node.getProject();
 
     for (const stmtConfig of this.config.statements) {
+      // 1. Handle ParsedStatement (Template fragments)
+      if (stmtConfig && typeof stmtConfig === 'object' && 'getNodes' in stmtConfig) {
+        const newStatements = (stmtConfig as ParsedStatement).getNodes(project);
+
+        for (const newStmt of newStatements) {
+          const match = this.findStructuralMatch(node.getStatements(), newStmt);
+          if (match) continue;
+          node.addStatements(newStmt.getText());
+        }
+
+        if (newStatements.length > 0) {
+          // Manual delete logic removed in favor of cleanup()
+        }
+        if ((stmtConfig as ParsedStatement).cleanup) {
+          (stmtConfig as ParsedStatement).cleanup!();
+        }
+        continue;
+      }
+
+      // 2. Handle Structured StatementConfig
+      if (typeof stmtConfig === 'object' && 'kind' in stmtConfig) {
+        const targetText = StatementFactory.generate(stmtConfig);
+        const project = node.getProject();
+        const tempFile = project.createSourceFile('__temp_stmt.ts', targetText, {
+          overwrite: true,
+        });
+        const targetNode = tempFile.getStatements()[0];
+
+        try {
+          const match = this.findStructuralMatch(node.getStatements(), targetNode);
+
+          if (match) {
+            // Found structural match
+            if (stmtConfig.isDefault) {
+              // It's a default statement - leave user version alone
+              continue;
+            } else {
+              // It's a required statement - ensure it matches exactly
+              const normalizedExisting = Normalizer.normalize(match.getText());
+              const normalizedTarget = Normalizer.normalize(targetText);
+              if (normalizedExisting !== normalizedTarget) {
+                match.replaceWithText(targetText);
+              }
+            }
+          } else {
+            // Missing -> Append
+            node.addStatements(targetText);
+          }
+        } finally {
+          tempFile.delete();
+        }
+        continue;
+      }
+
+      // 3. Fallback: Raw string (Legacy support within StatementConfig type for now)
       if (typeof stmtConfig === 'string') {
         const normalizedConfig = Normalizer.normalize(stmtConfig);
-        const sourceText = Normalizer.normalize(node.getBodyText() || node.getFullText());
-
-        // Check if this specific string statement (or something very close) already exists
+        const sourceText = Normalizer.normalize(node.getBodyText() || '');
         if (sourceText.includes(normalizedConfig)) continue;
-
         node.addStatements(stmtConfig);
-        continue;
-      }
-
-      if (stmtConfig && typeof stmtConfig === 'object' && 'getNodes' in stmtConfig) {
-        const stmt = stmtConfig as ParsedStatement;
-        const raw = stmt.raw || '';
-        const bodyText = node.getBodyText() || '';
-        const normalizedBody = Normalizer.normalize(bodyText);
-
-        if (raw) {
-          const normalizedConfig = Normalizer.normalize(raw);
-          if (normalizedBody.includes(normalizedConfig)) continue;
-        }
-
-        const nodes = stmtConfig.getNodes(node.getProject());
-        for (const n of nodes) {
-          const text = n.getText();
-          const normalizedNode = Normalizer.normalize(text);
-          if (!normalizedBody.includes(normalizedNode)) {
-            node.addStatements(text);
-          }
-        }
-        if (nodes.length > 0) nodes[0].getSourceFile().delete();
-        continue;
-      }
-
-      if ((stmtConfig as { isDefault?: boolean }).isDefault === false) {
-        // Force overwrite/insert logic here if we wanted to enforce "system" statements
-        // For now, let's focus on preserving "default" ones
-      }
-
-      if (!('kind' in stmtConfig)) continue;
-
-      if (stmtConfig.kind === 'variable') {
-        const varName = stmtConfig.declarations[0]?.name;
-        if (!varName) continue;
-
-        const existingVar = node.getVariableStatement((v) =>
-          v
-            .getDeclarationList()
-            .getDeclarations()
-            .some((d) => d.getName() === varName),
-        );
-
-        if (existingVar) {
-          if (stmtConfig.isDefault) {
-            // Exists, and is default -> Leave it alone (User might have changed it)
-            continue;
-          } else {
-            // Exists, and NOT default -> Enforce system value
-            existingVar.replaceWithText(StatementFactory.generate(stmtConfig));
-          }
-        } else {
-          // Missing -> Insert
-          node.addStatements(StatementFactory.generate(stmtConfig));
-        }
-      } else if (stmtConfig.kind === 'return') {
-        // For return, assuming singular main return for now or finding by matching expression?
-        // Simple logic: if function has ANY return, and config isDefault, leave it.
-        // If not default, overwrite (dangerous if multiple returns).
-        // Let's assume singular return for permission checks/simple funcs.
-        const existingReturn = node
-          .getStatements()
-          .find((s) => s.getKindName() === 'ReturnStatement');
-        if (existingReturn) {
-          if (!stmtConfig.isDefault) {
-            existingReturn.replaceWithText(StatementFactory.generate(stmtConfig));
-          }
-        } else {
-          node.addStatements(StatementFactory.generate(stmtConfig));
-        }
-      } else if (stmtConfig.kind === 'if') {
-        // Heuristic: Check if an IF exists with same condition?
-        // Or just check if ANY if exists?
-        // Let's match by condition text.
-        const condition = stmtConfig.condition;
-        const existingIf = node
-          .getStatements()
-          .find((s) => s.getKindName() === 'IfStatement' && s.getText().includes(condition));
-
-        if (existingIf) {
-          if (!stmtConfig.isDefault) {
-            existingIf.replaceWithText(StatementFactory.generate(stmtConfig));
-          }
-        } else {
-          // Check if we should insert?
-          // If it's a default check (e.g. !user), and user removed it, we shouldn't re-add it if isDefault=true?
-          // Ah, "isDefault=true" means "Use this content as the default, but let user change it".
-          // If user DELETED it, does that count as changing it? Yes.
-          // So if we don't find it, we shouldn't add it?
-          // BUT, if it's a NEW generation (scaffolding), we want it.
-          // If it's RE-generation, and user deleted it, we respect deletion.
-          // How to distinguish "Never existed" vs "Deleted"?
-          // We can't without history.
-          // Standard pattern: "Ensure it exists". If user deleted it, the generator puts it back.
-          // ID-based markers solved this ("ID missing? Put it back. ID present? Update.").
-          // Without IDs, we default to "Put it back".
-          node.addStatements(StatementFactory.generate(stmtConfig));
-        }
-      } else if (stmtConfig.kind === 'throw') {
-        // Similar to IF, match by expression?
-        const expr = stmtConfig.expression;
-        const existingThrow = node
-          .getStatements()
-          .find((s) => s.getKindName() === 'ThrowStatement' && s.getText().includes(expr));
-        if (existingThrow) {
-          if (!stmtConfig.isDefault) {
-            existingThrow.replaceWithText(StatementFactory.generate(stmtConfig));
-          }
-        } else {
-          node.addStatements(StatementFactory.generate(stmtConfig));
-        }
       }
     }
+  }
+
+  private findStructuralMatch(existing: Statement[], target: Statement): Statement | undefined {
+    const kind = target.getKind();
+    return existing.find((s) => {
+      if (s.getKind() !== kind) return false;
+
+      // Variable Matching (by name)
+      if (Node.isVariableStatement(s) && Node.isVariableStatement(target)) {
+        const sNames = s
+          .getDeclarationList()
+          .getDeclarations()
+          .map((d) => d.getName());
+        const tNames = target
+          .getDeclarationList()
+          .getDeclarations()
+          .map((d) => d.getName());
+        return sNames.length > 0 && tNames.length > 0 && sNames[0] === tNames[0];
+      }
+
+      // If Matching (by condition)
+      if (Node.isIfStatement(s) && Node.isIfStatement(target)) {
+        return (
+          Normalizer.normalize(s.getExpression().getText()) ===
+          Normalizer.normalize(target.getExpression().getText())
+        );
+      }
+
+      // Return Matching (assume singleton or simple match if it's a small block)
+      if (Node.isReturnStatement(s) && Node.isReturnStatement(target)) {
+        return true;
+      }
+
+      // Throw Matching
+      if (Node.isThrowStatement(s) && Node.isThrowStatement(target)) {
+        return true;
+      }
+
+      // TryStatement Matching
+      if (Node.isTryStatement(s) && Node.isTryStatement(target)) {
+        return true;
+      }
+
+      // Default: Text Match
+      return Normalizer.normalize(s.getText()) === Normalizer.normalize(target.getText());
+    });
   }
 }

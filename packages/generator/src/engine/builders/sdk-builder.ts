@@ -53,7 +53,6 @@ export class SdkBuilder extends BaseBuilder {
             },
           ],
           statements: [TemplateLoader.load('sdk/list.tsf', { endpoint })],
-          overwriteBody: true,
         });
       }
 
@@ -66,7 +65,6 @@ export class SdkBuilder extends BaseBuilder {
           returnType: `Promise<{ success: boolean; data: ${entityName}; error?: string }>`,
           parameters: [{ name: 'id', type: 'string' }],
           statements: [TemplateLoader.load('sdk/get.tsf', { endpoint })],
-          overwriteBody: true,
         });
       }
 
@@ -79,7 +77,6 @@ export class SdkBuilder extends BaseBuilder {
           returnType: `Promise<{ success: boolean; data: ${entityName}; error?: string }>`,
           parameters: [{ name: 'data', type: `Partial<${entityName}>` }],
           statements: [TemplateLoader.load('sdk/create.tsf', { endpoint })],
-          overwriteBody: true,
         });
       }
 
@@ -95,7 +92,6 @@ export class SdkBuilder extends BaseBuilder {
             { name: 'data', type: `Partial<${entityName}>` },
           ],
           statements: [TemplateLoader.load('sdk/update.tsf', { endpoint })],
-          overwriteBody: true,
         });
       }
 
@@ -108,7 +104,6 @@ export class SdkBuilder extends BaseBuilder {
           returnType: `Promise<{ success: boolean; error?: string }>`,
           parameters: [{ name: 'id', type: 'string' }],
           statements: [TemplateLoader.load('sdk/delete.tsf', { endpoint })],
-          overwriteBody: true,
         });
       }
     }
@@ -150,7 +145,6 @@ export class SdkBuilder extends BaseBuilder {
           dataArg,
         }),
       );
-      methodConfig.overwriteBody = true; // Force update to ensure sync
 
       methods.push(methodConfig);
     }
@@ -198,11 +192,16 @@ export class SdkBuilder extends BaseBuilder {
     }
 
     if (namedImports.length > 0 || otherTypes.size > 0) {
-      imports.push({
-        moduleSpecifier: './types.js',
-        namedImports: [...namedImports, ...Array.from(otherTypes)],
-        isTypeOnly: true,
-      });
+      const typesToImport = [...namedImports, ...Array.from(otherTypes)].filter(
+        (t) => t !== 'void' && t !== 'any',
+      );
+      if (typesToImport.length > 0) {
+        imports.push({
+          moduleSpecifier: './types.js',
+          namedImports: typesToImport,
+          isTypeOnly: true,
+        });
+      }
     }
 
     return {

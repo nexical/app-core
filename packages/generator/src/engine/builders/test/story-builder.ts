@@ -3,6 +3,7 @@ import { UiBaseBuilder } from '../ui/ui-base-builder.js';
 import { type FileDefinition, type ModuleConfig } from '../../types.js';
 import { Reconciler } from '../../reconciler.js';
 import { toPascalCase } from '../../../utils/string.js';
+import { ts } from '../../primitives/statements/factory.js';
 
 export class StoryBuilder extends UiBaseBuilder {
   constructor(
@@ -68,7 +69,7 @@ export class StoryBuilder extends UiBaseBuilder {
 } satisfies StoryObj<typeof ${componentName}>`,
         },
       ],
-      statements: ['export default meta;'],
+      statements: [ts`export default meta;`],
     };
     Reconciler.reconcile(file, definition);
   }
@@ -113,7 +114,7 @@ export class StoryBuilder extends UiBaseBuilder {
 } satisfies StoryObj<typeof ${componentName}>`,
         },
       ],
-      statements: ['export default meta;'],
+      statements: [ts`export default meta;`],
     };
     Reconciler.reconcile(file, definition);
   }

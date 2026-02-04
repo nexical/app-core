@@ -9,8 +9,7 @@ import { IfStatementPrimitive } from '@nexical/generator/engine/primitives/state
 import { VariablePrimitive } from '@nexical/generator/engine/primitives/nodes/variable';
 import { MethodPrimitive } from '@nexical/generator/engine/primitives/nodes/method';
 import { ModulePrimitive } from '@nexical/generator/engine/primitives/nodes/module';
-import { TypeBuilder } from '@nexical/generator/engine/builders/type-builder';
-import { type ModelDef } from '@nexical/generator/engine/types';
+import { ts } from '@nexical/generator/engine/primitives/statements/factory';
 
 describe('Low Hanging Sweeper', () => {
   const createProject = (code: string) => {
@@ -27,7 +26,7 @@ describe('Low Hanging Sweeper', () => {
       const ctor = cls.getConstructors()[0];
 
       const p = new ConstructorPrimitive({
-        statements: ['console.log("new");'],
+        statements: [ts`console.log("new");`],
       });
       p.update(ctor);
       expect(ctor.getBodyText()?.trim()).toContain('console.log("new");');
@@ -40,16 +39,14 @@ describe('Low Hanging Sweeper', () => {
       const ctor = cls.getConstructors()[0];
 
       const p = new ConstructorPrimitive({
-        statements: ['console.log("same");'],
+        statements: [ts`console.log("same");`],
       });
-      // Update logic checks normalizer matching
       p.update(ctor);
-      // Expect no change (ts-morph would arguably reformat, but if strict check prevents it, good)
       expect(ctor.getBodyText()?.trim()).toContain('console.log("same");');
     });
 
     it('should validate constructor (stub)', () => {
-      const p = new ConstructorPrimitive({});
+      const p = new ConstructorPrimitive({ statements: [] });
       expect(p.validate({} as any).valid).toBe(true);
     });
   });
@@ -164,8 +161,8 @@ describe('Low Hanging Sweeper', () => {
       const p = new IfStatementPrimitive({
         kind: 'if',
         condition: 'true',
-        then: ['return 1;'],
-        else: ['return 0;'],
+        then: [ts`return 1;`],
+        else: [ts`return 0;`],
       });
       const str = p.generate();
       expect(str).toContain('else {');
@@ -202,7 +199,7 @@ describe('Low Hanging Sweeper', () => {
   });
 
   describe('MethodPrimitive', () => {
-    it('should overwrite body if configured', () => {
+    it('should reconcile body (replaces overwriteBody: true)', () => {
       const code = 'class Test { method() { return 1; } }';
       const { sourceFile } = createProject(code);
       const cls = sourceFile.getClassOrThrow('Test');
@@ -210,28 +207,26 @@ describe('Low Hanging Sweeper', () => {
 
       const p = new MethodPrimitive({
         name: 'method',
-        statements: ['return 2;'],
-        overwriteBody: true,
+        statements: [{ kind: 'return', expression: '2' }],
       });
       p.update(method);
+      // Normalized matching: 'return 1;' matches 'return 2;' structurally (both Returns)
+      // Since it's NOT marked as isDefault, it should update.
       expect(method.getBodyText()?.trim()).toBe('return 2;');
     });
 
-    it('should append statements if NOT overwriteBody', () => {
-      const code = 'class Test { method() { const a = 1; } }';
+    it('should NOT overwrite if identical', () => {
+      const code = 'class Test { method() { return 2; } }';
       const { sourceFile } = createProject(code);
       const cls = sourceFile.getClassOrThrow('Test');
       const method = cls.getMethods()[0];
 
       const p = new MethodPrimitive({
         name: 'method',
-        statements: ['const b = 2;'],
-        overwriteBody: false,
+        statements: [{ kind: 'return', expression: '2' }],
       });
       p.update(method);
-      const body = method.getBodyText() || '';
-      expect(body).toContain('const a = 1;');
-      expect(body).toContain('const b = 2;');
+      expect(method.getBodyText()?.trim()).toBe('return 2;');
     });
   });
 

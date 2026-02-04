@@ -122,7 +122,12 @@ export class PropertyPrimitive extends BasePrimitive<PropertyDeclaration, Proper
     return {
       name: this.config.name,
       type: this.config.type,
-      initializer: this.config.initializer,
+      initializer:
+        this.config.initializer &&
+        typeof this.config.initializer === 'object' &&
+        'raw' in this.config.initializer
+          ? (this.config.initializer as { raw: string }).raw
+          : (this.config.initializer as string),
       scope: this.config.scope,
       isStatic: this.config.isStatic,
       isReadonly: this.config.readonly,

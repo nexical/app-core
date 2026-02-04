@@ -4,9 +4,12 @@ import {
   type MethodConfig,
   type ClassDefinition,
   type NodeContainer,
+  type StatementConfig,
+  type ParsedStatement,
 } from '../types.js';
 import { BaseBuilder } from './base-builder.js';
 import { TemplateLoader } from '../../utils/template-loader.js';
+import { ts } from '../primitives/statements/factory.js';
 
 export class ServiceBuilder extends BaseBuilder {
   constructor(
@@ -32,10 +35,14 @@ export class ServiceBuilder extends BaseBuilder {
             }
           ).getClass(serviceName)
         : null;
-    const getExistingStatements = (n: unknown, methodName: string) => {
+    const getExistingStatements = (
+      n: unknown,
+      methodName: string,
+    ): StatementConfig[] | undefined => {
       const cls = getClass(n);
       const method = cls?.getMethod(methodName) || cls?.getStaticMethod(methodName);
-      return method ? [method.getBodyText() || ''] : undefined;
+      const body = method?.getBodyText();
+      return body ? [ts`${body}`] : undefined;
     };
 
     // Helper to generate standard error block uses Logger
@@ -145,8 +152,13 @@ export class ServiceBuilder extends BaseBuilder {
       { moduleSpecifier: '@/lib/api/api-docs', namedImports: ['ApiActor'], isTypeOnly: true },
     ];
 
-    const allStatements = methods.flatMap((m) => m.statements || []).join('\n');
-    if (allStatements.includes('Logger.')) {
+    const hasLogger = methods.some((m) =>
+      m.statements?.some((s) => {
+        const text = 'raw' in s ? (s as ParsedStatement).raw : '';
+        return text.includes('Logger.');
+      }),
+    );
+    if (hasLogger) {
       imports.push({ moduleSpecifier: '@/lib/core/logger', namedImports: ['Logger'] });
     }
 

@@ -12,6 +12,7 @@ import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
 import { parse } from 'yaml';
 import { toPascalCase } from '../../utils/string.js';
+import { ts } from '../primitives/statements/factory.js';
 
 export interface AgentTemplateConfig {
   name: string;
@@ -133,9 +134,9 @@ ${Object.entries(agent.payload || {})
           isAsync: true,
           parameters: [{ name: 'job', type: 'AgentJob<unknown>' }],
           statements: [
-            `const { ${Object.keys(agent.payload || {}).join(', ')} } = job.payload;`,
-            `console.info(\`[${agent.name}] Processing job \${job.id}\`);`,
-            `// TODO: Implement processing logic`,
+            ts`const { ${Object.keys(agent.payload || {}).join(', ')} } = job.payload;`,
+            ts`console.info(\`[${agent.name}] Processing job \${job.id}\`);`,
+            ts`// TODO: Implement processing logic`,
           ],
         },
       ];
@@ -145,8 +146,8 @@ ${Object.entries(agent.payload || {})
           name: 'run',
           isAsync: true,
           statements: [
-            `console.info(\`[${agent.name}] Running persistent agent task\`);`,
-            `// TODO: Implement periodic task logic`,
+            ts`console.info(\`[${agent.name}] Running persistent agent task\`);`,
+            ts`// TODO: Implement periodic task logic`,
           ],
         },
       ];
@@ -156,7 +157,7 @@ ${Object.entries(agent.payload || {})
   private generateConstructor(): ConstructorConfig {
     return {
       parameters: [{ name: 'config', type: 'ProcessorConfig' }],
-      statements: ['super(config);'],
+      statements: [ts`super(config);`],
     };
   }
 

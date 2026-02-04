@@ -48,7 +48,7 @@ export class Normalizer {
     // 3. DO NOT Strip /index - Explicit subpaths are required in ESM
     // normalized = normalized.replace(/\/index$/, '');
 
-    // 4. Standardize legacy mappings
+    // 4. Standardize legacy mappings (extension-agnostic)
     const legacyMapping: Record<string, string> = {
       '@/lib/api-docs': '@/lib/api/api-docs',
       '@/lib/api-guard': '@/lib/api/api-guard',
@@ -57,7 +57,14 @@ export class Normalizer {
       '@/lib/utils': '@/lib/core/utils',
       '@/lib/db': '@/lib/core/db',
     };
-    normalized = legacyMapping[normalized] || normalized;
+
+    const extMatch = normalized.match(/\.(ts|js|mjs|cjs)$/);
+    const extension = extMatch ? extMatch[0] : '';
+    const withoutExt = extension ? normalized.slice(0, -extension.length) : normalized;
+
+    if (legacyMapping[withoutExt]) {
+      normalized = legacyMapping[withoutExt] + extension;
+    }
 
     // 5. Standardize SDK subpaths to canonical SDK root
     if (normalized.includes('/src/sdk/')) {

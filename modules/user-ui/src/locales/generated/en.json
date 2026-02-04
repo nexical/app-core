@@ -1,0 +1,37 @@
+{
+  "common": {
+    "status": {
+      "saving": "Saving...",
+      "loading": "Loading..."
+    },
+    "actions": {
+      "update": "Update",
+      "create": "Create",
+      "label": "Actions",
+      "edit": "Edit",
+      "delete": "Delete"
+    }
+  },
+  "module": {
+    "user": {
+      "field": {
+        "username": "Username",
+        "email": "Email",
+        "password": "Password",
+        "passwordUpdatedAt": "Password Updated At",
+        "emailVerified": "Email Verified",
+        "name": "Name",
+        "image": "Image",
+        "role": "Role",
+        "status": "Status",
+        "id": "Id",
+        "createdAt": "CreatedAt",
+        "updatedAt": "UpdatedAt"
+      },
+      "edit": {
+        "title": "Edit User",
+        "description": "Make changes to the user."
+      }
+    }
+  }
+}

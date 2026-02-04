@@ -12,8 +12,9 @@ import { Button } from '@/components/ui/button';
 import { signOut } from 'auth-astro/client';
 import { useTranslation } from 'react-i18next';
 import { useShellStore } from '@/lib/ui/shell-store';
-import { useNavData } from '@/lib/ui/nav-context'; // Check path if it needs relative or absolute alias
+import { useNavData } from '@/lib/ui/nav-context';
 import { Settings, LogOut, Key, ChevronDown, Users } from 'lucide-react';
+import { Permission } from '@modules/user-api/permissions';
 
 /**
  * Registry component for the user profile menu in the header.
@@ -27,13 +28,8 @@ export default function UserProfile() {
 
   if (!user) return null;
 
-  const isAdmin = user.role === 'ADMIN' || user.role === 'OWNER'; // Assuming role exists on user object or needing fetch.
-  // Context user might not have role. If not, we might need to skip admin link or use a different check.
-  // For now assuming user object has it or we can't show it.
-  // Actually, earlier TeamSettings used currentUserMember to check role.
-  // Shell context user often has basic info. Let's assume basic info for now and maybe skip Admin User Mgmt if unsure,
-  // OR add it if we know they are admin.
-  // Request says: "For admin users they should see the User Management"
+  // Use Centralized Permission Check instead of hardcoded roles
+  const canAccessAdmin = Permission.check('auth:sudo', user.role || 'ANONYMOUS');
 
   return (
     <DropdownMenu>
@@ -55,7 +51,7 @@ export default function UserProfile() {
       </DropdownMenuTrigger>
       <DropdownMenuContent className="user-menu-content w-64 p-2" align="end" forceMount>
         {/* Admin Section */}
-        {isAdmin && (
+        {canAccessAdmin && (
           <DropdownMenuItem
             onClick={() => setDetailPanel('user-management')}
             className="flex items-center gap-3 py-3 px-3 cursor-pointer mb-1"

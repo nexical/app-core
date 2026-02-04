@@ -11,7 +11,8 @@ import { OrchestrationService } from '../services/orchestration-service';
 export class CancelJobAction {
   public static async run(input: CancelJobDTO, context: APIContext): Promise<ServiceResponse<Job>> {
     const actor = context.locals.actor;
-    const result = await OrchestrationService.cancel(input.id, actor?.id);
+    const actorId = actor?.role === 'ADMIN' ? undefined : actor?.id;
+    const result = await OrchestrationService.cancel(input.id, actorId);
     return result as ServiceResponse<Job>;
   }
 }
