@@ -236,7 +236,9 @@ export class Reconciler {
 
       // 10. Handle Permission
       if (definition.permissions) {
-        new PermissionPrimitive(definition.permissions).ensure(sourceFile as SourceFile);
+        new PermissionPrimitive(definition.permissions, definition.rolePermissions).ensure(
+          sourceFile as SourceFile,
+        );
       }
 
       // 8.5 Handle Exports (Processed after major nodes to match conventional end-of-file exports)
@@ -514,7 +516,7 @@ export class Reconciler {
 
     // 10. Permission
     if (definition.permissions) {
-      const primitive = new PermissionPrimitive(definition.permissions);
+      const primitive = new PermissionPrimitive(definition.permissions, definition.rolePermissions);
       const node = primitive.find(sourceFile as SourceFile);
       if (!node) {
         issues.push(`PermissionRegistry is missing.`);

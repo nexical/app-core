@@ -1,9 +1,14 @@
 ---
-import { PageGuard } from "@/lib/ui/page-guard";
+import { PageGuard } from '@/lib/ui/page-guard';
 
-const guard = await PageGuard.protect(Astro, "admin");
+const guard = await PageGuard.protect(Astro, 'admin');
 if (guard) return guard;
 
-// Redirect to home page as this feature is now in the Details Panel
-return Astro.redirect("/");
+import { AdminUserManagement } from '../../components/admin/admin-user-management';
+// TODO: Use correct shell
+---
+
+<div className="p-6">
+  <AdminUserManagement client:only="react" />
+</div>
 ---

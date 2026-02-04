@@ -1,5 +1,5 @@
 import type { SourceFile } from 'ts-morph';
-import type { PermissionMap } from '../../types.js';
+import type { PermissionDefinition } from '../../types.js';
 import { VariablePrimitive } from './variable.js';
 import { TypePrimitive } from './type.js';
 import { ClassPrimitive } from './class.js';
@@ -7,10 +7,13 @@ import { MethodPrimitive } from './method.js';
 import type { ValidationResult } from '../../primitives/contracts.js';
 
 export class PermissionPrimitive {
-  constructor(private permissions: PermissionMap) {}
+  constructor(
+    private permissions: Record<string, PermissionDefinition>,
+    private rolePermissions?: Record<string, string[]>,
+  ) {}
 
   ensure(sourceFile: SourceFile): void {
-    // 1. Generate Permission Registry Variable
+    // 1. Generate Permission Registry Variable (Descriptions)
     // export const PermissionRegistry = { ... } as const;
     const initializer = JSON.stringify(this.permissions, null, 2);
 
@@ -29,12 +32,47 @@ export class PermissionPrimitive {
       type: 'keyof typeof PermissionRegistry',
     }).ensure(sourceFile);
 
-    // 3. Generate Permission Class with static check
+    // 3. Generate RolePermissions Map (if provided)
+    if (this.rolePermissions) {
+      new VariablePrimitive({
+        name: 'RolePermissions',
+        declarationKind: 'const',
+        isExported: true,
+        initializer: `${JSON.stringify(this.rolePermissions, null, 2)} as const`,
+      }).ensure(sourceFile);
+    }
+
+    // 4. Generate Permission Class with static check
     const classPrimitive = new ClassPrimitive({
       name: 'Permission',
       isExported: true,
     });
     const classNode = classPrimitive.ensure(sourceFile);
+
+    const checkStatements: any[] = [];
+
+    if (this.rolePermissions) {
+      checkStatements.push({
+        kind: 'variable',
+        declarationKind: 'const',
+        declarations: [
+          {
+            name: 'allowedActions',
+            initializer: `(RolePermissions as any)[role] as readonly string[] | undefined`,
+          },
+        ],
+      });
+      checkStatements.push({
+        kind: 'return',
+        expression: 'allowedActions ? allowedActions.includes(action) : false',
+      });
+    } else {
+      // Fallback if no role map is present (shouldn't happen in full gen)
+      checkStatements.push({
+        kind: 'return',
+        expression: 'false',
+      });
+    }
 
     new MethodPrimitive({
       name: 'check',
@@ -45,22 +83,7 @@ export class PermissionPrimitive {
         { name: 'role', type: 'string' },
       ],
       returnType: 'boolean',
-      statements: [
-        {
-          kind: 'variable',
-          declarationKind: 'const',
-          declarations: [
-            {
-              name: 'allowedRoles',
-              initializer: '(PermissionRegistry as any)[action] as readonly string[]',
-            },
-          ],
-        },
-        {
-          kind: 'return',
-          expression: 'allowedRoles.includes(role)',
-        },
-      ],
+      statements: checkStatements,
     }).ensure(classNode);
   }
 

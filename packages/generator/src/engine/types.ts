@@ -90,12 +90,26 @@ export interface RegistryItemDefinition {
   matcher: Record<string, unknown>;
 }
 
+export interface FormFieldConfig {
+  component?: {
+    name: string;
+    path: string;
+    props?: Record<string, unknown>; // Optional props to pass
+  };
+}
+
+export interface TableConfig {
+  editMode?: 'sheet' | 'dialog';
+}
+
 export interface UiModuleConfig {
   backend?: string;
   prefix?: string;
   pages?: PageDefinition[];
   shells?: ShellDefinition[];
   registries?: Record<string, RegistryItemDefinition[]>;
+  forms?: Record<string, Record<string, FormFieldConfig>>; // ModelName -> FieldName -> Config
+  tables?: Record<string, TableConfig>; // ModelName -> Config
 }
 
 // --- Statement Configurations ---
@@ -226,17 +240,18 @@ export interface ExportConfig {
 // --- Access and Role Configurations ---
 
 export interface RoleDefinition {
-  description: string;
+  description?: string;
   inherits?: string[];
+  permissions?: string[];
 }
 
-export interface PermissionMap {
-  [permission: string]: string[]; // Permission name -> List of roles
+export interface PermissionDefinition {
+  description: string;
 }
 
 export interface AccessConfig {
   roles: Record<string, RoleDefinition>;
-  permissions: PermissionMap;
+  permissions: Record<string, PermissionDefinition>;
   guards?: Record<string, string[]>;
 }
 
@@ -362,7 +377,8 @@ export interface FileDefinition {
   components?: ComponentConfig[];
   modules?: ModuleConfig[];
   role?: RoleConfig; // Configuration for generating a Role class
-  permissions?: PermissionMap; // Configuration for generating a Permission Registry
+  permissions?: Record<string, PermissionDefinition>; // Configuration for generating a Permission Registry
+  rolePermissions?: Record<string, string[]>; // Map of Role -> Permissions for the check logic
 }
 
 export interface ComponentProp {

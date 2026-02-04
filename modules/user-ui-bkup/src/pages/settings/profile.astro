@@ -1,0 +1,9 @@
+---
+import { PageGuard } from "@/lib/ui/page-guard";
+
+const guard = await PageGuard.protect(Astro, "member");
+if (guard) return guard;
+
+// Redirect to home page as this feature is now in the Details Panel
+return Astro.redirect("/");
+---
