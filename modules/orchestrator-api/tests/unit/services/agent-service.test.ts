@@ -60,7 +60,7 @@ describe('AgentService', () => {
 
       expect(result.success).toBe(true);
       expect(result.data).toEqual(mockAgent);
-      expect(HookSystem.filter).toHaveBeenCalledWith('agent.read', mockAgent);
+      expect(HookSystem.filter).toHaveBeenCalledWith('agent.read', mockAgent, { actor: undefined });
     });
 
     it('should return not found if agent does not exist', async () => {

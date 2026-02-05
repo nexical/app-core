@@ -38,11 +38,13 @@ models:
     const builder = new FormBuilder('test-ui', { name: 'test-ui' });
     await builder.build(project, undefined);
 
-    const sourceFile = project.getSourceFile('src/components/UserForm.tsx');
+    const sourceFile = project
+      .getSourceFiles()
+      .find((f) => f.getFilePath().endsWith('UserForm.tsx'));
     expect(sourceFile).toBeDefined();
 
     const text = sourceFile?.getFullText();
-    expect(text).toContain('export const UserForm');
+    expect(text).toContain('export function UserForm');
     expect(text).toContain('useForm<FormData>');
     expect(text).toContain('zodResolver(schema)');
     expect(text).toContain("register('email')");

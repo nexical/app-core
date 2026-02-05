@@ -22,7 +22,7 @@ export class IsJobOwner implements RolePolicy {
     // If not, and input has 'id' (pre-fetch), treat input as the resource identifier source.
     const resource = (data || input) as Record<string, unknown>;
 
-    if (resource && (resource.id || resource.actorId)) {
+    if (resource && (resource.id || resource.actorId || resource.jobId)) {
       const typedData = resource; // Use resource as data source
 
       // A. Direct Ownership Check (Input Data)
@@ -44,7 +44,7 @@ export class IsJobOwner implements RolePolicy {
       // BUT, referencing the SKILL.md, Policies *should*      // 2. Input Scope Checks (Create/List)
       if (typedData.actorId) {
         if (typedData.actorId !== actor.id) {
-          throw new Error('Forbidden: You cannot act on behalf of another user');
+          throw new Error('Forbidden: Cannot act on behalf of another actor');
         }
         isOwner = true;
       }

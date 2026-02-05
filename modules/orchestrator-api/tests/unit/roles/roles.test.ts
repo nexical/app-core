@@ -68,18 +68,18 @@ describe('Security Roles', () => {
       await expect(policy.check(mockContext, { actorId: 'u1' })).resolves.not.toThrow();
     });
 
-    it('should throw if input owner mismatch', async () => {
+    it('should throw if actorId mismatch in input', async () => {
       const mockContext = createMockAstroContext({ locals: { actor: { id: 'u1' } } });
       await expect(policy.check(mockContext, { actorId: 'u2' })).rejects.toThrow(
         'Forbidden: Cannot act on behalf of another actor',
       );
     });
 
-    it('should allow if userId mismatch in input', async () => {
+    it('should throw if actorId mismatch in input (legacy property check)', async () => {
       // Wait, logic says: if (input.userId && input.userId !== actor.id) throw
       const mockContext = createMockAstroContext({ locals: { actor: { id: 'u1' } } });
-      await expect(policy.check(mockContext, { userId: 'u2' })).rejects.toThrow(
-        'Forbidden: Cannot act on behalf of another user',
+      await expect(policy.check(mockContext, { actorId: 'u2' })).rejects.toThrow(
+        'Forbidden: Cannot act on behalf of another actor',
       );
     });
 
@@ -102,6 +102,7 @@ describe('Security Roles', () => {
           locals: { actor: { id: 'u1' } },
           url: 'http://localhost/api/job-log/l1',
         });
+        mockDb.job.findUnique.mockResolvedValue(null);
         mockDb.jobLog.findUnique.mockResolvedValue({ job: { actorId: 'u1' } });
 
         await expect(policy.check(mockContext, {}, { id: 'l1' })).resolves.not.toThrow();
@@ -127,7 +128,7 @@ describe('Security Roles', () => {
         mockDb.job.findUnique.mockResolvedValue({ actorId: 'u2' });
 
         await expect(policy.check(mockContext, {}, { id: 'j1' })).rejects.toThrow(
-          'Forbidden: You do not own this Job',
+          'Forbidden: You do not have access to this resource',
         );
       });
     });

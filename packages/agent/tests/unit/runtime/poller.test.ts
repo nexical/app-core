@@ -138,6 +138,6 @@ describe('JobPoller', () => {
 
     await poller.start();
 
-    expect(errorSpy).toHaveBeenCalledWith('Polling Loop Error:', expect.any(Error));
+    expect(errorSpy).toHaveBeenCalledWith('Polling cycle Error:', expect.any(Error));
   });
 });

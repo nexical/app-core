@@ -36,15 +36,17 @@ models:
     const builder = new TableBuilder('test-ui', { name: 'test-ui' });
     await builder.build(project, undefined);
 
-    const sourceFile = project.getSourceFile('src/components/UserTable.tsx');
+    const sourceFile = project
+      .getSourceFiles()
+      .find((f) => f.getFilePath().endsWith('UserTable.tsx'));
     expect(sourceFile).toBeDefined();
 
     const text = sourceFile?.getFullText();
-    expect(text).toContain('export const UserTable');
+    expect(text).toContain('export function UserTable');
     expect(text).toContain('useUserQuery');
     expect(text).toContain('useDeleteUser');
     expect(text).toContain('email'); // Column
     expect(text).toContain('role'); // Column
-    expect(text).toContain('deleteMutation.mutate(item.id)');
+    expect(text).toContain('deleteMutation.mutate(deletingItem.id)');
   });
 });

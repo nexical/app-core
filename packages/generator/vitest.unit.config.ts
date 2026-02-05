@@ -13,6 +13,10 @@ export default defineConfig({
         find: /^@nexical\/generator-tests\/(.*)/,
         replacement: path.resolve(__dirname, 'tests/unit/$1'),
       },
+      {
+        find: /^@nexical\/cli-core/,
+        replacement: path.resolve(__dirname, 'src/lib/cli-core.ts'),
+      },
     ],
     coverage: {
       provider: 'v8',
