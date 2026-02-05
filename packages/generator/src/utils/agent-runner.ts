@@ -25,7 +25,10 @@ export class AgentRunner {
     // Assuming the tool is interactive by default if not outputting to file?
     // Or maybe we just depend on stdio inherit.
 
-    const cmd = `${PROMPT_CMD} ${promptPath} ${flags}`;
+    let cmd = `${PROMPT_CMD} ${promptPath} ${flags}`;
+    if (interactive) {
+      cmd += ' --interactive';
+    }
 
     logger.info(`\n🤖 Agent ${agentName} working...`);
     try {
