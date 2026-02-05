@@ -15,6 +15,7 @@ export class ApiGuard {
     const policy = roleRegistry.get(roleName);
 
     if (!policy) {
+      if (roleName === 'public') return;
       console.error(`[ApiGuard] Role policy '${roleName}' not found in registry.`);
       throw new Error(`Role policy '${roleName}' not found`);
     }
