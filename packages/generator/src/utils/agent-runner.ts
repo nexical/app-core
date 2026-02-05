@@ -1,4 +1,5 @@
 import { execSync } from 'node:child_process';
+import { logger } from '@nexical/cli-core';
 
 const PROMPT_CMD = 'npx prompt';
 // Use the same models as reskill for consistency
@@ -26,7 +27,7 @@ export class AgentRunner {
 
     const cmd = `${PROMPT_CMD} ${promptPath} ${flags}`;
 
-    console.info(`\n🤖 Agent ${agentName} working...`);
+    logger.info(`\n🤖 Agent ${agentName} working...`);
     try {
       execSync(cmd, { stdio: 'inherit', cwd: process.cwd() });
     } catch (error: unknown) {

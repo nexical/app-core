@@ -7,6 +7,8 @@ import {
   type PageDefinition,
   type ShellDefinition,
   type RegistryItemDefinition,
+  type TableConfig,
+  type FormFieldConfig,
 } from '../../types.js';
 import { readFileSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
@@ -19,8 +21,8 @@ export interface UiConfig {
   pages?: PageDefinition[];
   shells?: ShellDefinition[];
   registries?: Record<string, RegistryItemDefinition[]>;
-  forms?: Record<string, Record<string, unknown>>; // Simplified for internal use, or import stricter type
-  tables?: Record<string, unknown>;
+  forms?: Record<string, Record<string, FormFieldConfig>>;
+  tables?: Record<string, TableConfig>;
 }
 
 export abstract class UiBaseBuilder extends BaseBuilder {

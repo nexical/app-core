@@ -18,15 +18,16 @@ describe('TableBuilder', () => {
     // Mock ui.yaml and models
     vi.mocked(fs.existsSync).mockReturnValue(true);
     vi.mocked(fs.readFileSync).mockImplementation((path) => {
-      if (String(path).endsWith('ui.yaml')) return 'backend: "user-api"';
+      if (String(path).endsWith('ui.yaml')) return 'backend: "user-api"\ntables:\n  User: {}';
       if (String(path).endsWith('models.yaml')) {
         return `
-User:
-  api: true
-  fields:
-    id: { type: String }
-    email: { type: String }
-    role: { type: String }
+models:
+  User:
+    api: true
+    fields:
+      id: { type: String }
+      email: { type: String }
+      role: { type: String }
 `;
       }
       return '';

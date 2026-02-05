@@ -1,5 +1,5 @@
 import type { SourceFile } from 'ts-morph';
-import type { PermissionDefinition } from '../../types.js';
+import type { PermissionDefinition, StatementConfig } from '../../types.js';
 import { VariablePrimitive } from './variable.js';
 import { TypePrimitive } from './type.js';
 import { ClassPrimitive } from './class.js';
@@ -49,7 +49,7 @@ export class PermissionPrimitive {
     });
     const classNode = classPrimitive.ensure(sourceFile);
 
-    const checkStatements: object[] = [];
+    const checkStatements: StatementConfig[] = [];
 
     if (this.rolePermissions) {
       checkStatements.push({

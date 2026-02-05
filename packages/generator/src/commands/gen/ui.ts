@@ -20,28 +20,25 @@ export default class GenUiCommand extends BaseCommand {
 
   async run(name: string) {
     if (!name) {
-      console.error(chalk.red('Module name is required'));
-      return;
+      this.error(chalk.red('Module name is required'));
     }
 
-    console.info(chalk.magenta(`\nGenerating UI code for module: ${name}`));
+    this.info(chalk.magenta(`\nGenerating UI code for module: ${name}`));
     const moduleDir = path.join(process.cwd(), 'modules', name);
 
     try {
       if (!fs.existsSync(moduleDir)) {
-        console.error(chalk.red(`Module directory '${moduleDir}' does not exist.`));
-        return;
+        this.error(chalk.red(`Module directory '${moduleDir}' does not exist.`));
       }
 
       // 1. Run Generator
       const generator = new UiModuleGenerator(moduleDir);
       await generator.run();
 
-      console.info(chalk.green(`Successfully generated UI code for "${name}"`));
+      this.info(chalk.green(`Successfully generated UI code for "${name}"`));
     } catch (error) {
-      console.error(error);
-      console.info(chalk.red('Failed to generate UI code'));
-      throw error;
+      this.info(error instanceof Error ? error.message : String(error));
+      this.error(chalk.red('Failed to generate UI code'));
     }
   }
 }
