@@ -101,19 +101,10 @@ export class MiddlewareBuilder extends BaseBuilder {
     );
 
     // Session Hydration Logic
+    // Session Hydration - REMOVED per user request
     if (loginActorModel) {
-      imports.push({ moduleSpecifier: '@/lib/auth-session', namedImports: ['getSession'] });
-      sessionCheck = ts`
-         // Session Hydration
-         try {
-           const session = await getSession(context.request);
-           if (session?.user) {
-             context.locals.actor = session.user;
-           }
-         } catch (e) {
-           console.error("Session hydration failed", e);
-         }
-       `;
+      // Only keeping this block if other logic needs loginActorModel, but strictly removing session check
+      sessionCheck = null;
     }
 
     // Dynamic Bouncer Pattern

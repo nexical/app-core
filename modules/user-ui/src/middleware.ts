@@ -1,6 +1,5 @@
 // GENERATED CODE - DO NOT MODIFY
 import type { APIContext, MiddlewareNext } from 'astro';
-import { getSession } from '@/lib/auth-session';
 import { authConfig } from '../auth.config';
 import type { User } from '@modules/user-api/src/sdk';
 
@@ -12,15 +11,6 @@ export async function onRequest(context: APIContext, next: MiddlewareNext) {
 
   // Session Hydration
   let user: User | undefined;
-  try {
-    const session = await getSession(context.request);
-    if (session?.user) {
-      context.locals.actor = session.user;
-      user = session.user as User;
-    }
-  } catch (e) {
-    console.error('Session hydration failed', e);
-  }
 
   // Inject navData into locals for pages to consume
   const userData = user || context.locals.actor || null;
