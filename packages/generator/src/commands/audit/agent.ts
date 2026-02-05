@@ -1,6 +1,4 @@
-import { BaseCommand } from '../base.js';
-import chalk from 'chalk';
-import ora from 'ora';
+import { BaseCommand } from '@nexical/cli-core';
 import fs from 'fs';
 import path from 'path';
 import YAML from 'yaml';
@@ -28,37 +26,38 @@ interface ValidationResult {
 }
 
 export default class AuditAgentCommand extends BaseCommand {
-  constructor() {
-    super({
-      name: 'audit:agent',
-      description: 'Audit agent definitions in agents.yaml',
-      args: {
-        '[name]': 'The name of the module (or glob pattern) to audit. Defaults to "*-api".',
-      },
-      options: {
-        '--schema': 'Validate agents.yaml schemas only (no code audit)',
-        '--verbose': 'Show detailed output',
-      },
-      helpMetadata: {
-        examples: [
-          '$ arc audit:agent',
-          '$ arc audit:agent orchestrator-api',
-          '$ arc audit:agent "*-api" --schema',
-        ],
-      },
-    });
-  }
+  static description = 'Audit agent definitions in agents.yaml';
 
-  async run(name: string | undefined, options: { schema?: boolean; verbose?: boolean }) {
-    const pattern = name || '*-api';
+  static args = {
+    args: [
+      {
+        name: 'name',
+        description: 'The name of the module (or glob pattern) to audit. Defaults to "*-api".',
+        required: false,
+      },
+    ],
+    options: [
+      {
+        name: '--schema',
+        description: 'Validate agents.yaml schemas only (no code audit)',
+      },
+      {
+        name: '--verbose',
+        description: 'Show detailed output',
+      },
+    ],
+  };
+
+  async run(options: { name?: string; schema?: boolean; verbose?: boolean }) {
+    const pattern = options.name || '*-api';
     const modules = await ModuleLocator.expand(pattern);
 
     if (modules.length === 0) {
-      console.info(chalk.yellow(`No modules found matching pattern "${pattern}"`));
+      this.warn(`No modules found matching pattern "${pattern}"`);
       return;
     }
 
-    console.info(chalk.blue(`Auditing ${modules.length} module(s) for agent definitions...`));
+    this.info(`Auditing ${modules.length} module(s) for agent definitions...`);
 
     const results: ValidationResult[] = [];
 
@@ -81,12 +80,12 @@ export default class AuditAgentCommand extends BaseCommand {
     // Check if agents.yaml exists
     if (!fs.existsSync(agentsYamlPath)) {
       if (options.verbose) {
-        console.info(chalk.gray(`  ${moduleName}: No agents.yaml found`));
+        this.info(`  ${moduleName}: No agents.yaml found`);
       }
       return null;
     }
 
-    const spinner = ora(`Auditing ${moduleName}`).start();
+    this.info(`Auditing ${moduleName}...`);
     const result: ValidationResult = {
       moduleName,
       errors: [],
@@ -105,7 +104,7 @@ export default class AuditAgentCommand extends BaseCommand {
         for (const error of schemaResult.error.errors) {
           result.errors.push(`Schema: ${error.path.join('.')} - ${error.message}`);
         }
-        spinner.fail(chalk.red(`${moduleName}: Schema validation failed`));
+        this.error(`${moduleName}: Schema validation failed`);
         return result;
       }
 
@@ -114,9 +113,7 @@ export default class AuditAgentCommand extends BaseCommand {
 
       // If schema-only mode, we're done
       if (options.schema) {
-        spinner.succeed(
-          chalk.green(`${moduleName}: Schema valid (${result.agents.length} agents)`),
-        );
+        this.success(`${moduleName}: Schema valid (${result.agents.length} agents)`);
         return result;
       }
 
@@ -155,46 +152,44 @@ export default class AuditAgentCommand extends BaseCommand {
 
       // Report
       if (result.errors.length > 0) {
-        spinner.fail(chalk.red(`${moduleName}: ${result.errors.length} error(s)`));
+        this.error(`${moduleName}: ${result.errors.length} error(s)`);
       } else if (result.warnings.length > 0) {
-        spinner.warn(chalk.yellow(`${moduleName}: ${result.warnings.length} warning(s)`));
+        this.warn(`${moduleName}: ${result.warnings.length} warning(s)`);
       } else {
-        spinner.succeed(chalk.green(`${moduleName}: All ${result.agents.length} agents valid`));
+        this.success(`${moduleName}: All ${result.agents.length} agents valid`);
       }
 
       return result;
     } catch (error) {
-      spinner.fail(chalk.red(`${moduleName}: Parse error`));
+      this.error(`${moduleName}: Parse error`);
       result.errors.push(`Parse error: ${error instanceof Error ? error.message : String(error)}`);
       return result;
     }
   }
 
   private printSummary(results: ValidationResult[]) {
-    console.info('');
-    console.info(chalk.bold('Summary:'));
+    this.info('');
+    this.info('Summary:');
 
     const totalAgents = results.reduce((sum, r) => sum + r.agents.length, 0);
     const totalErrors = results.reduce((sum, r) => sum + r.errors.length, 0);
     const totalWarnings = results.reduce((sum, r) => sum + r.warnings.length, 0);
 
-    console.info(`  Modules: ${results.length}`);
-    console.info(`  Agents: ${totalAgents}`);
-    console.info(`  Errors: ${totalErrors > 0 ? chalk.red(totalErrors) : chalk.green('0')}`);
-    console.info(
-      `  Warnings: ${totalWarnings > 0 ? chalk.yellow(totalWarnings) : chalk.green('0')}`,
-    );
+    this.info(`  Modules: ${results.length}`);
+    this.info(`  Agents: ${totalAgents}`);
+    this.info(`  Errors: ${totalErrors > 0 ? totalErrors : '0'}`);
+    this.info(`  Warnings: ${totalWarnings > 0 ? totalWarnings : '0'}`);
 
     // Detail errors
     for (const result of results) {
       if (result.errors.length > 0 || result.warnings.length > 0) {
-        console.info('');
-        console.info(chalk.bold(`${result.moduleName}:`));
+        this.info('');
+        this.info(`${result.moduleName}:`);
         for (const error of result.errors) {
-          console.info(chalk.red(`  ✗ ${error}`));
+          this.error(`  ✗ ${error}`);
         }
         for (const warning of result.warnings) {
-          console.info(chalk.yellow(`  ⚠ ${warning}`));
+          this.warn(`  ⚠ ${warning}`);
         }
       }
     }

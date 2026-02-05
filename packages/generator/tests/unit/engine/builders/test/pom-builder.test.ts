@@ -19,12 +19,14 @@ describe('PageObjectBuilder', () => {
     vi.mocked(fs.existsSync).mockReturnValue(true);
     vi.mocked(fs.readFileSync).mockImplementation((path) => {
       const p = String(path);
-      if (p.includes('ui.yaml')) return 'backend: "user-api"';
+      if (p.includes('ui.yaml'))
+        return 'backend: "user-api"\ntables:\n  User: {}\nforms:\n  User: {}';
       if (p.includes('models.yaml')) {
         return `
-User:
-  fields:
-    name: string
+models:
+  User:
+    fields:
+      name: string
 `;
       }
       return '';

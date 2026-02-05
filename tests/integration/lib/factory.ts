@@ -147,7 +147,7 @@ export class DataFactory {
    * @param model - The lower-case model name e.g. 'user', 'team'
    * @param data - The data to create
    */
-  async create<T = any>(model: keyof typeof db, data: any = {}): Promise<T> {
+  async create<T = any>(model: string | keyof typeof db, data: any = {}): Promise<T> {
     await this.loadFactories();
 
     // Check if model property exists on client first
@@ -160,6 +160,7 @@ export class DataFactory {
       );
     }
 
+    // @ts-expect-error - Dynamic indexing of Prisma client
     const delegate = this._client[model] as any;
 
     if (!delegate || !delegate.create) {

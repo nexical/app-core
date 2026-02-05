@@ -34,13 +34,21 @@ describe('Orchestrator Flow Integration', () => {
     });
     expect(jobRes.status).toBe(201);
     const job = jobRes.body.data;
+    console.info(`[Test DEBUG] Created job: ${job.id}`);
+
+    // Wait for DB consistency (small delay)
+    await new Promise((resolve) => setTimeout(resolve, 500));
+
     // 4. Poll for Jobs (as an agent)
     await client.as('agent', { id: agent.id });
+    console.info(`[Test DEBUG] Polling as agent: ${agent.id}`);
     const pollRes = await client.post('/api/orchestrator/poll', {
       agentId: agent.id,
       capabilities: ['test.task'],
     });
-
+    console.info(
+      `[Test DEBUG] Poll response status: ${pollRes.status}, data: ${JSON.stringify(pollRes.body.data)}`,
+    );
     expect(pollRes.status).toBe(200);
     expect(pollRes.body.data).toHaveLength(1);
     expect(pollRes.body.data[0].id).toBe(job.id);

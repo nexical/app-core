@@ -3,6 +3,8 @@ import path from 'path';
 import yaml from 'yaml';
 import { PlatformDefinitionSchema, type PlatformDefinition } from '../schema.js';
 
+import { logger } from '@nexical/cli-core';
+
 export class PlatformParser {
   static parseFile(filePath: string): PlatformDefinition {
     if (!fs.existsSync(filePath)) {
@@ -16,8 +18,8 @@ export class PlatformParser {
     const result = PlatformDefinitionSchema.safeParse(raw);
 
     if (!result.success) {
-      console.error(`Validation failed for ${filePath}:`);
-      console.error(JSON.stringify(result.error.issues, null, 2));
+      logger.error(`Validation failed for ${filePath}:`);
+      logger.error(JSON.stringify(result.error.issues, null, 2));
       throw new Error('Schema validation failed');
     }
 

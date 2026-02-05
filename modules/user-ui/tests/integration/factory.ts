@@ -1,5 +1,4 @@
 import bcrypt from 'bcryptjs';
-import { Factory } from '@tests/integration/lib/factory';
 
 // GENERATED CODE - DO NOT MODIFY
 export function hashPassword(password: string): string {

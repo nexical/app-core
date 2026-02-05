@@ -32,6 +32,7 @@ export const actors = {
 
     return actor;
   },
+
   admin: async (client: ApiClient, params: Record<string, unknown> = {}) => {
     return actors.user(client, { ...params, role: 'ADMIN' });
   },

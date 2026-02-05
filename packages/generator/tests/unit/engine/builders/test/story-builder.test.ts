@@ -22,9 +22,11 @@ describe('StoryBuilder', () => {
       if (p.includes('ui.yaml')) return 'backend: "user-api"';
       if (p.includes('models.yaml')) {
         return `
-User:
-  fields:
-    name: string
+models:
+  User:
+    api: true
+    fields:
+      name: string
 `;
       }
       return '';

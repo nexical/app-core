@@ -1,5 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY
 import type { APIContext, MiddlewareNext } from 'astro';
+
 import { authConfig } from '../auth.config';
 import type { User } from '@modules/user-api/src/sdk';
 
