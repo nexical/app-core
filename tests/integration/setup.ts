@@ -8,6 +8,7 @@ beforeAll(async () => {
 });
 
 // Clean the DB before each test to ensure isolation
+// Clean the DB before each test to ensure isolation
 beforeEach(async () => {
   await Factory.clean();
 });

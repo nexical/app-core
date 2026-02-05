@@ -121,13 +121,13 @@ export class DataFactory {
 
       models.forEach((m) => dfs(m.name));
 
-      const orderedModels = result;
       const sortedModelNames = result.reverse();
 
       const deleteActions = sortedModelNames
         .map((modelName) => {
-          // @ts-expect-error
-          const delegate = this._client[modelName.charAt(0).toLowerCase() + modelName.slice(1)];
+          const delegate = (this._client as any)[
+            modelName.charAt(0).toLowerCase() + modelName.slice(1)
+          ];
           if (delegate && delegate.deleteMany) {
             return delegate.deleteMany();
           }
