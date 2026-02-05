@@ -4,6 +4,7 @@ import { VariablePrimitive } from './variable.js';
 import { TypePrimitive } from './type.js';
 import { ClassPrimitive } from './class.js';
 import { MethodPrimitive } from './method.js';
+import { ImportPrimitive } from '../core/import-manager.js';
 import type { ValidationResult } from '../../primitives/contracts.js';
 
 export class PermissionPrimitive {
@@ -22,6 +23,12 @@ export class PermissionPrimitive {
       declarationKind: 'const',
       isExported: true,
       initializer: `${initializer} as const`,
+    }).ensure(sourceFile);
+
+    // 1b. Import Core Permissions
+    new ImportPrimitive({
+      moduleSpecifier: '@/lib/security/permissions',
+      namedImports: ['Permissions'],
     }).ensure(sourceFile);
 
     // 2. Generate Permission Type
@@ -53,21 +60,11 @@ export class PermissionPrimitive {
 
     if (this.rolePermissions) {
       checkStatements.push({
-        kind: 'variable',
-        declarationKind: 'const',
-        declarations: [
-          {
-            name: 'allowedActions',
-            initializer: `(RolePermissions as any)[role] as readonly string[] | undefined`,
-          },
-        ],
-      });
-      checkStatements.push({
         kind: 'return',
-        expression: 'allowedActions ? allowedActions.includes(action) : false',
+        expression: 'Permissions.check(action, role)',
       });
     } else {
-      // Fallback if no role map is present (shouldn't happen in full gen)
+      // Fallback if no role map is present
       checkStatements.push({
         kind: 'return',
         expression: 'false',

@@ -38,4 +38,15 @@ for (const path in emailInitModules) {
         await mod.initEmails();
     }
 }
+
+// 4. Register Module Permissions
+const permissionModules = import.meta.glob("./permissions.ts", { eager: true });
+for (const path in permissionModules) {
+    const mod = permissionModules[path] as { RolePermissions?: Record<string, string[]> };
+    if (mod.RolePermissions) {
+        for (const [role, actions] of Object.entries(mod.RolePermissions)) {
+            Permissions.register(role, actions);
+        }
+    }
+}
 `;
