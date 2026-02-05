@@ -45,7 +45,7 @@ export class SpecInitCommand extends BaseCommand {
     try {
       AgentRunner.run(
         'SpecWriter',
-        'prompts/agents/spec-writer.md',
+        'agents/spec-writer.md',
         {
           module_root: modulePath,
           spec_file: specFile,
