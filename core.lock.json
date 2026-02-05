@@ -275,7 +275,7 @@
   "packages/generator/tests/unit/lib/help.test.ts": "6eed379cdd22b9632d0ab98fb4e3bc403169d6e81f6cc134cde4602256994132",
   "packages/generator/tests/unit/lib/module-locator.test.ts": "37a7b0192134132ee80af1fe7a30175702db4151c326a1f5957e7ed72f79de74",
   "packages/generator/tests/unit/schema.test.ts": "3a488ea7d82b6606da8d6435aa77ea808e52b6d87e9ab4280c14423c58614751",
-  "packages/generator/tests/unit/utils/formatter.test.ts": "9608e9d3867d0bd86c366af2480e5c5556028d1576c2995198f620e9814275d5",
+  "packages/generator/tests/unit/utils/formatter.test.ts": "10fd0346069e537573582554abfd773dc0811c7f0f11a8c7da89e29bbe25f159",
   "packages/generator/tests/unit/utils/normalizer.test.ts": "eacebbf1826d0e176855b8a74574beb07c01721947e02b230ba66f348206e753",
   "packages/generator/tests/unit/utils/template-loader.test.ts": "8023f4c9962668f553667e7b69c9d4e341db8acdda9cc9fb0367f88656b4161f",
   "packages/generator/tsconfig.build.json": "6100a4e70595cf86b714ee31192cfe8ed5afda6c6a8e9b596abcfc4a9c26ea12",
