@@ -28,8 +28,8 @@ describe('Orchestration Flow', () => {
       agentId: 'test-agent',
     });
     expect(pollRes.status).toBe(200);
-    expect(pollRes.body).toHaveLength(1);
-    expect(pollRes.body[0].id).toBe(jobId);
+    expect(pollRes.body.data).toHaveLength(1);
+    expect(pollRes.body.data[0].id).toBe(jobId);
 
     // 4. Complete the Job
     const completeRes = await client.post(`/api/job/${jobId}/complete`, {
@@ -40,8 +40,8 @@ describe('Orchestration Flow', () => {
     // 5. Verify Job Status
     const getRes = await client.get(`/api/job/${jobId}`);
     expect(getRes.status).toBe(200);
-    expect(getRes.body.status).toBe('COMPLETED');
-    expect(getRes.body.result).toEqual({ success: true });
+    expect(getRes.body.data.status).toBe('COMPLETED');
+    expect(getRes.body.data.result).toEqual({ success: true });
   });
 
   it('should handle the full job lifecycle (Failure)', async () => {
@@ -52,6 +52,7 @@ describe('Orchestration Flow', () => {
     const createRes = await client.post('/api/job', {
       type: 'fail.job',
       payload: { secret: 42 },
+      maxRetries: 0,
     });
     const jobId = createRes.body.data.id;
 
@@ -59,7 +60,7 @@ describe('Orchestration Flow', () => {
     const pollRes = await client.post('/api/orchestrator/poll', {
       capabilities: ['fail.job'],
     });
-    expect(pollRes.body[0].id).toBe(jobId);
+    expect(pollRes.body.data[0].id).toBe(jobId);
 
     // 4. Fail the Job
     const failRes = await client.post(`/api/job/${jobId}/fail`, {
@@ -69,8 +70,8 @@ describe('Orchestration Flow', () => {
 
     // 5. Verify
     const getRes = await client.get(`/api/job/${jobId}`);
-    expect(getRes.body.status).toBe('FAILED');
-    expect(getRes.body.error).toEqual({ message: 'Boom' });
+    expect(getRes.body.data.status).toBe('FAILED');
+    expect(getRes.body.data.error).toEqual({ message: 'Boom' });
   });
 
   it('should work with AgentRunner utility', async () => {
@@ -102,7 +103,7 @@ describe('Orchestration Flow', () => {
 
     // Verify status
     const getRes = await client.get(`/api/job/${jobId}`);
-    expect(getRes.body.status).toBe('COMPLETED');
-    expect(getRes.body.result).toEqual({ y: 2 });
+    expect(getRes.body.data.status).toBe('COMPLETED');
+    expect(getRes.body.data.result).toEqual({ y: 2 });
   });
 });

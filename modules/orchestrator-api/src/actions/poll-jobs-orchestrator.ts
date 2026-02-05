@@ -15,8 +15,8 @@ export class PollJobsOrchestratorAction {
 
       // Resolve Actor from Context (if not in input)
       const actor: ApiActor = context.locals.actor;
-      const actorId = (input as any).actorId || actor?.id;
-      const actorType = (input as any).actorType || actor?.type;
+      const actorId = (input as unknown as Record<string, unknown>).actorId || actor?.id;
+      const actorType = (input as unknown as Record<string, unknown>).actorType || actor?.type;
 
       // Fix: Prioritize actorId (authenticated user/agent) over input.agentId.
       // This ensures that the entity locking the job is the same entity that will try to complete it.

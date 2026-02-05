@@ -15,7 +15,7 @@ describe('DeadLetterJob API - Update', () => {
   // PUT /api/dead-letter-job/[id]
   describe('PUT /api/dead-letter-job/[id]', () => {
     it('should update deadLetterJob', async () => {
-      const actor = await client.as('admin', {});
+      const actor = await client.as('user', {});
 
       const target = await Factory.create('deadLetterJob', {
         ...{
@@ -25,6 +25,7 @@ describe('DeadLetterJob API - Update', () => {
           retryCount: 10,
         },
         actorId: actor.id,
+        actorType: 'user',
       });
 
       const updatePayload = {

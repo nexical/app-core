@@ -12,7 +12,7 @@ export interface JobMetrics {
   completed: number;
   failed: number;
   cancelled: number;
-  avgCompletionTimeMs: number | null;
+  avgCompletionTimeMs?: number;
   retryRate: number;
   successRate: number;
 }
@@ -79,7 +79,7 @@ export class JobMetricsService {
 
       // Calculate avg completion time (need raw SQL or compute differently)
       // For simplicity, we'll estimate using recent completed jobs
-      const avgCompletionTimeMs = null; // Would require date math in query
+      const avgCompletionTimeMs = undefined; // Would require date math in query
 
       return {
         total,

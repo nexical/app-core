@@ -15,10 +15,10 @@ describe('Job API - Create', () => {
   // POST /api/job
   describe('POST /api/job', () => {
     it('should allow job-owner to create job', async () => {
-      const actor = await client.as('team', {});
+      const actor = await client.as('user', {});
 
       const payload = {
-        ...{ type: 'type_test', progress: 10 },
+        ...{ type: 'type_test', progress: 10, retryCount: 10, maxRetries: 10 },
         actorId: actor ? actor.id : undefined,
       };
 
@@ -29,6 +29,8 @@ describe('Job API - Create', () => {
 
       expect(res.body.data.type).toBe(payload.type);
       expect(res.body.data.progress).toBe(payload.progress);
+      expect(res.body.data.retryCount).toBe(payload.retryCount);
+      expect(res.body.data.maxRetries).toBe(payload.maxRetries);
 
       const created = await Factory.prisma.job.findUnique({
         where: { id: res.body.data.id },
@@ -38,11 +40,11 @@ describe('Job API - Create', () => {
 
     it('should forbid non-admin/unauthorized users', async () => {
       client.useToken('invalid-token');
-
+       
       const actor = undefined as unknown;
 
       const payload = {
-        ...{ type: 'type_test', progress: 10 },
+        ...{ type: 'type_test', progress: 10, retryCount: 10, maxRetries: 10 },
         actorId: actor ? actor.id : undefined,
       };
       const res = await client.post('/api/job', payload);

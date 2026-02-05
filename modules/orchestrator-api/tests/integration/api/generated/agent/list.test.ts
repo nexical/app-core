@@ -22,7 +22,7 @@ describe('Agent API - List', () => {
 
     it('should allow member to list agents', async () => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const actor = await client.as('team', {});
+      const actor = await client.as('user', {});
 
       // Cleanup first to ensure clean state
       await Factory.prisma.agent.deleteMany();
@@ -42,7 +42,7 @@ describe('Agent API - List', () => {
 
     it('should verify pagination metadata', async () => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const actor = await client.as('team', {});
+      const actor = await client.as('user', {});
 
       // Cleanup and seed specific count
       await Factory.prisma.agent.deleteMany();
@@ -80,7 +80,7 @@ describe('Agent API - List', () => {
       await new Promise((r) => setTimeout(r, 10));
       // Reuse getActorStatement to ensure correct actor context
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const actor = await client.as('team', {});
+      const actor = await client.as('user', {});
 
       const val1 = 'hostname_' + Date.now() + '_A';
       const val2 = 'hostname_' + Date.now() + '_B';

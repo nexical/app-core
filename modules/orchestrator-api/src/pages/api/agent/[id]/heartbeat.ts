@@ -40,7 +40,6 @@ export const POST = defineApi(
     return { success: true, data: filteredResult.data };
   },
   {
-    protected: false,
     summary: 'Update agent heartbeat',
     tags: ['Agent'],
     requestBody: {
@@ -66,5 +65,6 @@ export const POST = defineApi(
         },
       },
     },
+    protected: false,
   },
 );

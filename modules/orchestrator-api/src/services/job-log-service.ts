@@ -49,12 +49,13 @@ export class JobLogService {
   public static async get(
     id: string,
     select?: Prisma.JobLogSelect,
+    actor?: ApiActor,
   ): Promise<ServiceResponse<JobLog | null>> {
     try {
       const data = await db.jobLog.findUnique({ where: { id }, select });
       if (!data) return { success: false, error: 'jobLog.service.error.not_found' };
 
-      const filtered = await HookSystem.filter('jobLog.read', data);
+      const filtered = await HookSystem.filter('jobLog.read', data, { actor });
 
       return { success: true, data: filtered };
     } catch (error) {
@@ -131,7 +132,7 @@ export class JobLogService {
     }
   }
 
-  public static async delete(id: string): Promise<ServiceResponse<void>> {
+  public static async delete(id: string, actor?: ApiActor): Promise<ServiceResponse<void>> {
     try {
       await db.$transaction(async (tx) => {
         await tx.jobLog.delete({ where: { id } });

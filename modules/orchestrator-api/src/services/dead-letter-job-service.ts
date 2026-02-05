@@ -49,12 +49,13 @@ export class DeadLetterJobService {
   public static async get(
     id: string,
     select?: Prisma.DeadLetterJobSelect,
+    actor?: ApiActor,
   ): Promise<ServiceResponse<DeadLetterJob | null>> {
     try {
       const data = await db.deadLetterJob.findUnique({ where: { id }, select });
       if (!data) return { success: false, error: 'deadLetterJob.service.error.not_found' };
 
-      const filtered = await HookSystem.filter('deadLetterJob.read', data);
+      const filtered = await HookSystem.filter('deadLetterJob.read', data, { actor });
 
       return { success: true, data: filtered };
     } catch (error) {
@@ -125,7 +126,7 @@ export class DeadLetterJobService {
     }
   }
 
-  public static async delete(id: string): Promise<ServiceResponse<void>> {
+  public static async delete(id: string, actor?: ApiActor): Promise<ServiceResponse<void>> {
     try {
       await db.$transaction(async (tx) => {
         await tx.deadLetterJob.delete({ where: { id } });

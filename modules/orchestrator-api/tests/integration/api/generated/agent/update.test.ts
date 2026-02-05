@@ -16,7 +16,7 @@ describe('Agent API - Update', () => {
   describe('PUT /api/agent/[id]', () => {
     it('should update agent', async () => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const actor = await client.as('team', {});
+      const actor = await client.as('user', {});
 
       const target = await Factory.create('agent', {
         ...{

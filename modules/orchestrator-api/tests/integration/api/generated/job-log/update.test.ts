@@ -15,10 +15,11 @@ describe('JobLog API - Update', () => {
   // PUT /api/job-log/[id]
   describe('PUT /api/job-log/[id]', () => {
     it('should update jobLog', async () => {
-      const actor = await client.as('team', {});
+      const actor = await client.as('user', {});
 
       const job_0 = await Factory.create('job', {
         actorId: typeof actor !== 'undefined' ? actor.id : undefined,
+        actorType: 'user',
       });
       const target = await Factory.create('jobLog', {
         ...{ level: 'level_test', message: 'message_test', timestamp: new Date().toISOString() },

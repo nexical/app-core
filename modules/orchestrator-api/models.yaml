@@ -16,7 +16,7 @@ models:
   Job:
     role: job-owner
     test:
-      actor: team
+      actor: user
     fields:
       id:
         type: String
@@ -93,7 +93,7 @@ models:
   JobLog:
     role: job-owner
     test:
-      actor: team
+      actor: user
     fields:
       id:
         type: String
@@ -119,7 +119,7 @@ models:
 
   Agent:
     test:
-      actor: team
+      actor: user
     fields:
       id:
         type: String
@@ -148,7 +148,7 @@ models:
   DeadLetterJob:
     role: admin
     test:
-      actor: admin
+      actor: user
     fields:
       id:
         type: String
@@ -161,8 +161,12 @@ models:
         type: String
       payload:
         type: Json
+        attributes:
+          - '@default("{}")'
       error:
         type: Json
+        attributes:
+          - '@default("{}")'
       failedAt:
         type: DateTime
         attributes:

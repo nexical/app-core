@@ -12,10 +12,10 @@ describe('Job Security Integration', () => {
 
   beforeEach(async () => {
     clientA = new ApiClient();
-    await clientA.as('team', { name: 'Team A' }); // User setup required if not autogen
+    await clientA.as('user', { name: 'Team A' }); // User setup required if not autogen
 
     clientB = new ApiClient();
-    await clientB.as('team', { name: 'Team B' });
+    await clientB.as('user', { name: 'Team B' });
   });
 
   afterAll(async () => {
@@ -85,6 +85,6 @@ describe('Job Security Integration', () => {
     // Hook should strip status update. Status remains PENDING.
     // Hook should strip status update. Status remains PENDING.
     const refetched = await clientA.get(`/api/job/${job.id}`);
-    expect(refetched.body.status).toBe('PENDING');
+    expect(refetched.body.data.status).toBe('PENDING');
   });
 });

@@ -31,7 +31,7 @@ describe('Job Security', () => {
 
   it('should allow owner to read the job', async () => {
     const response = await owner.get(`/api/job/${job.id}`);
-    expect(response.body.id).toBe(job.id);
+    expect(response.body.data.id).toBe(job.id);
   });
 
   it('should PREVENT attacker from reading the job', async () => {
@@ -63,6 +63,6 @@ describe('Job Security', () => {
   it('should allow owner to complete the job', async () => {
     const res = await owner.post(`/api/job/${job.id}/complete`, { result: { success: true } });
     expect([200, 201]).toContain(res.status);
-    expect(res.body.status).toBe('COMPLETED');
+    expect(res.body.data.status).toBe('COMPLETED');
   });
 });

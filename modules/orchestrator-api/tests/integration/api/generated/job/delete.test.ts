@@ -15,11 +15,12 @@ describe('Job API - Delete', () => {
   // DELETE /api/job/[id]
   describe('DELETE /api/job/[id]', () => {
     it('should delete job', async () => {
-      const actor = await client.as('team', {});
+      const actor = await client.as('user', {});
 
       const target = await Factory.create('job', {
-        ...{ type: 'type_test', progress: 10 },
+        ...{ type: 'type_test', progress: 10, retryCount: 10, maxRetries: 10 },
         actorId: actor.id,
+        actorType: 'user',
       });
 
       const res = await client.delete(`/api/job/${target.id}`);

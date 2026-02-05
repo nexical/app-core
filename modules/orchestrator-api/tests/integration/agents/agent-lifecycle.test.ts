@@ -33,7 +33,6 @@ describe('Agent Lifecycle Integration', () => {
     // Pass env vars to point to OUR test server
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const token = (client as any).bearerToken || 'test-secret';
-    console.info('[DEBUG Test] Token sent to Agent:', token);
 
     // Wait for DB consistency/middleware availability
     await new Promise((r) => setTimeout(r, 1000));
@@ -68,13 +67,12 @@ describe('Agent Lifecycle Integration', () => {
     expect(agentOnline).toBe(true);
 
     // 3. Create a Job
-    const res = await client.post('/api/job', {
-      type: 'test.echo', // Must match agent capability
-      payload: { message: 'Hello World' },
-      status: 'PENDING',
+    const res = await client.request('POST', '/api/job', {
+      type: 'orchestrator-api.EchoProcessor',
+      payload: { message: 'Hello Agent!' },
     });
 
-    const job = res.body.data;
+    const job = (res.body as { data: { id: string; status: string } }).data;
     expect(job.status).toBe('PENDING');
 
     // 4. Wait for Completion

@@ -40,7 +40,6 @@ export const POST = defineApi(
     return { success: true, data: filteredResult.data };
   },
   {
-    protected: false,
     summary: 'Register or update an agent',
     tags: ['Agent'],
     requestBody: {
@@ -79,5 +78,6 @@ export const POST = defineApi(
         },
       },
     },
+    protected: false,
   },
 );
