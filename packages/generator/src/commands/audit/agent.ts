@@ -26,26 +26,27 @@ interface ValidationResult {
 }
 
 export default class AuditAgentCommand extends BaseCommand {
-  constructor() {
-    super({
-      name: 'audit:agent',
-      description: 'Audit agent definitions in agents.yaml',
-      args: {
-        '[name]': 'The name of the module (or glob pattern) to audit. Defaults to "*-api".',
+  static description = 'Audit agent definitions in agents.yaml';
+
+  static args = {
+    args: [
+      {
+        name: 'name',
+        description: 'The name of the module (or glob pattern) to audit. Defaults to "*-api".',
+        required: false,
       },
-      options: {
-        '--schema': 'Validate agents.yaml schemas only (no code audit)',
-        '--verbose': 'Show detailed output',
+    ],
+    options: [
+      {
+        name: '--schema',
+        description: 'Validate agents.yaml schemas only (no code audit)',
       },
-      helpMetadata: {
-        examples: [
-          '$ arc audit:agent',
-          '$ arc audit:agent orchestrator-api',
-          '$ arc audit:agent "*-api" --schema',
-        ],
+      {
+        name: '--verbose',
+        description: 'Show detailed output',
       },
-    });
-  }
+    ],
+  };
 
   async run(options: { name?: string; schema?: boolean; verbose?: boolean }) {
     const pattern = options.name || '*-api';

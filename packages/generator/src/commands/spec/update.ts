@@ -1,26 +1,27 @@
 import { BaseCommand } from '@nexical/cli-core';
-import chalk from 'chalk';
+
 import path from 'path';
 import fs from 'fs-extra';
 import { AgentRunner } from '../../utils/agent-runner.js';
 
 export class SpecUpdateCommand extends BaseCommand {
-  constructor() {
-    super({
-      name: 'spec:update',
-      description: 'Update or reverse-engineer a specification for an existing module',
-      args: {
-        name: 'The name of the module to update (e.g., "payment-api")',
-      },
-      helpMetadata: {
-        examples: ['$ nexical spec:update payment-api'],
-      },
-    });
-  }
+  static description = 'Update or reverse-engineer a specification for an existing module';
 
-  async run(name: string) {
+  static args = {
+    args: [
+      {
+        name: 'name',
+        description: 'The name of the module to update (e.g., "payment-api")',
+        required: true,
+      },
+    ],
+  };
+
+  async run(options: any) {
+    const { name } = options;
+
     if (!name) {
-      console.error(chalk.red('Please provide a module name.'));
+      this.error('Please provide a module name.');
       return;
     }
 
@@ -30,23 +31,21 @@ export class SpecUpdateCommand extends BaseCommand {
     const modulePath = path.join(process.cwd(), 'modules', name);
 
     if (!(await fs.pathExists(modulePath))) {
-      console.error(chalk.red(`Module "${name}" not found at ${modulePath}.`));
+      this.error(`Module "${name}" not found at ${modulePath}.`);
       return;
     }
 
     const specFile = path.join(modulePath, 'SPECIFICATION.md');
 
     if (!(await fs.pathExists(specFile))) {
-      console.info(
-        chalk.yellow(`SPECIFICATION.md not found. Creating a placeholder to be filled.`),
-      );
+      this.warn(`SPECIFICATION.md not found. Creating a placeholder to be filled.`);
       await fs.writeFile(
         specFile,
         `# Module Specification: ${name}\n\n(Draft generated from code)`,
       );
     }
 
-    console.info(chalk.green(`\nStarting interactive specification update for "${name}"...\n`));
+    this.success(`\nStarting interactive specification update for "${name}"...\n`);
 
     try {
       AgentRunner.run(
@@ -64,3 +63,5 @@ export class SpecUpdateCommand extends BaseCommand {
     }
   }
 }
+
+export default SpecUpdateCommand;

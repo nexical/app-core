@@ -1,26 +1,27 @@
 import { BaseCommand } from '@nexical/cli-core';
-import chalk from 'chalk';
+
 import path from 'path';
 import fs from 'fs-extra';
 import { AgentRunner } from '../../utils/agent-runner.js';
 
 export class SpecInitCommand extends BaseCommand {
-  constructor() {
-    super({
-      name: 'spec:init',
-      description: 'Interactively generate a specification for a new module',
-      args: {
-        name: 'The name of the new module (e.g., "payment-api")',
-      },
-      helpMetadata: {
-        examples: ['$ nexical spec:init payment-api'],
-      },
-    });
-  }
+  static description = 'Interactively generate a specification for a new module';
 
-  async run(name: string) {
+  static args = {
+    args: [
+      {
+        name: 'name',
+        description: 'The name of the new module (e.g., "payment-api")',
+        required: true,
+      },
+    ],
+  };
+
+  async run(options: any) {
+    const { name } = options;
+
     if (!name) {
-      console.error(chalk.red('Please provide a module name.'));
+      this.error('Please provide a module name.');
       return;
     }
 
@@ -28,14 +29,10 @@ export class SpecInitCommand extends BaseCommand {
     const specFile = path.join(modulePath, 'SPECIFICATION.md');
 
     if (await fs.pathExists(modulePath)) {
-      console.warn(
-        chalk.yellow(
-          `Module "${name}" already exists. You might want to use "spec:update" instead.`,
-        ),
-      );
+      this.warn(`Module "${name}" already exists. You might want to use "spec:update" instead.`);
       // prompt to continue? For now, we proceed but warn.
     } else {
-      console.info(chalk.blue(`Creating module directory: ${modulePath}`));
+      this.info(`Creating module directory: ${modulePath}`);
       await fs.ensureDir(modulePath);
     }
 
@@ -43,7 +40,7 @@ export class SpecInitCommand extends BaseCommand {
       await fs.writeFile(specFile, `# Module Specification: ${name}\n\n(Draft)`);
     }
 
-    console.info(chalk.green(`\nStarting interactive specification session for "${name}"...\n`));
+    this.success(`\nStarting interactive specification session for "${name}"...\n`);
 
     try {
       AgentRunner.run(
@@ -61,3 +58,5 @@ export class SpecInitCommand extends BaseCommand {
     }
   }
 }
+
+export default SpecInitCommand;
