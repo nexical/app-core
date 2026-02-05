@@ -58,7 +58,9 @@ describe('JobService', () => {
       vi.mocked(db.job.findUnique).mockResolvedValue({ id: '1' } as unknown as Job);
       const result = await JobService.get('1');
       expect(result.success).toBe(true);
-      expect(HookSystem.filter).toHaveBeenCalledWith('job.read', expect.anything());
+      expect(HookSystem.filter).toHaveBeenCalledWith('job.read', expect.anything(), {
+        actor: undefined,
+      });
     });
 
     it('should return not found', async () => {

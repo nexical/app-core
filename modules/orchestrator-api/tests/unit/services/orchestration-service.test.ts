@@ -71,6 +71,8 @@ describe('OrchestrationService', () => {
         id: mockUpdatedJob.id,
         type: mockUpdatedJob.type,
         payload: mockUpdatedJob.payload,
+        status: mockUpdatedJob.status,
+        retryCount: undefined,
       });
       expect(db.agent.update).toHaveBeenCalledWith(
         expect.objectContaining({
