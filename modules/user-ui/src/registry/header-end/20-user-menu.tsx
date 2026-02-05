@@ -14,7 +14,7 @@ import { useTranslation } from 'react-i18next';
 import { useShellStore } from '@/lib/ui/shell-store';
 import { useNavData } from '@/lib/ui/nav-context';
 import { Settings, LogOut, Key, ChevronDown, Users } from 'lucide-react';
-import { Permission } from '@modules/user-api/permissions';
+import { Permission } from '@modules/user-api/src/permissions';
 
 /**
  * Registry component for the user profile menu in the header.

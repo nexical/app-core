@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useCreateUser, useUpdateUser } from '@/hooks/use-user';
-import { Permission } from '@modules/user-api/permissions';
+import { Permission } from '@modules/user-api/src/permissions';
 import { useAuth } from '@/hooks/use-auth';
 import { PasswordInput } from '@/components/ui/password-input';
 import { SiteRole, UserStatus } from '@modules/user-api/src/sdk';

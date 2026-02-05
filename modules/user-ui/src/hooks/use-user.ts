@@ -36,7 +36,7 @@ export function useUserQuery(options?: Record<string, unknown>) {
 export function useCreateUser() {
   const [isPending, setIsPending] = useState(false);
 
-  const mutate = async (data: unknown, options?: MutationOptions) => {
+  const mutate = async (data: Parameters<typeof api.user.create>[0], options?: MutationOptions) => {
     setIsPending(true);
     try {
       const res = await api.user.create(data);
@@ -54,7 +54,7 @@ export function useCreateUser() {
 export function useUpdateUser(id?: string) {
   const [isPending, setIsPending] = useState(false);
 
-  const mutate = async (data: unknown, options?: MutationOptions) => {
+  const mutate = async (data: Parameters<typeof api.user.update>[1], options?: MutationOptions) => {
     if (!id) return;
     setIsPending(true);
     try {

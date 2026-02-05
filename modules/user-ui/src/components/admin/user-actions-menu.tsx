@@ -16,7 +16,7 @@ import { EditRoleDialog } from './edit-role-dialog';
 import { DeleteUserDialog } from './delete-user-dialog';
 
 import { type User, UserStatus } from '@modules/user-api/src/sdk';
-import { Permission } from '@modules/user-api/permissions';
+import { Permission } from '@modules/user-api/src/permissions';
 
 interface UserActionsMenuProps {
   user: User;
