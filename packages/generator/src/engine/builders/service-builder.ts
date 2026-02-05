@@ -81,6 +81,7 @@ export class ServiceBuilder extends BaseBuilder {
         parameters: [
           { name: 'id', type: 'string' },
           { name: 'select', type: `Prisma.${entityName}Select`, optional: true },
+          { name: 'actor', type: 'ApiActor', optional: true },
         ],
         statements: getExistingStatements(node, 'get') || [loadTemplate('get', 'get')],
       },
@@ -119,7 +120,10 @@ export class ServiceBuilder extends BaseBuilder {
               isStatic: true,
               isAsync: true,
               returnType: `Promise<ServiceResponse<void>>`,
-              parameters: [{ name: 'id', type: 'string' }],
+              parameters: [
+                { name: 'id', type: 'string' },
+                { name: 'actor', type: 'ApiActor', optional: true },
+              ],
               statements: getExistingStatements(node, 'delete') || [
                 loadTemplate('delete', 'delete'),
               ],
@@ -131,7 +135,10 @@ export class ServiceBuilder extends BaseBuilder {
               isStatic: true,
               isAsync: true,
               returnType: `Promise<ServiceResponse<void>>`,
-              parameters: [{ name: 'id', type: 'string' }],
+              parameters: [
+                { name: 'id', type: 'string' },
+                { name: 'actor', type: 'ApiActor', optional: true },
+              ],
               statements: [loadTemplate('delete-blocked', 'delete')],
             },
           ]),

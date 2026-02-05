@@ -15,7 +15,7 @@ try {
     const data = await db.${lowerEntity}.findUnique({ where: { id }, select });
     if (!data) return { success: false, error: "${lowerEntity}.service.error.not_found" };
     
-    const filtered = await HookSystem.filter('${lowerEntity}.read', data);
+    const filtered = await HookSystem.filter('${lowerEntity}.read', data, { actor });
     
     return { success: true, data: filtered };
 } catch (error) {
