@@ -107,7 +107,6 @@ function AdminUserManagementContent({ currentUser }: { currentUser?: User }) {
     );
   });
 
-  const { t } = useTranslation();
   // Ensure we have current user role for permission check
   const role = currentUser?.role || 'ANONYMOUS';
   const canInvite = Permission.check('user:invite', role);
