@@ -2,6 +2,7 @@
 import { db } from '@/lib/core/db';
 import crypto from 'node:crypto';
 import type { APIContext, MiddlewareNext } from 'astro';
+import { getSession } from '@/lib/auth-session';
 
 // GENERATED CODE - DO NOT MODIFY
 export async function onRequest(context: APIContext, next: MiddlewareNext) {
@@ -48,6 +49,14 @@ export async function onRequest(context: APIContext, next: MiddlewareNext) {
   }
   return next();
   if (publicRoutes.some((route) => context.url.pathname.startsWith(route))) return next();
+  try {
+    const session = await getSession(context.request);
+    if (session?.user) {
+      context.locals.actor = session.user;
+    }
+  } catch (e) {
+    console.error('Session hydration failed', e);
+  }
   if (publicRoutes.some((route) => context.url.pathname.startsWith(route))) return next();
   if (publicRoutes.some((route) => context.url.pathname.startsWith(route))) return next();
 }

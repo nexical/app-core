@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY
 export abstract class BaseRole {
-  public static async check(context: any, permission: string): Promise<boolean> {
+  public async check(context: any, permission: string): Promise<boolean> {
     return true;
   }
 }
