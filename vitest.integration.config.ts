@@ -12,12 +12,9 @@ export default defineConfig({
     include: [
       'tests/integration/**/*.test.{ts,tsx}',
       'modules/**/tests/integration/**/*.test.{ts,tsx}',
+      'packages/agent/tests/integration/**/*.test.{ts,tsx}',
     ],
-    exclude: [
-      '**/node_modules/**',
-      '**/dist/**',
-      'packages/agent/tests/integration/**', // Moved to agent config
-    ],
+    exclude: ['**/node_modules/**', '**/dist/**'],
     testTimeout: 120000,
     hookTimeout: 120000,
     pool: 'forks',
