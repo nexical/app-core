@@ -197,7 +197,7 @@
   "packages/generator/tests/unit/commands/base.test.ts": "c2cfefc7abc77fdb2fb48414d386898cd6863ec814df5a49f270637fa8b386ca",
   "packages/generator/tests/unit/commands/gen-api.test.ts": "b1647f1066cfccc864d6000bf9ae2f06aa0c37a626542b72697fd6764886084a",
   "packages/generator/tests/unit/core/parser.test.ts": "ed6698d77f4b63f2b103f5bb91cb69a8fe7b47fb69d994b30297cf5fc4a5f1be",
-  "packages/generator/tests/unit/engine/api-module-generator.test.ts": "3baae59ef101aaaa47d18918f81571f0fc1917df68834626ca60c16d2b7d724b",
+  "packages/generator/tests/unit/engine/api-module-generator.test.ts": "d99145505075510b91b00a706687d79bb5181f28b82687dbd33c2e0c848268a0",
   "packages/generator/tests/unit/engine/builders/action-builder.test.ts": "99523ed9c07da62be2e73e30a61c527221caebde293c2233e9508e6090012274",
   "packages/generator/tests/unit/engine/builders/actor-builder.test.ts": "bd11c1854a90a3638d997e43f436a3996336fd37b5b8bd761e413a0f88c78084",
   "packages/generator/tests/unit/engine/builders/actor-type-builder.test.ts": "6ad625cdc473b090e08d2613c7c5b684a4f220594b7c1308c9ada4322b395b8b",
