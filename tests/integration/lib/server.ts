@@ -5,7 +5,7 @@ import fs from 'node:fs';
 import dotenv from 'dotenv';
 
 const TEST_PORT = 4322;
-const TEST_HOST = '127.0.0.1';
+const TEST_HOST = 'localhost';
 const TEST_URL = `http://${TEST_HOST}:${TEST_PORT}`;
 
 export class ServerManager {
@@ -14,7 +14,8 @@ export class ServerManager {
   private isRunning = false;
   private currentUrl: string = `http://${TEST_HOST}:${TEST_PORT}`;
 
-  private constructor() {}
+
+  private constructor() { }
 
   public static getInstance(): ServerManager {
     if (!ServerManager.instance) {
@@ -99,7 +100,10 @@ export class ServerManager {
     if (this.serverProcess.stdout) {
       this.serverProcess.stdout.on('data', (data) => {
         const msg = data.toString();
-        console.log(`[Server Output]: ${msg}`);
+        // Console log removed to reduce noise, unless DEBUG
+        if (process.env.DEBUG) console.log(`[Server Output]: ${msg}`);
+
+
       });
     }
 
@@ -177,8 +181,10 @@ export class ServerManager {
           return;
         }
       } catch (e) {
-        if (process.env.DEBUG)
-          console.log(`[Polling] ${this.currentUrl}/api/status -> Connection refused/error`);
+        if (process.env.DEBUG) {
+          const msg = e instanceof Error ? e.message : String(e);
+          console.log(`[Polling] ${this.currentUrl}/api/status -> ${msg}`);
+        }
       }
       await new Promise((resolve) => setTimeout(resolve, interval));
     }
