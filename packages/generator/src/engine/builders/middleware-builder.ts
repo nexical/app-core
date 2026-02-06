@@ -23,7 +23,7 @@ export class MiddlewareBuilder extends BaseBuilder {
     const authLogic: StatementConfig[] = [];
 
     for (const model of this.models) {
-      if (!model.actor || !model.actor.prefix) continue;
+      if (!model.actor || model.actor.prefix === undefined) continue;
 
       const { prefix, name } = model.actor;
       const modelName = model.name.charAt(0).toLowerCase() + model.name.slice(1);
@@ -72,7 +72,7 @@ export class MiddlewareBuilder extends BaseBuilder {
         TemplateLoader.load('middleware/auth.tsf', {
           prefix,
           lookupLogic: lookupLogic.raw,
-          name: name || 'actor',
+          name: name || modelName,
         }),
       );
     }
@@ -139,7 +139,7 @@ export class MiddlewareBuilder extends BaseBuilder {
       statements: [
         ts`const publicRoutes = [${this.routes
           .filter((r) => r.role === 'anonymous')
-          .map((r) => `"${r.path}"`)
+          .map((r) => `"/${r.path.replace(/^\//, '')}"`)
           .join(', ')}];`,
         ts`if (publicRoutes.some(route => context.url.pathname.startsWith(route))) return next();`,
         hasAuthLogic ? ts`const authHeader = context.request.headers.get("Authorization");` : null,

@@ -2,7 +2,7 @@ import { BaseCommand, type CommandDefinition } from '@nexical/cli-core';
 import { generateApiModule } from '../../lib/generate-api.js';
 
 export default class GenApiCommand extends BaseCommand {
-  static usage = 'gen:api';
+  static usage = 'gen api';
   static description = 'Generate web-api module code from models.yaml';
 
   static args: CommandDefinition = {

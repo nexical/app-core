@@ -32,7 +32,7 @@ export class FunctionPrimitive extends BasePrimitive<FunctionDeclaration, Functi
     if (
       structure.returnType &&
       Normalizer.normalizeType(node.getReturnType().getText()) !==
-        Normalizer.normalizeType(structure.returnType as string)
+      Normalizer.normalizeType(structure.returnType as string)
     ) {
       node.setReturnType(structure.returnType as string);
     }
@@ -50,7 +50,7 @@ export class FunctionPrimitive extends BasePrimitive<FunctionDeclaration, Functi
           if (
             paramStruct.type &&
             Normalizer.normalizeType(existingParam.getTypeNode()?.getText() || '') !==
-              Normalizer.normalizeType(paramStruct.type as string)
+            Normalizer.normalizeType(paramStruct.type as string)
           ) {
             existingParam.setType(paramStruct.type as string);
           }
@@ -80,7 +80,7 @@ export class FunctionPrimitive extends BasePrimitive<FunctionDeclaration, Functi
     if (
       structure.returnType &&
       Normalizer.normalizeType(node.getReturnType().getText()) !==
-        Normalizer.normalizeType(structure.returnType as string)
+      Normalizer.normalizeType(structure.returnType as string)
     ) {
       issues.push(
         `Function '${this.config.name}' return type mismatch. Expected: ${structure.returnType}, Found: ${node.getReturnType().getText()}`,
@@ -108,6 +108,10 @@ export class FunctionPrimitive extends BasePrimitive<FunctionDeclaration, Functi
   private reconcileBody(node: FunctionDeclaration) {
     if (!this.config.statements) {
       return;
+    }
+
+    if (this.config.overwriteBody) {
+      node.setBodyText('');
     }
 
     const project = node.getProject();

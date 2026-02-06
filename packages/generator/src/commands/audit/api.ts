@@ -2,7 +2,7 @@ import { BaseCommand, type CommandDefinition } from '@nexical/cli-core';
 import { auditApiModule } from '../../lib/audit-api.js';
 
 export default class AuditApiCommand extends BaseCommand {
-  static usage = 'audit:api';
+  static usage = 'audit api';
   static description = 'Audit web-api module code against models.yaml';
 
   static args: CommandDefinition = {

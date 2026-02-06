@@ -88,11 +88,16 @@ export class ActionBuilder extends BaseBuilder {
       { moduleSpecifier: 'astro', namedImports: ['APIContext'], isTypeOnly: true },
     ];
 
-    const hasOrchestrationService = existingStatements?.some((s) => {
-      const text = 'raw' in s ? (s as ParsedStatement).raw : '';
-      return text.includes('OrchestrationService');
-    });
+    let sourceText = '';
+    if (node && 'getFullText' in node) {
+      sourceText = (node as any).getFullText();
+    } else if (existingStatements) {
+      sourceText = existingStatements
+        .map((s) => ('raw' in s ? (s as ParsedStatement).raw : ''))
+        .join('\n');
+    }
 
+    const hasOrchestrationService = sourceText.includes('OrchestrationService');
     if (hasOrchestrationService) {
       imports.push({
         moduleSpecifier: '../services/orchestration-service',
@@ -100,15 +105,35 @@ export class ActionBuilder extends BaseBuilder {
       });
     }
 
-    const hasZod = existingStatements?.some((s) => {
-      const text = 'raw' in s ? (s as ParsedStatement).raw : '';
-      return text.includes('z.');
-    });
+    const hasJobMetricsService = sourceText.includes('JobMetricsService');
+    if (hasJobMetricsService) {
+      imports.push({
+        moduleSpecifier: '../services/job-metrics-service',
+        namedImports: ['JobMetricsService'],
+      });
+    }
 
+    const hasAgentService = sourceText.includes('AgentService');
+    if (hasAgentService) {
+      imports.push({
+        moduleSpecifier: '../services/agent-service',
+        namedImports: ['AgentService'],
+      });
+    }
+
+    const hasZod = sourceText.includes('z.');
     if (hasZod) {
       imports.push({
         moduleSpecifier: 'zod',
         namedImports: ['z'],
+      });
+    }
+
+    const hasDb = sourceText.includes('db.') || sourceText.includes(' db ');
+    if (hasDb) {
+      imports.push({
+        moduleSpecifier: '@/lib/core/db',
+        namedImports: ['db'],
       });
     }
 

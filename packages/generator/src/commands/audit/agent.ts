@@ -117,13 +117,13 @@ export default class AuditAgentCommand extends BaseCommand {
         return result;
       }
 
-      // Code audit: Check if generated files exist
+      // Code audit  Check if generated files exist
       for (const agent of agentsConfig.agents) {
         const agentFilePath = path.join(moduleDir, 'src', 'agent', `${agent.name}.ts`);
 
         if (!fs.existsSync(agentFilePath)) {
           result.warnings.push(
-            `Missing: src/agent/${agent.name}.ts (run 'arc gen:api ${moduleName}')`,
+            `Missing: src/agent/${agent.name}.ts (run 'arc gen api ${moduleName}')`,
           );
         } else {
           // Check if file has required structure

@@ -75,6 +75,7 @@ export class ModelParser {
     const modelNames = new Set(Object.keys(rawModels));
 
     const models: ModelDef[] = Object.entries(rawModels).map(([name, config]) => {
+      console.log(`[ModelParser] Model: ${name}, keys: ${Object.keys(config).join(', ')}`);
       const model: ModelDef = {
         name,
         api: config.api !== false,
@@ -106,15 +107,15 @@ export class ModelParser {
           isEnum,
           enumValues: isEnum
             ? (() => {
-                const val = rawEnums[field.type] as unknown;
-                if (Array.isArray(val)) return val.map(String);
-                if (typeof val === 'object' && val !== null) {
-                  const v = val as { values?: unknown[] };
-                  if (Array.isArray(v.values)) return v.values.map(String);
-                  return Object.keys(val);
-                }
-                return [];
-              })()
+              const val = rawEnums[field.type] as unknown;
+              if (Array.isArray(val)) return val.map(String);
+              if (typeof val === 'object' && val !== null) {
+                const v = val as { values?: unknown[] };
+                if (Array.isArray(v.values)) return v.values.map(String);
+                return Object.keys(val);
+              }
+              return [];
+            })()
             : undefined,
           isRelation,
           relationTo: isRelation ? field.type : undefined,

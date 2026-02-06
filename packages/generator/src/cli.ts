@@ -36,11 +36,46 @@ async function registerCommands() {
           // Use file:// protocol for absolute paths in ESM imports on Windows/Linux
           const module = await import(`file://${fullPath}`);
 
-          // Assumes the command class is the default export
           if (module.default && typeof module.default === 'function') {
-            const commandInstance = new module.default();
-            if (commandInstance.getCommand) {
-              program.addCommand(commandInstance.getCommand());
+            const CommandClass = module.default;
+            const usage = CommandClass.usage;
+            const description = CommandClass.description || '';
+            const argsDef = CommandClass.args || {};
+
+            if (usage) {
+              const cmd = program.command(usage).description(description);
+
+              if (argsDef.args) {
+                argsDef.args.forEach((arg: any) => {
+                  const argName = arg.required ? `<${arg.name}>` : `[${arg.name}]`;
+                  cmd.argument(argName, arg.description);
+                });
+              }
+
+              if (argsDef.options) {
+                argsDef.options.forEach((opt: any) => {
+                  cmd.option(opt.name, opt.description, opt.default);
+                });
+              }
+
+              cmd.action(async (...args: any[]) => {
+                const options = args.pop();
+                const positionalArgs = args;
+                const finalOptions = { ...options };
+
+                if (argsDef.args) {
+                  argsDef.args.forEach((arg: any, index: number) => {
+                    finalOptions[arg.name] = positionalArgs[index];
+                  });
+                }
+
+                const commandInstance = new CommandClass(program, {});
+                await commandInstance.run(finalOptions);
+              });
+
+              console.log(`[CLI] Registered command: ${usage}`);
+            } else {
+              console.warn(`[CLI] Skipping ${entry.name}: missing static usage`);
             }
           }
         } catch (error) {
@@ -50,7 +85,9 @@ async function registerCommands() {
     }
   }
 
+  console.log(`[CLI] Scanning for commands in: ${commandsDir}`);
   await scanDir(commandsDir);
+  console.log(`[CLI] Registration complete.`);
 }
 
 export async function main() {
