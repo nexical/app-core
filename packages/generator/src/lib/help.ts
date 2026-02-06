@@ -32,7 +32,7 @@ export class CustomHelp {
     // Options
     if (command.options.length > 0) {
       output += chalk.bold.underline('Options:') + '\n';
-      command.options.forEach((option: any) => {
+      command.options.forEach((option: { flags: string; description: string }) => {
         output += `  ${chalk.yellow(option.flags)}\t${option.description}\n`;
       });
       output += '\n';

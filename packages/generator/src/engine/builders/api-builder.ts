@@ -588,11 +588,11 @@ export class ApiBuilder extends BaseBuilder {
       const methodPascal = method.charAt(0).toUpperCase() + method.slice(1);
       const actionClassName = route.action
         ? route.action
-          .split('-')
-          .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-          .join('') + 'Action'
+            .split('-')
+            .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+            .join('') + 'Action'
         : (methodPascal.includes(entityName) ? methodPascal : `${methodPascal}${entityName}`) +
-        'Action';
+          'Action';
 
       const actionImport = `@modules/${this.moduleName}/src/actions/${actionBase}`;
 
@@ -644,16 +644,17 @@ export class ApiBuilder extends BaseBuilder {
       const customDocs = `{
     summary: "${route.summary || ''}",
     tags: ["${this.model.name}"],
-    ${verb !== 'GET'
-          ? `requestBody: {
+    ${
+      verb !== 'GET'
+        ? `requestBody: {
         content: {
             "application/json": {
                 schema: ${requestBodySchema}
             }
         }
     },`
-          : ''
-        }
+        : ''
+    }
     responses: {
         200: {
             description: "OK",
@@ -665,7 +666,9 @@ export class ApiBuilder extends BaseBuilder {
         }
     }${['anonymous', 'public'].includes(role || '') ? ',\n        protected: false' : ''}
 }`;
-      console.log(`[ApiBuilder] Generated docs for ${method}: role=${role}, protected=${['anonymous', 'public'].includes(role || '')}`);
+      console.info(
+        `[ApiBuilder] Generated docs for ${method}: role=${role}, protected=${['anonymous', 'public'].includes(role || '')}`,
+      );
 
       const bodyLoader = verb === 'GET' ? '{}' : 'await context.request.json()';
 

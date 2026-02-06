@@ -18,7 +18,7 @@ export async function init() {
     for (const key in mod) {
       const Exported = mod[key];
       if (typeof Exported === 'function' && Exported.prototype && Exported.prototype.check) {
-        roleRegistry.register(roleName, new (Exported as new () => any)());
+        roleRegistry.register(roleName, new (Exported as new () => unknown)());
         break;
       }
     }

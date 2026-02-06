@@ -17,7 +17,8 @@ export class SpecInitCommand extends BaseCommand {
     ],
   };
 
-  async run(options: any) {
+  async run(...args: unknown[]) {
+    const options = args[0] as { name: string };
     const { name } = options;
 
     if (!name) {

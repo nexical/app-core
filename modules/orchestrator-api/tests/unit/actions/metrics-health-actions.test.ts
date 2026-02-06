@@ -19,7 +19,13 @@ describe('Metrics and Health Actions', () => {
 
   describe('GetAgentMetricsAction', () => {
     it('should return success (placeholder)', async () => {
-      vi.mocked(JobMetricsService.getAgentMetrics).mockResolvedValue({} as any);
+      vi.mocked(JobMetricsService.getAgentMetrics).mockResolvedValue({
+        total: 0,
+        online: 0,
+        offline: 0,
+        busy: 0,
+        jobsProcessedLast24h: 0,
+      });
       const result = await GetAgentMetricsAction.run(undefined, createMockAstroContext());
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
@@ -28,7 +34,16 @@ describe('Metrics and Health Actions', () => {
 
   describe('GetJobMetricsAction', () => {
     it('should return success (placeholder)', async () => {
-      vi.mocked(JobMetricsService.getJobMetrics).mockResolvedValue({} as any);
+      vi.mocked(JobMetricsService.getJobMetrics).mockResolvedValue({
+        total: 0,
+        pending: 0,
+        running: 0,
+        completed: 0,
+        failed: 0,
+        cancelled: 0,
+        retryRate: 0,
+        successRate: 0,
+      });
       const result = await GetJobMetricsAction.run(undefined, createMockAstroContext());
       expect(result.success).toBe(true);
       expect(result.data).toBeDefined();
@@ -47,8 +62,8 @@ describe('Metrics and Health Actions', () => {
     it('should return success (placeholder)', async () => {
       vi.mocked(OrchestrationService.checkStaleAgents).mockResolvedValue({
         success: true,
-        data: undefined,
-      } as any);
+        data: { offlineAgents: 0, releasedJobs: 0 },
+      });
       const result = await CheckStaleAgentsOrchestratorAction.run(
         undefined,
         createMockAstroContext(),

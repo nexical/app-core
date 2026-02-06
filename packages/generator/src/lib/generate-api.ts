@@ -46,8 +46,9 @@ async function generateForModule(command: BaseCommand, name: string) {
     await generator.run();
 
     command.success(`Successfully generated code for "${name}"`);
-  } catch (error: any) {
-    command.error(`Failed to generate code: ${error.message || error}`);
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : String(error);
+    command.error(`Failed to generate code: ${message}`);
     // command.error exits by default, but if we want to continue loop, we might need a non-exiting error log.
     // BaseCommand.error usually exits. If we want to fail hard, this is fine.
     // If we want to just log and continue, we should use command.warn or logger.error.

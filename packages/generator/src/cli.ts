@@ -46,25 +46,33 @@ async function registerCommands() {
               const cmd = program.command(usage).description(description);
 
               if (argsDef.args) {
-                argsDef.args.forEach((arg: any) => {
-                  const argName = arg.required ? `<${arg.name}>` : `[${arg.name}]`;
-                  cmd.argument(argName, arg.description);
-                });
+                argsDef.args.forEach(
+                  (arg: { name: string; description: string; required?: boolean }) => {
+                    const argName = arg.required ? `<${arg.name}>` : `[${arg.name}]`;
+                    cmd.argument(argName, arg.description);
+                  },
+                );
               }
 
               if (argsDef.options) {
-                argsDef.options.forEach((opt: any) => {
-                  cmd.option(opt.name, opt.description, opt.default);
-                });
+                argsDef.options.forEach(
+                  (opt: {
+                    name: string;
+                    description: string;
+                    default?: string | boolean | string[];
+                  }) => {
+                    cmd.option(opt.name, opt.description, opt.default);
+                  },
+                );
               }
 
-              cmd.action(async (...args: any[]) => {
-                const options = args.pop();
+              cmd.action(async (...args: unknown[]) => {
+                const options = args.pop() as Record<string, unknown>;
                 const positionalArgs = args;
                 const finalOptions = { ...options };
 
                 if (argsDef.args) {
-                  argsDef.args.forEach((arg: any, index: number) => {
+                  argsDef.args.forEach((arg: { name: string }, index: number) => {
                     finalOptions[arg.name] = positionalArgs[index];
                   });
                 }
@@ -73,7 +81,7 @@ async function registerCommands() {
                 await commandInstance.run(finalOptions);
               });
 
-              console.log(`[CLI] Registered command: ${usage}`);
+              console.info(`[CLI] Registered command: ${usage}`);
             } else {
               console.warn(`[CLI] Skipping ${entry.name}: missing static usage`);
             }
@@ -85,9 +93,9 @@ async function registerCommands() {
     }
   }
 
-  console.log(`[CLI] Scanning for commands in: ${commandsDir}`);
+  console.info(`[CLI] Scanning for commands in: ${commandsDir}`);
   await scanDir(commandsDir);
-  console.log(`[CLI] Registration complete.`);
+  console.info(`[CLI] Registration complete.`);
 }
 
 export async function main() {

@@ -21,7 +21,8 @@ export default class AuditApiCommand extends BaseCommand {
     ],
   };
 
-  async run(options: any) {
+  async run(...args: unknown[]) {
+    const options = args[0] as { name: string; schema?: boolean };
     await auditApiModule(this, options.name, { schema: options.schema });
   }
 }

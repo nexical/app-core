@@ -15,7 +15,8 @@ export default class GenApiCommand extends BaseCommand {
     ],
   };
 
-  async run(options: any) {
+  async run(...args: unknown[]) {
+    const options = args[0] as { name: string };
     // In cli-core, args are often passed as positional arguments in the args object if defined.
     // However, looking at cli-core BaseCommand, args are usually parsed.
     // Let's check how init.ts handled it.

@@ -90,7 +90,7 @@ export class ActionBuilder extends BaseBuilder {
 
     let sourceText = '';
     if (node && 'getFullText' in node) {
-      sourceText = (node as any).getFullText();
+      sourceText = (node as { getFullText(): string }).getFullText();
     } else if (existingStatements) {
       sourceText = existingStatements
         .map((s) => ('raw' in s ? (s as ParsedStatement).raw : ''))

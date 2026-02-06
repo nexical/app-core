@@ -29,9 +29,14 @@ export abstract class BaseCommand {
   protected command: Command;
 
   constructor(config?: CommandDefinition) {
-    const staticConfig = (this.constructor as any).args as CommandDefinition;
-    const usage = (this.constructor as any).usage as string;
-    const description = (this.constructor as any).description as string;
+    const ctor = this.constructor as unknown as {
+      args: CommandDefinition;
+      usage: string;
+      description: string;
+    };
+    const staticConfig = ctor.args;
+    const usage = ctor.usage;
+    const description = ctor.description;
 
     const name = config?.name || usage || '';
     const desc = config?.description || description || '';
@@ -98,7 +103,7 @@ export abstract class BaseCommand {
     });
 
     // Action Handler
-    this.command.action(async (...args: any[]) => {
+    this.command.action(async (...args: unknown[]) => {
       try {
         await this.run(...args);
       } catch (error) {
@@ -116,7 +121,7 @@ export abstract class BaseCommand {
     });
   }
 
-  abstract run(...args: any[]): Promise<void>;
+  abstract run(...args: unknown[]): Promise<void>;
 
   info(msg: string) {
     logger.info(msg);

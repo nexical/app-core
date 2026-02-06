@@ -22,7 +22,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // 2. Execute Module Middlewares
   // Modules can handle auth, redirects, etc.
   // They execute in order. If a module returns a response, the chain stops.
-  console.log(`[Middleware] Request: ${pathname}`);
+  console.info(`[Middleware] Request: ${pathname}`);
 
   for (const middleware of moduleMiddlewares) {
     if (middleware.onRequest) {
@@ -31,7 +31,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
         async () => undefined as unknown as Response,
       );
       if (response) {
-        console.log(`[Middleware] Handled by module (returning response): ${pathname}`);
+        console.info(`[Middleware] Handled by module (returning response): ${pathname}`);
         await HookSystem.dispatch('core.module.handled', { path: pathname });
         return response;
       }

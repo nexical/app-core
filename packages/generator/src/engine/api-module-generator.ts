@@ -30,7 +30,7 @@ export class ApiModuleGenerator extends ModuleGenerator {
     const apiYamlPath = path.join(this.modulePath, 'api.yaml');
 
     const { models, enums, config } = ModelParser.parse(modelsYamlPath);
-    console.log(`[ApiModuleGenerator] Models found: ${models.length}`);
+    console.info(`[ApiModuleGenerator] Models found: ${models.length}`);
 
     if (models.length === 0) {
       if (this.command) {
@@ -119,9 +119,9 @@ export class ApiModuleGenerator extends ModuleGenerator {
             const methodPascal = route.method.charAt(0).toUpperCase() + route.method.slice(1);
             const actionName = route.action
               ? route.action
-                .split('-')
-                .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-                .join('') + 'Action'
+                  .split('-')
+                  .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+                  .join('') + 'Action'
               : (methodPascal.includes(name) ? methodPascal : `${methodPascal}${name}`) + 'Action';
 
             // Support "none" keyword mapped to "void"
@@ -249,11 +249,11 @@ export class ApiModuleGenerator extends ModuleGenerator {
           const methodPascal = route.method.charAt(0).toUpperCase() + route.method.slice(1);
           const actionName = route.action
             ? route.action
-              .split('-')
-              .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
-              .join('') + 'Action'
+                .split('-')
+                .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
+                .join('') + 'Action'
             : (methodPascal.includes(entityName) ? methodPascal : `${methodPascal}${entityName}`) +
-            'Action';
+              'Action';
 
           // Support "none" keyword mapped to "void"
           const inputType = route.input === 'none' ? 'void' : route.input;
@@ -305,9 +305,30 @@ export class ApiModuleGenerator extends ModuleGenerator {
     // 8. Middleware
     const middlewareFile = this.getOrCreateFile('src/middleware.ts');
     const modelRoutes: CustomRoute[] = models.flatMap((m) => [
-      { path: `/api/${m.name.toLowerCase()}`, verb: 'POST', role: (m.role as string) || 'member', method: 'create', input: 'any', output: 'any' },
-      { path: `/api/${m.name.toLowerCase()}`, verb: 'GET', role: (m.role as string) || 'member', method: 'list', input: 'any', output: 'any' },
-      { path: `/api/${m.name.toLowerCase()}/[id]`, verb: 'GET', role: (m.role as string) || 'member', method: 'get', input: 'any', output: 'any' },
+      {
+        path: `/api/${m.name.toLowerCase()}`,
+        verb: 'POST',
+        role: (m.role as string) || 'member',
+        method: 'create',
+        input: 'any',
+        output: 'any',
+      },
+      {
+        path: `/api/${m.name.toLowerCase()}`,
+        verb: 'GET',
+        role: (m.role as string) || 'member',
+        method: 'list',
+        input: 'any',
+        output: 'any',
+      },
+      {
+        path: `/api/${m.name.toLowerCase()}/[id]`,
+        verb: 'GET',
+        role: (m.role as string) || 'member',
+        method: 'get',
+        input: 'any',
+        output: 'any',
+      },
     ]);
     new MiddlewareBuilder(models, [...allCustomRoutes, ...modelRoutes]).ensure(middlewareFile);
 

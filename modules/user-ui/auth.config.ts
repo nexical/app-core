@@ -28,7 +28,7 @@ export const authConfig: AuthConfig = {
       console.warn(`[auth][warn] ${code.name}: ${code.message}`, ...args);
     },
     debug(code, ...args) {
-      console.debug(`[auth][debug] ${code.name}: ${code.message}`, ...args);
+      console.info(`[auth][debug] ${code.name}: ${code.message}`, ...args);
     },
   },
   pages: {

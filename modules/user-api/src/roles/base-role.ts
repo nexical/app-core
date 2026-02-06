@@ -3,7 +3,7 @@
 export abstract class BaseRole {
   abstract readonly name: string;
 
-  public static async check(context: any, permission: string): Promise<boolean> {
+  public static async check(context: unknown, permission: string): Promise<boolean> {
     return true;
   }
 
@@ -12,8 +12,7 @@ export abstract class BaseRole {
     input: Record<string, unknown>,
     data?: unknown,
   ): Promise<void> {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const locals = (context as any).locals;
+    const locals = (context as { locals?: Record<string, unknown> }).locals;
     const actor = locals?.actor || locals?.user;
 
     if (!actor) {

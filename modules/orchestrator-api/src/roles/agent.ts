@@ -8,12 +8,11 @@ export class IsAgent implements RolePolicy {
     data?: unknown,
   ): Promise<void> {
     const actor = context.locals?.actor;
-
     if (!actor) {
       throw new Error('Unauthorized: Login required');
     }
 
-    const a = actor as any;
+    const a = actor as { type?: string; role?: string };
     if (a.type !== 'agent' && a.role !== 'AGENT' && a.role !== 'ADMIN') {
       throw new Error('Forbidden: Agent role required');
     }
