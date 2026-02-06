@@ -1,7 +1,7 @@
 /* eslint-disable */
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { MoreHorizontal, Shield, Trash, UserX, UserCheck, Settings } from 'lucide-react';
+import { Shield, Trash, UserX, UserCheck, Settings } from 'lucide-react';
 import { api, type ApiError } from '@/lib/api/api';
 import { Button } from '@/components/ui/button';
 import {

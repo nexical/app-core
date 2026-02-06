@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { api, type ApiError } from '@/lib/api/api';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { PasswordInput } from '../ui/password-input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 
 const resetSchema = (t: (key: string) => string) =>

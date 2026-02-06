@@ -1,5 +1,6 @@
 import type { RolePolicy } from '@/lib/registries/role-registry';
 import type { APIContext, AstroGlobal } from 'astro';
+import { db } from '@/lib/core/db';
 
 export class IsJobOwner implements RolePolicy {
   async check(
@@ -50,7 +51,6 @@ export class IsJobOwner implements RolePolicy {
       }
 
       if (typedData.jobId && !isOwner) {
-        const db = (await import('@/lib/core/db')).db;
         const job = await db.job.findUnique({
           where: { id: typedData.jobId as string },
           select: { actorId: true, actorType: true, lockedBy: true },
@@ -66,7 +66,6 @@ export class IsJobOwner implements RolePolicy {
 
       if (!isOwner && typedData.id) {
         const id = typedData.id as string;
-        const db = (await import('@/lib/core/db')).db;
 
         // 1. Try Lookup as Job
         const job = await db.job.findUnique({
