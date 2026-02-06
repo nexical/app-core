@@ -2,6 +2,8 @@ import { Permissions } from '@/lib/security/permissions';
 
 // GENERATED CODE - DO NOT MODIFY
 // GENERATED CODE - DO NOT MODIFY
+// GENERATED CODE - DO NOT MODIFY
+// GENERATED CODE - DO NOT MODIFY
 export const PermissionRegistry = {
   'user:list': {
     description: 'View list of all users',

@@ -2,6 +2,7 @@
 import type { ServiceResponse } from '@/types/service';
 import type { LoginDTO, User } from '../sdk/types';
 import type { APIContext } from 'astro';
+import { db } from '@/lib/core/db';
 
 export class LoginAuthAction {
   public static async run(input: LoginDTO, context: APIContext): Promise<ServiceResponse<User>> {

@@ -1,9 +1,9 @@
-import type { AstroGlobal, APIContext } from 'astro';
+// GENERATED CODE - DO NOT MODIFY
 
 export abstract class BaseRole {
   abstract readonly name: string;
 
-  public static async check(context: unknown, permission: string): Promise<boolean> {
+  public static async check(context: any, permission: string): Promise<boolean> {
     return true;
   }
 

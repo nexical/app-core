@@ -37,6 +37,7 @@ export class PersonalAccessTokenService {
   public static async get(
     id: string,
     select?: Prisma.PersonalAccessTokenSelect,
+    actor?: ApiActor,
   ): Promise<ServiceResponse<PersonalAccessToken | null>> {
     try {
       const data = await db.personalAccessToken.findUnique({
@@ -127,7 +128,7 @@ export class PersonalAccessTokenService {
     }
   }
 
-  public static async delete(id: string): Promise<ServiceResponse<void>> {
+  public static async delete(id: string, actor?: ApiActor): Promise<ServiceResponse<void>> {
     try {
       await db.$transaction(async (tx) => {
         await tx.personalAccessToken.delete({ where: { id } });

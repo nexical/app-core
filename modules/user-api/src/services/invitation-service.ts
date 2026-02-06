@@ -32,6 +32,7 @@ export class InvitationService {
   public static async get(
     id: string,
     select?: Prisma.InvitationSelect,
+    actor?: ApiActor,
   ): Promise<ServiceResponse<Invitation | null>> {
     try {
       const data = await db.invitation.findUnique({ where: { id }, select });
@@ -112,7 +113,7 @@ export class InvitationService {
     }
   }
 
-  public static async delete(id: string): Promise<ServiceResponse<void>> {
+  public static async delete(id: string, actor?: ApiActor): Promise<ServiceResponse<void>> {
     try {
       await db.$transaction(async (tx) => {
         await tx.invitation.delete({ where: { id } });

@@ -5,6 +5,8 @@ import { BaseRole } from './base-role';
 // GENERATED CODE - DO NOT MODIFY
 // GENERATED CODE - DO NOT MODIFY
 // GENERATED CODE - DO NOT MODIFY
+// GENERATED CODE - DO NOT MODIFY
+// GENERATED CODE - DO NOT MODIFY
 /** */
 export class EmployeeRole extends BaseRole {
   readonly name: string = 'EMPLOYEE';

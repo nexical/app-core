@@ -32,6 +32,7 @@ export class AccountService {
   public static async get(
     id: string,
     select?: Prisma.AccountSelect,
+    actor?: ApiActor,
   ): Promise<ServiceResponse<Account | null>> {
     try {
       const data = await db.account.findUnique({ where: { id }, select });
@@ -106,7 +107,7 @@ export class AccountService {
     }
   }
 
-  public static async delete(id: string): Promise<ServiceResponse<void>> {
+  public static async delete(id: string, actor?: ApiActor): Promise<ServiceResponse<void>> {
     try {
       await db.$transaction(async (tx) => {
         await tx.account.delete({ where: { id } });
