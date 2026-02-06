@@ -9,6 +9,7 @@ import { fileURLToPath } from 'node:url';
 import nunjucks from 'nunjucks';
 import { spawn, execSync } from 'node:child_process';
 import minimist from 'minimist';
+import readline from 'node:readline';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -20,6 +21,7 @@ const PROMPTS_DIR = path.join(__dirname, '../prompts');
 interface GeminiResult {
   code: number;
   shouldRetry: boolean;
+  output: string;
 }
 
 function runGemini(model: string, input: string): Promise<GeminiResult> {
@@ -30,11 +32,20 @@ function runGemini(model: string, input: string): Promise<GeminiResult> {
     const start = Date.now();
     const child = spawn(`gemini --yolo --model ${model}`, {
       shell: true,
-      stdio: ['pipe', 'inherit', 'pipe'], // Pipe stderr to check for 429
+      stdio: ['pipe', 'pipe', 'pipe'], // Capture stdout/stderr
     });
 
-    // Capture stderr for error analysis
+    let stdoutData = '';
     let stderrData = '';
+
+    // Stream stdout to user and capture
+    child.stdout?.on('data', (data) => {
+      const chunk = data.toString();
+      process.stdout.write(chunk);
+      stdoutData += chunk;
+    });
+
+    // Stream stderr to user and capture
     child.stderr?.on('data', (data) => {
       const chunk = data.toString();
       process.stderr.write(chunk); // Passthrough to user
@@ -58,15 +69,15 @@ function runGemini(model: string, input: string): Promise<GeminiResult> {
         console.warn(
           `[Agent] \u26A0\ufe0f Model ${model} exhausted (429). Duration: ${duration}ms`,
         );
-        resolve({ code: exitCode, shouldRetry: true });
+        resolve({ code: exitCode, shouldRetry: true, output: stdoutData });
       } else {
-        resolve({ code: exitCode, shouldRetry: false });
+        resolve({ code: exitCode, shouldRetry: false, output: stdoutData });
       }
     });
 
     child.on('error', (err) => {
       console.error(`[Agent] Failed to spawn Gemini (${model}):`, err);
-      resolve({ code: 1, shouldRetry: false });
+      resolve({ code: 1, shouldRetry: false, output: '' });
     });
   });
 }
@@ -171,30 +182,76 @@ Examples:
 
   console.log(`[Agent] Model rotation strategy: [${models.join(', ')}]`);
 
-  let finalCode = 1;
-  let success = false;
+  let currentPrompt = renderedPrompt;
+  let finalCode = 0;
 
-  for (const model of models) {
-    const result = await runGemini(model, renderedPrompt);
+  while (true) {
+    let success = false;
+    let lastOutput = '';
 
-    if (result.code === 0) {
-      finalCode = 0;
-      success = true;
+    for (const model of models) {
+      const result = await runGemini(model, currentPrompt);
+
+      if (result.code === 0) {
+        success = true;
+        lastOutput = result.output;
+        break;
+      }
+
+      if (result.shouldRetry) {
+        console.log(`[Agent] Switching to next model...`);
+        continue; // Try next model
+      } else {
+        // Non-retriable error
+        finalCode = result.code;
+        break;
+      }
+    }
+
+    if (!success) {
+      if (finalCode === 0) finalCode = 1;
+      console.error(`[Agent] \u274C All attempts failed.`);
       break;
     }
 
-    if (result.shouldRetry) {
-      console.log(`[Agent] Switching to next model...`);
-      continue; // Try next model
-    } else {
-      // Non-retriable error
-      finalCode = result.code;
+    // If not interactive, we are done
+    if (!argv.interactive) {
       break;
     }
-  }
 
-  if (!success && finalCode !== 0) {
-    console.error(`[Agent] \u274C All attempts failed.`);
+    // Append model output to history
+    // We assume the model output is the "answer"
+    currentPrompt += `\n${lastOutput}`;
+
+    // Helper for readline
+    const askLink = () => {
+      const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+      });
+      return new Promise<string>((resolve) => {
+        console.log('\n(Type "exit" or "quit" to end the session)');
+        rl.question('> ', (ans) => {
+          rl.close();
+          resolve(ans);
+        });
+      });
+    };
+
+    const answer = await askLink();
+
+    // If user presses enter without text, we could stop or just continue?
+    // Let's assume empty line = stop for now, or just send empty?
+    // Standard chat CLI behavior: empty line might just be newline.
+    // But we need a way to stop.
+    // If output ended with a bash block, maybe we don't need to continue?
+    // Let's check for "exit" or "quit"
+    if (['exit', 'quit'].includes(answer.trim().toLowerCase())) {
+      break;
+    }
+
+    // Append user input
+    currentPrompt += `\nUser: ${answer}\n`;
   }
 
   try {

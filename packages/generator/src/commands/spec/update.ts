@@ -15,19 +15,23 @@ export class SpecUpdateCommand extends BaseCommand {
         required: true,
       },
     ],
+    options: [
+      {
+        name: '-i, --interactive',
+        description: 'Run in interactive mode',
+        default: false,
+      },
+    ],
   };
 
   async run(options: any) {
-    const { name } = options;
+    const { name, interactive } = options;
 
     if (!name) {
       this.error('Please provide a module name.');
       return;
     }
 
-    // Try to find module using locator or simple path
-    // ModuleLocator.expand returns names, not paths usually?
-    // Let's assume standard path for now or check.
     const modulePath = path.join(process.cwd(), 'modules', name);
 
     if (!(await fs.pathExists(modulePath))) {
@@ -45,7 +49,13 @@ export class SpecUpdateCommand extends BaseCommand {
       );
     }
 
-    this.success(`\nStarting interactive specification update for "${name}"...\n`);
+    this.success(
+      `\nStarting specification update for "${name}" (Interactive: ${interactive})...\n`,
+    );
+
+    const userInput = interactive
+      ? `I want to update the specification for "${name}" based on the current code and my input. Please read the code and interview me.`
+      : `I want to update the specification for "${name}" based on the current code. Please draft the specification.`;
 
     try {
       AgentRunner.run(
@@ -54,9 +64,9 @@ export class SpecUpdateCommand extends BaseCommand {
         {
           module_root: modulePath,
           spec_file: specFile,
-          user_input: `I want to update the specification for "${name}" based on the current code and my input. Please read the code and interview me.`,
+          user_input: userInput,
         },
-        true,
+        interactive,
       );
     } catch {
       process.exit(1);
