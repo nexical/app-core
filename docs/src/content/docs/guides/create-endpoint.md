@@ -27,7 +27,7 @@ Lead:
 Run the generator to create the Action and Service stubs.
 
 ```bash
-npx arc gen:api crm
+nexical gen api crm
 ```
 
 ## 3. Implement the Action

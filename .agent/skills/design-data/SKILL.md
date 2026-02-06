@@ -186,7 +186,7 @@ After designing the data in YAML:
 1.  **Generate Artifacts**: Use the Arc CLI to scaffold/update the logic layer.
 
     ```bash
-    npx arc gen:api <module-name>
+    nexical gen api <module-name>
     ```
 
     > **CRITICAL WARNING**: DO NOT edit files in `src/services`, `src/actions`, or `src/sdk` that have the `// GENERATED CODE` header.
