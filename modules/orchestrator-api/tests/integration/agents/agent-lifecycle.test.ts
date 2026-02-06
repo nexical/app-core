@@ -47,6 +47,11 @@ describe('Agent Lifecycle Integration', () => {
     });
 
     // Pre-seed agent to avoid DB visibility lag
+    try {
+      await db.agent.delete({ where: { id: 'test-agent-1' } });
+    } catch {
+      // Ignore if not found
+    }
     await Factory.create('agent', {
       id: 'test-agent-1',
       status: 'OFFLINE',

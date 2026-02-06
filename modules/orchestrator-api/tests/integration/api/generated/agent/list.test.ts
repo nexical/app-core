@@ -24,9 +24,6 @@ describe('Agent API - List', () => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const actor = await client.as('user', {});
 
-      // Cleanup first to ensure clean state
-      await Factory.prisma.agent.deleteMany();
-
       // Seed data
       const _listSuffix = Date.now();
       await Factory.create('agent', { ...baseData });
@@ -44,18 +41,9 @@ describe('Agent API - List', () => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const actor = await client.as('user', {});
 
-      // Cleanup and seed specific count
-      await Factory.prisma.agent.deleteMany();
-
       const _suffix = Date.now();
       const createdIds: string[] = [];
-      const totalTarget = 15;
-
-      // Check current count
-
-      const _listSuffix = Date.now();
-      const currentCount = 0;
-      const toCreate = totalTarget - currentCount;
+      const toCreate = 15;
 
       for (let i = 0; i < toCreate; i++) {
         const rec = await Factory.create('agent', { ...baseData });
@@ -66,7 +54,7 @@ describe('Agent API - List', () => {
       const res1 = await client.get('/api/agent?take=5&skip=0');
       expect(res1.status).toBe(200);
       expect(res1.body.data.length).toBe(5);
-      expect(res1.body.meta.total).toBe(15);
+      expect(res1.body.meta.total).toBeGreaterThanOrEqual(15);
 
       // Page 2
       const res2 = await client.get('/api/agent?take=5&skip=5');

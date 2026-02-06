@@ -15,7 +15,7 @@ describe('DeadLetterJob API - Get', () => {
   // GET /api/dead-letter-job/[id]
   describe('GET /api/dead-letter-job/[id]', () => {
     it('should retrieve a specific deadLetterJob', async () => {
-      const actor = await client.as('user', {});
+      const actor = await client.as('user', { role: 'ADMIN' });
 
       const target = await Factory.create('deadLetterJob', {
         ...{
@@ -36,7 +36,7 @@ describe('DeadLetterJob API - Get', () => {
 
     it('should return 404 for missing id', async () => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const actor = await client.as('user', {});
+      const actor = await client.as('user', { role: 'ADMIN' });
       const res = await client.get('/api/dead-letter-job/missing-id-123');
       expect(res.status).toBe(404);
     });

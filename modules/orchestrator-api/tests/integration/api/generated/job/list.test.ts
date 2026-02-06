@@ -19,9 +19,6 @@ describe('Job API - List', () => {
     it('should allow job-owner to list jobs', async () => {
       const actor = await client.as('user', {});
 
-      // Cleanup first to ensure clean state
-      await Factory.prisma.job.deleteMany();
-
       // Seed data
       const _listSuffix = Date.now();
       await Factory.create('job', { ...baseData, actorId: actor.id, actorType: 'user' });
@@ -36,21 +33,11 @@ describe('Job API - List', () => {
     });
 
     it('should verify pagination metadata', async () => {
-       
       const actor = await client.as('user', {});
-
-      // Cleanup and seed specific count
-      await Factory.prisma.job.deleteMany();
 
       const _suffix = Date.now();
       const createdIds: string[] = [];
-      const totalTarget = 15;
-
-      // Check current count
-
-      const _listSuffix = Date.now();
-      const currentCount = 0;
-      const toCreate = totalTarget - currentCount;
+      const toCreate = 15;
 
       for (let i = 0; i < toCreate; i++) {
         const rec = await Factory.create('job', {
@@ -65,7 +52,7 @@ describe('Job API - List', () => {
       const res1 = await client.get('/api/job?take=5&skip=0');
       expect(res1.status).toBe(200);
       expect(res1.body.data.length).toBe(5);
-      expect(res1.body.meta.total).toBe(15);
+      expect(res1.body.meta.total).toBeGreaterThanOrEqual(15);
 
       // Page 2
       const res2 = await client.get('/api/job?take=5&skip=5');

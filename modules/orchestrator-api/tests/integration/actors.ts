@@ -30,7 +30,7 @@ export const actors = {
 
     client.useToken(rawKey);
 
-    return actor;
+    return { ...actor, token: { rawKey } };
   },
 
   admin: async (client: ApiClient, params: Record<string, unknown> = {}) => {
