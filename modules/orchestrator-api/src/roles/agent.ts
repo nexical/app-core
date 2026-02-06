@@ -12,5 +12,10 @@ export class IsAgent implements RolePolicy {
     if (!actor) {
       throw new Error('Unauthorized: Login required');
     }
+
+    const a = actor as any;
+    if (a.type !== 'agent' && a.role !== 'AGENT' && a.role !== 'ADMIN') {
+      throw new Error('Forbidden: Agent role required');
+    }
   }
 }

@@ -18,7 +18,7 @@ export const POST = defineApi(
 
     // 3. Security Check
     const combinedInput = { ...context.params, ...query, ...input };
-    await ApiGuard.protect(context, 'job-owner', combinedInput);
+    await ApiGuard.protect(context, 'agent', combinedInput);
 
     // Inject userId from context for protected routes
     const user = context.locals.actor;

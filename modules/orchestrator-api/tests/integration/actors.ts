@@ -3,12 +3,42 @@ import type { ApiClient } from '@tests/integration/lib/client';
 import crypto from 'node:crypto';
 
 export const actors = {
+  agent: async (client: ApiClient, params: Record<string, unknown> = {}) => {
+    let actor;
+    if (params.id) {
+      actor = await Factory.prisma.agent.findUnique({ where: { id: params.id } });
+    } else if (params.email) {
+      actor = await Factory.prisma.agent.findFirst({ where: { email: params.email } });
+    }
+
+    if (!actor) {
+      const factoryParams = { ...params };
+      if (params.strategy) delete factoryParams.strategy;
+      if (params.password) delete factoryParams.password;
+      actor = await Factory.create('agent', factoryParams);
+    }
+
+    const rawKey = `${Date.now()}`;
+    let dbKey = rawKey;
+
+    dbKey = crypto.createHash('sha256').update(rawKey).digest('hex');
+
+    await Factory.create('agent', {
+      name: 'Test Token',
+      hashedKey: dbKey,
+      prefix: '',
+    });
+
+    client.useToken(rawKey);
+
+    return actor;
+  },
   user: async (client: ApiClient, params: Record<string, unknown> = {}) => {
     let actor;
     if (params.id) {
-      actor = await Factory.prisma.user.findUnique({ where: { id: params.id as string } });
+      actor = await Factory.prisma.user.findUnique({ where: { id: params.id } });
     } else if (params.email) {
-      actor = await Factory.prisma.user.findFirst({ where: { email: params.email as string } });
+      actor = await Factory.prisma.user.findFirst({ where: { email: params.email } });
     }
 
     if (!actor) {
@@ -19,7 +49,9 @@ export const actors = {
     }
 
     const rawKey = `ne_pat_${Date.now()}`;
-    const dbKey = crypto.createHash('sha256').update(rawKey).digest('hex');
+    let dbKey = rawKey;
+
+    dbKey = crypto.createHash('sha256').update(rawKey).digest('hex');
 
     await Factory.create('personalAccessToken', {
       user: { connect: { id: actor.id } },
@@ -30,21 +62,6 @@ export const actors = {
 
     client.useToken(rawKey);
 
-    return { ...actor, token: { rawKey } };
-  },
-
-  admin: async (client: ApiClient, params: Record<string, unknown> = {}) => {
-    return actors.user(client, { ...params, role: 'ADMIN' });
-  },
-  agent: async (client: ApiClient, params: Record<string, unknown> = {}) => {
-    let actor;
-    if (params.id) {
-      actor = await Factory.prisma.agent.findUnique({ where: { id: params.id as string } });
-    }
-    if (!actor) {
-      actor = await Factory.create('agent', params);
-    }
-    client.useHeader('x-agent-id', actor.id);
-    return { ...actor, type: 'agent' };
+    return actor;
   },
 };

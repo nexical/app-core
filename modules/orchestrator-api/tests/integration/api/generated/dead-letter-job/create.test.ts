@@ -24,7 +24,7 @@ describe('DeadLetterJob API - Create', () => {
           failedAt: new Date().toISOString(),
           retryCount: 10,
         },
-        actorId: actor ? actor.id : undefined,
+        actorId: actor ? (actor as any).id : undefined,
       };
 
       const res = await client.post('/api/dead-letter-job', payload);
@@ -45,7 +45,7 @@ describe('DeadLetterJob API - Create', () => {
 
     it('should forbid non-admin/unauthorized users', async () => {
       client.useToken('invalid-token');
-
+       
       const actor = undefined as unknown;
 
       const payload = {
@@ -55,7 +55,7 @@ describe('DeadLetterJob API - Create', () => {
           failedAt: new Date().toISOString(),
           retryCount: 10,
         },
-        actorId: actor ? actor.id : undefined,
+        actorId: actor ? (actor as any).id : undefined,
       };
       const res = await client.post('/api/dead-letter-job', payload);
       expect([401, 403, 404]).toContain(res.status);

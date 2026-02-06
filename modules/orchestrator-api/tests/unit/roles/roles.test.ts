@@ -34,8 +34,10 @@ describe('Security Roles', () => {
   describe('IsAgent', () => {
     const policy = new IsAgent();
 
-    it('should allow anyone with an actor (current implementation)', async () => {
-      const mockContext = createMockAstroContext({ locals: { actor: { id: 'u1' } } });
+    it('should allow anyone with an agent or admin actor', async () => {
+      const mockContext = createMockAstroContext({
+        locals: { actor: { id: 'u1', role: 'AGENT' } },
+      });
       await expect(policy.check(mockContext, {})).resolves.not.toThrow();
     });
 

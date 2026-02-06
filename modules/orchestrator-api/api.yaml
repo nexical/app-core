@@ -38,7 +38,7 @@ Orchestrator:
     summary: Poll for pending jobs based on capabilities
     input: PollJobsDTO
     output: Job[]
-    role: job-owner
+    role: agent
 
   - path: /check-stale
     verb: POST
@@ -55,7 +55,7 @@ Agent:
     summary: Register or update an agent
     input: RegisterAgentDTO
     output: Agent
-    role: public
+    role: anonymous
 
   - path: /[id]/heartbeat
     verb: POST
@@ -63,7 +63,7 @@ Agent:
     summary: Update agent heartbeat
     input: HeartbeatDTO
     output: none
-    role: public
+    role: anonymous
 
 Metrics:
   - path: /jobs

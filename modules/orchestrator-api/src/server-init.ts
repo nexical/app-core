@@ -5,7 +5,6 @@ import { roleRegistry } from '@/lib/registries/role-registry';
 import { Permissions } from '@/lib/security/permissions';
 
 export async function init() {
-  // 1. Auto-discover and Register Roles from src/roles/
   const roleModules = import.meta.glob('./roles/*.ts', { eager: true });
   for (const path in roleModules) {
     const mod = roleModules[path] as { [key: string]: unknown };
@@ -21,8 +20,6 @@ export async function init() {
       }
     }
   }
-
-  // 2. Auto-load all Hook definitions from src/hooks/
   const hookModules = import.meta.glob('./hooks/*.ts', { eager: true });
   for (const path in hookModules) {
     const mod = hookModules[path] as { init?: () => Promise<void> | void };
@@ -30,8 +27,6 @@ export async function init() {
       await mod.init();
     }
   }
-
-  // 3. Initialize Emails from src/emails/init.ts
   const emailInitModules = import.meta.glob('./emails/init.ts', { eager: true });
   for (const path in emailInitModules) {
     const mod = emailInitModules[path] as { initEmails?: () => Promise<void> | void };

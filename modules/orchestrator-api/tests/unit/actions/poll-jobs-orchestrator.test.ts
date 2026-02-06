@@ -30,12 +30,7 @@ describe('PollJobsOrchestratorAction', () => {
     const result = await PollJobsOrchestratorAction.run(input, mockContext);
 
     expect(result.success).toBe(true);
-    expect(OrchestrationService.poll).toHaveBeenCalledWith(
-      'agent-1',
-      ['TEST'],
-      undefined,
-      undefined,
-    );
+    expect(OrchestrationService.poll).toHaveBeenCalledWith('agent-1', ['TEST'], 'agent-1', 'agent');
   });
 
   it('should filter by actor if the actor is a user', async () => {

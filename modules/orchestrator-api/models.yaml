@@ -118,14 +118,28 @@ models:
           - '@relation("JobLogs", fields: [jobId], references: [id], onDelete: Cascade)'
 
   Agent:
+    actor:
+      strategy: bearer
+      prefix: ''
+      fields:
+        id: id
     test:
-      actor: user
+      actor: agent
     fields:
       id:
         type: String
         attributes:
           - '@id'
           - '@default(cuid())'
+      name:
+        type: String
+        isRequired: false
+      hashedKey:
+        type: String
+        isRequired: false
+      prefix:
+        type: String
+        isRequired: false
       hostname:
         type: String
       capabilities:
@@ -143,6 +157,28 @@ models:
         type: DateTime
         attributes:
           - '@default(now())'
+
+  User:
+    db: false
+    api: false
+    actor:
+      name: user
+      prefix: ne_pat_
+      strategy: bearer
+      fields:
+        tokenModel: PersonalAccessToken
+        ownerField: userId
+        keyField: hashedKey
+    fields:
+      id: String
+
+  PersonalAccessToken:
+    db: false
+    api: false
+    fields:
+      hashedKey: String
+      userId: String
+      prefix: String
 
   # Dead-letter queue for permanently failed jobs
   DeadLetterJob:

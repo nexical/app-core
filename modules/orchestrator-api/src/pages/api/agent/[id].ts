@@ -15,6 +15,9 @@ export const GET = defineApi(
 
     const select = {
       id: true,
+      name: true,
+      hashedKey: true,
+      prefix: true,
       hostname: true,
       capabilities: true,
       lastHeartbeat: true,
@@ -57,6 +60,9 @@ export const GET = defineApi(
               type: 'object',
               properties: {
                 id: { type: 'string' },
+                name: { type: 'string' },
+                hashedKey: { type: 'string' },
+                prefix: { type: 'string' },
                 hostname: { type: 'string' },
                 capabilities: { type: 'array', items: { type: 'string' } },
                 lastHeartbeat: { type: 'string', format: 'date-time' },
@@ -82,6 +88,9 @@ export const PUT = defineApi(
     // Zod Validation
     const schema = z
       .object({
+        name: z.string().optional(),
+        hashedKey: z.string().optional(),
+        prefix: z.string().optional(),
         hostname: z.string(),
         capabilities: z.array(z.string()),
         lastHeartbeat: z.string().datetime().optional(),
@@ -92,6 +101,9 @@ export const PUT = defineApi(
     const validated = schema.parse(body);
     const select = {
       id: true,
+      name: true,
+      hashedKey: true,
+      prefix: true,
       hostname: true,
       capabilities: true,
       lastHeartbeat: true,
@@ -125,6 +137,9 @@ export const PUT = defineApi(
             type: 'object',
             properties: {
               id: { type: 'string' },
+              name: { type: 'string' },
+              hashedKey: { type: 'string' },
+              prefix: { type: 'string' },
               hostname: { type: 'string' },
               capabilities: { type: 'array', items: { type: 'string' } },
               lastHeartbeat: { type: 'string', format: 'date-time' },
@@ -144,6 +159,9 @@ export const PUT = defineApi(
               type: 'object',
               properties: {
                 id: { type: 'string' },
+                name: { type: 'string' },
+                hashedKey: { type: 'string' },
+                prefix: { type: 'string' },
                 hostname: { type: 'string' },
                 capabilities: { type: 'array', items: { type: 'string' } },
                 lastHeartbeat: { type: 'string', format: 'date-time' },

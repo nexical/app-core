@@ -3,7 +3,6 @@ import type { ServiceResponse } from '@/types/service';
 import type { PollJobsDTO, Job } from '../sdk/types';
 import type { APIContext } from 'astro';
 import { OrchestrationService } from '../services/orchestration-service';
-import type { ApiActor } from '@/lib/api/api-docs';
 
 export class PollJobsOrchestratorAction {
   public static async run(
@@ -25,7 +24,7 @@ export class PollJobsOrchestratorAction {
 
       // If the actor is an AGENT, they should be able to pick up ANY job (worker pool).
       // If the actor is a USER, they likely only want to poll their OWN jobs.
-      const isAgent = actor?.role === 'ADMIN';
+      const isAgent = actor?.type === 'agent';
 
       // If Agent, don't filter by owner (pass undefined). If User, filter by owner (pass actorId).
       const filterActorId = isAgent ? undefined : actorId;

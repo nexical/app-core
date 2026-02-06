@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { ApiClient } from '@tests/integration/lib/client';
-import { Factory } from '@tests/integration/lib/factory';
-import { TestServer } from '@tests/integration/lib/server';
+import { ApiClient } from '../../../../../../tests/integration/lib/client';
+import { Factory } from '../../../../../../tests/integration/lib/factory';
+import { TestServer } from '../../../../../../tests/integration/lib/server';
 
 describe('Orchestrator Flow Integration', () => {
   let client: ApiClient;
@@ -16,6 +16,9 @@ describe('Orchestrator Flow Integration', () => {
       hostname: 'test-agent-flow',
       capabilities: ['test.task'],
     });
+    if (registerRes.status !== 200) {
+      console.error('Register failed:', JSON.stringify(registerRes.body, null, 2));
+    }
     expect(registerRes.status).toBe(200);
     const agent = registerRes.body.data;
     expect(agent.id).toBeDefined();
@@ -81,6 +84,8 @@ describe('Orchestrator Flow Integration', () => {
       maxRetries: 1,
       retryCount: 0,
       status: 'PENDING',
+      lockedBy: null,
+      nextRetryAt: null,
     });
 
     // Poll for it

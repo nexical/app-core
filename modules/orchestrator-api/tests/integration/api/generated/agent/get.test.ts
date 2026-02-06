@@ -2,8 +2,6 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 import { ApiClient } from '@tests/integration/lib/client';
 import { TestServer } from '@tests/integration/lib/server';
-import { Factory } from '@tests/integration/lib/factory';
-
 // GENERATED CODE - DO NOT MODIFY
 describe('Agent API - Get', () => {
   let client: ApiClient;

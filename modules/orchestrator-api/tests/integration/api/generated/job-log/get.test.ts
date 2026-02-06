@@ -15,7 +15,6 @@ describe('JobLog API - Get', () => {
   // GET /api/job-log/[id]
   describe('GET /api/job-log/[id]', () => {
     it('should retrieve a specific jobLog', async () => {
-       
       const actor = await client.as('user', {});
 
       const job_0 = await Factory.create('job', {

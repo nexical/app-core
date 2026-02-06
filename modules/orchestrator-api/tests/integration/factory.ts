@@ -36,6 +36,9 @@ export const factories = {
   },
   agent: (index: number) => {
     return {
+      name: `name_${index}`,
+      hashedKey: `hashedKey_${index}`,
+      prefix: `prefix_${index}`,
       hostname: `hostname_${index}`,
       capabilities: [`capabilities_${index}`],
       lastHeartbeat: new Date(),

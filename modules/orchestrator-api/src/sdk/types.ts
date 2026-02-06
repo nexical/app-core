@@ -77,3 +77,13 @@ export enum AgentStatus {
 }
 
 export type { Job, JobLog, Agent, DeadLetterJob } from '@prisma/client';
+
+export interface User {
+  id: string;
+}
+
+export interface PersonalAccessToken {
+  hashedKey: string;
+  userId: string;
+  prefix: string;
+}
