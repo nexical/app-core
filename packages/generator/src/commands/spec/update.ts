@@ -1,66 +1,78 @@
-import { BaseCommand } from '../base.js';
-import chalk from 'chalk';
+import { BaseCommand } from '@nexical/cli-core';
+
 import path from 'path';
 import fs from 'fs-extra';
 import { AgentRunner } from '../../utils/agent-runner.js';
 
 export class SpecUpdateCommand extends BaseCommand {
-  constructor() {
-    super({
-      name: 'spec:update',
-      description: 'Update or reverse-engineer a specification for an existing module',
-      args: {
-        name: 'The name of the module to update (e.g., "payment-api")',
-      },
-      helpMetadata: {
-        examples: ['$ nexical spec:update payment-api'],
-      },
-    });
-  }
+  static description = 'Update or reverse-engineer a specification for an existing module';
 
-  async run(name: string) {
+  static args = {
+    args: [
+      {
+        name: 'name',
+        description: 'The name of the module to update (e.g., "payment-api")',
+        required: true,
+      },
+    ],
+    options: [
+      {
+        name: '-i, --interactive',
+        description: 'Run in interactive mode',
+        default: false,
+      },
+    ],
+  };
+
+  async run(...args: unknown[]) {
+    const options = args[0] as { name: string; interactive: boolean };
+    const { name, interactive } = options;
+
     if (!name) {
-      console.error(chalk.red('Please provide a module name.'));
+      this.error('Please provide a module name.');
       return;
     }
 
-    // Try to find module using locator or simple path
-    // ModuleLocator.expand returns names, not paths usually?
-    // Let's assume standard path for now or check.
     const modulePath = path.join(process.cwd(), 'modules', name);
 
     if (!(await fs.pathExists(modulePath))) {
-      console.error(chalk.red(`Module "${name}" not found at ${modulePath}.`));
+      this.error(`Module "${name}" not found at ${modulePath}.`);
       return;
     }
 
     const specFile = path.join(modulePath, 'SPECIFICATION.md');
 
     if (!(await fs.pathExists(specFile))) {
-      console.info(
-        chalk.yellow(`SPECIFICATION.md not found. Creating a placeholder to be filled.`),
-      );
+      this.warn(`SPECIFICATION.md not found. Creating a placeholder to be filled.`);
       await fs.writeFile(
         specFile,
         `# Module Specification: ${name}\n\n(Draft generated from code)`,
       );
     }
 
-    console.info(chalk.green(`\nStarting interactive specification update for "${name}"...\n`));
+    this.success(
+      `\nStarting specification update for "${name}" (Interactive: ${interactive})...\n`,
+    );
+
+    const userInput = interactive
+      ? `I want to update the specification for "${name}" based on the current code and my input. Please read the code and interview me.`
+      : `I want to update the specification for "${name}" based on the current code. Please draft the specification.`;
 
     try {
       AgentRunner.run(
         'SpecWriter',
-        'prompts/agents/spec-writer.md',
+        'agents/spec-writer.md',
         {
           module_root: modulePath,
           spec_file: specFile,
-          user_input: `I want to update the specification for "${name}" based on the current code and my input. Please read the code and interview me.`,
+          user_input: userInput,
         },
-        true,
+        interactive,
       );
     } catch {
       process.exit(1);
     }
   }
 }
+
+export default SpecUpdateCommand;

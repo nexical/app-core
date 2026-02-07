@@ -1,5 +1,6 @@
 import prettier from 'prettier';
 import path from 'node:path';
+import { logger } from '@nexical/cli-core';
 
 export class Formatter {
   private static configCache: prettier.Options | null = null;
@@ -33,7 +34,7 @@ export class Formatter {
 
       return await prettier.format(content, options);
     } catch (error) {
-      console.warn(`[Formatter] Failed to format ${filePath}:`, error);
+      logger.warn(`[Formatter] Failed to format ${filePath}: ${error}`);
       return content; // Fallback to unformatted content
     }
   }

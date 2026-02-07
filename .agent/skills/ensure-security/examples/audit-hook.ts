@@ -24,7 +24,7 @@ export class SecurityAuditHooks {
     HookSystem.on(
       'role.assigned',
       async (event: { userId: string; role: string; assignedBy: string }) => {
-        Logger.info(`Audit: Role ${event.role} assigned to ${event.userId} by ${event.assignedBy}`);
+        Logger.info(`audit  Role ${event.role} assigned to ${event.userId} by ${event.assignedBy}`);
       },
     );
   }

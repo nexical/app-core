@@ -1,15 +1,25 @@
 /** @vitest-environment node */
-/* eslint-disable */
+
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { Formatter } from '@nexical/generator/utils/formatter';
 import prettier from 'prettier';
-import path from 'path';
+import { logger } from '@nexical/cli-core';
 
 vi.mock('prettier', () => ({
   default: {
     resolveConfigFile: vi.fn(),
     resolveConfig: vi.fn(),
     format: vi.fn(),
+  },
+}));
+
+vi.mock('@nexical/cli-core', () => ({
+  BaseCommand: class {},
+  logger: {
+    warn: vi.fn(),
+    info: vi.fn(),
+    error: vi.fn(),
+    debug: vi.fn(),
   },
 }));
 
@@ -48,15 +58,11 @@ describe('Formatter', () => {
 
   it('should fallback to unformatted content on error', async () => {
     vi.mocked(prettier.format).mockRejectedValue(new Error('Formatting failed'));
-    const spy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
     const result = await Formatter.format('raw content', 'error.ts');
 
     expect(result).toBe('raw content');
-    expect(spy).toHaveBeenCalledWith(
-      expect.stringContaining('Failed to format'),
-      expect.any(Error),
-    );
+    expect(logger.warn).toHaveBeenCalledWith(expect.stringContaining('Failed to format'));
   });
 
   it('should reuse config cache once loaded', async () => {

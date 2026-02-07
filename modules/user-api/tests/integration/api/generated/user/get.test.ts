@@ -21,7 +21,7 @@ describe('User API - Get', () => {
       const res = await client.get(`/api/user/${target.id}`);
 
       expect(res.status).toBe(200);
-      expect(res.body.id).toBe(target.id);
+      expect(res.body.data.id).toBe(target.id);
     });
 
     it('should return 404 for missing id', async () => {

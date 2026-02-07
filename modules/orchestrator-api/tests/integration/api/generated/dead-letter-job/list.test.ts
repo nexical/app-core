@@ -22,15 +22,15 @@ describe('DeadLetterJob API - List', () => {
     };
 
     it('should allow admin to list deadLetterJobs', async () => {
-      const actor = await client.as('admin', {});
+      const actor = await client.as('user', { role: 'ADMIN' });
 
       // Cleanup first to ensure clean state
       await Factory.prisma.deadLetterJob.deleteMany();
 
       // Seed data
       const _listSuffix = Date.now();
-      await Factory.create('deadLetterJob', { ...baseData, actorId: actor.id });
-      await Factory.create('deadLetterJob', { ...baseData, actorId: actor.id });
+      await Factory.create('deadLetterJob', { ...baseData, actorId: actor.id, actorType: 'user' });
+      await Factory.create('deadLetterJob', { ...baseData, actorId: actor.id, actorType: 'user' });
 
       const res = await client.get('/api/dead-letter-job');
 
@@ -41,7 +41,7 @@ describe('DeadLetterJob API - List', () => {
     });
 
     it('should verify pagination metadata', async () => {
-      const actor = await client.as('admin', {});
+      const actor = await client.as('user', { role: 'ADMIN' });
 
       // Cleanup and seed specific count
       await Factory.prisma.deadLetterJob.deleteMany();
@@ -57,7 +57,11 @@ describe('DeadLetterJob API - List', () => {
       const toCreate = totalTarget - currentCount;
 
       for (let i = 0; i < toCreate; i++) {
-        const rec = await Factory.create('deadLetterJob', { ...baseData, actorId: actor.id });
+        const rec = await Factory.create('deadLetterJob', {
+          ...baseData,
+          actorId: actor.id,
+          actorType: 'user',
+        });
         createdIds.push(rec.id);
       }
 
@@ -78,7 +82,7 @@ describe('DeadLetterJob API - List', () => {
       // Wait to avoid collisions
       await new Promise((r) => setTimeout(r, 10));
       // Reuse getActorStatement to ensure correct actor context
-      const actor = await client.as('admin', {});
+      const actor = await client.as('user', { role: 'ADMIN' });
 
       const val1 = 'originalJobId_' + Date.now() + '_A';
       const val2 = 'originalJobId_' + Date.now() + '_B';
@@ -86,8 +90,8 @@ describe('DeadLetterJob API - List', () => {
       const data1 = { ...baseData, originalJobId: val1 };
       const data2 = { ...baseData, originalJobId: val2 };
 
-      await Factory.create('deadLetterJob', { ...data1, actorId: actor.id });
-      await Factory.create('deadLetterJob', { ...data2, actorId: actor.id });
+      await Factory.create('deadLetterJob', { ...data1, actorId: actor.id, actorType: 'user' });
+      await Factory.create('deadLetterJob', { ...data2, actorId: actor.id, actorType: 'user' });
 
       const res = await client.get('/api/dead-letter-job?originalJobId=' + val1);
       expect(res.status).toBe(200);
@@ -99,7 +103,7 @@ describe('DeadLetterJob API - List', () => {
       // Wait to avoid collisions
       await new Promise((r) => setTimeout(r, 10));
       // Reuse getActorStatement to ensure correct actor context
-      const actor = await client.as('admin', {});
+      const actor = await client.as('user', { role: 'ADMIN' });
 
       const val1 = 'type_' + Date.now() + '_A';
       const val2 = 'type_' + Date.now() + '_B';
@@ -107,8 +111,8 @@ describe('DeadLetterJob API - List', () => {
       const data1 = { ...baseData, type: val1 };
       const data2 = { ...baseData, type: val2 };
 
-      await Factory.create('deadLetterJob', { ...data1, actorId: actor.id });
-      await Factory.create('deadLetterJob', { ...data2, actorId: actor.id });
+      await Factory.create('deadLetterJob', { ...data1, actorId: actor.id, actorType: 'user' });
+      await Factory.create('deadLetterJob', { ...data2, actorId: actor.id, actorType: 'user' });
 
       const res = await client.get('/api/dead-letter-job?type=' + val1);
       expect(res.status).toBe(200);
@@ -120,7 +124,7 @@ describe('DeadLetterJob API - List', () => {
       // Wait to avoid collisions
       await new Promise((r) => setTimeout(r, 10));
       // Reuse getActorStatement to ensure correct actor context
-      const actor = await client.as('admin', {});
+      const actor = await client.as('user', { role: 'ADMIN' });
 
       const val1 = 'reason_' + Date.now() + '_A';
       const val2 = 'reason_' + Date.now() + '_B';
@@ -128,8 +132,8 @@ describe('DeadLetterJob API - List', () => {
       const data1 = { ...baseData, reason: val1 };
       const data2 = { ...baseData, reason: val2 };
 
-      await Factory.create('deadLetterJob', { ...data1, actorId: actor.id });
-      await Factory.create('deadLetterJob', { ...data2, actorId: actor.id });
+      await Factory.create('deadLetterJob', { ...data1, actorId: actor.id, actorType: 'user' });
+      await Factory.create('deadLetterJob', { ...data2, actorId: actor.id, actorType: 'user' });
 
       const res = await client.get('/api/dead-letter-job?reason=' + val1);
       expect(res.status).toBe(200);

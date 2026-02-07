@@ -33,7 +33,7 @@ We DO NOT edit `schema.prisma` directly.
 ### Workflow
 
 1.  **Edit**: Modify `modules/{name}/models.yaml`.
-2.  **Generate**: Run `npx arc` or `npx tsx scripts/generate-prisma.ts`.
+2.  **Generate**: Run `nexical` or `npx tsx scripts/generate-prisma.ts`.
 3.  **Push/Migrate**:
     - **Dev**: `npm run db:push`
     - **Prod**: `npm run db:migrate`

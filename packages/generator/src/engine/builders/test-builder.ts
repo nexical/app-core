@@ -56,7 +56,7 @@ export class TestBuilder extends BaseBuilder {
     }
 
     // Loose coupling: check for actorId or userId
-    if (this.model.fields['actorId']) return `, actorId: actor.id`;
+    if (this.model.fields['actorId']) return `, actorId: actor.id, actorType: '${actorName}'`;
     if (this.model.fields['userId'] && actorName.toLowerCase() === 'user')
       return `, userId: actor.id`;
 
@@ -251,7 +251,7 @@ export class TestBuilder extends BaseBuilder {
         const varName = `${fk.model.charAt(0).toLowerCase() + fk.model.slice(1)}_${i}`;
         const extras =
           fk.model === 'Job'
-            ? ', actorId: (typeof actor !== "undefined" ? actor.id : undefined)'
+            ? `, actorId: (typeof actor !== "undefined" ? (actor as any).id : undefined), actorType: '${this.getTestActorModelName()}'`
             : '';
         return `const ${varName} = await Factory.create('${fk.model.charAt(0).toLowerCase() + fk.model.slice(1)}', { ${extras.replace(/^, /, '')} });`;
       });
@@ -263,7 +263,7 @@ export class TestBuilder extends BaseBuilder {
       });
 
       if (actorRelationField) {
-        overrides.push(`${actorRelationField}: (actor ? actor.id : undefined)`);
+        overrides.push(`${actorRelationField}: (actor ? (actor as any).id : undefined)`);
       }
 
       const overridesString = overrides.join(',\n                ');
@@ -482,7 +482,7 @@ export class TestBuilder extends BaseBuilder {
         const varName = `${fk.model.charAt(0).toLowerCase() + fk.model.slice(1)}_${i} `;
         const extras =
           fk.model === 'Job'
-            ? ', actorId: (typeof actor !== "undefined" ? actor.id : undefined)'
+            ? `, actorId: (typeof actor !== "undefined" ? actor.id : undefined), actorType: '${this.getTestActorModelName()}'`
             : '';
         return `const ${varName} = await Factory.create('${fk.model.charAt(0).toLowerCase() + fk.model.slice(1)}', { ${extras.replace(/^, /, '')}}); `;
       });
@@ -541,7 +541,7 @@ const target = await Factory.create('${camelEntity}', { ...${JSON.stringify(mock
         const varName = `${fk.model.charAt(0).toLowerCase() + fk.model.slice(1)}_${i}`;
         const extras =
           fk.model === 'Job'
-            ? ', actorId: (typeof actor !== "undefined" ? actor.id : undefined)'
+            ? `, actorId: (typeof actor !== "undefined" ? actor.id : undefined), actorType: '${this.getTestActorModelName()}'`
             : '';
         return `const ${varName} = await Factory.create('${fk.model.charAt(0).toLowerCase() + fk.model.slice(1)}', {${extras.replace(/^, /, '')}});`;
       });
@@ -613,7 +613,7 @@ const target = await Factory.create('${camelEntity}', { ...${JSON.stringify(mock
         const varName = `${fk.model.charAt(0).toLowerCase() + fk.model.slice(1)}_${i}`;
         const extras =
           fk.model === 'Job'
-            ? ', actorId: (typeof actor !== "undefined" ? actor.id : undefined)'
+            ? `, actorId: (typeof actor !== "undefined" ? actor.id : undefined), actorType: '${this.getTestActorModelName()}'`
             : '';
         return `const ${varName} = await Factory.create('${fk.model.charAt(0).toLowerCase() + fk.model.slice(1)}', {${extras.replace(/^, /, '')}});`;
       });

@@ -1,4 +1,5 @@
 import { execSync } from 'node:child_process';
+import { logger } from '@nexical/cli-core';
 
 const PROMPT_CMD = 'npx prompt';
 // Use the same models as reskill for consistency
@@ -24,9 +25,12 @@ export class AgentRunner {
     // Assuming the tool is interactive by default if not outputting to file?
     // Or maybe we just depend on stdio inherit.
 
-    const cmd = `${PROMPT_CMD} ${promptPath} ${flags}`;
+    let cmd = `${PROMPT_CMD} ${promptPath} ${flags}`;
+    if (interactive) {
+      cmd += ' --interactive';
+    }
 
-    console.info(`\n🤖 Agent ${agentName} working...`);
+    logger.info(`\n🤖 Agent ${agentName} working...`);
     try {
       execSync(cmd, { stdio: 'inherit', cwd: process.cwd() });
     } catch (error: unknown) {

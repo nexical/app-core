@@ -50,7 +50,7 @@ You must enforce the **Strict Separation of Concerns** as defined in `ARCHITECTU
 - **Protocol**:
   1.  **Define CRUD Contracts** in `modules/{name}/models.yaml` using the `role` configuration for automatic endpoint generation.
   2.  **Define Custom Operations** in `modules/{name}/api.yaml` for logic that falls outside standard CRUD.
-  3.  **Generate** the SDK and API handlers using `npx arc gen:api {name}`.
+  3.  **Generate** the SDK and API handlers using `nexical gen api {name}`.
   4.  Implement custom domain logic in manual `src/services/` or `src/actions/` files.
   5.  Consume via global `api` client.
 

@@ -110,6 +110,10 @@ export class FunctionPrimitive extends BasePrimitive<FunctionDeclaration, Functi
       return;
     }
 
+    if (this.config.overwriteBody) {
+      node.setBodyText('');
+    }
+
     const project = node.getProject();
 
     for (const stmtConfig of this.config.statements) {

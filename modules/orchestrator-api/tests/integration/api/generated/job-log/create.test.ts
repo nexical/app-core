@@ -15,10 +15,11 @@ describe('JobLog API - Create', () => {
   // POST /api/job-log
   describe('POST /api/job-log', () => {
     it('should allow job-owner to create jobLog', async () => {
-      const actor = await client.as('team', {});
+      const actor = await client.as('user', {});
 
       const job_0 = await Factory.create('job', {
         actorId: typeof actor !== 'undefined' ? actor.id : undefined,
+        actorType: 'user',
       });
       const payload = {
         ...{ level: 'level_test', message: 'message_test', timestamp: new Date().toISOString() },
@@ -46,6 +47,7 @@ describe('JobLog API - Create', () => {
       const actor = undefined as unknown;
       const job_0 = await Factory.create('job', {
         actorId: typeof actor !== 'undefined' ? actor.id : undefined,
+        actorType: 'user',
       });
       const payload = {
         ...{ level: 'level_test', message: 'message_test', timestamp: new Date().toISOString() },

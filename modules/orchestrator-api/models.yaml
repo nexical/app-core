@@ -16,7 +16,7 @@ models:
   Job:
     role: job-owner
     test:
-      actor: team
+      actor: user
     fields:
       id:
         type: String
@@ -93,7 +93,7 @@ models:
   JobLog:
     role: job-owner
     test:
-      actor: team
+      actor: user
     fields:
       id:
         type: String
@@ -118,14 +118,28 @@ models:
           - '@relation("JobLogs", fields: [jobId], references: [id], onDelete: Cascade)'
 
   Agent:
+    actor:
+      strategy: bearer
+      prefix: ''
+      fields:
+        id: id
     test:
-      actor: team
+      actor: agent
     fields:
       id:
         type: String
         attributes:
           - '@id'
           - '@default(cuid())'
+      name:
+        type: String
+        isRequired: false
+      hashedKey:
+        type: String
+        isRequired: false
+      prefix:
+        type: String
+        isRequired: false
       hostname:
         type: String
       capabilities:
@@ -144,11 +158,33 @@ models:
         attributes:
           - '@default(now())'
 
+  User:
+    db: false
+    api: false
+    actor:
+      name: user
+      prefix: ne_pat_
+      strategy: bearer
+      fields:
+        tokenModel: PersonalAccessToken
+        ownerField: userId
+        keyField: hashedKey
+    fields:
+      id: String
+
+  PersonalAccessToken:
+    db: false
+    api: false
+    fields:
+      hashedKey: String
+      userId: String
+      prefix: String
+
   # Dead-letter queue for permanently failed jobs
   DeadLetterJob:
     role: admin
     test:
-      actor: admin
+      actor: user
     fields:
       id:
         type: String
@@ -161,8 +197,12 @@ models:
         type: String
       payload:
         type: Json
+        attributes:
+          - '@default("{}")'
       error:
         type: Json
+        attributes:
+          - '@default("{}")'
       failedAt:
         type: DateTime
         attributes:

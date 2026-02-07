@@ -7,9 +7,20 @@ import { ServiceBuilder } from '@nexical/generator/engine/builders/service-build
 import { ApiBuilder } from '@nexical/generator/engine/builders/api-builder';
 import fs from 'fs';
 
+import { logger } from '@nexical/cli-core';
+
 vi.mock('@nexical/generator/engine/model-parser');
 vi.mock('@nexical/generator/engine/builders/service-builder');
 vi.mock('@nexical/generator/engine/builders/api-builder');
+vi.mock('@nexical/cli-core', () => ({
+  logger: {
+    info: vi.fn(),
+    debug: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+  },
+  BaseCommand: class {},
+}));
 vi.mock('@nexical/generator/utils/template-loader', () => ({
   TemplateLoader: {
     load: () => ({
@@ -101,9 +112,8 @@ describe('ApiModuleGenerator', () => {
       config: {},
     });
     const generator = new ApiModuleGenerator('/tmp/user-api');
-    const spy = vi.spyOn(console, 'info');
     await generator.run();
-    expect(spy).toHaveBeenCalledWith(expect.stringContaining('No models found'));
+    expect(logger.info).toHaveBeenCalledWith(expect.stringContaining('No models found'));
   });
 
   it('should handle virtual resources from api.yaml', async () => {

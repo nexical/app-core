@@ -16,7 +16,7 @@ describe('Agent API - Create', () => {
   describe('POST /api/agent', () => {
     it('should allow member to create agent', async () => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const actor = await client.as('team', {});
+      const actor = await client.as('user', {});
 
       const payload = {
         hostname: 'hostname_test',

@@ -2,6 +2,7 @@
 import type { ServiceResponse } from '@/types/service';
 import type { InviteUserDTO, Invitation } from '../sdk/types';
 import type { APIContext } from 'astro';
+import { db } from '@/lib/core/db';
 
 export class InviteUserAuthAction {
   public static async run(

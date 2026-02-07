@@ -35,6 +35,7 @@ export class PasswordResetTokenService {
   public static async get(
     id: string,
     select?: Prisma.PasswordResetTokenSelect,
+    actor?: ApiActor,
   ): Promise<ServiceResponse<PasswordResetToken | null>> {
     try {
       const data = await db.passwordResetToken.findUnique({
@@ -125,7 +126,7 @@ export class PasswordResetTokenService {
     }
   }
 
-  public static async delete(id: string): Promise<ServiceResponse<void>> {
+  public static async delete(id: string, actor?: ApiActor): Promise<ServiceResponse<void>> {
     try {
       await db.$transaction(async (tx) => {
         await tx.passwordResetToken.delete({ where: { id } });

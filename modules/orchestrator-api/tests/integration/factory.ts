@@ -19,9 +19,9 @@ export const factories = {
       lockedAt: new Date(),
       startedAt: new Date(),
       completedAt: new Date(),
-      retryCount: 0,
-      maxRetries: 3,
-      nextRetryAt: null,
+      retryCount: index,
+      maxRetries: index,
+      nextRetryAt: new Date(),
     };
   },
   jobLog: (index: number) => {
@@ -36,6 +36,9 @@ export const factories = {
   },
   agent: (index: number) => {
     return {
+      name: `name_${index}`,
+      hashedKey: `hashedKey_${index}`,
+      prefix: `prefix_${index}`,
       hostname: `hostname_${index}`,
       capabilities: [`capabilities_${index}`],
       lastHeartbeat: new Date(),

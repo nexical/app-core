@@ -46,7 +46,7 @@ packages/generator/
 Creates the directory structure and configuration files (`module.def.yaml`, `models.yaml`).
 
 ```bash
-npx arc gen:api billing
+nexical gen api billing
 ```
 
 ### 2. Generate Code
@@ -54,7 +54,7 @@ npx arc gen:api billing
 Reads `models.yaml` and uses the Declarative Engine to generate `Services`, `APIs`, and `SDKs`.
 
 ```bash
-npx arc gen:api billing
+nexical gen api billing
 ```
 
 ### 3. Audit for Drift
@@ -62,7 +62,7 @@ npx arc gen:api billing
 Checks if the actual code matches the architectural schema. Reports issues without changing files.
 
 ```bash
-npx arc audit:api billing
+nexical audit api billing
 ```
 
 _Example Output:_

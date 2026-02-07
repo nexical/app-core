@@ -1,84 +1,89 @@
 import { useState, useEffect } from 'react';
 import { api } from '@/lib/api/api';
-import type { Prisma } from '@prisma/client';
 
-export function useUserQuery(options?: any) {
-    const [data, setData] = useState<any[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState<any>(null);
+interface MutationOptions {
+  onSuccess?: (data: unknown) => void;
+  onError?: (error: unknown) => void;
+  [key: string]: unknown;
+}
 
-    const refetch = async () => {
-        setIsLoading(true);
-        try {
-            const res = await api.user.list();
-            // Handle envelope
-            const list = Array.isArray(res) ? res : res.data || [];
-            setData(list);
-        } catch (e) {
-            setError(e);
-        } finally {
-            setIsLoading(false);
-        }
-    };
+export function useUserQuery(options?: Record<string, unknown>) {
+  const [data, setData] = useState<unknown[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
-    useEffect(() => {
-        refetch();
-    }, []);
+  const refetch = async () => {
+    setIsLoading(true);
+    try {
+      const res = await api.user.list();
+      // Handle envelope
+      const list = Array.isArray(res) ? res : res.data || [];
+      setData(list);
+    } catch (e) {
+      setError(e as Error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    return { data, isLoading, error, refetch };
+  useEffect(() => {
+    refetch();
+  }, []);
+
+  return { data, isLoading, error, refetch };
 }
 
 export function useCreateUser() {
-    const [isPending, setIsPending] = useState(false);
+  const [isPending, setIsPending] = useState(false);
 
-    const mutate = async (data: any, options?: any) => {
-        setIsPending(true);
-        try {
-            const res = await api.user.create(data);
-            options?.onSuccess?.(res);
-        } catch (e) {
-            options?.onError?.(e);
-        } finally {
-            setIsPending(false);
-        }
-    };
+  const mutate = async (data: Parameters<typeof api.user.create>[0], options?: MutationOptions) => {
+    setIsPending(true);
+    try {
+      const res = await api.user.create(data);
+      options?.onSuccess?.(res);
+    } catch (e) {
+      options?.onError?.(e);
+    } finally {
+      setIsPending(false);
+    }
+  };
 
-    return { mutate, isPending };
+  return { mutate, isPending };
 }
 
 export function useUpdateUser(id?: string) {
-    const [isPending, setIsPending] = useState(false);
+  const [isPending, setIsPending] = useState(false);
 
-    const mutate = async (data: any, options?: any) => {
-        if (!id) return;
-        setIsPending(true);
-        try {
-            const res = await api.user.update(id, data);
-            options?.onSuccess?.(res);
-        } catch (e) {
-            options?.onError?.(e);
-        } finally {
-            setIsPending(false);
-        }
-    };
+  const mutate = async (data: Parameters<typeof api.user.update>[1], options?: MutationOptions) => {
+    if (!id) return;
+    setIsPending(true);
+    try {
+      const res = await api.user.update(id, data);
+      options?.onSuccess?.(res);
+    } catch (e) {
+      options?.onError?.(e);
+    } finally {
+      setIsPending(false);
+    }
+  };
 
-    return { mutate, isPending };
+  return { mutate, isPending };
 }
 
 export function useDeleteUser() {
-    const [isPending, setIsPending] = useState(false);
+  const [isPending, setIsPending] = useState(false);
 
-    const mutate = async (id: string, options?: any) => {
-        setIsPending(true);
-        try {
-            const res = await api.user.delete(id);
-            options?.onSuccess?.(res);
-        } catch (e) {
-            options?.onError?.(e);
-        } finally {
-            setIsPending(false);
-        }
-    };
+  const mutate = async (id: string, options?: MutationOptions) => {
+    setIsPending(true);
+    try {
+      const res = await api.user.delete(id);
+      options?.onSuccess?.(res);
+    } catch (e) {
+      options?.onError?.(e);
+    } finally {
+      setIsPending(false);
+    }
+  };
 
-    return { mutate, isPending };
+  return { mutate, isPending };
 }

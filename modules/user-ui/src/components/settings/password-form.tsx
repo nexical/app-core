@@ -7,7 +7,7 @@ import { z } from 'zod';
 import { api, type ApiError } from '@/lib/api/api';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { PasswordInput } from '@modules/user-ui/src/components/ui/password-input';
+import { PasswordInput } from '@/components/ui/password-input';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { toast } from 'sonner';
 import type { User } from '@prisma/client';

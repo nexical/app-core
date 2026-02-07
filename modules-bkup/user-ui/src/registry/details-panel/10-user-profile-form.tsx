@@ -181,43 +181,43 @@ export default function UserProfileForm(props: { [key: string]: unknown }) {
       {/* Note: In a real app we should pass this via props or context safely */}
       {(import.meta.env.PUBLIC_USER_MODE === 'PUBLIC' ||
         (!import.meta.env.PUBLIC_USER_MODE && !import.meta.env.USER_MODE)) && (
-          <div className="profile-form-danger-zone">
-            <div className="profile-form-danger-header">
-              <UserIcon className="profile-form-danger-icon" />
-              <h3>{t('user.registry.profile_form.section.danger_zone')}</h3>
-            </div>
-            <div className="profile-form-danger-card">
-              <p className="profile-form-danger-text">
-                {t('user.registry.profile_form.danger.text')}
-              </p>
-              <Button
-                variant="destructive"
-                data-testid="profile-delete-account-button"
-                onClick={async () => {
-                  if (confirm(t('user.registry.profile_form.danger.confirm_title'))) {
-                    const email = prompt(t('user.registry.profile_form.danger.confirm_prompt'));
-                    if (email === user.email) {
-                      // Call delete action
-                      try {
-                        await api.user.deleteMe();
-                        window.location.href = '/login';
-                      } catch (err: unknown) {
-                        alert(
-                          (err as ApiError).body?.error ||
-                          t('user.registry.profile_form.error.delete_failed'),
-                        );
-                      }
-                    } else {
-                      alert(t('user.registry.profile_form.error.email_mismatch'));
-                    }
-                  }
-                }}
-              >
-                {t('user.registry.profile_form.button.delete')}
-              </Button>
-            </div>
+        <div className="profile-form-danger-zone">
+          <div className="profile-form-danger-header">
+            <UserIcon className="profile-form-danger-icon" />
+            <h3>{t('user.registry.profile_form.section.danger_zone')}</h3>
           </div>
-        )}
+          <div className="profile-form-danger-card">
+            <p className="profile-form-danger-text">
+              {t('user.registry.profile_form.danger.text')}
+            </p>
+            <Button
+              variant="destructive"
+              data-testid="profile-delete-account-button"
+              onClick={async () => {
+                if (confirm(t('user.registry.profile_form.danger.confirm_title'))) {
+                  const email = prompt(t('user.registry.profile_form.danger.confirm_prompt'));
+                  if (email === user.email) {
+                    // Call delete action
+                    try {
+                      await api.user.deleteMe();
+                      window.location.href = '/login';
+                    } catch (err: unknown) {
+                      alert(
+                        (err as ApiError).body?.error ||
+                          t('user.registry.profile_form.error.delete_failed'),
+                      );
+                    }
+                  } else {
+                    alert(t('user.registry.profile_form.error.email_mismatch'));
+                  }
+                }
+              }}
+            >
+              {t('user.registry.profile_form.button.delete')}
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

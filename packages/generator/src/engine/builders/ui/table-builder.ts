@@ -40,8 +40,8 @@ export class TableBuilder extends UiBaseBuilder {
       const file = project.createSourceFile(fileName, '', { overwrite: true });
 
       // Determine Table Configuration
-      const tableConfig = this.uiConfig.tables?.[model.name] || {};
-      const editMode = tableConfig.editMode || 'sheet'; // Default to sheet
+      const tableConfig = this.uiConfig.tables?.[model.name];
+      const editMode = tableConfig?.editMode || 'sheet'; // Default to sheet
 
       const imports = [
         {

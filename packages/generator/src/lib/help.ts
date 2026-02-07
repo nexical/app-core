@@ -7,8 +7,7 @@ export interface HelpSection {
 }
 
 export class CustomHelp {
-  static format(command: Command, sections: HelpSection[] = []): string {
-    command.createHelp();
+  static format(command: Command, sections: HelpSection[] = []) {
     let output = '';
 
     // Usage
@@ -33,7 +32,7 @@ export class CustomHelp {
     // Options
     if (command.options.length > 0) {
       output += chalk.bold.underline('Options:') + '\n';
-      command.options.forEach((option) => {
+      command.options.forEach((option: { flags: string; description: string }) => {
         output += `  ${chalk.yellow(option.flags)}\t${option.description}\n`;
       });
       output += '\n';

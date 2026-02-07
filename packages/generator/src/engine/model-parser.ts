@@ -75,6 +75,7 @@ export class ModelParser {
     const modelNames = new Set(Object.keys(rawModels));
 
     const models: ModelDef[] = Object.entries(rawModels).map(([name, config]) => {
+      console.info(`[ModelParser] Model: ${name}, keys: ${Object.keys(config).join(', ')}`);
       const model: ModelDef = {
         name,
         api: config.api !== false,

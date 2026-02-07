@@ -29,7 +29,10 @@ export const GET = defineApi(
     const result = await DeadLetterJobService.get(id, select, actor);
 
     if (!result.success) {
-      if (result.error?.code === 'NOT_FOUND') {
+      if (
+        result.error?.code === 'NOT_FOUND' ||
+        (typeof result.error === 'string' && result.error.includes('not_found'))
+      ) {
         return new Response(JSON.stringify({ error: result.error }), { status: 404 });
       }
       return new Response(JSON.stringify({ error: result.error }), { status: 500 });
@@ -67,7 +70,7 @@ export const GET = defineApi(
                 actorId: { type: 'string' },
                 actorType: { type: 'string' },
               },
-              required: ['originalJobId', 'type', 'payload', 'error', 'retryCount'],
+              required: ['originalJobId', 'type', 'retryCount'],
             },
           },
         },
@@ -88,8 +91,8 @@ export const PUT = defineApi(
       .object({
         originalJobId: z.string(),
         type: z.string(),
-        payload: z.unknown(),
-        error: z.unknown(),
+        payload: z.unknown().optional(),
+        error: z.unknown().optional(),
         failedAt: z.string().datetime().optional(),
         retryCount: z.number().int(),
         reason: z.string().optional(),
@@ -116,7 +119,10 @@ export const PUT = defineApi(
     const result = await DeadLetterJobService.update(id, validated, select, actor);
 
     if (!result.success) {
-      if (result.error?.code === 'NOT_FOUND') {
+      if (
+        result.error?.code === 'NOT_FOUND' ||
+        (typeof result.error === 'string' && result.error.includes('not_found'))
+      ) {
         return new Response(JSON.stringify({ error: result.error }), { status: 404 });
       }
       return new Response(JSON.stringify({ error: result.error }), { status: 400 });
@@ -168,7 +174,7 @@ export const PUT = defineApi(
                 actorId: { type: 'string' },
                 actorType: { type: 'string' },
               },
-              required: ['originalJobId', 'type', 'payload', 'error', 'retryCount'],
+              required: ['originalJobId', 'type', 'retryCount'],
             },
           },
         },
@@ -187,7 +193,10 @@ export const DELETE = defineApi(
     const result = await DeadLetterJobService.delete(id, actor);
 
     if (!result.success) {
-      if (result.error?.code === 'NOT_FOUND') {
+      if (
+        result.error?.code === 'NOT_FOUND' ||
+        (typeof result.error === 'string' && result.error.includes('not_found'))
+      ) {
         return new Response(JSON.stringify({ error: result.error }), { status: 404 });
       }
       return new Response(JSON.stringify({ error: result.error }), { status: 500 });

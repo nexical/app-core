@@ -1,5 +1,6 @@
 import { ModuleGenerator } from './module-generator.js';
 import { ModelParser } from './model-parser.js';
+import { logger } from '@nexical/cli-core';
 import { ServiceBuilder } from './builders/service-builder.js';
 import { ApiBuilder } from './builders/api-builder.js';
 import { SdkBuilder } from './builders/sdk-builder.js';
@@ -29,9 +30,14 @@ export class ApiModuleGenerator extends ModuleGenerator {
     const apiYamlPath = path.join(this.modulePath, 'api.yaml');
 
     const { models, enums, config } = ModelParser.parse(modelsYamlPath);
+    console.info(`[ApiModuleGenerator] Models found: ${models.length}`);
 
     if (models.length === 0) {
-      console.info('No models found in models.yaml. Skipping generation.');
+      if (this.command) {
+        this.command.info('No models found in models.yaml. Skipping generation.');
+      } else {
+        logger.info('No models found in models.yaml. Skipping generation.');
+      }
       return;
     }
 
@@ -114,7 +120,7 @@ export class ApiModuleGenerator extends ModuleGenerator {
             const actionName = route.action
               ? route.action
                   .split('-')
-                  .map((s: string) => s.charAt(0).toUpperCase() + s.slice(1))
+                  .map((s) => s.charAt(0).toUpperCase() + s.slice(1))
                   .join('') + 'Action'
               : (methodPascal.includes(name) ? methodPascal : `${methodPascal}${name}`) + 'Action';
 
@@ -167,11 +173,8 @@ export class ApiModuleGenerator extends ModuleGenerator {
     // 3. Virtual Resources
     const virtualModels: ModelDef[] = [];
     for (const [entityName, routes] of Object.entries(customRoutes)) {
-      console.info(
-        'Checking virtual model:',
-        entityName,
-        'Processed:',
-        processedModels.has(entityName),
+      logger.debug(
+        `Checking virtual model: ${entityName} Processed: ${processedModels.has(entityName)}`,
       );
       if (processedModels.has(entityName)) continue;
 
@@ -301,12 +304,38 @@ export class ApiModuleGenerator extends ModuleGenerator {
 
     // 8. Middleware
     const middlewareFile = this.getOrCreateFile('src/middleware.ts');
-    new MiddlewareBuilder(models, allCustomRoutes).ensure(middlewareFile);
+    const modelRoutes: CustomRoute[] = models.flatMap((m) => [
+      {
+        path: `/api/${m.name.toLowerCase()}`,
+        verb: 'POST',
+        role: (m.role as string) || 'member',
+        method: 'create',
+        input: 'any',
+        output: 'any',
+      },
+      {
+        path: `/api/${m.name.toLowerCase()}`,
+        verb: 'GET',
+        role: (m.role as string) || 'member',
+        method: 'list',
+        input: 'any',
+        output: 'any',
+      },
+      {
+        path: `/api/${m.name.toLowerCase()}/[id]`,
+        verb: 'GET',
+        role: (m.role as string) || 'member',
+        method: 'get',
+        input: 'any',
+        output: 'any',
+      },
+    ]);
+    new MiddlewareBuilder(models, [...allCustomRoutes, ...modelRoutes]).ensure(middlewareFile);
 
     // 9. Access Control (Roles & Permissions)
     const accessYamlPath = path.join(this.modulePath, 'access.yaml');
     if (fs.existsSync(accessYamlPath)) {
-      console.info(`[ModuleGenerator] Found access.yaml. Generating Security Layer...`);
+      logger.info(`[ModuleGenerator] Found access.yaml. Generating Security Layer...`);
       const parsedAccess = parse(fs.readFileSync(accessYamlPath, 'utf-8'));
       const accessConfig = (parsedAccess.config || parsedAccess) as AccessConfig;
 
@@ -344,7 +373,7 @@ export class ApiModuleGenerator extends ModuleGenerator {
         });
 
         for (const [roleName, roleDef] of Object.entries(accessConfig.roles)) {
-          console.info(`[ModuleGenerator] Generating Role: ${roleName}`);
+          logger.info(`[ModuleGenerator] Generating Role: ${roleName}`);
           const pascalName = roleName.charAt(0).toUpperCase() + roleName.slice(1).toLowerCase();
           const roleFile = this.getOrCreateFile(`src/roles/${pascalName.toLowerCase()}.ts`);
 
@@ -361,7 +390,7 @@ export class ApiModuleGenerator extends ModuleGenerator {
 
       // 9b. Generate Permission Registry
       if (accessConfig.permissions) {
-        console.info(`[ModuleGenerator] Generating Permission Registry`);
+        logger.info(`[ModuleGenerator] Generating Permission Registry`);
 
         const rolePermissions: Record<string, string[]> = {};
         if (accessConfig.roles) {

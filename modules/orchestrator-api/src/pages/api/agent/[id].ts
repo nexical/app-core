@@ -15,6 +15,9 @@ export const GET = defineApi(
 
     const select = {
       id: true,
+      name: true,
+      hashedKey: true,
+      prefix: true,
       hostname: true,
       capabilities: true,
       lastHeartbeat: true,
@@ -26,7 +29,10 @@ export const GET = defineApi(
     const result = await AgentService.get(id, select, actor);
 
     if (!result.success) {
-      if (result.error?.code === 'NOT_FOUND') {
+      if (
+        result.error?.code === 'NOT_FOUND' ||
+        (typeof result.error === 'string' && result.error.includes('not_found'))
+      ) {
         return new Response(JSON.stringify({ error: result.error }), { status: 404 });
       }
       return new Response(JSON.stringify({ error: result.error }), { status: 500 });
@@ -54,6 +60,9 @@ export const GET = defineApi(
               type: 'object',
               properties: {
                 id: { type: 'string' },
+                name: { type: 'string' },
+                hashedKey: { type: 'string' },
+                prefix: { type: 'string' },
                 hostname: { type: 'string' },
                 capabilities: { type: 'array', items: { type: 'string' } },
                 lastHeartbeat: { type: 'string', format: 'date-time' },
@@ -79,6 +88,9 @@ export const PUT = defineApi(
     // Zod Validation
     const schema = z
       .object({
+        name: z.string().optional(),
+        hashedKey: z.string().optional(),
+        prefix: z.string().optional(),
         hostname: z.string(),
         capabilities: z.array(z.string()),
         lastHeartbeat: z.string().datetime().optional(),
@@ -89,6 +101,9 @@ export const PUT = defineApi(
     const validated = schema.parse(body);
     const select = {
       id: true,
+      name: true,
+      hashedKey: true,
+      prefix: true,
       hostname: true,
       capabilities: true,
       lastHeartbeat: true,
@@ -100,7 +115,10 @@ export const PUT = defineApi(
     const result = await AgentService.update(id, validated, select, actor);
 
     if (!result.success) {
-      if (result.error?.code === 'NOT_FOUND') {
+      if (
+        result.error?.code === 'NOT_FOUND' ||
+        (typeof result.error === 'string' && result.error.includes('not_found'))
+      ) {
         return new Response(JSON.stringify({ error: result.error }), { status: 404 });
       }
       return new Response(JSON.stringify({ error: result.error }), { status: 400 });
@@ -119,6 +137,9 @@ export const PUT = defineApi(
             type: 'object',
             properties: {
               id: { type: 'string' },
+              name: { type: 'string' },
+              hashedKey: { type: 'string' },
+              prefix: { type: 'string' },
               hostname: { type: 'string' },
               capabilities: { type: 'array', items: { type: 'string' } },
               lastHeartbeat: { type: 'string', format: 'date-time' },
@@ -138,6 +159,9 @@ export const PUT = defineApi(
               type: 'object',
               properties: {
                 id: { type: 'string' },
+                name: { type: 'string' },
+                hashedKey: { type: 'string' },
+                prefix: { type: 'string' },
                 hostname: { type: 'string' },
                 capabilities: { type: 'array', items: { type: 'string' } },
                 lastHeartbeat: { type: 'string', format: 'date-time' },
@@ -163,7 +187,10 @@ export const DELETE = defineApi(
     const result = await AgentService.delete(id, actor);
 
     if (!result.success) {
-      if (result.error?.code === 'NOT_FOUND') {
+      if (
+        result.error?.code === 'NOT_FOUND' ||
+        (typeof result.error === 'string' && result.error.includes('not_found'))
+      ) {
         return new Response(JSON.stringify({ error: result.error }), { status: 404 });
       }
       return new Response(JSON.stringify({ error: result.error }), { status: 500 });

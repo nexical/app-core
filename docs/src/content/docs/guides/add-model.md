@@ -45,7 +45,7 @@ models:
 Run the database compiler to check for errors and generate the Prisma Client.
 
 ```bash
-npx arc db:generate
+nexical db:generate
 ```
 
 ## 3. Create Migration

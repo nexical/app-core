@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
-import { ApiClient } from '@tests/integration/lib/client';
-import { Factory } from '@tests/integration/lib/factory';
-import { TestServer } from '@tests/integration/lib/server';
+import { ApiClient } from '../../../../../../tests/integration/lib/client';
+import { Factory } from '../../../../../../tests/integration/lib/factory';
+import { TestServer } from '../../../../../../tests/integration/lib/server';
 
 describe('Orchestrator Flow Integration', () => {
   let client: ApiClient;
@@ -16,6 +16,9 @@ describe('Orchestrator Flow Integration', () => {
       hostname: 'test-agent-flow',
       capabilities: ['test.task'],
     });
+    if (registerRes.status !== 200) {
+      console.error('Register failed:', JSON.stringify(registerRes.body, null, 2));
+    }
     expect(registerRes.status).toBe(200);
     const agent = registerRes.body.data;
     expect(agent.id).toBeDefined();
@@ -34,19 +37,19 @@ describe('Orchestrator Flow Integration', () => {
     });
     expect(jobRes.status).toBe(201);
     const job = jobRes.body.data;
-    console.log(`[Test DEBUG] Created job: ${job.id}`);
+    console.info(`[Test DEBUG] Created job: ${job.id}`);
 
     // Wait for DB consistency (small delay)
     await new Promise((resolve) => setTimeout(resolve, 500));
 
     // 4. Poll for Jobs (as an agent)
     await client.as('agent', { id: agent.id });
-    console.log(`[Test DEBUG] Polling as agent: ${agent.id}`);
+    console.info(`[Test DEBUG] Polling as agent: ${agent.id}`);
     const pollRes = await client.post('/api/orchestrator/poll', {
       agentId: agent.id,
       capabilities: ['test.task'],
     });
-    console.log(
+    console.info(
       `[Test DEBUG] Poll response status: ${pollRes.status}, data: ${JSON.stringify(pollRes.body.data)}`,
     );
     expect(pollRes.status).toBe(200);
@@ -79,7 +82,10 @@ describe('Orchestrator Flow Integration', () => {
     const job = await Factory.create('job', {
       type: 'test.retry',
       maxRetries: 1,
+      retryCount: 0,
       status: 'PENDING',
+      lockedBy: null,
+      nextRetryAt: null,
     });
 
     // Poll for it
@@ -100,6 +106,8 @@ describe('Orchestrator Flow Integration', () => {
 
     // Fail it again (exceed retries)
     // First must poll again because status was reset to PENDING
+    // Wait for backoff (1s)
+    await new Promise((resolve) => setTimeout(resolve, 1200));
     await client.post('/api/orchestrator/poll', {
       agentId: agent.id,
       capabilities: ['test.retry'],

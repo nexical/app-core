@@ -22,7 +22,7 @@ describe('JobLog API - List', () => {
 
     it('should allow job-owner to list jobLogs', async () => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const actor = await client.as('team', {});
+      const actor = await client.as('user', {});
 
       // Cleanup first to ensure clean state
       await Factory.prisma.jobLog.deleteMany();
@@ -42,7 +42,7 @@ describe('JobLog API - List', () => {
 
     it('should verify pagination metadata', async () => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const actor = await client.as('team', {});
+      const actor = await client.as('user', {});
 
       // Cleanup and seed specific count
       await Factory.prisma.jobLog.deleteMany();
@@ -80,7 +80,7 @@ describe('JobLog API - List', () => {
       await new Promise((r) => setTimeout(r, 10));
       // Reuse getActorStatement to ensure correct actor context
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const actor = await client.as('team', {});
+      const actor = await client.as('user', {});
 
       const val1 = 'level_' + Date.now() + '_A';
       const val2 = 'level_' + Date.now() + '_B';
@@ -102,7 +102,7 @@ describe('JobLog API - List', () => {
       await new Promise((r) => setTimeout(r, 10));
       // Reuse getActorStatement to ensure correct actor context
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const actor = await client.as('team', {});
+      const actor = await client.as('user', {});
 
       const val1 = 'message_' + Date.now() + '_A';
       const val2 = 'message_' + Date.now() + '_B';

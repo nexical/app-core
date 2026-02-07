@@ -18,15 +18,16 @@ describe('TableBuilder', () => {
     // Mock ui.yaml and models
     vi.mocked(fs.existsSync).mockReturnValue(true);
     vi.mocked(fs.readFileSync).mockImplementation((path) => {
-      if (String(path).endsWith('ui.yaml')) return 'backend: "user-api"';
+      if (String(path).endsWith('ui.yaml')) return 'backend: "user-api"\ntables:\n  User: {}';
       if (String(path).endsWith('models.yaml')) {
         return `
-User:
-  api: true
-  fields:
-    id: { type: String }
-    email: { type: String }
-    role: { type: String }
+models:
+  User:
+    api: true
+    fields:
+      id: { type: String }
+      email: { type: String }
+      role: { type: String }
 `;
       }
       return '';
@@ -35,15 +36,17 @@ User:
     const builder = new TableBuilder('test-ui', { name: 'test-ui' });
     await builder.build(project, undefined);
 
-    const sourceFile = project.getSourceFile('src/components/UserTable.tsx');
+    const sourceFile = project
+      .getSourceFiles()
+      .find((f) => f.getFilePath().endsWith('UserTable.tsx'));
     expect(sourceFile).toBeDefined();
 
     const text = sourceFile?.getFullText();
-    expect(text).toContain('export const UserTable');
+    expect(text).toContain('export function UserTable');
     expect(text).toContain('useUserQuery');
     expect(text).toContain('useDeleteUser');
     expect(text).toContain('email'); // Column
     expect(text).toContain('role'); // Column
-    expect(text).toContain('deleteMutation.mutate(item.id)');
+    expect(text).toContain('deleteMutation.mutate(deletingItem.id)');
   });
 });

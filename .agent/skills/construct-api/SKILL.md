@@ -36,7 +36,7 @@ We use a flexible Layered Architecture driven by schemas.
 
 1.  **Update `models.yaml`** to define data structures and standard CRUD roles.
 2.  **Update `api.yaml`** to define custom API operations (actions).
-3.  **Run `npx arc gen:api {name}`** to generate Endpoints, SDKs, and CRUD Services.
+3.  **Run `nexical gen api {name}`** to generate Endpoints, SDKs, and CRUD Services.
 4.  **Implement custom domain logic** in manual Service or Action files.
 
 ### 1.2 The Layers

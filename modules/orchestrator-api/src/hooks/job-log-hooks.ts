@@ -1,4 +1,5 @@
 import { HookSystem } from '@/lib/modules/hooks';
+import { db } from '@/lib/core/db';
 
 export async function init() {
   HookSystem.on('jobLog.created', async (payload: { id: string; actorId: string }) => {
@@ -15,7 +16,6 @@ export async function init() {
     // The new service dispatches 'jobLog.created' generally.
     // We will need to fetch the log here.
 
-    const { db } = await import('@/lib/core/db');
     const log = await db.jobLog.findUnique({ where: { id: payload.id } });
 
     if (log && log.level === 'ERROR') {

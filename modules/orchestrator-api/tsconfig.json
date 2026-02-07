@@ -8,6 +8,7 @@
     "../../src/**/*",
     "../../modules/*/src/types.d.ts",
     "tests/integration/lib/agent-test-kit.ts",
-    "tests/integration/lib/agent-runner.ts"
+    "tests/integration/lib/agent-runner.ts",
+    "tests/**/*"
   ]
 }

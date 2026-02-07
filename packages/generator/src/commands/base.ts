@@ -1,74 +1,116 @@
 import { Command } from 'commander';
-import { CustomHelp, type HelpSection } from '../lib/help.js';
+import { CustomHelp } from '../lib/help.js';
 import chalk from 'chalk';
+import { logger } from '../utils/logger.js';
 
-export interface CommandOptions {
+export interface CommandArgument {
   name: string;
   description: string;
-  args?: { [key: string]: string }; // name: description
-  options?: { [flags: string]: string }; // flags: description
+  required?: boolean;
+}
+
+export interface CommandOption {
+  name: string;
+  description: string;
+}
+
+export interface CommandDefinition {
+  args?: CommandArgument[] | Record<string, string>;
+  options?: CommandOption[] | Record<string, string>;
   helpMetadata?: {
     examples?: string[];
     troubleshooting?: string[];
   };
+  name?: string;
+  description?: string;
 }
 
 export abstract class BaseCommand {
   protected command: Command;
 
-  constructor(protected config: CommandOptions) {
-    this.command = new Command(config.name);
-    this.command.description(config.description);
-    this.configure();
+  constructor(config?: CommandDefinition) {
+    const ctor = this.constructor as unknown as {
+      args: CommandDefinition;
+      usage: string;
+      description: string;
+    };
+    const staticConfig = ctor.args;
+    const usage = ctor.usage;
+    const description = ctor.description;
+
+    const name = config?.name || usage || '';
+    const desc = config?.description || description || '';
+
+    this.command = new Command(name);
+    this.command.description(desc);
+
+    // Debug logging
+    // console.log('[BaseCommand] Initialized with name:', name);
+    // console.log('[BaseCommand] info method present:', typeof this.info);
+
+    this.configure(config || staticConfig);
   }
 
-  private configure() {
+  private configure(config?: CommandDefinition) {
+    if (!config) return;
+
     // Add arguments
-    if (this.config.args) {
-      Object.entries(this.config.args).forEach(([name, desc]) => {
-        this.command.argument(name, desc);
-      });
+    if (config.args) {
+      if (Array.isArray(config.args)) {
+        config.args.forEach((arg) => {
+          const argStr = arg.required ? `<${arg.name}>` : `[${arg.name}]`;
+          this.command.argument(argStr, arg.description);
+        });
+      } else {
+        Object.entries(config.args).forEach(([name, desc]) => {
+          this.command.argument(name, desc);
+        });
+      }
     }
 
     // Add options
-    if (this.config.options) {
-      Object.entries(this.config.options).forEach(([flags, desc]) => {
-        this.command.option(flags, desc);
-      });
+    if (config.options) {
+      if (Array.isArray(config.options)) {
+        config.options.forEach((opt) => {
+          this.command.option(opt.name, opt.description);
+        });
+      } else {
+        Object.entries(config.options).forEach(([flags, desc]) => {
+          this.command.option(flags, desc);
+        });
+      }
     }
 
     // Custom Help
     this.command.configureHelp({
-      formatHelp: (cmd, helper) => {
-        const sections: HelpSection[] = [];
-
-        if (this.config.helpMetadata?.examples) {
+      formatHelp: (cmd) => {
+        const sections = [];
+        const helpMetadata = config.helpMetadata;
+        if (helpMetadata?.examples) {
           sections.push({
             header: 'Examples',
-            content: this.config.helpMetadata.examples.join('\n'),
+            content: helpMetadata.examples.join('\n'),
           });
         }
-
-        if (this.config.helpMetadata?.troubleshooting) {
+        if (helpMetadata?.troubleshooting) {
           sections.push({
             header: 'Troubleshooting',
-            content: this.config.helpMetadata.troubleshooting.join('\n'),
+            content: helpMetadata.troubleshooting.join('\n'),
           });
         }
-
         return CustomHelp.format(cmd, sections);
       },
     });
 
     // Action Handler
-    this.command.action(async (...args) => {
+    this.command.action(async (...args: unknown[]) => {
       try {
         await this.run(...args);
       } catch (error) {
         console.error(chalk.red('Command failed:'));
         if (error instanceof Error) {
           console.error(chalk.red(error.message));
-          if (process.env.DEBUG) {
+          if (process.env.DEBUG === 'true') {
             console.error(chalk.dim(error.stack));
           }
         } else {
@@ -79,10 +121,25 @@ export abstract class BaseCommand {
     });
   }
 
-  public getCommand(): Command {
-    return this.command;
+  abstract run(...args: unknown[]): Promise<void>;
+
+  info(msg: string) {
+    logger.info(msg);
   }
 
-  // Abstract run method that must be implemented by subclasses
-  abstract run(...args: unknown[]): Promise<void>;
+  warn(msg: string) {
+    logger.warn(msg);
+  }
+
+  error(msg: string) {
+    logger.error(msg);
+  }
+
+  success(msg: string) {
+    logger.success(msg);
+  }
+
+  getCommand(): Command {
+    return this.command;
+  }
 }

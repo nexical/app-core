@@ -25,12 +25,11 @@ export async function onRequest(context: APIContext, next: MiddlewareNext) {
     const entity = tokenEntity?.user;
 
     if (entity) {
-      context.locals.actor = { ...entity, type: 'user' };
+      context.locals.actor = { ...entity, type: 'user', role: '${name.toUpperCase()}' };
       context.locals.actorType = 'user';
       return next();
     }
   }
-  // Dynamic Bouncer Pattern: Validate Actor Status
   if (context.locals.actor && context.locals.actorType === 'user') {
     const actorCheck = await db.user.findUnique({
       where: { id: context.locals.actor.id },
@@ -47,8 +46,5 @@ export async function onRequest(context: APIContext, next: MiddlewareNext) {
     return next();
   }
   return next();
-  if (publicRoutes.some((route) => context.url.pathname.startsWith(route))) return next();
-  if (publicRoutes.some((route) => context.url.pathname.startsWith(route))) return next();
-  if (publicRoutes.some((route) => context.url.pathname.startsWith(route))) return next();
 }
 export default { onRequest };

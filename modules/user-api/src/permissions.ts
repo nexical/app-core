@@ -1,3 +1,8 @@
+import { Permissions } from '@/lib/security/permissions';
+
+// GENERATED CODE - DO NOT MODIFY
+// GENERATED CODE - DO NOT MODIFY
+// GENERATED CODE - DO NOT MODIFY
 // GENERATED CODE - DO NOT MODIFY
 export const PermissionRegistry = {
   'user:list': {
@@ -36,7 +41,6 @@ export const RolePermissions = {
 
 export class Permission {
   public static check(action: PermissionAction, role: string): boolean {
-    const allowedActions = (RolePermissions as any)[role] as readonly string[] | undefined;
-    return allowedActions ? allowedActions.includes(action) : false;
+    return Permissions.check(action, role);
   }
 }

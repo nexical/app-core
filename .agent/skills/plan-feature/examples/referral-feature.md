@@ -10,7 +10,7 @@
 
 ## 2. Generate Code
 
-- [EXEC] Run `npx arc` to generate:
+- [EXEC] Run `nexical` to generate:
   - `modules/referrals-api/src/pages/api/referrals/claim.ts`
   - `modules/referrals-api/src/sdk/referrals-sdk.ts`
   - `modules/referrals-api/src/services/referral-service.ts` (Basic CRUD)

@@ -15,7 +15,7 @@ describe('DeadLetterJob API - Create', () => {
   // POST /api/dead-letter-job
   describe('POST /api/dead-letter-job', () => {
     it('should allow admin to create deadLetterJob', async () => {
-      const actor = await client.as('admin', {});
+      const actor = await client.as('user', { role: 'ADMIN' });
 
       const payload = {
         ...{
@@ -24,7 +24,7 @@ describe('DeadLetterJob API - Create', () => {
           failedAt: new Date().toISOString(),
           retryCount: 10,
         },
-        actorId: actor ? actor.id : undefined,
+        actorId: actor ? (actor as { id: string }).id : undefined,
       };
 
       const res = await client.post('/api/dead-letter-job', payload);
@@ -55,7 +55,7 @@ describe('DeadLetterJob API - Create', () => {
           failedAt: new Date().toISOString(),
           retryCount: 10,
         },
-        actorId: actor ? actor.id : undefined,
+        actorId: actor ? (actor as { id: string }).id : undefined,
       };
       const res = await client.post('/api/dead-letter-job', payload);
       expect([401, 403, 404]).toContain(res.status);

@@ -1,0 +1,34 @@
+config:
+  roles:
+    JOB_OWNER:
+      permissions:
+        - job:create
+        - job:read
+        - job:cancel
+        - job:complete
+        - job:fail
+        - job:progress
+    ADMIN:
+      permissions:
+        - job:read_all
+        - agent:read_all
+        - system:maintain
+  permissions:
+    job:create:
+      description: Create a new job
+    job:read:
+      description: Read job details
+    job:cancel:
+      description: Cancel a pending/running job
+    job:complete:
+      description: Mark a job as completed
+    job:fail:
+      description: Mark a job as failed
+    job:progress:
+      description: Update job progress
+    job:read_all:
+      description: View all jobs across the system
+    agent:read_all:
+      description: View all registered agents
+    system:maintain:
+      description: Perform system maintenance (stale checks)

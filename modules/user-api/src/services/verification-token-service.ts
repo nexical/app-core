@@ -35,6 +35,7 @@ export class VerificationTokenService {
   public static async get(
     id: string,
     select?: Prisma.VerificationTokenSelect,
+    actor?: ApiActor,
   ): Promise<ServiceResponse<VerificationToken | null>> {
     try {
       const data = await db.verificationToken.findUnique({
@@ -125,7 +126,7 @@ export class VerificationTokenService {
     }
   }
 
-  public static async delete(id: string): Promise<ServiceResponse<void>> {
+  public static async delete(id: string, actor?: ApiActor): Promise<ServiceResponse<void>> {
     try {
       await db.$transaction(async (tx) => {
         await tx.verificationToken.delete({ where: { id } });

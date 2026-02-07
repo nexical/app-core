@@ -1,5 +1,5 @@
 export * from './schema.js';
-export * from './commands/base.js';
+
 export * from './commands/audit/api.js';
 export * from './commands/gen/api.js';
 export * from './lib/module-locator.js';

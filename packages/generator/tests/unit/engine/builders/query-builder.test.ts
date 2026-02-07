@@ -23,10 +23,11 @@ describe('QueryBuilder', () => {
       }
       if (String(path).endsWith('models.yaml')) {
         return `
-User:
-  api: true
-  fields:
-    id: { type: String }
+models:
+  User:
+    api: true
+    fields:
+      id: { type: String }
 `;
       }
       return '';

@@ -19,9 +19,11 @@ export class ActorRegistry {
     );
 
     for (const path in modules) {
+      console.info(`[ActorRegistry] Loading provider from: ${path}`);
       const mod = modules[path] as { actors?: Record<string, ActorProvider> };
       if (mod.actors) {
         for (const [key, provider] of Object.entries(mod.actors)) {
+          console.info(`[ActorRegistry] Registered actor: ${key}`);
           this.register(key, provider as ActorProvider);
         }
       }

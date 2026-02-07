@@ -19,6 +19,18 @@ export const authConfig: AuthConfig = {
   trustHost: true,
   debug: false,
   secret: process.env.AUTH_SECRET || import.meta.env?.AUTH_SECRET,
+  logger: {
+    error(code, ...args) {
+      if (code.name === 'UnknownAction') return;
+      console.error(`[auth][error] ${code.name}: ${code.message}`, ...args);
+    },
+    warn(code, ...args) {
+      console.warn(`[auth][warn] ${code.name}: ${code.message}`, ...args);
+    },
+    debug(code, ...args) {
+      console.info(`[auth][debug] ${code.name}: ${code.message}`, ...args);
+    },
+  },
   pages: {
     signIn: '/login',
     error: '/login',

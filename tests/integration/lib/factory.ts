@@ -121,13 +121,13 @@ export class DataFactory {
 
       models.forEach((m) => dfs(m.name));
 
-      const orderedModels = result;
       const sortedModelNames = result.reverse();
 
       const deleteActions = sortedModelNames
         .map((modelName) => {
-          // @ts-expect-error
-          const delegate = this._client[modelName.charAt(0).toLowerCase() + modelName.slice(1)];
+          const delegate = (this._client as any)[
+            modelName.charAt(0).toLowerCase() + modelName.slice(1)
+          ];
           if (delegate && delegate.deleteMany) {
             return delegate.deleteMany();
           }
@@ -147,7 +147,7 @@ export class DataFactory {
    * @param model - The lower-case model name e.g. 'user', 'team'
    * @param data - The data to create
    */
-  async create<T = any>(model: keyof typeof db, data: any = {}): Promise<T> {
+  async create<T = any>(model: string | keyof typeof db, data: any = {}): Promise<T> {
     await this.loadFactories();
 
     // Check if model property exists on client first
@@ -160,6 +160,7 @@ export class DataFactory {
       );
     }
 
+    // @ts-expect-error - Dynamic indexing of Prisma client
     const delegate = this._client[model] as any;
 
     if (!delegate || !delegate.create) {

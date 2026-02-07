@@ -36,6 +36,7 @@ export class AgentSpawner {
       // Ensure we don't accidentally inherit production secrets unless specified
       AGENT_API_TOKEN: options.env?.AGENT_API_TOKEN || 'ne_team_test_key',
       AGENT_API_URL: options.env?.AGENT_API_URL || 'http://localhost:4321/api',
+      NODE_ENV: 'development', // Ensure main() runs even if parent is in test mode
     };
 
     // Explicitly remove variables if they are set to empty string (to ensure they are undefined in child)

@@ -14,7 +14,7 @@ export default fragment/* ts */`
 try {
     await db.$transaction(async (tx) => {
         await tx.${lowerEntity}.delete({ where: { id } });
-        await HookSystem.dispatch('${lowerEntity}.deleted', { id });
+        await HookSystem.dispatch('${lowerEntity}.deleted', { id, actorId: actor?.id });
     });
     return { success: true };
 } catch (error) {

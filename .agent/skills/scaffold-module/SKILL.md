@@ -62,12 +62,12 @@ Prefer using the CLI to ensure all boilerplate is correct.
 
 ```bash
 # 1. Scaffold base
-npx arc gen:api <name>
+nexical gen api <name>
 
 # 2. Define data/endpoints in models.yaml & api.yaml
 
 # 3. Generate implementation
-npx arc gen:api <name>
+nexical gen api <name>
 ```
 
 ## 3. Mandatory Code Patterns
@@ -130,5 +130,5 @@ npx arc gen:api <name>
 ## 4. Post-Scaffold Actions
 
 1.  **Install**: `npm install`
-2.  **Generate SDK**: `npx arc gen:api <name>` (for API modules).
-3.  **Audit**: `npx arc audit:api <name>` (Verify structure compliance).
+2.  **Generate SDK**: `nexical gen api <name>` (for API modules).
+3.  **Audit**: `nexical audit api <name>` (Verify structure compliance).

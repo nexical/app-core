@@ -22,9 +22,10 @@ describe('UiTestBuilder', () => {
       if (p.includes('ui.yaml')) return 'backend: "user-api"';
       if (p.includes('models.yaml')) {
         return `
-User:
-  fields:
-    name: string
+models:
+  User:
+    fields:
+      name: string
 `;
       }
       return '';

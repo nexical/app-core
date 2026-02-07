@@ -30,12 +30,13 @@ export class AgentService {
   public static async get(
     id: string,
     select?: Prisma.AgentSelect,
+    actor?: ApiActor,
   ): Promise<ServiceResponse<Agent | null>> {
     try {
       const data = await db.agent.findUnique({ where: { id }, select });
       if (!data) return { success: false, error: 'agent.service.error.not_found' };
 
-      const filtered = await HookSystem.filter('agent.read', data);
+      const filtered = await HookSystem.filter('agent.read', data, { actor });
 
       return { success: true, data: filtered };
     } catch (error) {
@@ -101,7 +102,7 @@ export class AgentService {
     }
   }
 
-  public static async delete(id: string): Promise<ServiceResponse<void>> {
+  public static async delete(id: string, actor?: ApiActor): Promise<ServiceResponse<void>> {
     try {
       await db.$transaction(async (tx) => {
         await tx.agent.delete({ where: { id } });

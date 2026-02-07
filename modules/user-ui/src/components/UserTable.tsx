@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useUserQuery, useDeleteUser } from '@/hooks/use-user';
-import { Permission } from '@modules/user-api/permissions';
+import { Permission } from '@modules/user-api/src/permissions';
 import { useAuth } from '@/hooks/use-auth';
 import { type ColumnDef } from '@tanstack/react-table';
 import { DataTable } from '@/components/ui/data-table/data-table';

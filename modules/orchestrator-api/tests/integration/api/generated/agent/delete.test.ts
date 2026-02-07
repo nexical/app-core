@@ -16,7 +16,7 @@ describe('Agent API - Delete', () => {
   describe('DELETE /api/agent/[id]', () => {
     it('should delete agent', async () => {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const actor = await client.as('team', {});
+      const actor = await client.as('user', {});
 
       const target = await Factory.create('agent', {
         ...{

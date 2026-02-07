@@ -71,7 +71,7 @@ Produce a checklist that clearly distinguishes between Definitions, Implementati
 
 ### 2. Generate Code
 
-- [EXEC] Run `npx arc` to generate Handlers, SDK, and CRUD Services.
+- [EXEC] Run `nexical` to generate Handlers, SDK, and CRUD Services.
 
 ### 3. Implementation (Manual)
 

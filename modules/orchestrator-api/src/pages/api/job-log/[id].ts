@@ -23,7 +23,10 @@ export const GET = defineApi(
     const result = await JobLogService.get(id, select, actor);
 
     if (!result.success) {
-      if (result.error?.code === 'NOT_FOUND') {
+      if (
+        result.error?.code === 'NOT_FOUND' ||
+        (typeof result.error === 'string' && result.error.includes('not_found'))
+      ) {
         return new Response(JSON.stringify({ error: result.error }), { status: 404 });
       }
       return new Response(JSON.stringify({ error: result.error }), { status: 500 });
@@ -97,7 +100,10 @@ export const PUT = defineApi(
     const result = await JobLogService.update(id, validated, select, actor);
 
     if (!result.success) {
-      if (result.error?.code === 'NOT_FOUND') {
+      if (
+        result.error?.code === 'NOT_FOUND' ||
+        (typeof result.error === 'string' && result.error.includes('not_found'))
+      ) {
         return new Response(JSON.stringify({ error: result.error }), { status: 404 });
       }
       return new Response(JSON.stringify({ error: result.error }), { status: 400 });
@@ -160,7 +166,10 @@ export const DELETE = defineApi(
     const result = await JobLogService.delete(id, actor);
 
     if (!result.success) {
-      if (result.error?.code === 'NOT_FOUND') {
+      if (
+        result.error?.code === 'NOT_FOUND' ||
+        (typeof result.error === 'string' && result.error.includes('not_found'))
+      ) {
         return new Response(JSON.stringify({ error: result.error }), { status: 404 });
       }
       return new Response(JSON.stringify({ error: result.error }), { status: 500 });

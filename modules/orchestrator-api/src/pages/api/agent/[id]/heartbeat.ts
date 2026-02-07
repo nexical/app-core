@@ -18,7 +18,7 @@ export const POST = defineApi(
 
     // 3. Security Check
     const combinedInput = { ...context.params, ...query, ...input };
-    await ApiGuard.protect(context, 'public', combinedInput);
+    await ApiGuard.protect(context, 'anonymous', combinedInput);
 
     // Inject userId from context for protected routes
     const user = context.locals.actor;
@@ -40,7 +40,6 @@ export const POST = defineApi(
     return { success: true, data: filteredResult.data };
   },
   {
-    protected: false,
     summary: 'Update agent heartbeat',
     tags: ['Agent'],
     requestBody: {
@@ -66,5 +65,6 @@ export const POST = defineApi(
         },
       },
     },
+    protected: false,
   },
 );

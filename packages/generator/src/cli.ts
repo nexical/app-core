@@ -10,7 +10,6 @@ const __dirname = path.dirname(__filename);
 // Dynamic Command Loading
 // Exported for testing/programmatic usage
 export const program = new Command();
-
 program.name('arc').description('ArcNexus Generator CLI').version('0.0.1');
 
 async function registerCommands() {
@@ -36,11 +35,55 @@ async function registerCommands() {
         try {
           // Use file:// protocol for absolute paths in ESM imports on Windows/Linux
           const module = await import(`file://${fullPath}`);
-          // Assumes the command class is the default export
+
           if (module.default && typeof module.default === 'function') {
-            const commandInstance = new module.default();
-            if (commandInstance.getCommand) {
-              program.addCommand(commandInstance.getCommand());
+            const CommandClass = module.default;
+            const usage = CommandClass.usage;
+            const description = CommandClass.description || '';
+            const argsDef = CommandClass.args || {};
+
+            if (usage) {
+              const cmd = program.command(usage).description(description);
+
+              if (argsDef.args) {
+                argsDef.args.forEach(
+                  (arg: { name: string; description: string; required?: boolean }) => {
+                    const argName = arg.required ? `<${arg.name}>` : `[${arg.name}]`;
+                    cmd.argument(argName, arg.description);
+                  },
+                );
+              }
+
+              if (argsDef.options) {
+                argsDef.options.forEach(
+                  (opt: {
+                    name: string;
+                    description: string;
+                    default?: string | boolean | string[];
+                  }) => {
+                    cmd.option(opt.name, opt.description, opt.default);
+                  },
+                );
+              }
+
+              cmd.action(async (...args: unknown[]) => {
+                const options = args.pop() as Record<string, unknown>;
+                const positionalArgs = args;
+                const finalOptions = { ...options };
+
+                if (argsDef.args) {
+                  argsDef.args.forEach((arg: { name: string }, index: number) => {
+                    finalOptions[arg.name] = positionalArgs[index];
+                  });
+                }
+
+                const commandInstance = new CommandClass(program, {});
+                await commandInstance.run(finalOptions);
+              });
+
+              console.info(`[CLI] Registered command: ${usage}`);
+            } else {
+              console.warn(`[CLI] Skipping ${entry.name}: missing static usage`);
             }
           }
         } catch (error) {
@@ -50,7 +93,9 @@ async function registerCommands() {
     }
   }
 
+  console.info(`[CLI] Scanning for commands in: ${commandsDir}`);
   await scanDir(commandsDir);
+  console.info(`[CLI] Registration complete.`);
 }
 
 export async function main() {
@@ -58,7 +103,7 @@ export async function main() {
     await registerCommands();
     await program.parseAsync(process.argv);
   } catch (error) {
-    console.error(chalk.red('Unexpected error:'), error);
+    console.error(chalk.red('CLI Error:'), error);
     process.exit(1);
   }
 }

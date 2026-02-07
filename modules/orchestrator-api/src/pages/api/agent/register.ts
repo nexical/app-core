@@ -2,8 +2,8 @@
 import { defineApi } from '@/lib/api/api-docs';
 import { ApiGuard } from '@/lib/api/api-guard';
 import { HookSystem } from '@/lib/modules/hooks';
-import type { RegisterAgentDTO } from '@modules/orchestrator-api/src/sdk';
 import { RegisterAgentAction } from '@modules/orchestrator-api/src/actions/register-agent';
+import type { RegisterAgentDTO } from '@modules/orchestrator-api/src/sdk';
 
 // GENERATED CODE - DO NOT MODIFY
 export const POST = defineApi(
@@ -18,7 +18,7 @@ export const POST = defineApi(
 
     // 3. Security Check
     const combinedInput = { ...context.params, ...query, ...input };
-    await ApiGuard.protect(context, 'public', combinedInput);
+    await ApiGuard.protect(context, 'anonymous', combinedInput);
 
     // Inject userId from context for protected routes
     const user = context.locals.actor;
@@ -40,7 +40,6 @@ export const POST = defineApi(
     return { success: true, data: filteredResult.data };
   },
   {
-    protected: false,
     summary: 'Register or update an agent',
     tags: ['Agent'],
     requestBody: {
@@ -67,6 +66,9 @@ export const POST = defineApi(
               type: 'object',
               properties: {
                 id: { type: 'string' },
+                name: { type: 'string' },
+                hashedKey: { type: 'string' },
+                prefix: { type: 'string' },
                 hostname: { type: 'string' },
                 capabilities: { type: 'array', items: { type: 'string' } },
                 lastHeartbeat: { type: 'string', format: 'date-time' },
@@ -79,5 +81,6 @@ export const POST = defineApi(
         },
       },
     },
+    protected: false,
   },
 );

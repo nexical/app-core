@@ -43,7 +43,7 @@ The entrypoint is `{{ target_file }}` (SKILL.md), but you should also manage tem
 You are ALSO responsible for keeping the Global Docs (`{{ arch_file }}`, `{{ modules_file }}`) in sync with reality.
 
 **GENERATOR PROTOCOL**:
-The system relies on `packages/generator` (invoked via `npx arc`).
+The system relies on `packages/generator` (invoked via `nexical`).
 
 - **NEVER** write templates for files that should be generated (Actions, SDKs, plain Services).
 - **ALWAYS** instruct the user to update `models.yaml` or `api.yaml`.

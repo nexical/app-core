@@ -11,7 +11,7 @@ forms:
       component:
         name: PasswordInput
         path: '@/components/ui/password-input'
-    
+
 # 3. Tables Configuration
 tables:
   User:
@@ -20,8 +20,8 @@ tables:
 # 4. Shell Registration
 shells:
   - name: AuthShell
-    matcher: 
-      path: '/login*' 
+    matcher:
+      path: '/login*'
   - name: AuthShell
     matcher:
       path: '/register*'
@@ -44,28 +44,28 @@ pages:
     layout: AuthShell
     component: Login
     meta:
-      title: "Login"
+      title: 'Login'
   - path: /register
     layout: AuthShell
     component: Register
     meta:
-      title: "Create Account"
+      title: 'Create Account'
   - path: /forgot-password
     layout: AuthShell
     component: ForgotPassword
     meta:
-      title: "Forgot Password"
+      title: 'Forgot Password'
   - path: /admin/users
     layout: DashboardShell
     component: AdminUserManagement
     permissions: [auth:sudo]
     meta:
-      title: "User Management"
+      title: 'User Management'
   - path: /settings/profile
     layout: DashboardShell
     component: UserProfile
     meta:
-      title: "Profile Settings"
+      title: 'Profile Settings'
 
 # 6. Registry
 registry:
