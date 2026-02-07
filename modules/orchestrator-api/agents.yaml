@@ -1,5 +1,0 @@
-agents:
-  - name: 'EchoProcessor'
-    type: 'job'
-    payload:
-      message: string
