@@ -1,5 +1,5 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
-import { ApiClient } from '@nexical/sdk-core';
+import { ApiClient } from '@nexical/sdk/core';
 import { UserSDK as BaseUserSDK } from './user-sdk.js';
 import { AuthSDK as BaseAuthSDK } from './auth-sdk.js';
 

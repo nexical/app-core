@@ -1,5 +1,5 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
-import { BaseResource, ApiClient } from '@nexical/sdk-core';
+import { BaseResource, ApiClient } from '@nexical/sdk/core';
 import { JobSDK as BaseJobSDK } from './job-sdk.js';
 import { JobLogSDK as BaseJobLogSDK } from './job-log-sdk.js';
 import { AgentSDK as BaseAgentSDK } from './agent-sdk.js';
