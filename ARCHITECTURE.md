@@ -63,21 +63,21 @@ We utilize a 3-tier modular monolith architecture to ensure maintainability and 
   - **MANDATORY**: Implement the `public static async run(input: unknown, context: APIContext)` signature.
   - **MANDATORY**: Verify `context.locals.actor` exists and is authorized.
   - **RULE**: Actions MUST NOT access the 'db' (Prisma) directly. They MUST delegate all database operations to Services.
-  - **MIXED DIRECTORY:** Contains both generated and manual files. **CRITICAL: NEVER edit files with the `// GENERATED CODE` header.**
+  - **MIXED DIRECTORY:** Contains both machine-generated and manual files. **CRITICAL: NEVER edit files with the `// GENERATED CODE` header.**
 
 #### 2. The API Page (Handlers - GENERATED)
 
 - **Location:** `modules/{name}/src/pages/api/`
 - **Role:** Request/Response lifecycle management.
-- **CRITICAL:** These files are **STRICTLY GENERATED** from `api.yaml`. Do not edit them manually.
+- **CRITICAL:** These files are **STRICTLY GENERATED** from `api.yaml` and wrapped in `defineApi`. Do not edit them manually.
 
 #### 3. The Service (Business Logic)
 
 - **Location:** `modules/{name}/src/services/`
 - **Naming Convention:**
   - **Generated CRUD**: `{model}-service.ts` (STRICTLY GENERATED - DO NOT EDIT).
-  - **Manual Domain Logic**: `{kebab-case}-ops-service.ts`.
-- **Role:** The "System of Record" authority and exclusive DB gateway.
+  - **Manual Domain Logic**: `{kebab-case}-service.ts`.
+- **Role:** The "System of Record" authority and database gateway.
 - **Responsibilities:**
   - Authority for specific model logic.
   - Handles database transactions (`db.$transaction`).
@@ -94,7 +94,7 @@ We utilize a 3-tier modular monolith architecture to ensure maintainability and 
   - **MANDATORY**: Define a `public static jobType: string`.
   - **MANDATORY**: Define a `public schema` (Zod) for payload validation.
   - **MANDATORY**: Access job data via `job.payload`.
-  - **RULE**: Agents MUST NOT access the 'db' directly. Use Services or `context.api`.
+  - **RULE**: Direct 'db' access is permitted for pragmatic implementation, but delegation to Services is recommended for reusable logic.
 
 #### 5. Storage Provider Pattern
 
@@ -106,8 +106,8 @@ We utilize a 3-tier modular monolith architecture to ensure maintainability and 
 
 - **Location**: `src/lib/core/db.ts`
 - **Role**: The "System of Record" for all database operations.
-- **Rule**: Services must import `db` from `@/lib/core/db`.
-- **Prohibition**: Actions and Agents are forbidden from importing this file.
+- **Rule**: Backend layers (Services, Hooks, Agents) must import `db` from `@/lib/core/db`.
+- **Prohibition**: Actions are strictly forbidden from importing this file. They MUST delegate to Services.
 
 ---
 
@@ -117,9 +117,9 @@ We utilize a 3-tier modular monolith architecture to ensure maintainability and 
 
 Sensitive actions (password reset, etc.) **MUST NOT** leak user existence. Return consistent responses regardless of success/failure.
 
-### 2. Service-Only Data Access
+### 2. Pragmatic Data Access
 
-The Service Layer is the **exclusive** authority for database interactions. No other layer (Actions, Hooks, Policies, Agents, Middleware) is permitted to import `db`.
+While the Service Layer is the primary authority for database interactions, direct `db` access is permitted in Hooks and Agents to maintain modularity and avoid excessive service-to-service coupling. Actions remain strictly isolated.
 
 ---
 

@@ -104,7 +104,24 @@ We use a **Modular API + Federated SDK** architecture.
 **CRITICAL**: `src/sdk/` and `src/pages/api/` are **STRICTLY GENERATED**. Do not edit them manually.
 **MIXED DIRECTORIES**: `src/services/` and `src/actions/` are **MIXED** directories. While the generator may output boilerplate, custom domain logic MUST be implemented in manual files within these folders. These manual files are preserved during regeneration.
 
-**SECURITY RULE**: Actions must **NEVER** access `db` directly; they must delegate all database access to Services.
+**ACTION-SERVICE-GATEWAY SPLIT**:
+
+- **Endpoints** (`src/pages/api`) MUST call **Actions**.
+- **Actions** (`src/actions`) MUST orchestrate logic, verify actor context, and delegate to **Services**.
+- **Actions** MUST NOT access `db` directly.
+- **Services** (`src/services`) MUST NOT import other Services directly. Use Actions to orchestrate multi-service workflows.
+
+**MODULE INITIALIZATION**:
+Every API module MUST include a `src/server-init.ts` file to register its own roles, hooks, and providers. The core platform discovers these files automatically.
+
+```typescript
+// src/server-init.ts
+export const init = async () => {
+  // Register module roles and hooks
+  import.meta.glob('./roles/*.ts', { eager: true });
+  import.meta.glob('./hooks/*.ts', { eager: true });
+};
+```
 
 ### Definition: How to Define It
 
@@ -896,7 +913,7 @@ Use this for discrete, async tasks (e.g., "Scrape URL", "Generate Summary").
 
 - **Base Class**: `JobProcessor` from `@nexical/agent/src/core/processor.js`.
 
-- **Requirements**: Must delegate logic to Services and handle `ServiceResponse`. Throwing an error triggers the queue's retry logic.
+- **Requirements**: Must handle `ServiceResponse` when calling services. Throwing an error triggers the queue's retry logic. Direct `db` access is permitted for pragmatic implementation.
 
 ```typescript
 // modules/scraper/src/agent/scrape-processor.ts
@@ -907,22 +924,21 @@ import { ScrapeService } from '../services/scrape-service';
 
 import { HookSystem } from '@/lib/modules/hooks';
 
+import { db } from '@/lib/core/db';
+
 export class ScrapeProcessor extends JobProcessor<ScrapeInput> {
   jobType = 'scrape.url';
 
   async process(job: AgentJob<ScrapeInput>) {
-    // 1. Delegate to Service Layer
-
+    // 1. Pragmatic DB access or Service delegation
     const { success, error, data } = await ScrapeService.scrape(job.data.url);
 
     // 2. Handle failure for queue retries
-
     if (!success) {
       throw new Error(`Scrape failed: ${error?.message}`);
     }
 
     // 3. Dispatch events for side effects
-
     await HookSystem.dispatch('scrape.completed', { url: job.data.url });
   }
 }
@@ -934,7 +950,7 @@ Use this for long-running background listeners (e.g., "System Monitor", "Discord
 
 - **Base Class**: `PersistentAgent` from `@nexical/agent/src/core/persistent.js`.
 
-- **Requirements**: Must handle `ServiceResponse` for all calls to Services or the Federated SDK.
+- **Requirements**: Must handle `ServiceResponse` for all calls to Services or the Federated SDK. Direct `db` access is permitted.
 
 ```typescript
 // modules/monitor/src/agent/sys-monitor.ts
@@ -945,12 +961,13 @@ import { MonitorService } from '../services/monitor-service';
 
 import { api } from '@/lib/api/api';
 
+import { db } from '@/lib/core/db';
+
 export class SystemMonitor extends PersistentAgent {
   name = 'sys-monitor';
 
   protected async tick() {
-    // Use Services or the Federated SDK
-
+    // Use Services, Federated SDK, or direct DB access
     const { success, error } = await MonitorService.checkHealth();
 
     if (!success) {
