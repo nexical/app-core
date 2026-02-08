@@ -22,20 +22,46 @@ When you create a module (e.g., `modules/crm`), you simply place a file in `src/
 
 ### Definition: How to Define It
 
-You define a registry component by placing a React component file in a specific directory within your module's `src/registry`. The render order and internal name are derived from the filename.
+You define a registry component by placing a React component file in a specific directory within your module's `src/registry`. The render order and internal name are derived from the filename using the `{order}-{kebab-name}.tsx` pattern.
 
 > **Note**: While the core engine uses `src/components/shell/registry`, modules must strictly use `modules/{name}/src/registry`.
 
+**CRITICAL**: All interactive registry components MUST include the `'use client';` directive at the top of the file.
+
 ```tsx
-// modules/user/src/registry/header-end/20-user-menu.tsx
+// modules/user-ui/src/registry/header-end/20-user-menu.tsx
+'use client';
+
 import React from 'react';
 
 // The '20' prefix in the filename tells the shell where to place this link.
-// A lower number puts it earlier in the list.
+// A lower number puts it earlier in the list. This is the authoritative render order.
 
 export default function UserMenu() {
   return <div>My Menu</div>;
 }
+```
+
+### Standardized UI Manifest (ui.yaml)
+
+Every UI module must contain a `ui.yaml` manifest in its root. This file acts as the source of truth for the module's visual integration.
+
+- **Routes**: Defines virtual pages and their layout associations.
+- **Shells**: Defines custom shells and their activation patterns.
+- **Registry**: Configures the high-level metadata for registry injections.
+
+```yaml
+# modules/user-ui/ui.yaml
+routes:
+  /profile:
+    page: src/pages/profile.astro
+    shell: default
+
+registry:
+  header-end:
+    - name: user-menu
+      component: src/registry/header-end/20-user-menu.tsx
+      order: 20
 ```
 
 ### Usage: How It Is Used
@@ -831,9 +857,13 @@ This ensures that even if you change your Enum values from `ADMIN` to `SUPER_USE
 
 Some features introduce heavy dependencies that you don't want to burden your main API or UI bundles with. For example, `react-email` brings in a lot of React rendering logic that isn't needed for your API routes.
 
-### The Solution
+### The ArcNexus Solution
 
-Use **Micro-Modules** (Split Modules) to isolate these concerns.
+We use **Micro-Modules** (Split Modules) to isolate these concerns and follow a strict naming convention:
+
+- **`*-api`**: Core domain logic, models, services, and REST endpoints.
+- **`*-ui`**: Presentation layer, registry components, and routing.
+- **`*-email`**: Transactional email templates using React-Email.
 
 #### The "Email Split" Pattern
 
@@ -1005,7 +1035,7 @@ modules/my-feature-ui/
 │   ├── registry/         # "Pins" for the Shell (Sidebar, Header)
 │   ├── components/       # React Components (Organized by feature)
 │   ├── pages/            # Astro Pages (Routing)
-│   ├── init.ts           # init{ModuleName}Module function
+│   ├── server-init.ts    # Role/Hook Registration Entry Point (Manual or Generated)
 │   └── middleware.ts     # Module-specific middleware
 ```
 

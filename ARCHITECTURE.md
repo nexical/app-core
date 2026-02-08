@@ -22,14 +22,26 @@ We enforce a strict separation between the **Container** (Shell) and the **Conte
 
 - **Location:** `modules/{name}/src/registry/` (Standard) or `src/registry/` (Core Overrides)
 - **Role:** The "App Store." Every feature (Dashboard, User Profile) is a standalone file that "injects" itself into a specific zone.
-- **Naming Convention:** `{order}-{kebab-name}.tsx` (e.g., `10-dashboard.tsx`).
+- **Naming Convention:** `{order}-{kebab-name}.tsx` (e.g., `10-dashboard.tsx`). The `{order}-` prefix is the authoritative source for render order within a zone.
+- **Selection Logic:** Context-aware registries (like the `ShellRegistry`) utilize **LIFO (Last-In-First-Out)** selection. The latest module to register a component for a specific condition wins. Selection iterates in reverse order of registration.
+- **Client Directive:** Interactive registry components MUST include the `'use client';` directive at the top of the file to ensure proper hydration.
+
+### Standardized UI Configuration (ui.yaml)
+
+- **Location:** `modules/{name}/ui.yaml`
+- **Role:** The declarative manifest for UI modules. It defines routing, shell associations, and registry metadata.
+- **Rule:** Every UI module MUST provide a `ui.yaml` file. The generator uses this file to wire the module into the global shell.
 
 ### Core Neutrality Protocol
 
 The platform adheres to a strict "Agnostic Core" policy:
 
-- **Generic Discovery**: The Core handles integration (routing, theming, dependency resolution) via discovery of module-relative paths rather than hardcoded lists.
+- **Generic Discovery**: The Core handles integration (routing, theming, dependency resolution) via **Vite Glob Discovery** (`import.meta.glob`). It identifies `server-init.ts` files and `src/registry/` directories across all modules using a centralized `glob-helper.ts`.
 - **Module Loaders**: All cross-module registration must occur through the `HookSystem` or dedicated `Registries` (e.g., `RoleRegistry`, `EmailRegistry`).
+- **Registry Implementation Standards**:
+  - **Class-Based Singletons**: Registries must be classes that export a singleton instance or use static methods.
+  - **Map Storage**: Use a `Map` (or Immutable.js `Map`) for internal storage to ensure $O(1)$ lookups and clean overrides.
+  - **Override Support**: The `register` method MUST allow overwriting existing keys to enable the Split Module pattern (where one module overrides another).
 - **No Module Awareness**: No file in `src/` (outside of the module discovery helpers) should import directly from a module name unless that module is explicitly declared as a core provider.
 
 ---
