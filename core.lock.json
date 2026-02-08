@@ -22,7 +22,7 @@
   "docker/entrypoint.sh": "fe02187893fc10cb4a67378a8befe231663b9dfb499c54665d8a5c46300257e3",
   "eslint.config.mjs": "b225802a7b5f43cd78eae8e47fed5bd8871c37b976f22d77f8245ddd4201705a",
   "locales/en.json": "d74870d03848ce89547a6e1020a41309f85521306bb4d98dcec8ca7abdc354bd",
-  "package.json": "d08c19c63830fdca11681ab2ef41dccd277de5a3179852513877ac4580cc4eaf",
+  "package.json": "eed500fd036d67497928b5b050654aba4a78dede85ddb1f6a665beb4a44d9ad1",
   "playwright.config.ts": "a766e3161958a0cb55922a72cb2ade9bb6e1063ff210958b683d1bb1fe339557",
   "prisma.config.ts": "a4dd7dd5c35d045d3a20f1046656100228357470e75fb09110d8f9fb0c37220e",
   "prisma/models.yaml": "770d2e31d92608611848ac59ce7ffc0f3831cdf66ef34c08dc172f104dc076aa",
