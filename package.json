@@ -6,10 +6,6 @@
     "modules/*",
     "packages/*"
   ],
-  "bin": {
-    "prompt": "./scripts/prompt.ts",
-    "reskill": "./scripts/reskill.ts"
-  },
   "scripts": {
     "astro": "astro",
     "build": "npm run setup && astro build",
