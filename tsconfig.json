@@ -6,10 +6,9 @@
     "modules/**/*",
     "modules/*/src/types.d.ts",
     "prisma.config.ts",
-    "tests/**/*",
-    "packages/**/*"
+    "tests/**/*"
   ],
-  "exclude": ["dist", "node_modules"],
+  "exclude": ["node_modules", "dist", "prisma", "scripts"],
   "compilerOptions": {
     "target": "ES2022",
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
@@ -28,6 +27,7 @@
       "@nexical/generator-tests/*": ["packages/generator/tests/unit/*"]
     },
     "esModuleInterop": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "noEmit": true
   }
 }

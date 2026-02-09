@@ -4,9 +4,10 @@ import yaml from 'yaml';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const projectRoot = path.resolve(__dirname, '..');
-const prismaDir = path.join(projectRoot, 'prisma');
-const modulesDir = path.join(projectRoot, 'modules');
+const coreDir = path.resolve(__dirname, '..');
+const repoRoot = path.resolve(coreDir, '..');
+const prismaDir = path.join(coreDir, 'prisma');
+const modulesDir = path.join(repoRoot, 'apps/backend/modules');
 
 // Interfaces for our Schema Ontology
 interface PrismaField {
