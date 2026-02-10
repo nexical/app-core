@@ -63,7 +63,8 @@ We utilize a 3-tier modular monolith architecture to ensure maintainability and 
   - **MANDATORY**: Implement the `public static async run(input: unknown, context: APIContext)` signature.
   - **MANDATORY**: Verify `context.locals.actor` exists and is authorized.
   - **RULE**: Actions MUST NOT access the 'db' (Prisma) directly. They MUST delegate all database operations to Services.
-  - **MIXED DIRECTORY:** Contains both machine-generated and manual files. **CRITICAL: NEVER edit files with the `// GENERATED CODE` header.**
+- **CENTRALIZED SDK**: All SDK access (methods, types) MUST be routed through `@/lib/api`. Use `api.{module}` for methods and `{Module}ModuleTypes` for types.
+- **MIXED DIRECTORY:** Contains both machine-generated and manual files. **CRITICAL: NEVER edit files with the `// GENERATED CODE` header.**
 
 #### 2. The API Page (Handlers - GENERATED)
 
