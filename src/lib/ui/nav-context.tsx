@@ -1,9 +1,13 @@
 'use client';
 
 import React, { createContext, useContext } from 'react';
+import { UserModuleTypes } from '@/lib/api';
 
 export interface NavData {
-  context?: Record<string, unknown>;
+  context?: {
+    user?: UserModuleTypes.User;
+    [key: string]: unknown;
+  };
   workspaces?: unknown[]; // Placeholder for workspaces/scopes
 }
 
