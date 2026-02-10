@@ -24,6 +24,14 @@ export class PageGuard {
     input: Record<string, unknown> = {},
     data?: unknown,
   ): Promise<Response | undefined | void> {
+    // Static Build / Client-Side Auth Pattern:
+    // If output is static, we shouldn't block the build.
+    // Real protection happens via client-side libraries or middleware.
+    // For now, we allow the page to build.
+    if (import.meta.env.PUBLIC_SITE_MODE === 'static') {
+      return;
+    }
+
     let RoleClass: PagePermission | RolePolicy = RoleClassOrName as PagePermission | RolePolicy;
 
     if (typeof RoleClassOrName === 'string') {

@@ -20,11 +20,7 @@
     "paths": {
       "@/*": ["src/*"],
       "@modules/*": ["modules/*"],
-      "@tests/*": ["tests/*"],
-      "@nexical/agent/*": ["packages/agent/*"],
-      "@nexical/generator/*": ["packages/generator/src/*"],
-      "@nexical/cli-core": ["packages/generator/src/lib/cli-core.ts"],
-      "@nexical/generator-tests/*": ["packages/generator/tests/unit/*"]
+      "@tests/*": ["tests/*"]
     },
     "esModuleInterop": true,
     "skipLibCheck": true,
