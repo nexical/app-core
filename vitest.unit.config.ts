@@ -1,34 +1,23 @@
-import { getViteConfig } from 'astro/config';
+import { defineConfig } from 'vitest/config';
 import path from 'path';
 import tsconfigPaths from 'vite-tsconfig-paths';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-export default getViteConfig({
+export default defineConfig({
   plugins: [tsconfigPaths({ projects: ['./tsconfig.json'] })],
   test: {
     environment: 'jsdom',
     globals: true,
     setupFiles: ['./tests/unit/setup.ts'],
-    include: [
-      'tests/unit/**/*.test.{ts,tsx}',
-      'modules/**/tests/unit/**/*.test.{ts,tsx}',
-      'packages/**/tests/unit/**/*.test.{ts,tsx}',
-    ],
-    exclude: ['**/node_modules/**', '**/dist/**', '**/.agent/**'],
+    include: ['tests/unit/**/*.test.{ts,tsx}'],
+    exclude: ['**/node_modules/**', '**/dist/**'],
     coverage: {
       enabled: true,
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
-      include: [
-        'src/**/*.ts',
-        'src/**/*.tsx',
-        'modules/*/src/**/*.ts',
-        'modules/*/src/**/*.tsx',
-        'packages/*/src/**/*.ts',
-        'packages/*/src/**/*.tsx',
-      ],
+      include: ['src/**/*.ts', 'src/**/*.tsx'],
       exclude: [
         'src/**/*.d.ts',
         'src/**/*.test.ts',
@@ -38,10 +27,6 @@ export default getViteConfig({
         'src/types/**',
         'src/pages/api/**',
         '**/node_modules/**',
-        'modules/**/pages/api/**',
-        'modules/**/services/**',
-        'modules/**/sdk/**',
-        'packages/sdk/**',
         '**/index.ts',
         '**/types.ts',
         '**/contracts.ts',
@@ -64,7 +49,7 @@ export default getViteConfig({
   },
   resolve: {
     alias: {
-      // '@': path.resolve(__dirname, 'src'), // Handled by tsconfigPaths
+      '@': path.resolve(__dirname, 'src'),
       '@radix-ui/react-slot': path.resolve(__dirname, 'tests/unit/mocks/ui/radix-slot.tsx'),
       'astro:middleware': path.resolve(__dirname, 'tests/unit/mocks/astro.ts'),
       'astro:actions': path.resolve(__dirname, 'tests/unit/mocks/astro.ts'),

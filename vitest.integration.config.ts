@@ -15,11 +15,7 @@ export default defineConfig({
     environment: 'node',
     globals: true,
     setupFiles: ['./tests/integration/setup.ts'],
-    include: [
-      'tests/integration/**/*.test.{ts,tsx}',
-      'modules/**/tests/integration/**/*.test.{ts,tsx}',
-      'packages/agent/tests/integration/**/*.test.{ts,tsx}',
-    ],
+    include: ['tests/integration/**/*.test.{ts,tsx}'],
     exclude: ['**/node_modules/**', '**/dist/**'],
     testTimeout: 120000,
     hookTimeout: 120000,
@@ -29,7 +25,6 @@ export default defineConfig({
     alias: {
       'astro:schema': 'zod',
       '@tests': path.resolve(__dirname, './tests'),
-      '@modules': path.resolve(__dirname, './modules'),
       '@': path.resolve(__dirname, './src'),
     },
   },

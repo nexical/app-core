@@ -39,7 +39,7 @@ const ALL_PROJECTS = [
 
 export default defineConfig({
   testDir: '.',
-  testMatch: ['tests/e2e/**/*.spec.ts', 'modules/*/tests/e2e/**/*.spec.ts'],
+  testMatch: ['tests/e2e/**/*.spec.ts'],
   globalSetup: './tests/e2e/global-setup.ts',
   timeout: 120000,
   expect: {
