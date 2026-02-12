@@ -6,6 +6,11 @@ import 'dotenv/config'; // Ensure env vars are loaded
 const globalForPrisma = globalThis as unknown as { prisma_db_v1: PrismaClient };
 
 const prismaClientSingleton = () => {
+  if (process.env.DEBUG) {
+    console.log(
+      `[DB] Initializing Prisma with DATABASE_URL: ${process.env.DATABASE_URL ? 'PRESENT' : 'MISSING'}`,
+    );
+  }
   const pool = new Pool({ connectionString: process.env.DATABASE_URL });
   const adapter = new PrismaPg(pool);
   return new PrismaClient({ adapter });
