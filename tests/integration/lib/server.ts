@@ -74,7 +74,21 @@ export class ServerManager {
     // Merge envs.
     const spawnEnv = { ...process.env, ...env };
 
-    const astroPath = path.resolve(process.cwd(), 'node_modules/astro/astro.js');
+    let astroPath = path.resolve(process.cwd(), 'node_modules/astro/astro.js');
+    if (!fs.existsSync(astroPath)) {
+      // Try root node_modules if in a workspace
+      astroPath = path.resolve(process.cwd(), '../node_modules/astro/astro.js');
+    }
+    if (!fs.existsSync(astroPath)) {
+      // Try one more level up just in case (e.g. apps/backend)
+      astroPath = path.resolve(process.cwd(), '../../node_modules/astro/astro.js');
+    }
+
+    if (!fs.existsSync(astroPath)) {
+      console.error(`Could not find astro.js at ${astroPath}`);
+      throw new Error('Astro binary not found. Ensure dependencies are installed.');
+    }
+
     console.log(`Spawning Astro from: ${astroPath}`);
 
     this.serverProcess = spawn(

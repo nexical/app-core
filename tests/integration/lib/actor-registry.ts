@@ -14,6 +14,8 @@ export class ActorRegistry {
       [
         '../../../modules/**/tests/integration/actors.ts',
         '../../../modules/**/tests/integration/manual-actors.ts',
+        '../../../../apps/*/modules/**/tests/integration/actors.ts',
+        '../../../../apps/*/modules/**/tests/integration/manual-actors.ts',
       ],
       { eager: true },
     );
