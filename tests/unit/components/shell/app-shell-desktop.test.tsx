@@ -6,7 +6,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { AppShellDesktop } from '../../../../src/components/shell/app-shell-desktop';
 import { getZoneComponents } from '../../../../src/lib/ui/registry-loader';
 import { useShellStore } from '../../../../src/lib/ui/shell-store';
-import { useTranslation } from 'react-i18next';
+import { config } from '../../../../src/lib/core/config';
 
 // Mock dependencies
 vi.mock('../../../../src/lib/ui/registry-loader', () => ({
@@ -100,6 +100,20 @@ describe('AppShellDesktop', () => {
     expect(screen.getByTestId('mock-item')).toBeDefined();
   });
 
+  it('should render header end components', async () => {
+    const MockComp = () => <div data-testid="mock-header-item">Header Item</div>;
+    vi.mocked(getZoneComponents).mockImplementation(async (zone) => {
+      if (zone === 'header-end') return [{ name: 'test', component: MockComp, order: 1 }];
+      return [];
+    });
+
+    await act(async () => {
+      render(<AppShellDesktop>Content</AppShellDesktop>);
+    });
+
+    expect(screen.getByTestId('mock-header-item')).toBeDefined();
+  });
+
   it('should handle sidebar resizing', async () => {
     await act(async () => {
       render(<AppShellDesktop>Content</AppShellDesktop>);
@@ -191,6 +205,43 @@ describe('AppShellDesktop', () => {
     fireEvent.click(screen.getByTitle('Home'));
     expect(window.location.href).toBe('/');
 
+    fireEvent.keyDown(screen.getByTitle('Home'), { key: 'Enter' });
+    expect(window.location.href).toBe('/');
+
     window.location = originalLocation as any;
+  });
+
+  it('should handle keyboard resizing', async () => {
+    vi.mocked(useShellStore).mockReturnValue({
+      detailPanelId: 'test-panel',
+      setDetailPanel: mockSetDetailPanel,
+      panelProps: {},
+      sidebarWidth: 300,
+      setSidebarWidth: mockSetSidebarWidth,
+      detailsPanelWidth: 500,
+      setDetailsPanelWidth: mockSetDetailsPanelWidth,
+    } as any);
+
+    const MockPanel = () => <div data-testid="mock-panel">Panel</div>;
+    vi.mocked(getZoneComponents).mockImplementation(async (zone) => {
+      if (zone === 'details-panel') return [{ name: 'test-panel', component: MockPanel, order: 1 }];
+      return [];
+    });
+
+    await act(async () => {
+      render(<AppShellDesktop>Content</AppShellDesktop>);
+    });
+
+    const sidebarHandle = screen.getByRole('slider', { name: 'Resize sidebar' });
+    fireEvent.keyDown(sidebarHandle, { key: 'ArrowRight' });
+    expect(mockSetSidebarWidth).toHaveBeenCalledWith(310);
+    fireEvent.keyDown(sidebarHandle, { key: 'ArrowLeft' });
+    expect(mockSetSidebarWidth).toHaveBeenCalledWith(290);
+
+    const detailsHandle = screen.getByRole('slider', { name: 'Resize details panel' });
+    fireEvent.keyDown(detailsHandle, { key: 'ArrowLeft' });
+    expect(mockSetDetailsPanelWidth).toHaveBeenCalledWith(510);
+    fireEvent.keyDown(detailsHandle, { key: 'ArrowRight' });
+    expect(mockSetDetailsPanelWidth).toHaveBeenCalledWith(490);
   });
 });

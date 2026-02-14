@@ -26,6 +26,7 @@ export default defineConfig({
         'src/env.d.ts',
         'src/types/**',
         'src/pages/api/**',
+        'src/lib/email/email-theme-config.ts',
         '**/node_modules/**',
         '**/index.ts',
         '**/types.ts',

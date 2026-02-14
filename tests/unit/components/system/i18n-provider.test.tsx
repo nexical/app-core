@@ -71,4 +71,15 @@ describe('I18nProvider', () => {
     expect(i18n.addResourceBundle).not.toHaveBeenCalled();
     expect(i18n.changeLanguage).toHaveBeenCalledWith('fr');
   });
+
+  it('should not change language if already matches initialLanguage', () => {
+    (i18n as unknown as { language: string }).language = 'en';
+    render(
+      <I18nProvider initialLanguage="en" initialStore={{}}>
+        <div>Child</div>
+      </I18nProvider>,
+    );
+
+    expect(i18n.changeLanguage).not.toHaveBeenCalled();
+  });
 });

@@ -13,6 +13,12 @@ describe('Button', () => {
     expect(button.getAttribute('data-size')).toBe('default');
   });
 
+  it('should explicitly render as button when asChild is false', () => {
+    render(<Button asChild={false}>Explicit Button</Button>);
+    const button = screen.getByRole('button', { name: /explicit button/i });
+    expect(button.tagName.toLowerCase()).toBe('button');
+  });
+
   it('should apply variant classes', () => {
     render(<Button variant="destructive">Delete</Button>);
     const button = screen.getByRole('button', { name: /delete/i });
