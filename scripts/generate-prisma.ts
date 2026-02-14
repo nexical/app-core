@@ -103,6 +103,7 @@ function generatePrismaFile(schema: PrismaSchema): string {
   if (schema.datasource) {
     output += 'datasource db {\n';
     for (const [key, val] of Object.entries(schema.datasource)) {
+      if (key === 'url') continue; // Prisma 7 with @prisma/config uses prisma.config.ts
       let valueStr = val;
       if (typeof val === 'string' && !val.startsWith('env(') && !val.startsWith('"')) {
         valueStr = `"${val}"`;
