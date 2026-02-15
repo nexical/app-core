@@ -1,10 +1,6 @@
 import { defineConfig } from 'astro/config';
-
 import react from '@astrojs/react';
 import tailwindcss from '@tailwindcss/vite';
-
-import node from '@astrojs/node';
-
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { defu } from 'defu';
@@ -22,26 +18,14 @@ let moduleIntegrations = [];
 let moduleViteConfig = {};
 
 const loadedModules = await ModuleDiscovery.loadModules();
-
-let selectedAdapter = null;
-
 for (const module of loadedModules) {
   const { config } = module;
   if (config.integrations) moduleIntegrations.push(...config.integrations);
   if (config.vite) moduleViteConfig = defu(moduleViteConfig, config.vite);
-
-  if (config.adapter) {
-    if (selectedAdapter)
-      throw new Error(
-        `Multiple modules provide an Astro Adapter! Conflict between ${module.name} and previous adapter.`,
-      );
-    selectedAdapter = config.adapter;
-  }
 }
 
-// Resolve Final Adapter
+// Resolve Output Mode
 const isStatic = process.env.PUBLIC_SITE_MODE === 'static';
-const adapter = isStatic ? undefined : selectedAdapter || node({ mode: 'standalone' });
 
 // https://astro.build/config
 export default defineConfig({
@@ -77,7 +61,7 @@ export default defineConfig({
       },
     },
     build: {
-      chunkSizeWarningLimit: 3000,
+      chunkSizeWarningLimit: 4000,
       rollupOptions: {
         external: [
           /^node:/,
@@ -135,6 +119,4 @@ export default defineConfig({
       ],
     },
   }),
-
-  adapter,
 });
