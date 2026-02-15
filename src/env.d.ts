@@ -13,5 +13,5 @@ declare namespace App {
   }
 
   // Interface for modules to register their actor types
-  interface ActorMap {}
+  interface ActorMap { }
 }
