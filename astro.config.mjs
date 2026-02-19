@@ -4,7 +4,9 @@ import tailwindcss from '@tailwindcss/vite';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import { defu } from 'defu';
+import node from '@astrojs/node';
 import modulePages from './src/lib/integrations/module-pages-integration.ts';
+
 import moduleEmailTheme from './src/lib/integrations/module-email-theme-integration.ts';
 
 import moduleStyles from './src/lib/integrations/module-styles-integration.ts';
@@ -30,6 +32,7 @@ const isStatic = process.env.PUBLIC_SITE_MODE === 'static';
 // https://astro.build/config
 export default defineConfig({
   output: isStatic ? 'static' : 'server',
+  adapter: node({ mode: 'standalone' }),
   integrations: [react(), modulePages(), moduleEmailTheme(), moduleStyles(), ...moduleIntegrations],
   devToolbar: {
     enabled: process.env.ASTRO_DEV_TOOLBAR === 'true',
@@ -46,18 +49,18 @@ export default defineConfig({
           process.env.NODE_ENV === 'test'
             ? ['**/*']
             : [
-              '**/.git/**',
-              '**/node_modules/**',
-              '**/dist/**',
-              '**/packages/**',
-              '**/.agent/**',
-              '**/scripts/**',
-              '**/tests/**',
-              '**/db/**',
-              '**/tmp/**',
-              '**/*.txt',
-              '**/*.log',
-            ],
+                '**/.git/**',
+                '**/node_modules/**',
+                '**/dist/**',
+                '**/packages/**',
+                '**/.agent/**',
+                '**/scripts/**',
+                '**/tests/**',
+                '**/db/**',
+                '**/tmp/**',
+                '**/*.txt',
+                '**/*.log',
+              ],
       },
     },
     build: {
