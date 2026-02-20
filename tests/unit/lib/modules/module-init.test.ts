@@ -1,11 +1,13 @@
 /** @vitest-environment node */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { initializeModules } from '@/lib/modules/module-init';
-import * as GlobHelper from '@/lib/core/glob-helper';
+import { initializeModules } from ' @/lib/modules/module-init';
+import { GlobHelper } from ' @/lib/core/glob-helper';
 
-vi.mock('@/lib/core/glob-helper', () => ({
-  getCoreInits: vi.fn(),
-  getModuleInits: vi.fn(),
+vi.mock(' @/lib/core/glob-helper', () => ({
+  GlobHelper: {
+    getCoreInits: vi.fn(),
+    getModuleInits: vi.fn(),
+  },
 }));
 
 describe('module-init', () => {

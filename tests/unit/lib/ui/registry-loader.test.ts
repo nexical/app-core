@@ -1,15 +1,17 @@
 /** @vitest-environment node */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import * as GlobHelper from '../../../../src/lib/core/glob-helper';
+import { GlobHelper } from '../../../../src/lib/core/glob-helper';
 import { getZoneComponents } from '../../../../src/lib/ui/registry-loader';
 
 vi.mock('../../../../src/lib/core/glob-helper', () => ({
-  getCoreInits: vi.fn(),
-  getModuleInits: vi.fn(),
-  getClientModuleInits: vi.fn(),
-  getApiModules: vi.fn().mockReturnValue({}),
-  getMiddlewareModules: vi.fn(),
-  getRegistryModules: vi.fn(),
+  GlobHelper: {
+    getCoreInits: vi.fn(),
+    getModuleInits: vi.fn(),
+    getClientModuleInits: vi.fn(),
+    getApiModules: vi.fn().mockReturnValue({}),
+    getMiddlewareModules: vi.fn(),
+    getRegistryModules: vi.fn(),
+  },
 }));
 
 describe('registry-loader', () => {

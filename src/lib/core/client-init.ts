@@ -1,4 +1,4 @@
-import { getCoreInits, getClientModuleInits } from './glob-helper';
+import { GlobHelper } from './glob-helper';
 import { Logger } from './logger';
 
 /**
@@ -13,7 +13,7 @@ export async function initializeClientModules() {
   const promises: Promise<void>[] = [];
 
   // 1. Initialize Core (Shells)
-  const core = getCoreInits();
+  const core = GlobHelper.getCoreInits();
   Object.values(core).forEach((mod: unknown) => {
     const minit = mod as { init?: () => Promise<void> };
     if (typeof minit.init === 'function') promises.push(minit.init());
@@ -21,7 +21,7 @@ export async function initializeClientModules() {
   });
 
   // 2. Initialize Modules (Shared init.ts and client-init.ts)
-  const modules = getClientModuleInits();
+  const modules = GlobHelper.getClientModuleInits();
   Object.values(modules).forEach((mod: unknown) => {
     const minit = mod as { init?: () => Promise<void>; default?: () => Promise<void> };
     if (typeof minit.init === 'function') promises.push(minit.init());

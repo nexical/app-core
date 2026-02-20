@@ -1,4 +1,4 @@
-import { getCoreInits, getModuleInits } from '../core/glob-helper';
+import { GlobHelper } from '../core/glob-helper';
 
 /**
  * Dynamic Module Initialization
@@ -15,7 +15,7 @@ export async function initializeModules() {
 
   // We import glob eagerly so the side-effects (registration) run immediately.
   // 1. Initialize Core First (Registers default '*' shell)
-  const core = getCoreInits();
+  const core = GlobHelper.getCoreInits();
   Object.values(core).forEach((mod: unknown) => {
     const module = mod as { init?: () => Promise<void> };
     if (typeof module.init === 'function') promises.push(module.init());
@@ -23,7 +23,7 @@ export async function initializeModules() {
 
   // 2. Initialize Modules (Registers specific overrides like 'auth')
   // Includes standard 'init.ts' AND 'server-init.ts'
-  const modules = getModuleInits();
+  const modules = GlobHelper.getModuleInits();
   Object.values(modules).forEach((mod: unknown) => {
     const module = mod as { init?: () => Promise<void> };
     if (typeof module.init === 'function') promises.push(module.init());

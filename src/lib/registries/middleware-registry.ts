@@ -1,15 +1,15 @@
-export interface ModuleMiddleware {
-  publicRoutes?: string[];
-  onRequest?: (context: unknown, next: () => Promise<Response>) => Promise<Response | undefined>;
-}
-
 /**
  * Discovers and aggregates middleware from modules.
  * Uses Vite's import.meta.glob for dynamic loading.
  */
 import { ModuleDiscovery } from '../modules/module-discovery';
 
-import { getMiddlewareModules } from '../core/glob-helper';
+import { GlobHelper } from '../core/glob-helper';
+
+export interface ModuleMiddleware {
+  publicRoutes?: string[];
+  onRequest?: (context: unknown, next: () => Promise<Response>) => Promise<Response | undefined>;
+}
 
 // Cache for performance
 let cachedMiddlewares: ModuleMiddleware[] | null = null;
@@ -23,7 +23,7 @@ export async function getModuleMiddlewares(): Promise<ModuleMiddleware[]> {
 
   // 1. Load all available middleware files via Vite (Build/Runtime)
   // We use a glob to ensure Vite bundles these files
-  const globbedMiddlewares = getMiddlewareModules();
+  const globbedMiddlewares = GlobHelper.getMiddlewareModules();
 
   // 2. Load module configurations to determine the correct order (Phase + Order)
   const sortedModules = await ModuleDiscovery.loadModules();

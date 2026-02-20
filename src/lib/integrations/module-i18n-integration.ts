@@ -1,7 +1,6 @@
-/* eslint-disable */
 import { defu } from 'defu';
 import type { ModulePhase } from '../modules/module-discovery';
-import { getI18nCoreLocales, getI18nModuleLocales, getModuleConfigs } from '../core/glob-helper';
+import { GlobHelper } from '../core/glob-helper';
 
 const PHASE_ORDER: Record<ModulePhase, number> = {
   core: 0,
@@ -13,7 +12,11 @@ const PHASE_ORDER: Record<ModulePhase, number> = {
 
 interface RuntimeModule {
   name: string;
-  config: any;
+  config: {
+    type?: ModulePhase;
+    order?: number;
+    [key: string]: unknown;
+  };
 }
 
 export class ModuleI18nIntegration {
@@ -25,7 +28,7 @@ export class ModuleI18nIntegration {
     const languages = new Set<string>();
 
     // Uses import.meta.glob via helper to ensure files are bundled in build
-    const coreLocales = getI18nCoreLocales();
+    const coreLocales = GlobHelper.getI18nCoreLocales();
     Object.keys(coreLocales).forEach((path) => {
       const match = path.match(/\/locales\/(.+)\.json$/);
       if (match) {
@@ -34,10 +37,10 @@ export class ModuleI18nIntegration {
     });
 
     // 2. Scan Module Locales
-    const moduleLocales = getI18nModuleLocales();
+    const moduleLocales = GlobHelper.getI18nModuleLocales();
     Object.keys(moduleLocales).forEach((path) => {
       // path example: ../../modules/user/locales/en.json
-      const match = path.match(/\/modules\/[^\/]+\/locales\/(.+)\.json$/);
+      const match = path.match(/\/modules\/[^/]+\/locales\/(.+)\.json$/);
       if (match) {
         languages.add(match[1]);
       }
@@ -50,23 +53,23 @@ export class ModuleI18nIntegration {
    * returns the merged locale object for a specific language.
    * Merge Order: Core < Module 1 < Module 2 ...
    */
-  static async getMergedLocale(lang: string): Promise<Record<string, any>> {
-    const localeObjects: Record<string, any>[] = [];
+  static async getMergedLocale(lang: string): Promise<Record<string, unknown>> {
+    const localeObjects: Record<string, unknown>[] = [];
 
     // 1. Load Core Locale (Base)
-    const coreLocales = getI18nCoreLocales();
+    const coreLocales = GlobHelper.getI18nCoreLocales();
     // Find the specific language file
     const coreKey = Object.keys(coreLocales).find((k) => k.endsWith(`/locales/${lang}.json`));
 
     if (coreKey && coreLocales[coreKey]) {
-      const mod = coreLocales[coreKey] as any;
-      localeObjects.push(mod.default || mod);
+      const mod = coreLocales[coreKey] as Record<string, unknown>;
+      localeObjects.push((mod.default as Record<string, unknown>) || mod);
     }
 
     // 2. Load Module Locales (Overrides)
     // We must respect the module load order (Phase/Order)
     const modules = this.getRuntimeModules();
-    const moduleLocales = getI18nModuleLocales();
+    const moduleLocales = GlobHelper.getI18nModuleLocales();
 
     for (const module of modules) {
       // Find the locale file for this module
@@ -76,8 +79,8 @@ export class ModuleI18nIntegration {
       );
 
       if (moduleKey && moduleLocales[moduleKey]) {
-        const mod = moduleLocales[moduleKey] as any;
-        localeObjects.push(mod.default || mod);
+        const mod = moduleLocales[moduleKey] as Record<string, unknown>;
+        localeObjects.push((mod.default as Record<string, unknown>) || mod);
       }
     }
 
@@ -91,16 +94,17 @@ export class ModuleI18nIntegration {
    * ensuring it works in bundled environments (SSR, Prod) where sources are missing.
    */
   private static getRuntimeModules(): RuntimeModule[] {
-    const moduleConfigs = getModuleConfigs();
+    const moduleConfigs = GlobHelper.getModuleConfigs();
     const modules: RuntimeModule[] = [];
 
     for (const [path, mod] of Object.entries(moduleConfigs)) {
       // path example: ../../modules/user/module.config.mjs
-      const match = path.match(/\/modules\/([^\/]+)\/module\.config\.mjs$/);
+      const match = path.match(/\/modules\/([^/]+)\/module\.config\.mjs$/);
       if (!match) continue;
 
       const name = match[1];
-      const config = (mod as any).default || mod || {};
+      const config =
+        ((mod as Record<string, unknown>).default as RuntimeModule['config']) || mod || {};
 
       // Apply Defaults
       if (!config.type) config.type = 'feature';

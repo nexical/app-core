@@ -1,6 +1,6 @@
 import type { APIRoute, APIContext } from 'astro';
 
-import { getApiModules } from '../core/glob-helper';
+import { GlobHelper } from '../core/glob-helper';
 
 export type ApiActor = App.Locals['actor'];
 
@@ -178,7 +178,7 @@ export async function generateDocs(
   const paths: Record<string, Record<string, unknown>> = {};
   const modulePrefix = `/modules/${module.name}/src/pages/api`;
 
-  const allApiModules = getApiModules();
+  const allApiModules = GlobHelper.getApiModules();
   for (const [fileIdentifier, mod] of Object.entries(allApiModules)) {
     // Filter by current module
     if (!fileIdentifier.includes(modulePrefix)) continue;

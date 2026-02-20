@@ -27,9 +27,9 @@ Example: `tests/integration/api/teams.test.ts`.
 
 ```typescript
 import { describe, it, expect } from 'vitest';
-import { ApiClient } from '@tests/integration/lib/client';
-import { Factory } from '@tests/integration/lib/factory';
-import { TestServer } from '@tests/integration/lib/server';
+import { ApiClient } from ' @tests/integration/lib/client';
+import { Factory } from ' @tests/integration/lib/factory';
+import { TestServer } from ' @tests/integration/lib/server';
 ```
 
 ### 3. Use `ApiClient` with Actors (Recommended)
@@ -44,10 +44,12 @@ await client.as('user', { role: 'ADMIN', name: 'Alice' });
 
 // Authenticated request
 const response = await client.get('/api/users');
+
+// MANDATORY: Always verify status code FIRST
 expect(response.status).toBe(200);
 
 // Switch to a different actor fluently
-await client.as('user', { email: 'bob@example.com' });
+await client.as('user', { email: 'bob @example.com' });
 const bobRes = await client.get('/api/users');
 expect(bobRes.status).toBe(403);
 ```
@@ -59,12 +61,12 @@ The `.as(type, params)` system is modular: it discovers "actor providers" define
 Use `Factory` to create the state you need _before_ the API call. The factory dynamically loads definitions from each module's `tests/integration/factory.ts`.
 
 ```typescript
-import { hashPassword } from '@/modules/user/tests/integration/factory';
+import { hashPassword } from ' @/modules/user/tests/integration/factory';
 
 // Create a user directly in DB
 // Note: hashPassword is imported from the user module factory, not the core Factory
 const user = await Factory.create('user', {
-  email: 'test@example.com',
+  email: 'test @example.com',
   password: hashPassword('password'),
   name: 'Test User',
 });
@@ -92,6 +94,17 @@ npm run test:integration
 # Run a specific test file
 npm run test:integration tests/integration/api/teams.test.ts
 ```
+
+## Generated File Protection
+
+Integration tests in `generated/` directories are machine-generated.
+**DO NOT MODIFY** files containing the following header:
+
+```typescript
+// GENERATED CODE - DO NOT MODIFY
+```
+
+Modifications must be made by updating the source `api.yaml` or `models.yaml` and regenerating.
 
 ## Extending the Framework (Modular Factories)
 

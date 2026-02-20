@@ -1,12 +1,14 @@
 /** @vitest-environment node */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { defineApi } from '@/lib/api/api-docs';
-import * as GlobHelper from '@/lib/core/glob-helper';
-import { createMockAstroContext } from '@tests/unit/helpers';
+import { defineApi } from ' @/lib/api/api-docs';
+import { GlobHelper } from ' @/lib/core/glob-helper';
+import { createMockAstroContext } from ' @tests/unit/helpers';
 
 // Mock GlobHelper entirely
-vi.mock('@/lib/core/glob-helper', () => ({
-  getApiModules: vi.fn(),
+vi.mock(' @/lib/core/glob-helper', () => ({
+  GlobHelper: {
+    getApiModules: vi.fn(),
+  },
 }));
 
 describe('api-docs and defineApi', () => {
@@ -115,7 +117,7 @@ describe('api-docs and defineApi', () => {
         },
       });
 
-      const { generateDocs: gen } = await import('@/lib/api/api-docs');
+      const { generateDocs: gen } = await import(' @/lib/api/api-docs');
       const docs = await gen({ name: 'test-api', path: '' });
 
       expect(docs['/items']).toBeDefined();
@@ -140,7 +142,7 @@ describe('api-docs and defineApi', () => {
         },
       });
 
-      const { generateDocs: gen } = await import('@/lib/api/api-docs');
+      const { generateDocs: gen } = await import(' @/lib/api/api-docs');
       const docs = await gen({ name: 'test-api', path: '' });
 
       expect(docs['/']).toBeDefined(); // Line 128
@@ -159,7 +161,7 @@ describe('api-docs and defineApi', () => {
         '/modules/test-api/src/pages/api/admin.ts': mockModule,
       });
 
-      const { generateDocs: gen } = await import('@/lib/api/api-docs');
+      const { generateDocs: gen } = await import(' @/lib/api/api-docs');
 
       // 1. No actor -> show all
       const publicDocs = await gen({ name: 'test-api', path: '' });
