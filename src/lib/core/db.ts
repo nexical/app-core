@@ -7,7 +7,7 @@ const globalForPrisma = globalThis as unknown as { prisma_db_v1: PrismaClient };
 
 const prismaClientSingleton = () => {
   if (process.env.DEBUG) {
-    console.log(
+    console.info(
       `[DB] Initializing Prisma with DATABASE_URL: ${process.env.DATABASE_URL ? 'PRESENT' : 'MISSING'}`,
     );
   }
