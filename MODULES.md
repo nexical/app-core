@@ -22,11 +22,15 @@ When you create a module (e.g., `modules/crm`), you simply place a file in `src/
 
 ### Definition: How to Define It
 
-You define a registry component by placing a React component file in a specific directory within your module's `src/registry`. The render order and internal name are derived from the filename using the `{order}-{kebab-name}.tsx` pattern.
+You define a registry component by placing a React component file in a directory named after the target shell zone (e.g., `header-end`, `nav-main`) within your module's `src/registry`. The render order and internal name are derived from the filename using the `{order}-{kebab-name}.tsx` pattern.
 
-> **Note**: While the core engine uses `src/components/shell/registry`, modules must strictly use `modules/{name}/src/registry`.
+> **Note**: While the core engine uses `src/components/shell/registry`, modules must strictly use `modules/{name}/src/registry/{zone}/`.
 
-**CRITICAL**: All interactive registry components MUST include the `'use client';` directive at the top of the file.
+**CRITICAL STANDARDS**:
+
+- **Hydration**: All interactive registry components MUST include the `'use client';` directive at the top of the file to ensure proper hydration in the Astro/Shell environment.
+- **Layout**: Components SHOULD wrap content in a layout container (e.g., `<div className="flex items-center">`) to respect shell zone constraints.
+- **Exports**: Components MUST be exported as the `default` export.
 
 ```tsx
 // modules/user-ui/src/registry/header-end/20-user-menu.tsx
@@ -100,8 +104,9 @@ This often leads to untyped `fetch()` calls, scattered documentation, and no cle
 We use a **Modular API + Federated SDK** architecture.
 
 1.  **Modular API**: You define standard REST endpoints using `api.yaml` (OpenAPI) and `models.yaml` in your module. The generator (`nexical gen api`) automatically produces the server-side handlers and Prisma services.
-2.  **Federated SDK**: The generator also produces a type-safe SDK client for your module in `src/sdk/`.
-3.  **Aggregator**: The build system binds all these module SDKs into a single, global `api` client.
+2.  **Infrastructure Abstraction**: Manual endpoints are wrapped with `defineApi` for consistent formatting. List endpoints use `parseQuery` for Prisma-compatible filtering.
+3.  **Federated SDK**: The generator also produces a type-safe SDK client for your module in `src/sdk/`.
+4.  **Aggregator**: The build system binds all these module SDKs into a single, global `api` client.
 
 **CRITICAL**: `src/sdk/` and `src/pages/api/` are **STRICTLY GENERATED**. Do not edit them manually.
 **MIXED DIRECTORIES**: `src/services/` and `src/actions/` are **MIXED** directories. While the generator may output boilerplate, custom domain logic MUST be implemented in manual files within these folders. These manual files are preserved during regeneration.
@@ -246,7 +251,7 @@ Place a `.astro` (or `.md`, `.ts`) file in your module's `src/pages` directory. 
 ```astro
 ---
 // modules/user/src/pages/login.astro
-import Layout from "@/layouts/Layout.astro";
+import Layout from '@/layouts/Layout.astro';
 ---
 <Layout>
   <h1 class="auth-title">Login Page</h1>
@@ -534,9 +539,15 @@ interface UserRegisteredPayload {
 
 // Definition: Define what happens when the event fires.
 // Explicitly type the hook signature to avoid the forbidden 'any'.
-HookSystem.on<UserRegisteredPayload>('user.registered', async (data) => {
-  await sendWelcomeEmail(data.email);
-});
+// The second generic C defaults to 'unknown' if omitted.
+HookSystem.on<UserRegisteredPayload, { source: string }>(
+  'user.registered',
+  async (data, context) => {
+    // Use context to access request-level metadata
+    console.info(`User registered from ${context?.source ?? 'unknown source'}`);
+    await sendWelcomeEmail(data.email);
+  },
+);
 ```
 
 #### 2. Filters (Sequential/Pipeline)
@@ -545,9 +556,12 @@ Filters allow you to modify data before it is used. They run **sequentially** in
 
 ```ts
 // modules/access/src/server-init.ts
-HookSystem.on<UserData>('user.read', async (user) => {
-  // Add a field to the user object
-  return { ...user, canAccessPro: true };
+HookSystem.on<UserData, { isAdmin: boolean }>('user.read', async (user, context) => {
+  // Add a field to the user object if context allows
+  if (context?.isAdmin) {
+    return { ...user, canAccessPro: true };
+  }
+  return undefined; // Return undefined to skip modification
 });
 ```
 
@@ -965,7 +979,7 @@ export class ScrapeProcessor extends JobProcessor<ScrapeInput> {
 
 Use this for long-running background listeners (e.g., "System Monitor", "Discord Bot").
 
-- **Base Class**: `PersistentAgent` from `@nexical/agent/src/core/persistent.js`.
+- **Base Class**: `PersistentAgent` from ` @nexical/agent/src/core/persistent.js`.
 
 - **Requirements**: Must handle `ServiceResponse` for all calls to Services or the Federated SDK. Direct `db` access is permitted.
 

@@ -24,7 +24,8 @@ We enforce a strict separation between the **Container** (Shell) and the **Conte
 - **Role:** The "App Store." Every feature (Dashboard, User Profile) is a standalone file that "injects" itself into a specific zone.
 - **Naming Convention:** `{order}-{kebab-name}.tsx` (e.g., `10-dashboard.tsx`). The `{order}-` prefix is the authoritative source for render order within a zone.
 - **Selection Logic:** Context-aware registries (like the `ShellRegistry`) utilize **LIFO (Last-In-First-Out)** selection. The latest module to register a component for a specific condition wins. Selection iterates in reverse order of registration.
-- **Client Directive:** Interactive registry components MUST include the `'use client';` directive at the top of the file to ensure proper hydration.
+- **Client Directive:** Interactive registry components MUST include the `'use client';` directive at the top of the file to ensure proper hydration within the Astro/Shell environment.
+- **Shell-Agnostic Layout Wrapping:** Registry components SHOULD wrap content in a layout container (e.g., `flex items-center`) that respects the shell's viewport and zone constraints to ensure consistent alignment.
 
 ### Standardized UI Configuration (ui.yaml)
 
@@ -32,17 +33,23 @@ We enforce a strict separation between the **Container** (Shell) and the **Conte
 - **Role:** The declarative manifest for UI modules. It defines routing, shell associations, and registry metadata.
 - **Rule:** Every UI module MUST provide a `ui.yaml` file. The generator uses this file to wire the module into the global shell.
 
+### Polymorphic UI Primitives
+
+Core UI components in `src/components/ui/` MUST follow the **Polymorphic UI Pattern** (`asChild`). This allows for maximum extensibility in a modular ecosystem, as it enables developers to swap underlying elements (e.g., using a `<Button>` as an `<a>` or `<Link>`) while maintaining the core's visual identity and behavioral rules. This pattern is foundational for the platform's composable nature.
+
 ### Core Neutrality Protocol
 
 The platform adheres to a strict "Agnostic Core" policy:
 
 - **Dual Discovery Mechanism**: The Core identifies and integrates modules using two complementary systems:
-  - **Vite-Based (Runtime/Frontend)**: The `glob-helper.ts` uses `import.meta.glob` to gather code modules (initialization scripts, registry components, routes) during the build process and within the Astro application.
+  - **Vite-Based (Runtime/Frontend)**: The `GlobHelper` static utility class uses `import.meta.glob` to gather code modules (initialization scripts, registry components, routes) during the build process and within the Astro application.
   - **Node-Based (Server/Build-Time)**: The `ModuleDiscovery` static utility class uses Node.js `fs` and `jiti` to load `module.config.mjs` and calculate phase-based execution order. This is used for server-side initialization and scripts.
 - **Phased Execution Logic**: Modules are processed in a strict order defined by their `ModulePhase` (core -> provider -> feature -> integration -> theme) and an optional `order` priority within each phase. This ensures themes can consistently override feature logic.
 - **Module Loaders**: All cross-module registration must occur through the `HookSystem` or dedicated `Registries` (e.g., `RoleRegistry`, `EmailRegistry`).
 - **Registry Implementation Standards**:
+  - **File Structure & Naming**: Registries MUST be located in `src/lib/registries/` and follow the `*-registry.ts` naming convention.
   - **Singleton Registry Instance**: Registries MUST be implemented as classes with private `Map` storage and instance methods, exported as a single named constant instance to ensure a global singleton state and preserve insertion order.
+  - **Core Initialization**: Registries MUST be imported in `core/src/init.ts` to be correctly initialized during the platform boot sequence.
   - **LIFO Override Priority**: Selection logic MUST follow a Last-In-First-Out (LIFO) pattern. When registering an item that might already exist, the old key MUST be deleted before setting the new one to ensure it moves to the end of the Map (highest priority).
   - **Polymorphic Matchers**: Registries MUST support "Matchers" that can be either static string patterns (globs like `/*` or `*`) or dynamic functional predicates.
   - **Strongly-Typed Selection Context**: While generic signatures MAY default to `on<T, C = unknown>`, specific registry implementations MUST define concrete, strongly-typed Context interfaces (e.g., `ShellContext`) for their selection logic. Never use `any` for context.
@@ -58,6 +65,29 @@ The platform adheres to a strict "Agnostic Core" policy:
 
 We utilize a 3-tier modular monolith architecture to ensure maintainability and separation of concerns.
 
+### 2.1 API Infrastructure
+
+The platform provides a unified infrastructure for building and consuming APIs.
+
+#### 1. Centralized API Singleton
+
+The `api` object is the universal entry point for all data access, exported as a singleton instance of `NexicalClient`.
+
+- **Mandate**: All SDK access (methods and types) MUST be routed through the centralized `api` object and `*ModuleTypes` namespaces in ` @/lib/api`.
+- **Isomorphic Detection**: The client automatically detects its environment. Client-side requests use relative paths (`/api`) while server-side requests use absolute URLs from environment variables (`PUBLIC_SITE_URL`).
+- **Browser Debugging**: The `api` singleton is attached to `window.api` in browser environments for developer convenience.
+
+#### 2. Infrastructure Abstraction (defineApi)
+
+Manual API endpoints MUST be wrapped using `defineApi` from ` @/lib/api/api-docs`.
+
+- **Consistency**: Ensures consistent response formatting (ServiceResponse) and security enforcement.
+- **Metadata**: Integrates with OpenAPI documentation generation.
+
+#### 3. Query Parsing (parseQuery)
+
+List endpoints MUST use `parseQuery` from ` @/lib/api/api-query` to parse URL search parameters into structured Prisma `where`/`take`/`skip`/`orderBy` objects.
+
 ### 3. Module Internals: The Service Layer Pattern
 
 #### 1. The Controller (Actions)
@@ -71,7 +101,7 @@ We utilize a 3-tier modular monolith architecture to ensure maintainability and 
   - **MANDATORY**: Implement the `public static async run(input: unknown, context: APIContext)` signature.
   - **MANDATORY**: Verify `context.locals.actor` exists and is authorized.
   - **RULE**: Actions MUST NOT access the 'db' (Prisma) directly. They MUST delegate all database operations to Services.
-- **CENTRALIZED SDK**: All SDK access (methods, types) MUST be routed through `@/lib/api`. Use `api.{module}` for methods and `{Module}ModuleTypes` for types.
+- **CENTRALIZED SDK**: All SDK access (methods, types) MUST be routed through ` @/lib/api`. Use `api.{module}` for methods and `{Module}ModuleTypes` for types.
 - **MIXED DIRECTORY:** Contains both machine-generated and manual files. **CRITICAL: NEVER edit files with the `// GENERATED CODE` header.**
 
 #### 2. The API Page (Handlers)
@@ -140,3 +170,31 @@ While the Service Layer is the primary authority for database interactions, dire
 - **Location:** `src/lib/modules/hooks.ts`
 - **Role:** Cross-module communication without coupling.
 - **Registration**: Handled automatically via generated `server-init.ts`.
+- **Agnostic Core Enforcement**: To maintain core neutrality, all hook signatures use `unknown` as the default for context. This prevents the core system from needing knowledge of module-specific metadata shapes while allowing modules to pass request-level state securely.
+- **Execution Strategy**: Uses **Parallel Dispatch** (`Promise.allSettled`) for side-effects and **Sequential Pipelines** for data filtering.
+
+---
+
+## 6. Testing Protocols
+
+You MUST follow the specific instructions for the type of test you are creating.
+
+### Integration Tests
+
+**Reference**: [`core/tests/integration/README.md`](./core/tests/integration/README.md)
+
+- **Philosophy**: "Black Box" API testing + "White Box" Data Setup.
+- **Tooling**: Use `vitest` for orchestration and assertions.
+- **API Client**: Use `ApiClient` to make HTTP requests against the running server.
+- **Data Setup**: Use `Factory.create('model', ...)` to seed the DB directly. **DO NOT** use the API to create prerequisite data (it is slow and flaky).
+- **Auth**: Use `.as('actor', ...)` to handle authentication automatically.
+- **Assertion Standards**: Always verify the HTTP status code as the first assertion of any API request.
+
+### End-to-End (E2E) Tests
+
+**Reference**: [`core/tests/e2e/README.md`](./core/tests/e2e/README.md)
+
+- **Tooling**: Playwright.
+- **Selectors**: **ALWAYS** use `data-testid` attributes (`page.getByTestId(...)`) for selecting elements. Do not rely on CSS classes or text content unless testing those specifically.
+- **Pattern**: Use **Page Objects** for complex interactions.
+- **Setup**: Use the `actor` fixture to create data and log in instantly (bypassing the login UI).

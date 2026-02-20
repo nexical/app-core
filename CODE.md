@@ -43,6 +43,12 @@ We adhere to **Strict TypeScript** configuration.
 - **Optional Chaining**: Prefer optionally chained access (`data?.user?.name`) over verbose logical ANDs (`data && data.user && data.user.name`).
 - **Nullish Coalescing**: Use `??` for default values instead of `||` to strictly handle `null`/`undefined` without catching falsey values like `0` or `false`.
 
+### Registry & Hook Standards
+
+- **Functional Signature Normalization**: For static registry or event-bus classes (like `HookSystem`), generic handlers MUST be cast to a normalized `(data: unknown, context?: unknown) => unknown` signature for internal storage. This preserves external type safety via generics while satisfying `Map` type constraints.
+- **Fire-and-Forget Dispatch**: Use `Promise.allSettled` for dispatching side-effects to ensure that a failure in one listener does not disrupt the main execution flow.
+- **Sequential Pipeline**: Use serial loops for data filtering to ensure that transformations are applied in a predictable, ordered manner.
+
 ### Uniform Service Response
 
 - **Standardized Wrapper**: All public methods in **Services** and **Actions** MUST return a `ServiceResponse<T>` object.
@@ -50,8 +56,20 @@ We adhere to **Strict TypeScript** configuration.
   - `success`: Boolean indicating if the operation succeeded.
   - `data`: The payload on success (optional/nullable on failure).
   - `error`: A **string** containing the translation key or error message on failure (null on success).
+  - `status?`: The HTTP status code (optional).
   - `total?`: Optional count for paginated results.
 - **Mandatory Check**: Callers **MUST** always check the `success` flag before accessing the `data` property. Accessing `.data` without a success check is an anti-pattern.
+- **API Error Interface**: All API error responses must adhere to the standardized `ApiError` interface:
+  ```typescript
+  export interface ApiError {
+    body?: {
+      error?: string;
+      message?: string;
+    };
+    message?: string;
+    status?: number;
+  }
+  ```
 - **Purpose**: This ensures consistent error handling and data access across all layers of the modular monolith.
 
 ---
@@ -63,17 +81,17 @@ We enforce a strict module resolution strategy to avoid spaghetti dependencies.
 ### Import Aliases
 
 - **Mandatory Aliases**: You **MUST** use absolute import aliases for all internal code.
-  - `@/` refers to `src/`.
-  - `@modules/` refers to `modules/`.
-  - `@tests/` refers to `tests/`.
-- **Whitespace**: A **SINGLE SPACE** is mandatory after the opening quote for all internal aliases and workspace packages (e.g., `'@/'`, `'@modules/'`, `'@nexical/agent'`).
+  - ` @/` refers to `src/`.
+  - ` @modules/` refers to `modules/`.
+  - ` @tests/` refers to `tests/`.
+- **Whitespace**: A **SINGLE SPACE** is mandatory after the opening quote for all internal aliases and workspace packages (e.g., `'@/'`, `'@modules/'`, `'@tests/'`, `'@nexical/agent'`).
 - **Forbidden**: Deep relative imports that traverse up the tree (e.g., `../../components/button`).
 
 ### Relative Imports
 
 - **Siblings Only**: You **MAY** use relative imports (`./`) for files within the **same directory**.
   - _Good_: `import { Helper } from './helper';`
-  - _Bad_: `import { Button } from '../ui/button';` (Use `@/components/ui/button`)
+  - _Bad_: `import { Button } from '../ui/button';` (Use `'@/components/ui/button'`)
 
 ### Export Strategy
 
@@ -99,6 +117,16 @@ We use a utility-first approach powered by **Tailwind CSS**.
 - **Conditional Classes**: Use a utility like `cn` (clsx + tailwind-merge) for conditional class application.
   - _Bad_: ``className={`btn ${isActive ? 'active' : ''}`}``
   - _Good_: `className={cn('btn', isActive && 'active')}`
+
+### UI Primitives
+
+All UI primitives in `core/src/components/ui/` MUST strictly follow the Codebase Canon:
+
+- **Polymorphism**: Components MUST support the `asChild` prop using ` @radix-ui/react-slot` to allow underlying element swapping.
+- **Variant-Based Styling (CVA)**: Use `class-variance-authority` (CVA) to define component variants. Export the `variants` object alongside the component.
+- **Semantic Class Names**: CVA definitions SHOULD use semantic class names (e.g., `btn-default`) defined in ` @layer components` CSS files.
+- **Metadata Data Attributes**: Components MUST include a `data-slot` attribute (e.g., `data-slot="button"`) and individual data-attributes for each variant state (e.g., `data-variant={variant}`).
+- **Ref Forwarding**: All UI primitives MUST use `React.forwardRef` and set a proper `displayName`.
 
 ### Global CSS
 
