@@ -22,12 +22,15 @@ Use `dispatch` for parallel, non-blocking side-effects where the return value is
 
 Use `filter` for serial data transformations where the output of one handler becomes the input of the next. This is used for modifying payloads before they reach their final destination.
 
+**Filter Opt-out**: Handlers in a `filter` pipeline SHOULD return `undefined` (or no value) if they do not wish to modify the data. The pipeline logic (`if (result !== undefined)`) ensures the previous value is preserved.
+
 ## 3. Mandatory Rules
 
 1.  **Generics Requirement**: All hook signatures MUST use generics for the payload (`T`) and the optional context (`C`).
 2.  **Context Defaulting**: The context generic `C` MUST default to `unknown` to maintain core neutrality.
 3.  **Error Isolation**: Every external handler execution MUST be wrapped in a `try-catch` block to preserve system stability.
 4.  **Zero-Tolerance for `any`**: The `any` type is forbidden. Use specific interfaces or constrained generics.
+5.  **Functional Signature Normalization**: Cast external generic handlers to a normalized `(data: unknown, context?: unknown) => unknown` signature for internal storage. This satisfies Map type constraints while maintaining external type-safe APIs.
 
 ## 4. Hook Signatures
 

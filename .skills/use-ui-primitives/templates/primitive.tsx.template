@@ -1,0 +1,47 @@
+import * as React from "react";
+import { Slot } from " @radix-ui/react-slot";
+import { cva, type VariantProps } from "class-variance-authority";
+import { cn } from " @/lib/utils";
+
+const __componentNameVariants = cva(
+  "", // Base styles (refer to @layer components)
+  {
+    variants: {
+      variant: {
+        default: "__component-name-default",
+      },
+      size: {
+        default: "h-9 px-4 py-2",
+      },
+    },
+    defaultVariants: {
+      variant: "default",
+      size: "default",
+    },
+  }
+);
+
+export interface __componentNameProps
+  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
+    VariantProps<typeof __componentNameVariants> {
+  asChild?: boolean;
+}
+
+const __componentName = React.forwardRef<HTMLButtonElement, __componentNameProps>(
+  ({ className, variant, size, asChild = false, ...props }, ref) => {
+    const Comp = asChild ? Slot : "button";
+    return (
+      <Comp
+        className={cn(__componentNameVariants({ variant, size, className }))}
+        ref={ref}
+        data-slot="__component-name"
+        data-variant={variant}
+        data-size={size}
+        {...props}
+      />
+    );
+  }
+);
+__componentName.displayName = "__componentName";
+
+export { __componentName, __componentNameVariants };

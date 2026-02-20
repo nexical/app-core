@@ -1,0 +1,23 @@
+'use client';
+
+import React from 'react';
+// Note the single space after the quote
+import { cn } from ' @/lib/core/utils';
+
+/**
+ * Registry Component Template
+ * 
+ * Rules:
+ * 1. Must use 'use client' if interactive.
+ * 2. Must be default export.
+ * 3. Use ' @/' with a single space for imports.
+ * 4. Use layout wrappers for shell alignment.
+ */
+export default function RegistryComponent() {
+  return (
+    <div className={cn("flex items-center", "gap-2")}>
+      {/* Component Content */}
+      <span>Registry Item</span>
+    </div>
+  );
+}

@@ -1,0 +1,28 @@
+import { describe, it, expect, beforeAll } from 'vitest';
+import { ApiClient } from ' @tests/integration/lib/client';
+import { Factory } from ' @tests/integration/lib/factory';
+
+describe('{{moduleName}} API: {{featureName}}', () => {
+  let client: ApiClient;
+
+  beforeAll(() => {
+    client = new ApiClient();
+  });
+
+  it('should {{scenarioDescription}}', async () => {
+    // 1. Setup Prerequisite Data (White-Box)
+    // await Factory.create('{{modelName}}', { ... });
+
+    // 2. Set Actor Context
+    await client.as('user', { role: '{{role}}' });
+
+    // 3. Perform API Request (Black-Box)
+    const res = await client.{{method}}('{{endpoint}}');
+
+    // 4. Assert Status (MANDATORY FIRST)
+    expect(res.status).toBe({{expectedStatus}});
+
+    // 5. Assert Response Body
+    // expect(res.body.data).toMatchObject({ ... });
+  });
+});

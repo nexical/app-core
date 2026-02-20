@@ -27,15 +27,29 @@ Located in `core/src/lib/core/glob-helper.ts`, this utility uses Vite's `import.
 
 ### 1. Static Utility Class Implementation
 
-All discovery logic MUST be implemented as static methods on a utility class or as exported functions. This ensures encapsulation and ease of use without instantiation.
+Infrastructure utilities that do not require instance state MUST be implemented as static classes. This ensures a centralized, stateless API and consistent organization.
 
-### 2. Type-Safe Configuration (`ModuleConfig`)
+### 2. Interface-First Configuration (`ModuleConfig`)
+
+Module metadata and configurations are defined using TypeScript interfaces rather than types or Zod schemas for internal infra.
 
 - **Prohibition**: The `any` type is strictly forbidden.
 - **Rule**: Use `unknown` for dynamic or unknown properties in `ModuleConfig` interfaces.
 - **Validation**: Always validate dynamic configuration before usage.
 
-### 3. Phase-Based Execution
+### 3. Import Hygiene (Whitespace Mandate)
+
+A SINGLE SPACE is mandatory after the opening quote for all internal aliases and workspace packages (e.g., `' @/'`, `' @modules/'`, `' @nexical/agent'`).
+
+### 4. Kebab-Case Naming Rule
+
+All utility and library files MUST use kebab-case naming (e.g., `module-discovery.ts`, `glob-helper.ts`).
+
+### 5. Named Export Mandate
+
+Always use named exports for classes, interfaces, and constant configurations. Avoid default exports for library components to ensure explicit imports and better grep-ability.
+
+### 6. Phase-Based Execution
 
 Any logic that iterates over modules MUST respect the `PHASE_ORDER` defined in `ModuleDiscovery`.
 
@@ -60,7 +74,8 @@ const PHASE_ORDER: Record<ModulePhase, number> = {
 1.  **Identify the Target**: Determine if the new target is a configuration file (Node-based) or a code module (Vite-based).
 2.  **Update `glob-helper.ts`**: For code/asset targets, add a new exported function with the appropriate glob pattern.
 3.  **Update `ModuleDiscovery`**: For configuration or metadata targets, update the `loadModules()` loop to gather the new data from the filesystem.
-4.  **Define Types**: Update the `ModuleConfig` or related interfaces to include the new data, ensuring `unknown` is used for dynamic properties.
+4.  **Define Types**: Update the `ModuleConfig` or related interfaces to include the new data, ensuring `unknown` is used for dynamic properties. Use **interfaces** for these definitions.
+5.  **Verify Compliance**: Run `npm run lint` or `nexical audit` to ensure adherence to naming conventions, import whitespace rules, and the prohibition of the `any` type.
 
 ---
 
