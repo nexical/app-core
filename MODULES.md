@@ -49,6 +49,8 @@ Every UI module must contain a `ui.yaml` manifest in its root. This file acts as
 - **Routes**: Defines virtual pages and their layout associations.
 - **Shells**: Defines custom shells and their activation patterns.
 - **Registry**: Configures the high-level metadata for registry injections.
+- **Tables**: Configures generated TanStack Tables for models.
+- **Forms**: Configures generated React Hook Forms for models.
 
 ```yaml
 # modules/user-ui/ui.yaml
@@ -400,7 +402,7 @@ Actions or Endpoints import and call Services directly.
 
 ```ts
 // modules/user/src/actions/create-user.ts
-import { UserService } from '../services/user-service';
+import { UserService } from '@modules/user/src/services/user-service';
 import type { APIContext } from 'astro';
 
 export class CreateUserAction {
@@ -920,7 +922,7 @@ Use this for discrete, async tasks (e.g., "Scrape URL", "Generate Summary").
 
 import { JobProcessor, type AgentJob } from '@nexical/agent/src/core/processor.js';
 
-import { ScrapeService } from '../services/scrape-service';
+import { ScrapeService } from '@modules/scraper/src/services/scrape-service';
 
 import { HookSystem } from '@/lib/modules/hooks';
 
@@ -957,7 +959,7 @@ Use this for long-running background listeners (e.g., "System Monitor", "Discord
 
 import { PersistentAgent } from '@nexical/agent/src/core/persistent.js';
 
-import { MonitorService } from '../services/monitor-service';
+import { MonitorService } from '@modules/monitor/src/services/monitor-service';
 
 import { api } from '@/lib/api/api';
 
@@ -1257,7 +1259,7 @@ Import your specific config object. Do **not** access `process.env` directly in 
 
 ```ts
 // modules/payments/src/actions/charge.ts
-import { paymentConfig } from '../lib/config';
+import { paymentConfig } from '@modules/payments/src/lib/config';
 
 export const chargeCard = async (amount: number) => {
   // Usage: Access typed configuration
