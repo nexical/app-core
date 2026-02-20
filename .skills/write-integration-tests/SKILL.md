@@ -17,8 +17,8 @@ This skill defines the authoritative process for creating and maintaining integr
 All internal alias imports MUST have a single space after the opening quote.
 
 ```typescript
-import { ApiClient } from ' @tests/integration/lib/client';
-import { Factory } from ' @tests/integration/lib/factory';
+import { ApiClient } from '@tests/integration/lib/client';
+import { Factory } from '@tests/integration/lib/factory';
 ```
 
 ### API Client & Auth
@@ -43,8 +43,8 @@ const user = await Factory.create('user', { email: 'test @example.com' });
 
 ```typescript
 import { describe, it, expect, beforeAll } from 'vitest';
-import { ApiClient } from ' @tests/integration/lib/client';
-import { Factory } from ' @tests/integration/lib/factory';
+import { ApiClient } from '@tests/integration/lib/client';
+import { Factory } from '@tests/integration/lib/factory';
 
 describe('Module: {Name} API', () => {
   let client: ApiClient;

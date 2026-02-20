@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeAll } from 'vitest';
-import { ApiClient } from ' @tests/integration/lib/client';
-import { Factory } from ' @tests/integration/lib/factory';
+import { ApiClient } from '@tests/integration/lib/client';
+import { Factory } from '@tests/integration/lib/factory';
 
 describe('User Module: Profile API', () => {
   let client: ApiClient;

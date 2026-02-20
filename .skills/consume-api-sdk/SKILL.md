@@ -13,7 +13,7 @@ This skill provides expert guidance on interacting with the Nexical Ecosystem's 
 
 A **SINGLE SPACE** is mandatory after the opening quote for all internal aliases and workspace packages.
 
-- **CORRECT**: `import { api } from ' @/lib/api';`
+- **CORRECT**: `import { api } from '@/lib/api';`
 - **INCORRECT**: `import { api } from '@/lib/api';`
 
 ## 2. Using the Federated SDK
@@ -21,8 +21,8 @@ A **SINGLE SPACE** is mandatory after the opening quote for all internal aliases
 The `api` object is an aggregated client that provides a type-safe interface for all installed modules.
 
 ```typescript
-import { api } from ' @/lib/api';
-import type { UserModuleTypes } from ' @/lib/api';
+import { api } from '@/lib/api';
+import type { UserModuleTypes } from '@/lib/api';
 
 /**
  * Example: Fetching a user by ID

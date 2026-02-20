@@ -1,9 +1,9 @@
-import { api } from ' @/lib/api';
-import type { UserModuleTypes, BillingModuleTypes } from ' @/lib/api';
+import { api } from '@/lib/api';
+import type { UserModuleTypes, BillingModuleTypes } from '@/lib/api';
 
 /**
  * MANDATORY: Centralized API Mandate
- * Always import `api` and ModuleTypes from ' @/lib/api'.
+ * Always import `api` and ModuleTypes from '@/lib/api'.
  * Note the mandatory space after the opening quote.
  */
 

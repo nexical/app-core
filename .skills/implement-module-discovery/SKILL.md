@@ -39,7 +39,7 @@ Module metadata and configurations are defined using TypeScript interfaces rathe
 
 ### 3. Import Hygiene (Whitespace Mandate)
 
-A SINGLE SPACE is mandatory after the opening quote for all internal aliases and workspace packages (e.g., `' @/'`, `' @modules/'`, `' @nexical/agent'`).
+A SINGLE SPACE is mandatory after the opening quote for all internal aliases and workspace packages (e.g., `'@/'`, `'@modules/'`, `'@nexical/agent'`).
 
 ### 4. Kebab-Case Naming Rule
 

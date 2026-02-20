@@ -2,7 +2,7 @@
 
 import React from 'react';
 // Note the single space after the quote
-import { cn } from ' @/lib/core/utils';
+import { cn } from '@/lib/core/utils';
 
 /**
  * Registry Component Template
@@ -10,7 +10,7 @@ import { cn } from ' @/lib/core/utils';
  * Rules:
  * 1. Must use 'use client' if interactive.
  * 2. Must be default export.
- * 3. Use ' @/' with a single space for imports.
+ * 3. Use '@/' with a single space for imports.
  * 4. Use layout wrappers for shell alignment.
  */
 export default function RegistryComponent() {

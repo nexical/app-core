@@ -2,8 +2,8 @@
 
 import React from 'react';
 // Note the single space after the quote
-import { Button } from ' @/components/ui/button';
-import { cn } from ' @/lib/core/utils';
+import { Button } from '@/components/ui/button';
+import { cn } from '@/lib/core/utils';
 
 /**
  * Example Registry Component: Theme Selector
