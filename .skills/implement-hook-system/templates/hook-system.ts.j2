@@ -1,0 +1,66 @@
+import { db } from '@/lib/core/db';
+
+/**
+ * Hook System Registry
+ * 
+ * Provides static methods for cross-module event registration and orchestration.
+ * All operations are O(1) through private static Map storage.
+ */
+export class HookSystem {
+  private static handlers = new Map<string, Array<Function>>();
+
+  /**
+   * Registers a listener for a specific event.
+   * Use generics for payload (T) and context (C).
+   */
+  static on<T, C = unknown>(
+    event: string, 
+    handler: (data: T, context?: C) => void | T | Promise<void | T>
+  ): void {
+    const eventHandlers = this.handlers.get(event) || [];
+    eventHandlers.push(handler);
+    this.handlers.set(event, eventHandlers);
+  }
+
+  /**
+   * Dispatches parallel side-effects (Fire-and-Forget).
+   * Ensures that all listeners run regardless of individual listener errors.
+   */
+  static async dispatch<T, C = unknown>(event: string, data: T, context?: C): Promise<void> {
+    const eventHandlers = this.handlers.get(event) || [];
+    if (eventHandlers.length === 0) return;
+
+    // Use Promise.allSettled to isolate listener failures
+    await Promise.allSettled(
+      eventHandlers.map(async (handler) => {
+        try {
+          await handler(data, context);
+        } catch (err) {
+          console.error(`[HookSystem] Error in dispatch for ${event}:`, err);
+        }
+      })
+    );
+  }
+
+  /**
+   * Processes data through a sequential pipeline (Pipeline).
+   * Each handler may return a modified version of the data.
+   */
+  static async filter<T, C = unknown>(event: string, data: T, context?: C): Promise<T> {
+    const eventHandlers = this.handlers.get(event) || [];
+    let currentData = data;
+
+    for (const handler of eventHandlers) {
+      try {
+        const result = await handler(currentData, context);
+        if (result !== undefined) {
+          currentData = result as T;
+        }
+      } catch (err) {
+        console.error(`[HookSystem] Error in filter for ${event}:`, err);
+      }
+    }
+
+    return currentData;
+  }
+}
