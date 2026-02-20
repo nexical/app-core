@@ -66,11 +66,12 @@ We utilize a 3-tier modular monolith architecture to ensure maintainability and 
 - **CENTRALIZED SDK**: All SDK access (methods, types) MUST be routed through `@/lib/api`. Use `api.{module}` for methods and `{Module}ModuleTypes` for types.
 - **MIXED DIRECTORY:** Contains both machine-generated and manual files. **CRITICAL: NEVER edit files with the `// GENERATED CODE` header.**
 
-#### 2. The API Page (Handlers - GENERATED)
+#### 2. The API Page (Handlers)
 
-- **Location:** `modules/{name}/src/pages/api/`
+- **Location:** `modules/{name}/src/pages/api/` (Generated) and `modules/{name}/src/pages/custom/` (Manual).
 - **Role:** Request/Response lifecycle management.
-- **CRITICAL:** These files are **STRICTLY GENERATED** from `api.yaml` and wrapped in `defineApi`. Do not edit them manually.
+- **CRITICAL:** Files in `src/pages/api/` are **STRICTLY GENERATED** from `api.yaml`. Do not edit them manually.
+- **ESCAPE HATCH:** For custom endpoints (e.g., Webhooks, File Uploads) that cannot be defined in `api.yaml`, create them in `src/pages/custom/`.
 
 #### 3. The Service (Business Logic)
 
@@ -82,13 +83,15 @@ We utilize a 3-tier modular monolith architecture to ensure maintainability and 
 - **Responsibilities:**
   - Authority for specific model logic.
   - Handles database transactions (`db.$transaction`).
-  - **MANDATORY**: Public methods MUST be `public static async`, MUST accept an `actor: ApiActor` parameter, and MUST return a `Promise<ServiceResponse<T>>`.
+  - **GENERATED CRUD**: Follows `(data: Prisma.Input, select?: Prisma.Select, actor?: ApiActor)` signature.
+  - **MANUAL LOGIC**: Public methods MUST be `public static async`, MUST accept an `actor: ApiActor` as the **FIRST** argument, and MUST return a `Promise<ServiceResponse<T>>`.
   - **MANDATORY**: Implement the 4-step "Hook-First" logic flow: **Filter Input -> Execute Logic -> Dispatch Side-Effects -> Filter Output**.
   - **MIXED DIRECTORY:** Contains both machine-generated CRUD services and manual domain logic.
 
 #### 4. The Agent (Background Jobs)
 
 - **Location:** `modules/{name}/src/agent/`
+- **Naming Convention:** `{kebab-case}.ts`. Class name should be PascalCase with a functional suffix (`*Processor`, `*Agent`).
 - **Role:** Asynchronous task processing.
 - **Responsibilities:**
   - **MANDATORY**: Extend `JobProcessor<T>`.

@@ -155,7 +155,7 @@ Frontend components import the global `api` client. They don't need to know _whe
 
 ```tsx
 // modules/dashboard/src/registry/widgets/UserCount.tsx
-import { api } from '@/lib/api/api';
+import { api } from '@/lib/api';
 
 export default function UserCount() {
   const loadData = async () => {
@@ -979,6 +979,24 @@ export class SystemMonitor extends PersistentAgent {
 }
 ```
 
+#### 3. Job Triggering
+
+To initiate an asynchronous task, use the `api.orchestrator.job.create` method (or equivalent provided by the Orchestrator module). This ensures that jobs are properly queued, persisted, and tracked through the system's management interface.
+
+```typescript
+import { api } from '@/lib/api';
+
+// Enqueue a job via the Federated SDK
+const response = await api.orchestrator.job.create({
+  type: 'scrape.url',
+  payload: { url: 'https://example.com' },
+});
+
+if (!response.success) {
+  // Handle error
+}
+```
+
 ---
 
 ## 20. Backend Development Workflow
@@ -1031,13 +1049,17 @@ modules/my-feature-api/
 ├── package.json          # @module/my-feature-api
 ├── models.yaml           # Data Schema
 ├── api.yaml              # REST API Definition
+├── access.yaml           # [OPTIONAL] RBAC Policy
+├── module.config.mjs     # [OPTIONAL] Build & Runtime Config
 ├── src/
 │   ├── actions/          # Orchestration Layer (MIXED - Manual & Generated)
 │   ├── services/         # Domain Logic (MIXED - Manual & Generated)
 │   ├── agent/            # Background Processors (MANUAL)
 │   ├── hooks/            # Event Listeners (MANUAL)
 │   ├── roles/            # Permission Policies (MANUAL)
-│   ├── pages/api/        # REST Endpoints (GENERATED)
+│   ├── pages/
+│   │   ├── api/          # REST Endpoints (GENERATED)
+│   │   └── custom/       # Custom Endpoints (MANUAL)
 │   ├── sdk/              # Type-safe Client Definition (GENERATED)
 │   └── server-init.ts    # Role/Hook Registration Entry Point
 ```
