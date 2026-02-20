@@ -66,7 +66,7 @@ We enforce a strict module resolution strategy to avoid spaghetti dependencies.
   - `@/` refers to `src/`.
   - `@modules/` refers to `modules/`.
   - `@tests/` refers to `tests/`.
-- **Whitespace**: A **SINGLE SPACE** is mandatory after the opening quote for all internal aliases and workspace packages (e.g., `' @/'`, `' @modules/'`, `' @nexical/agent'`).
+- **Whitespace**: A **SINGLE SPACE** is mandatory after the opening quote for all internal aliases and workspace packages (e.g., `'@/'`, `'@modules/'`, `'@nexical/agent'`).
 - **Forbidden**: Deep relative imports that traverse up the tree (e.g., `../../components/button`).
 
 ### Relative Imports

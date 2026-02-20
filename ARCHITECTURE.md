@@ -36,12 +36,20 @@ We enforce a strict separation between the **Container** (Shell) and the **Conte
 
 The platform adheres to a strict "Agnostic Core" policy:
 
-- **Generic Discovery**: The Core handles integration (routing, theming, dependency resolution) via **Vite Glob Discovery** (`import.meta.glob`). It identifies `server-init.ts` files and `src/registry/` directories across all modules using a centralized `glob-helper.ts`.
+- **Dual Discovery Mechanism**: The Core identifies and integrates modules using two complementary systems:
+  - **Vite-Based (Runtime/Frontend)**: The `glob-helper.ts` uses `import.meta.glob` to gather code modules (initialization scripts, registry components, routes) during the build process and within the Astro application.
+  - **Node-Based (Server/Build-Time)**: The `ModuleDiscovery` static utility class uses Node.js `fs` and `jiti` to load `module.config.mjs` and calculate phase-based execution order. This is used for server-side initialization and scripts.
+- **Phased Execution Logic**: Modules are processed in a strict order defined by their `ModulePhase` (core -> provider -> feature -> integration -> theme) and an optional `order` priority within each phase. This ensures themes can consistently override feature logic.
 - **Module Loaders**: All cross-module registration must occur through the `HookSystem` or dedicated `Registries` (e.g., `RoleRegistry`, `EmailRegistry`).
 - **Registry Implementation Standards**:
-  - **Class-Based Singletons**: Registries must be classes that export a singleton instance or use static methods.
-  - **Map Storage**: Use a `Map` (or Immutable.js `Map`) for internal storage to ensure $O(1)$ lookups and clean overrides.
-  - **Override Support**: The `register` method MUST allow overwriting existing keys to enable the Split Module pattern (where one module overrides another).
+  - **Singleton Registry Instance**: Registries MUST be implemented as classes with private `Map` storage and instance methods, exported as a single named constant instance to ensure a global singleton state and preserve insertion order.
+  - **LIFO Override Priority**: Selection logic MUST follow a Last-In-First-Out (LIFO) pattern. When registering an item that might already exist, the old key MUST be deleted before setting the new one to ensure it moves to the end of the Map (highest priority).
+  - **Polymorphic Matchers**: Registries MUST support "Matchers" that can be either static string patterns (globs like `/*` or `*`) or dynamic functional predicates.
+  - **Strongly-Typed Selection Context**: While generic signatures MAY default to `on<T, C = unknown>`, specific registry implementations MUST define concrete, strongly-typed Context interfaces (e.g., `ShellContext`) for their selection logic. Never use `any` for context.
+  - **Manual Glob Matching**: Implement lightweight, manual path matching for `/*`, `*`, and exact matches within the registry class to minimize core dependencies.
+  - **Fire-and-Forget Parallelism**: Side-effect dispatching MUST use `Promise.allSettled` to execute all handlers in parallel without blocking.
+  - **Sequential Pipelines**: Data filtering MUST use serial loops where the result of one handler is passed to the next in the chain.
+  - **Listener Error Isolation**: Every external handler execution MUST be wrapped in a `try-catch` block to preserve system stability.
 - **No Module Awareness**: No file in `src/` (outside of the module discovery helpers) should import directly from a module name unless that module is explicitly declared as a core provider.
 
 ---

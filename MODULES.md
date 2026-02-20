@@ -511,7 +511,7 @@ If you write this imperatively (`marketing.sendEmail(); billing.createCustomer()
 
 ### The ArcNexus Solution
 
-We use a **Hook System (Event Bus)**. The Registration code simply "announces" what happened: `dispatch('user.registered')`. It doesn't care who is listening.
+We use a **Hook System (Event Bus)** implemented as a static registry class. The Registration code simply "announces" what happened: `dispatch('user.registered')`. It doesn't care who is listening.
 
 Other modules "subscribe" to this event. This allows purely additive behavior. You can drop in a "Gamification" module that listens for `user.registered` and awards 10 points. You didn't touch the original user code, but you successfully extended its behavior.
 
@@ -519,25 +519,33 @@ Other modules "subscribe" to this event. This allows purely additive behavior. Y
 
 Subscribe to an event OR a filter in your initialization file (`server-init.ts`).
 
-#### 1. Event Listeners (Fire and Forget)
+#### 1. Event Listeners (Parallel/Side-effects)
+
+**CRITICAL**: All hook handlers MUST use generics for data (`T`) and optional context (`C`). The use of `any` is strictly forbidden.
 
 ```ts
 // modules/marketing/src/server-init.ts
 import { HookSystem } from '@/lib/modules/hooks';
 
+interface UserRegisteredPayload {
+  userId: string;
+  email: string;
+}
+
 // Definition: Define what happens when the event fires.
-HookSystem.on('user.registered', async (data) => {
+// Explicitly type the hook signature to avoid the forbidden 'any'.
+HookSystem.on<UserRegisteredPayload>('user.registered', async (data) => {
   await sendWelcomeEmail(data.email);
 });
 ```
 
-#### 2. Filters (Middleware Style)
+#### 2. Filters (Sequential/Pipeline)
 
-Filters allow you to modify data before it is used. They run sequentially.
+Filters allow you to modify data before it is used. They run **sequentially** in a serial chain where the output of one handler becomes the input of the next.
 
 ```ts
 // modules/access/src/server-init.ts
-HookSystem.on('user.read', async (user) => {
+HookSystem.on<UserData>('user.read', async (user) => {
   // Add a field to the user object
   return { ...user, canAccessPro: true };
 });
@@ -547,16 +555,23 @@ HookSystem.on('user.read', async (user) => {
 
 #### 1. Dispatch (Event)
 
+**MANDATORY**: Use `dispatch` for parallel, non-blocking side-effects. The system uses `Promise.allSettled` to ensure **Listener Error Isolation**—if one module fails, the others still execute.
+
 ```ts
-// Usage: Fire the event. You don't know who is listening.
-HookSystem.dispatch('user.registered', { userId: '123' });
+// Usage: Fire the event in parallel.
+HookSystem.dispatch<UserRegisteredPayload>('user.registered', {
+  userId: '123',
+  email: 'user @example.com',
+});
 ```
 
 #### 2. Filter (Data Modification)
 
+**MANDATORY**: Use `filter` for serial data transformations where the return value is required for the next step in the pipeline.
+
 ```ts
-// Usage: Pass data through the filter chain.
-const enrichedUser = await HookSystem.filter('user.read', rawUser);
+// Usage: Pass data through the serial filter chain.
+const enrichedUser = await HookSystem.filter<UserData>('user.read', rawUser);
 ```
 
 ---
@@ -1140,7 +1155,7 @@ In a modular system, the order in which modules load is critical. A "Theme" modu
 
 ### The ArcNexus Solution
 
-We implement a **Phased Module Loading** system. Every module can define its `type` (Phase) and `order` (Priority). The system guarantees that modules are loaded in the correct modification-safe sequence:
+We implement a **Phased Module Loading** system using the `ModuleDiscovery` utility. Every module can define its `type` (Phase) and `order` (Priority) in `module.config.mjs`. The system guarantees that modules are loaded in the correct modification-safe sequence:
 
 1.  **Core (0)**: Infrastructure (DB, Auth).
 2.  **Provider (10)**: Service implementations (Email Providers, Payment Gateways).
@@ -1152,8 +1167,11 @@ We implement a **Phased Module Loading** system. Every module can define its `ty
 
 Add `type` and `order` to your `module.config.mjs`.
 
+**MANDATORY**: Use the `unknown` type for any dynamic or custom configuration properties. The `any` type is strictly forbidden.
+
 ```js
 // modules/theme-dark/module.config.mjs
+/** @type {import('@/lib/modules/module-discovery').ModuleConfig} */
 export default {
     type: 'theme',   // Loads late (Phase 40)
     order: 10,       // Sorts within the Theme phase
@@ -1163,7 +1181,7 @@ export default {
 
 ### Usage: How It Is Used
 
-The build system automatically sorts modules before processing overrides.
+The `ModuleDiscovery.loadModules()` method sorts modules before they are processed by core integrations. This ensures:
 
 - **Configurations**: Merged using "Last Wins" strategy (Theme overrides Feature).
 - **Integrations**: Executed in order.
