@@ -2,14 +2,14 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 // Mock side-effect heavy modules
-vi.mock(' @/lib/api/api-docs', () => ({
+vi.mock('@/lib/api/api-docs', () => ({
   defineApi: vi.fn((handler) => handler),
   generateDocs: vi.fn(),
 }));
-vi.mock(' @/lib/core/client-init', () => ({
+vi.mock('@/lib/core/client-init', () => ({
   initializeClientModules: vi.fn(),
 }));
-vi.mock(' @/lib/modules/module-init', () => ({
+vi.mock('@/lib/modules/module-init', () => ({
   initializeModules: vi.fn(),
 }));
 

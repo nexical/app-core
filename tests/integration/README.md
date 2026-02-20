@@ -27,9 +27,9 @@ Example: `tests/integration/api/teams.test.ts`.
 
 ```typescript
 import { describe, it, expect } from 'vitest';
-import { ApiClient } from ' @tests/integration/lib/client';
-import { Factory } from ' @tests/integration/lib/factory';
-import { TestServer } from ' @tests/integration/lib/server';
+import { ApiClient } from '@tests/integration/lib/client';
+import { Factory } from '@tests/integration/lib/factory';
+import { TestServer } from '@tests/integration/lib/server';
 ```
 
 ### 3. Use `ApiClient` with Actors (Recommended)
@@ -61,7 +61,7 @@ The `.as(type, params)` system is modular: it discovers "actor providers" define
 Use `Factory` to create the state you need _before_ the API call. The factory dynamically loads definitions from each module's `tests/integration/factory.ts`.
 
 ```typescript
-import { hashPassword } from ' @/modules/user/tests/integration/factory';
+import { hashPassword } from '@/modules/user/tests/integration/factory';
 
 // Create a user directly in DB
 // Note: hashPassword is imported from the user module factory, not the core Factory
