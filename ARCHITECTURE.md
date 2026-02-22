@@ -226,3 +226,46 @@ Local file imports in TypeScript MUST include the `.js` extension to satisfy ESM
 The codebase avoids `any` to preserve type safety. `unknown` is used as a safe alternative for generic data.
 
 - **Rule**: Strictly forbid the 'any' type. Use specific interfaces, concrete types, or `unknown`.
+
+---
+
+## 8. Generator Architecture
+
+The `nexical-generator` package is the engine that scaffolds modules, actions, and services. It follows a strict **"Code as Data"** philosophy.
+
+### 8.1 The Builder Pattern
+
+We do not use simple string interpolation for code generation. We use a **Builder Pattern** that constructs an Abstract Syntax Tree (AST) representation of the target file.
+
+- **Base Class**: All builders MUST extend the `BaseBuilder` abstract class.
+- **Responsibility**: Builders are responsible for managing the lifecycle of a file (Create, Read, Update).
+- **Preservation**: Builders are non-destructive. They read existing files, parse them into a `NodeContainer`, and only update the necessary parts (e.g., adding a missing method) while preserving user-implemented logic.
+
+### 8.2 Schema-Driven Development
+
+Builders implement a `getSchema(node?: NodeContainer): FileDefinition` method.
+
+- **Declarative**: The schema describes the _desired state_ of the file (imports, class structure, methods).
+- **Diffing**: The generator compares the desired schema with the existing AST (`node`) to determine what changes to apply.
+
+### 8.3 Template Loading
+
+To keep builders clean, large blocks of default code are stored in `.tsf` (TypeScript Fragment) files. **These files must follow the strict Fragment Contract pattern (JSDoc headers, Phantom Declarations, and `fragment` tagged template exports) as defined in the `manage-templates` skill.**
+
+- **TemplateLoader**: Use `TemplateLoader.load('path/to.tsf', vars)` to inject default method bodies.
+- **No Hardcoding**: Avoid hardcoding multi-line strings within the builder class.
+
+### 8.4 Smart Import Resolution
+
+Builders act as intelligent agents that manage dependencies.
+
+- **Analysis**: They analyze the `sourceText` of existing code to see what symbols are used.
+- **Conditional Imports**: They only add imports if they are required by the generated code or the user's existing implementation.
+
+### 8.5 Virtual Models (API-Only Entities)
+
+The architecture supports "Virtual Models" — entities defined in `api.yaml` that do not exist in `models.yaml`.
+
+- **Definition**: An entity is "Virtual" if it is declared in the API configuration but has no corresponding database table.
+- **Purpose**: Allows for purely functional API grouping (e.g., `auth`, `analytics`) without forcing a dummy database table.
+- **Behavior**: The generator creates the Controller, Service, and SDK artifacts but skips database schema generation.
