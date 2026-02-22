@@ -1,25 +1,45 @@
 import { NexicalClient } from '@nexical/sdk';
 
+/**
+ * The API Base URL is calculated based on the execution environment.
+ * - Browser: Relative path (/api) to leverage built-in middleware.
+ * - Server: Absolute URL (PUBLIC_SITE_URL) for direct backend access.
+ */
 const baseUrl =
   typeof window !== 'undefined'
     ? '/api'
     : (process.env.PUBLIC_SITE_URL || 'http://localhost:4321') + '/api';
 
 if (typeof window === 'undefined') {
-  // Use console.info inside conditional logging if logger not available, but here we can't import logger easily if it causes cycles.
-  // Actually, let's use console.info as it is allowed.
   console.info('[API] Initializing server-side client with baseUrl:', baseUrl);
 }
 
-export const api = new NexicalClient({
+// Global Nexical Client instance
+const client = new NexicalClient({
   baseUrl,
 });
 
-// Attach to window for debugging in the browser
+/**
+ * CENTRALIZED API AGGREGATOR
+ * All SDK access (methods and types) MUST be routed through this object.
+ * Modules register themselves here during generation.
+ *
+ * NOTE: We use Object.assign to preserve the 'client' prototype methods (get, post, etc.)
+ */
+export const api = Object.assign(client, {
+  // [GENERATOR: MODULES_START]
+  // [GENERATOR: MODULES_END]
+});
+
+// Platform Debugging Hook
 if (typeof window !== 'undefined') {
   (window as unknown as { api: typeof api }).api = api;
 }
 
+/**
+ * STRONGLY-TYPED ERROR INTERFACES
+ * Zero-tolerance for the 'any' type.
+ */
 export interface ApiError {
   body?: {
     error?: string;
