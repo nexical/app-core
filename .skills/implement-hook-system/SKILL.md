@@ -14,6 +14,19 @@ This skill defines the authoritative patterns for implementing event-driven arch
 
 Registries MUST be implemented as classes using static methods and private static `Map` storage. This ensures O(1) lookups and prevents instance-related overhead in the core infrastructure.
 
+### Normalized Handler Storage
+
+To store handlers for diverse event types in a single `Map`, you MUST normalize their signatures.
+
+1.  **Define a Normalized Type**: Create a type alias that accepts `unknown` arguments.
+    ```typescript
+    type NormalizedHandler = (
+      data: unknown,
+      context?: unknown,
+    ) => void | Promise<void> | unknown | Promise<unknown>;
+    ```
+2.  **Cast on Registration**: Inside the `on` method, cast the strongly-typed generic handler to the normalized type before pushing it to the array. This allows strict external usage while satisfying the internal Map's type constraints.
+
 ### Asynchronous Event Dispatch (Fire-and-Forget)
 
 Use `dispatch` for parallel, non-blocking side-effects where the return value is ignored by the caller. Side-effects are triggered in parallel using `Promise.allSettled` to ensure all listeners execute regardless of individual failures.
@@ -30,7 +43,7 @@ Use `filter` for serial data transformations where the output of one handler bec
 2.  **Context Defaulting**: The context generic `C` MUST default to `unknown` to maintain core neutrality.
 3.  **Error Isolation**: Every external handler execution MUST be wrapped in a `try-catch` block to preserve system stability.
 4.  **Zero-Tolerance for `any`**: The `any` type is forbidden. Use specific interfaces or constrained generics.
-5.  **Functional Signature Normalization**: Cast external generic handlers to a normalized `(data: unknown, context?: unknown) => unknown` signature for internal storage. This satisfies Map type constraints while maintaining external type-safe APIs.
+5.  **Functional Signature Normalization**: Cast external generic handlers to a normalized `(data: unknown, context?: unknown) => unknown` signature for internal storage.
 
 ## 4. Hook Signatures
 

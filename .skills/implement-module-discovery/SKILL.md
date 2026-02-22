@@ -37,9 +37,10 @@ Module metadata and configurations are defined using TypeScript interfaces rathe
 - **Rule**: Use `unknown` for dynamic or unknown properties in `ModuleConfig` interfaces.
 - **Validation**: Always validate dynamic configuration before usage.
 
-### 3. Import Hygiene (Whitespace Mandate)
+### 3. Import Hygiene
 
-A SINGLE SPACE is mandatory after the opening quote for all internal aliases and workspace packages (e.g., `'@/'`, `'@modules/'`, `'@nexical/agent'`).
+- **Node.js Built-ins**: Always use the `node:` prefix for internal Node.js modules (e.g., `import fs from 'node:fs';`, `import path from 'node:path';`).
+- **Internal Aliases**: Use standard path aliases without spaces (e.g., `import { db } from '@/lib/core/db';`).
 
 ### 4. Kebab-Case Naming Rule
 
@@ -74,8 +75,9 @@ const PHASE_ORDER: Record<ModulePhase, number> = {
 1.  **Identify the Target**: Determine if the new target is a configuration file (Node-based) or a code module (Vite-based).
 2.  **Update `glob-helper.ts`**: For code/asset targets, add a new exported function with the appropriate glob pattern.
 3.  **Update `ModuleDiscovery`**: For configuration or metadata targets, update the `loadModules()` loop to gather the new data from the filesystem.
+    - **Defensive Loading**: When loading external configuration files (Node-based), always wrap the operation in a `try-catch` block and provide sensible defaults if the file is missing or invalid.
 4.  **Define Types**: Update the `ModuleConfig` or related interfaces to include the new data, ensuring `unknown` is used for dynamic properties. Use **interfaces** for these definitions.
-5.  **Verify Compliance**: Run `npm run lint` or `nexical audit` to ensure adherence to naming conventions, import whitespace rules, and the prohibition of the `any` type.
+5.  **Verify Compliance**: Run `npm run lint` or `nexical audit` to ensure adherence to naming conventions, import hygiene rules, and the prohibition of the `any` type.
 
 ---
 

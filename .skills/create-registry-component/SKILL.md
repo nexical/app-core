@@ -30,13 +30,17 @@ Interactive registry components MUST include the `'use client';` directive at th
 
 Registry components MUST be implemented as React functional components and exported as the `default` export.
 
-### Internal Imports (Whitespace Mandate)
+### Internal Imports (No Whitespace)
 
-Internal imports MUST use absolute aliases (` @/`, ` @modules/`). A **SINGLE SPACE** is mandatory after the opening quote.
+Internal imports MUST use absolute aliases (`@/`, `@modules/`). Do **NOT** insert a space before the `@` symbol.
 
 ### Shell-Agnostic Layout Wrapping
 
 Registry components SHOULD wrap content in a layout container (e.g., `flex items-center`) that respects the shell's viewport and zone constraints.
+
+### Conditional Rendering
+
+Registry components MAY return `null` to opt-out of rendering (e.g., if a user lacks permissions or data is missing). The Shell handles these empty states gracefully.
 
 ## 4. Manifest Registration
 

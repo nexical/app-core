@@ -1,5 +1,4 @@
 import { client } from '@/lib/api/api';
-// MANDATORY: Use a SINGLE SPACE after the opening quote for internal aliases ('@/').
 
 /**
  * MODULE SDK EXTENSION PATTERN
@@ -11,7 +10,7 @@ import type { UserModuleTypes } from '@modules/user/src/sdk';
 
 /**
  * 1. Aggregating Methods
- * The central 'api' object in @/lib/api/api.ts merges all module SDKs.
+ * The central 'api' object in @core/src/lib/api/api.ts merges all module SDKs.
  */
 export const api = {
   ...client,

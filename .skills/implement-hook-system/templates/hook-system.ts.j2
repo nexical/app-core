@@ -6,8 +6,11 @@ import { db } from '@/lib/core/db';
  * Provides static methods for cross-module event registration and orchestration.
  * All operations are O(1) through private static Map storage.
  */
+type NormalizedHandler = (data: unknown, context?: unknown) => void | Promise<void> | unknown | Promise<unknown>;
+
 export class HookSystem {
-  private static handlers = new Map<string, Array<Function>>();
+  // Store handlers with a normalized signature to satisfy Map constraints
+  private static handlers = new Map<string, Array<NormalizedHandler>>();
 
   /**
    * Registers a listener for a specific event.
@@ -18,7 +21,12 @@ export class HookSystem {
     handler: (data: T, context?: C) => void | T | Promise<void | T>
   ): void {
     const eventHandlers = this.handlers.get(event) || [];
-    eventHandlers.push(handler);
+    
+    // Cast to normalized signature for storage
+    // The runtime execution is safe because T matches unknown
+    const normalizedHandler = handler as unknown as NormalizedHandler;
+    
+    eventHandlers.push(normalizedHandler);
     this.handlers.set(event, eventHandlers);
   }
 

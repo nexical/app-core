@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-// Note the single space after the quote
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/core/utils';
 

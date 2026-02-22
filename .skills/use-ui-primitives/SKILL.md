@@ -6,7 +6,7 @@ This skill defines the authoritative standards for building and extending the **
 
 ### 1. Polymorphic UI (asChild)
 
-All UI primitives MUST support the `asChild` pattern using ` @radix-ui/react-slot`. This allows consumers to swap the underlying DOM element while maintaining all styles and behaviors.
+All UI primitives MUST support the `asChild` pattern using `@radix-ui/react-slot`. This allows consumers to swap the underlying DOM element while maintaining all styles and behaviors.
 
 - **Mandate**: Use `const Comp = asChild ? Slot : 'button';` (or appropriate element).
 - **Benefit**: Allows seamless integration with routing libraries (`<Button asChild><a href="...">Link</a></Button>`) without DOM nesting issues.
@@ -17,7 +17,7 @@ Component styles and variants MUST be managed using `class-variance-authority` (
 
 - **Mandate**: Define a `const componentVariants = cva(...)` and export it alongside the component.
 - **Rule**: Use the `cn` utility to merge base classes, variants, and incoming `className`.
-- **Semantic Classes**: CVA definitions SHOULD use semantic class names (e.g., `btn-default`, `btn-ghost`) that are defined in ` @layer components` CSS files rather than raw utility strings.
+- **Semantic Classes**: CVA definitions SHOULD use semantic class names (e.g., `btn-default`, `btn-ghost`) that are defined in `@layer components` CSS files rather than raw utility strings.
 
 ### 3. Metadata Data Attributes
 
@@ -42,7 +42,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/lib/utils';
 
 const primitiveVariants = cva(
-  'inline-flex items-center ...', // Base styles
+  'primitive-base', // Semantic base class - refer to @layer components
   {
     variants: {
       variant: {

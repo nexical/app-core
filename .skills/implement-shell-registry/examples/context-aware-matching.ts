@@ -1,5 +1,5 @@
 import type { ShellContext } from '@/lib/ui/nav-context';
-import { ShellRegistry } from './shell-registry-implementation';
+import { ShellRegistry } from './shell-registry-implementation.js';
 
 /**
  * Example: Selection with Typed Context
