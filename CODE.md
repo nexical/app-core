@@ -108,13 +108,53 @@ We enforce a strict module resolution strategy to avoid spaghetti dependencies.
 ### Export Strategy
 
 - **Named Exports**: Prefer named exports for utilities, hooks, and libraries to ensure better tree-shaking and explicit importing.
+- **Internal Core Components**: Components located in `core/src/components/` that are not registry-injected **MUST** use named PascalCase exports to ensure explicit importing and better IDE support (e.g., `export const ScalarDocs = ...`).
 - **Default Exports**: Use default exports ONLY for:
   - React Components (Pages/Layouts) that are lazy-loaded.
+  - Registry Components (as required by the modular injection system).
   - Configuration files required by frameworks (e.g., `astro.config.mjs`).
 
----
+## 4. Browser & SSR Standards
 
-## 4. Styling & CSS
+### SSR-Safe Browser Access
+
+Components interacting with browser-only APIs (window, sessionStorage, matchMedia) must perform safety checks to prevent errors during server-side rendering (SSR) or build-time generation in Astro.
+
+- **Rule**: All browser-only API calls MUST be guarded with `typeof window !== 'undefined'` checks or executed within `useEffect` hooks.
+- **Example**: `if (typeof window === 'undefined') return;`
+
+### Reactive Theme Synchronization
+
+Components wrapping external libraries that do not automatically detect the system's dark mode must use the "Gold Standard" reactive synchronization pattern.
+
+- **Rule**: Use a `MutationObserver` within a `useEffect` hook to track theme changes on `document.documentElement` (the global `.dark` class) and update local state accordingly.
+- **Example**:
+  ```tsx
+  useEffect(() => {
+    const checkTheme = () => {
+      const isDark = document.documentElement.classList.contains('dark');
+      setTheme(isDark ? 'dark' : 'light');
+    };
+    checkTheme();
+    const observer = new MutationObserver(checkTheme);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+    return () => observer.disconnect();
+  }, []);
+  ```
+
+### Local Event Interface Extension
+
+Experimental or non-standard browser events (like the PWA `beforeinstallprompt`) must be typed using local interfaces that extend the base `Event` type to maintain strict type safety without resorting to `any`.
+
+- **Rule**: Custom or experimental browser event types MUST be defined locally using interfaces extending standard DOM types.
+
+### Session-Based Dismissal Logic
+
+User preferences for dismissing transient UI (like PWA banners) should be persisted in `sessionStorage` to prevent intrusive behavior within a single session without requiring a database round-trip.
+
+- **Rule**: UI-only state preferences SHOULD be stored in `sessionStorage` and validated during component mount.
+
+## 5. Styling & CSS
 
 We use a utility-first approach powered by **Tailwind CSS**.
 

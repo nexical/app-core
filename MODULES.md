@@ -1169,13 +1169,15 @@ In a modular system, the order in which modules load is critical. A "Theme" modu
 
 ### The ArcNexus Solution
 
-We implement a **Phased Module Loading** system using the `ModuleDiscovery` utility. Every module can define its `type` (Phase) and `order` (Priority) in `module.config.mjs`. The system guarantees that modules are loaded in the correct modification-safe sequence:
+We implement a **Phased Module Loading** system using the `ModuleDiscovery` utility. Every module can define its `type` (Phase) and `order` (Priority) in `module.config.mjs`. **Core Integrations are the primary consumers of this utility**, using it to discover and sort modules before processing assets, configurations, or routes. The system guarantees that modules are loaded in the correct modification-safe sequence:
 
 1.  **Core (0)**: Infrastructure (DB, Auth).
 2.  **Provider (10)**: Service implementations (Email Providers, Payment Gateways).
 3.  **Feature (20)**: Standard functional modules (User, Dashboard, Landing). _Default._
 4.  **Integration (30)**: Third-party connectors.
 5.  **Theme (40)**: Visual overrides.
+
+**Sorting Rule**: Modules are sorted by their Phase weight first, then by their internal 'order' property. The **default phase is 'feature' (weight 20) and the default order is 50**.
 
 ### Definition: How to Define It
 
@@ -1185,7 +1187,7 @@ Add `type` and `order` to your `module.config.mjs`.
 
 ```js
 // modules/theme-dark/module.config.mjs
-/** @core/.skills/implement-hook-system/examples/type-safe-hook.ts {import('@/lib/modules/module-discovery').ModuleConfig} */
+/** @core/.skills/implement-module-discovery/examples/type-safe-config.ts {import('@/lib/modules/module-discovery').ModuleConfig} */
 export default {
     type: 'theme',   // Loads late (Phase 40)
     order: 10,       // Sorts within the Theme phase

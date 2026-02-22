@@ -37,6 +37,15 @@ We enforce a strict separation between the **Container** (Shell) and the **Conte
 
 Core UI components in `src/components/ui/` MUST follow the **Polymorphic UI Pattern** (`asChild`). This allows for maximum extensibility in a modular ecosystem, as it enables developers to swap underlying elements (e.g., using a `<Button>` as an `<a>` or `<Link>`) while maintaining the core's visual identity and behavioral rules. This pattern is foundational for the platform's composable nature.
 
+### Transient UI Standards
+
+System-level prompts, overlays, and banners MUST use standardized positioning, animations, and selectors to ensure a consistent "operating system" feel and robust testability.
+
+- **Overlay Animation**: Transient UI prompts MUST use the standard Tailwind `animate-in` and `slide-in-from-*` classes for entry transitions.
+  - **Example**: `fixed bottom-4 md:right-4 z-50 animate-in slide-in-from-bottom-4`
+- **E2E Test Selectors**: Interactive elements and major containers must include `data-testid` attributes to facilitate robust end-to-end testing.
+  - **Rule**: Every interactive component, button, or layout container MUST include a unique `data-testid` attribute (e.g., `data-testid="install-prompt"`).
+
 ### Core Neutrality Protocol
 
 The platform adheres to a strict "Agnostic Core" policy:
@@ -44,6 +53,7 @@ The platform adheres to a strict "Agnostic Core" policy:
 - **Dual Discovery Mechanism**: The Core identifies and integrates modules using two complementary systems:
   - **Vite-Based (Runtime/Frontend)**: The `GlobHelper` static utility class uses `import.meta.glob` to gather code modules (initialization scripts, registry components, routes) during the build process and within the Astro application.
   - **Node-Based (Server/Build-Time)**: The `ModuleDiscovery` static utility class uses Node.js `fs` and `jiti` to load `module.config.mjs` and calculate phase-based execution order. This is used for server-side initialization and scripts.
+- **Static Infrastructure Utility Pattern**: Infrastructure logic for module management MUST be implemented as static classes with **private static members** and a **private constructor** to ensure a global, stateless discovery mechanism and prevent unnecessary instantiation.
 - **Custom Integrations**: Core integrations (located in `core/src/lib/integrations/`) act as the build-time machinery for the Modular Monolith. They MUST follow the strict patterns defined in the `implement-integration-adapter` skill (Factory Pattern, Dynamic Discovery, Node.js Imports).
 - **Phased Execution Logic**: Modules are processed in a strict order defined by their `ModulePhase` (core -> provider -> feature -> integration -> theme) and an optional `order` priority within each phase. This ensures themes can consistently override feature logic.
 - **Module Loaders**: All cross-module registration must occur through the `HookSystem` or dedicated `Registries` (e.g., `RoleRegistry`, `EmailRegistry`).
