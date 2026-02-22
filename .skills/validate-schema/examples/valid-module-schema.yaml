@@ -1,0 +1,53 @@
+# Example: New Entity
+ProjectTask:
+  default: true
+  role:
+    create: admin
+    update: member
+    delete: admin
+    list: member
+    get: member
+  fields:
+    id:
+      type: String
+      attributes:
+        - '@id'
+        - '@default(cuid())'
+    title:
+      type: String
+    projectId:
+      type: String
+    tags:
+      type: String
+      isList: true
+    createdAt:
+      type: DateTime
+      attributes:
+        - '@default(now())'
+  attributes:
+    - '@@index([projectId])'
+
+# Example: Core Extension
+# This adds a 'bio' field to the existing User model defined in core.
+User:
+  extended: true
+  fields:
+    bio:
+      type: String
+      isRequired: false
+
+# Example: API DTO (Not in DB)
+# Used for complex API inputs that don't map 1:1 to a DB table.
+# DTOs in this codebase consistently use api: false.
+TaskBulkUpdateDTO:
+  db: false
+  api: false
+  fields:
+    ids:
+      type: String
+      isList: true
+    status:
+      type: String
+    priority:
+      type: Int
+      isRequired: false

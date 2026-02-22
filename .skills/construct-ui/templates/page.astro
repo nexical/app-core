@@ -1,0 +1,22 @@
+---
+import { PageGuard } from "@/lib/ui/page-guard";
+import Layout from "@/layouts/Layout.astro";
+import { MyReactComponent } from "../components/__feature__/my-react-component";
+
+// 1. Security Check (MUST be first)
+const guard = await PageGuard.protect(Astro, "anonymous");
+if (guard) return guard;
+
+const title = "My Feature Page";
+---
+
+<Layout title={title}>
+    <div class="p-6 max-w-7xl mx-auto w-full flex flex-col gap-6">
+        <header class="flex flex-col gap-2">
+            <h1 class="text-3xl font-bold tracking-tight">{title}</h1>
+            <p class="text-muted-foreground">Description of this feature page.</p>
+        </header>
+
+        <MyReactComponent client:load />
+    </div>
+</Layout>

@@ -1,0 +1,24 @@
+import type { APIContext } from "astro";
+import type { ServiceResponse } from "@/types/service";
+import { {Name}Service } from "../services/{kebab-name}-service";
+
+/**
+ * Action: {Verb}{Subject}
+ * Role: Orchestrator for business logic and roles.
+ * 
+ * Rules:
+ * 1. MUST use 'public static async run(input, context: APIContext)' signature.
+ * 2. Prefer delegating DB access to Services for core domain logic.
+ * 3. Use context.locals.actor for authorization.
+ */
+export class {Verb}{Subject}Action {
+  public static async run(input: any, context: APIContext): Promise<ServiceResponse<any>> {
+    const { actor } = context.locals;
+
+    // 1. Logic & Orchestration
+    // 2. Delegate to Service for DB operations
+    const result = await {Name}Service.getById(input.id);
+
+    return result;
+  }
+}

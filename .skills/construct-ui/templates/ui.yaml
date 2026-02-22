@@ -1,0 +1,34 @@
+# Module UI Configuration Manifest
+# This file is mandatory for all UI modules.
+
+# 1. Routing Tree
+# Defines the pages and their associated layouts/shells.
+routes:
+  /__module__:
+    page: src/pages/index.astro
+    shell: default
+    title: __module__.pages.index.title
+
+# 2. Shell Associations
+# Defines which shells are active for specific paths.
+shells:
+  __module__:
+    path: src/components/shell.tsx
+    match: /__module__/*
+
+# 3. Registry Metadata
+# Configures how this module's components pin into core zones.
+registry:
+  header-end:
+    - name: __module__-action
+      component: src/registry/header-end/10-__module__-action.tsx
+      order: 10
+
+# 4. Form Configurations
+# declarative overrides for generated forms.
+forms:
+  __Model__:
+    __field__:
+      component:
+        name: CustomInput
+        path: '@/components/ui/custom-input'

@@ -1,0 +1,23 @@
+# TEMPLATE: access.yaml
+#
+# Use this file to define module-level roles and permission mappings.
+# Location: apps/backend/modules/{name}/access.yaml
+
+roles:
+  # Standard logical roles
+  admin:
+    description: 'Full access to all module resources'
+    policies:
+      - IsAdmin # Refers to a RolePolicy class in src/roles/
+
+  member:
+    description: 'Access to owned resources'
+    policies:
+      - IsAuthenticated
+      - IsOwner # Refers to a RolePolicy class that uses the 'data' param
+
+permissions:
+  # Define granular permission strings for use in custom logic
+  project.create: [admin, member]
+  project.delete: [admin]
+  project.export: [admin]

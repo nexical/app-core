@@ -42,7 +42,7 @@ export default function createIntegration(): AstroIntegration {
 
           // Example: Iterate and process
           for (const moduleName of modules) {
-            console.debug(`[${INTEGRATION_NAME}] Scanning module: ${moduleName}`);
+            console.info(`[${INTEGRATION_NAME}] Scanning module: ${moduleName}`);
             // const configPath = path.resolve(modulesDir, moduleName, 'module.config.mjs');
             // Check existence and process...
           }

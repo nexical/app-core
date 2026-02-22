@@ -1,0 +1,23 @@
+# Module Access Control: access.yaml
+#
+# Define declarative permissions for module resources and operations.
+# These rules are enforced by the ApiGuard during request processing.
+
+Resources:
+  __ResourceName__:
+    # Standard CRUD Permissions
+    List: ['admin', 'manager']
+    Get: ['admin', 'manager', 'owner']
+    Create: ['admin', 'manager']
+    Update: ['admin', 'owner']
+    Delete: ['admin']
+
+Operations:
+  # Custom API Operation Permissions (matching api.yaml methods)
+  __CustomMethod__: ['admin', 'manager']
+
+Policies:
+  # Reference manual RolePolicy classes in src/roles/
+  owner:
+    class: __ResourceName__OwnerPolicy
+    description: 'Checks if the actor is the owner of the resource.'

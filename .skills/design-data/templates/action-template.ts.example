@@ -1,0 +1,43 @@
+import { z } from 'zod';
+import type { APIContext } from 'astro';
+import type { ServiceResponse } from '@/types/service';
+import { {{PascalCaseName}}Service } from '../services/{{kebab-case-name}}-service';
+
+/**
+ * Manual Action for complex workflows.
+ * 
+ * Actions act as gateways to the Service layer.
+ * They handle actor extraction and basic request mapping.
+ * 
+ * Location: modules/{{kebab-case-module-name}}/src/actions/{{kebab-case-name}}.ts
+ */
+export class {{PascalCaseName}}Action {
+  /**
+   * MANDATORY: Define a Zod schema for input validation.
+   */
+  static schema = z.object({
+    id: z.string().cuid(),
+    // ... other fields
+  });
+
+  /**
+   * MANDATORY: Implement the run method with APIContext.
+   */
+  static async run(input: unknown, context: APIContext): Promise<ServiceResponse<any>> {
+    // 1. Validate Input
+    const payload = this.schema.parse(input);
+
+    // 2. Extract Actor
+    const actor = context.locals.actor;
+    if (!actor) {
+      return {
+        success: false,
+        error: 'Unauthorized',
+        code: 401
+      };
+    }
+
+    // 3. Delegate to Service (Actions MUST NOT access 'db' directly)
+    return await {{PascalCaseName}}Service.executeComplexLogic(actor, payload.id);
+  }
+}

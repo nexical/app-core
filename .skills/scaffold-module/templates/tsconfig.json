@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["../../src/*"],
+      "@modules/*": ["../../modules/*"],
+      "@tests/*": ["../../tests/*"]
+    }
+  },
+  "include": ["src/**/*", "tests/**/*", "types.d.ts", "module.config.mjs"]
+}

@@ -1,0 +1,43 @@
+import { JobProcessor } from '@nexical/agent/src/core/processor.js';
+import type { AgentJob, AgentContext, AgentResult } from '@nexical/agent/src/core/types.js';
+import { {{PascalCaseName}}Payload, {{PascalCaseName}}PayloadSchema } from '@modules/{{kebab-case-module-name}}/src/sdk/types';
+import { db } from '@/lib/core/db';
+
+/**
+ * Agent Job Processor for autonomous tasks.
+ * 
+ * Payload MUST be defined in models.yaml (db: false, api: false)
+ * and imported from the generated SDK types.
+ */
+export class {{PascalCaseName}}Processor extends JobProcessor<{{PascalCaseName}}Payload> {
+  public jobType = '{{kebab-case-name}}';
+  
+  /**
+   * Use the generated Zod schema from the SDK for runtime validation.
+   */
+  public schema = {{PascalCaseName}}PayloadSchema;
+
+  /**
+   * Standard Job Processor signature.
+   */
+  public async process(job: AgentJob<{{PascalCaseName}}Payload>, context: AgentContext): Promise<AgentResult | void> {
+    const { payload, id } = job;
+    const logger = context.logger || this.logger;
+
+    try {
+      // 1. Logic via manual Services or direct DB access (permitted for agents)
+      // const result = await db.{{entityCamelCase}}.findFirst(...);
+
+      return {
+        success: true,
+        data: undefined
+      };
+    } catch (error: any) {
+      logger.error(`[Job ${id}] Failed: ${error.message}`);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+}
