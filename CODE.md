@@ -25,6 +25,7 @@ We adhere to **Strict TypeScript** configuration.
 
 - **No `any`**: The use of `any` is **strictly forbidden**.
   - If a type is truly dynamic, use `unknown` and validate it with a runtime schema validator (like Zod) before usage.
+  - Using `any` in core infrastructure or generated SDKs is considered a critical system failure.
 - **No `ts-ignore`**: Do not suppress TypeScript errors. Fix the underlying issue.
 
 ### Interfaces vs Types
@@ -70,6 +71,7 @@ We adhere to **Strict TypeScript** configuration.
     status?: number;
   }
   ```
+- **Client-Side Error Wrapping (NexicalError)**: Client-side SDKs MUST wrap API responses that are not 'ok' in a `NexicalError` instance. This class is responsible for parsing the `ApiError` structure and providing a consistent interface for the application to handle failures.
 - **Purpose**: This ensures consistent error handling and data access across all layers of the modular monolith.
 
 ---
@@ -156,7 +158,7 @@ User preferences for dismissing transient UI (like PWA banners) should be persis
 
 ## 5. Styling & CSS
 
-We use a utility-first approach powered by **Tailwind CSS**.
+we use a utility-first approach powered by **Tailwind CSS**.
 
 ### Utility-First
 

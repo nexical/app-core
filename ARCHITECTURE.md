@@ -88,7 +88,21 @@ The `api` object is the universal entry point for all data access. It acts as an
 - **Isomorphic Detection**: The client automatically detects its environment. Client-side requests use relative paths (`/api`) while server-side requests use absolute URLs from environment variables (`PUBLIC_SITE_URL`).
 - **Browser Debugging**: The `api` aggregator is attached to `window.api` in browser environments for developer convenience.
 
-#### 2. Infrastructure Abstraction (defineApi)
+#### 2. SDK Infrastructure Standards
+
+The SDK core provides base classes and utilities to ensure consistency across all generated and manual SDK components.
+
+- **Named Export Infrastructure**: All core SDK components MUST be exported as named members. Default exports are forbidden in the sdk-core package to ensure explicit importing and better tree-shaking.
+- **Abstract Resource Pattern**: All SDK functional areas MUST be organized into 'Resource' classes that extend `BaseResource`. This pattern ensures that all resources inherit centralized request orchestration, logging, and query building logic. Every resource MUST receive an `ApiClient` via constructor injection.
+- **Asynchronous Auth Strategy**: Authentication headers MUST be resolved dynamically via an injected `AuthStrategy` interface, allowing for polymorphic authentication (Bearer, API Key, Agent).
+- **Structured Error Handling (NexicalError)**: API errors MUST be wrapped in the `NexicalError` class to ensure consistent error parsing and preservation of HTTP status context across the ecosystem.
+- **Generic Request Orchestration**: All API requests MUST use the generic `request<T>` method. Direct use of global `fetch` is forbidden within the SDK layer.
+- **Base URL Normalization**: Base URLs MUST be normalized in the constructor to remove trailing slashes to prevent path concatenation errors.
+- **204 No Content Compatibility**: SDK handlers MUST return a valid `ServiceResponse<T>` structure for 204 status codes (e.g., `{ success: true, data: {} as T }`). Returning a raw empty object is forbidden as it violates the standardized response contract.
+- **Default Credential Inclusion**: The ApiClient MUST default to 'include' for credentials unless explicitly overridden to ensure cookies/auth headers are sent in browser environments.
+- **Nested Query Parameter Serialization**: To maintain compatibility with the backend's `parseQuery` utility, the SDK flattens nested filter objects using a double-underscore (`__`) delimiter (e.g., `filter: { user: { name: 'Alice' } }` becomes `?filter__user__name=Alice`).
+
+#### 3. Infrastructure Abstraction (defineApi)
 
 Manual API endpoints MUST be wrapped using `defineApi` from `@/lib/api/api-docs`.
 
