@@ -1,3 +1,8 @@
+---
+name: consume-api-sdk
+description: "This skill provides expert guidance on interacting with the Nexical Ecosystem's centralized API client and federated SDKs."
+---
+
 # Skill: Consume API SDK
 
 This skill provides expert guidance on interacting with the Nexical Ecosystem's centralized API client and federated SDKs.

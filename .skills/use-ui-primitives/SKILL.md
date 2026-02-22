@@ -1,3 +1,8 @@
+---
+name: use-ui-primitives
+description: 'This skill defines the authoritative standards for building and extending the **Nexus UI Primitive Layer**. Every core component in `core/src/components/ui/` MUST strictly adhere to these patterns to ...'
+---
+
 # Skill: Use UI Primitives
 
 This skill defines the authoritative standards for building and extending the **Nexus UI Primitive Layer**. Every core component in `core/src/components/ui/` MUST strictly adhere to these patterns to ensure accessibility, extensibility, and consistent styling across the modular monolith.

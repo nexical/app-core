@@ -1,3 +1,8 @@
+---
+name: implement-api-docs
+description: 'This skill governs the implementation of interactive API documentation components (typically using the Scalar library) within the Nexus Ecosystem.'
+---
+
 # Skill: Implement API Documentation (Scalar)
 
 This skill governs the implementation of interactive API documentation components (typically using the Scalar library) within the Nexus Ecosystem.

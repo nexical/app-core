@@ -1,3 +1,8 @@
+---
+name: implement-hook-system
+description: 'This skill defines the authoritative patterns for implementing event-driven architectures and cross-module communication within the Nexical Ecosystem.'
+---
+
 # Skill: Implement Hook System
 
 This skill defines the authoritative patterns for implementing event-driven architectures and cross-module communication within the Nexical Ecosystem.

@@ -1,3 +1,8 @@
+---
+name: implement-pwa-features
+description: 'Expert guide for implementing Progressive Web App (PWA) features within the Nexus Ecosystem, including install prompts, notifications, and offline capabilities.'
+---
+
 # Skill: implement-pwa-features
 
 Expert guide for implementing Progressive Web App (PWA) features within the Nexus Ecosystem, including install prompts, notifications, and offline capabilities.

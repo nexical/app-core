@@ -1,3 +1,8 @@
+---
+name: implement-centralized-api
+description: 'This skill defines the authoritative pattern for the **Centralized API Client** within the Nexical Ecosystem. Every SDK method and type MUST be routed through this central point to ensure architectura...'
+---
+
 # Skill: Implement Centralized API
 
 This skill defines the authoritative pattern for the **Centralized API Client** within the Nexical Ecosystem. Every SDK method and type MUST be routed through this central point to ensure architectural consistency, uniform error handling, and developer discoverability.

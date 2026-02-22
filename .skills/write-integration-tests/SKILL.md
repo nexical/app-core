@@ -1,3 +1,8 @@
+---
+name: write-integration-tests
+description: "This skill defines the authoritative process for creating and maintaining integration tests within the Nexus Ecosystem. Integration tests follow a **'Black Box' API + 'White Box' Data Setup** philosop..."
+---
+
 # Skill: Write Integration Tests
 
 This skill defines the authoritative process for creating and maintaining integration tests within the Nexus Ecosystem. Integration tests follow a **"Black Box" API + "White Box" Data Setup** philosophy.

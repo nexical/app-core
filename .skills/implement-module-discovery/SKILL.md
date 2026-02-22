@@ -1,3 +1,8 @@
+---
+name: implement-module-discovery
+description: 'This skill governs the implementation and extension of the module discovery system within the Nexical Ecosystem. It ensures that the core remains agnostic while allowing modules to inject configuratio...'
+---
+
 # Skill: Implement Module Discovery
 
 This skill governs the implementation and extension of the module discovery system within the Nexical Ecosystem. It ensures that the core remains agnostic while allowing modules to inject configuration, code, and assets.

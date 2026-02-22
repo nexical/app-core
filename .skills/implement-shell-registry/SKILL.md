@@ -1,3 +1,8 @@
+---
+name: implement-shell-registry
+description: "This skill guides the implementation of context-aware registries within the Nexical Ecosystem. Registries are the backbone of the 'Shell-Registry' pattern, allowing modules to 'pin' functionality or c..."
+---
+
 # Skill: Implement Shell Registry
 
 This skill guides the implementation of context-aware registries within the Nexical Ecosystem. Registries are the backbone of the "Shell-Registry" pattern, allowing modules to "pin" functionality or content into specific "Zones" of the shell.

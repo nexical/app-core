@@ -1,3 +1,8 @@
+---
+name: implement-integration-adapter
+description: "This skill guides the creation of **Core Astro Integrations**. These are the 'Machinery' of the Modular Monolith, responsible for gluing the separate modules together at build time. They operate outsi..."
+---
+
 # Skill: Implement Integration Adapter
 
 ## Role

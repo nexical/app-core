@@ -1,3 +1,8 @@
+---
+name: use-hook-system
+description: 'This skill provides procedural guidance for developers to consume the Hook System for cross-module communication, ensuring loose coupling and type-safe interactions.'
+---
+
 # Skill: Use Hook System
 
 This skill provides procedural guidance for developers to consume the Hook System for cross-module communication, ensuring loose coupling and type-safe interactions.

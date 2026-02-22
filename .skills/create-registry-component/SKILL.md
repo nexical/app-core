@@ -1,3 +1,8 @@
+---
+name: create-registry-component
+description: "This skill provides the authoritative workflow for creating components that plug into the Shell's Registry zones."
+---
+
 # Skill: Create Registry Component
 
 This skill provides the authoritative workflow for creating components that plug into the Shell's Registry zones.
