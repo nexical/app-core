@@ -156,7 +156,27 @@ User preferences for dismissing transient UI (like PWA banners) should be persis
 
 - **Rule**: UI-only state preferences SHOULD be stored in `sessionStorage` and validated during component mount.
 
-## 5. Styling & CSS
+---
+
+## 5. React & UI Interaction Standards
+
+### Transition-Based Mutation
+
+Async state updates that affect the UI (like API calls) **MUST** use React's `useTransition` hook. This keeps the UI responsive (avoiding "frozen" states) and allows for standard `isPending` indicators.
+
+- **Rule**: Wrap async API calls in `startTransition`.
+- **Example**:
+  ```tsx
+  const [isPending, startTransition] = useTransition();
+  // ...
+  startTransition(async () => {
+    await api.user.update(...);
+  });
+  ```
+
+---
+
+## 6. Styling & CSS
 
 we use a utility-first approach powered by **Tailwind CSS**.
 
@@ -188,7 +208,7 @@ All UI primitives in `core/src/components/ui/` MUST strictly follow the Codebase
 
 ---
 
-## 5. Syntax & Formatting
+## 7. Syntax & Formatting
 
 We rely on **Prettier** and **ESLint** to handle formatting. Do not rely on manual formatting.
 
@@ -199,7 +219,7 @@ We rely on **Prettier** and **ESLint** to handle formatting. Do not rely on manu
 
 ---
 
-## 6. Documentation
+## 8. Documentation
 
 Documentation is part of the code, not an afterthought.
 

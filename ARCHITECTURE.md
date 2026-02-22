@@ -84,7 +84,18 @@ The platform provides a unified infrastructure for building and consuming APIs.
 
 The `api` object is the universal entry point for all data access. It acts as an **Aggregator** that wraps the core `NexicalClient` and extends it with module-specific SDKs.
 
-- **Mandate**: All SDK access (methods and types) MUST be routed through the centralized `api` object and `*ModuleTypes` namespaces in `@/lib/api`.
+- **Mandate**: All SDK access (methods and types) MUST be routed through the centralized `api` object (imported from `@/lib/api/api`) and `*ModuleTypes` namespaces in `@/lib/api`.
+- **Implementation**: You MUST use the **Aggregator Pattern** via `Object.assign`. This preserves the prototype methods of the base `NexicalClient` while adding module extensions.
+
+  ```typescript
+  // core/src/lib/api/api.ts
+  const client = new NexicalClient({ baseUrl });
+  export const api = Object.assign(client, {
+    // [GENERATOR: MODULES_START]
+    // [GENERATOR: MODULES_END]
+  });
+  ```
+
 - **Isomorphic Detection**: The client automatically detects its environment. Client-side requests use relative paths (`/api`) while server-side requests use absolute URLs from environment variables (`PUBLIC_SITE_URL`).
 - **Browser Debugging**: The `api` aggregator is attached to `window.api` in browser environments for developer convenience.
 
@@ -229,6 +240,7 @@ You MUST follow the specific instructions for the type of test you are creating.
 ### End-to-End (E2E) Tests
 
 **Reference**: [`core/tests/e2e/README.md`](./core/tests/e2e/README.md)
+**Skill**: [nexical-app-core-write-e2e-tests](../docs/.skills/nexical-app-core-write-e2e-tests/SKILL.md)
 
 - **Tooling**: Playwright.
 - **Selectors**: **ALWAYS** use `data-testid` attributes (`page.getByTestId(...)`) for selecting elements. Do not rely on CSS classes or text content unless testing those specifically.

@@ -160,14 +160,27 @@ Frontend components import the global `api` client. They don't need to know _whe
 
 ```tsx
 // modules/dashboard/src/registry/widgets/UserCount.tsx
-import { api } from '@/lib/api';
+'use client';
+import { api } from '@/lib/api/api';
+import { useTransition } from 'react';
 
 export default function UserCount() {
-  const loadData = async () => {
-    // Usage: Fully typed, autocompleted method generated from api.yaml.
-    const users = await api.user.listUsers();
+  const [isPending, startTransition] = useTransition();
+
+  const loadData = () => {
+    startTransition(async () => {
+      // Usage: Fully typed, autocompleted method generated from api.yaml.
+      const result = await api.user.listUsers();
+      if (result.success) {
+        console.log(result.data);
+      }
+    });
   };
-  return <button onClick={loadData}>Refresh</button>;
+  return (
+    <button onClick={loadData} disabled={isPending}>
+      Refresh
+    </button>
+  );
 }
 ```
 
