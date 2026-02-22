@@ -575,7 +575,7 @@ HookSystem.on<UserData, { isAdmin: boolean }>('user.read', async (user, context)
 // Usage: Fire the event in parallel.
 HookSystem.dispatch<UserRegisteredPayload>('user.registered', {
   userId: '123',
-  email: 'user @example.com',
+  email: 'user@example.com',
 });
 ```
 
@@ -979,7 +979,7 @@ export class ScrapeProcessor extends JobProcessor<ScrapeInput> {
 
 Use this for long-running background listeners (e.g., "System Monitor", "Discord Bot").
 
-- **Base Class**: `PersistentAgent` from ` @nexical/agent/src/core/persistent.js`.
+- **Base Class**: `PersistentAgent` from `@nexical/agent/src/core/persistent.js`.
 
 - **Requirements**: Must handle `ServiceResponse` for all calls to Services or the Federated SDK. Direct `db` access is permitted.
 
@@ -1185,7 +1185,7 @@ Add `type` and `order` to your `module.config.mjs`.
 
 ```js
 // modules/theme-dark/module.config.mjs
-/** @type {import('@/lib/modules/module-discovery').ModuleConfig} */
+/** @core/.skills/implement-hook-system/examples/type-safe-hook.ts {import('@/lib/modules/module-discovery').ModuleConfig} */
 export default {
     type: 'theme',   // Loads late (Phase 40)
     order: 10,       // Sorts within the Theme phase

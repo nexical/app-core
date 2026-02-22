@@ -84,8 +84,14 @@ We enforce a strict module resolution strategy to avoid spaghetti dependencies.
   - `@/` refers to `src/`.
   - `@modules/` refers to `modules/`.
   - `@tests/` refers to `tests/`.
-- **Typography**: NEVER insert a space before the `@` symbol in import paths or aliases (e.g., use `'@/'`, NOT `' @/'`). This breaks TypeScript compilation.
+- **Typography**: NEVER insert a space before the `@` symbol in import paths or aliases (e.g., use `'@/'`, NOT `'@/'`). This breaks TypeScript compilation.
 - **Forbidden**: Deep relative imports that traverse up the tree (e.g., `../../components/button`).
+
+### Node.js Standard Library Imports
+
+- **Prefix Requirement**: When importing built-in Node.js modules (fs, path, etc.), you **MUST** use the `node:` prefix. This clarifies that the module is a platform built-in and not a userland package.
+  - _Good_: `import fs from 'node:fs';`
+  - _Bad_: `import fs from 'fs';`
 
 ### Relative Imports & ESM
 
@@ -128,9 +134,9 @@ We use a utility-first approach powered by **Tailwind CSS**.
 
 All UI primitives in `core/src/components/ui/` MUST strictly follow the Codebase Canon:
 
-- **Polymorphism**: Components MUST support the `asChild` prop using ` @radix-ui/react-slot` to allow underlying element swapping.
+- **Polymorphism**: Components MUST support the `asChild` prop using `@radix-ui/react-slot` to allow underlying element swapping.
 - **Variant-Based Styling (CVA)**: Use `class-variance-authority` (CVA) to define component variants. Export the `variants` object alongside the component.
-- **Semantic Class Names**: CVA definitions SHOULD use semantic class names (e.g., `btn-default`) defined in ` @layer components` CSS files.
+- **Semantic Class Names**: CVA definitions SHOULD use semantic class names (e.g., `btn-default`) defined in `@layer components` CSS files.
 - **Metadata Data Attributes**: Components MUST include a `data-slot` attribute (e.g., `data-slot="button"`) and individual data-attributes for each variant state (e.g., `data-variant={variant}`).
 - **Ref Forwarding**: All UI primitives MUST use `React.forwardRef` and set a proper `displayName`.
 

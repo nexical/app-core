@@ -44,6 +44,7 @@ The platform adheres to a strict "Agnostic Core" policy:
 - **Dual Discovery Mechanism**: The Core identifies and integrates modules using two complementary systems:
   - **Vite-Based (Runtime/Frontend)**: The `GlobHelper` static utility class uses `import.meta.glob` to gather code modules (initialization scripts, registry components, routes) during the build process and within the Astro application.
   - **Node-Based (Server/Build-Time)**: The `ModuleDiscovery` static utility class uses Node.js `fs` and `jiti` to load `module.config.mjs` and calculate phase-based execution order. This is used for server-side initialization and scripts.
+- **Custom Integrations**: Core integrations (located in `core/src/lib/integrations/`) act as the build-time machinery for the Modular Monolith. They MUST follow the strict patterns defined in the `implement-integration-adapter` skill (Factory Pattern, Dynamic Discovery, Node.js Imports).
 - **Phased Execution Logic**: Modules are processed in a strict order defined by their `ModulePhase` (core -> provider -> feature -> integration -> theme) and an optional `order` priority within each phase. This ensures themes can consistently override feature logic.
 - **Module Loaders**: All cross-module registration must occur through the `HookSystem` or dedicated `Registries` (e.g., `RoleRegistry`, `EmailRegistry`).
 - **Registry Implementation Standards**:
@@ -69,13 +70,13 @@ We utilize a 3-tier modular monolith architecture to ensure maintainability and 
 
 The platform provides a unified infrastructure for building and consuming APIs.
 
-#### 1. Centralized API Singleton
+#### 1. Centralized API Aggregator
 
-The `api` object is the universal entry point for all data access, exported as a singleton instance of `NexicalClient`.
+The `api` object is the universal entry point for all data access. It acts as an **Aggregator** that wraps the core `NexicalClient` and extends it with module-specific SDKs.
 
 - **Mandate**: All SDK access (methods and types) MUST be routed through the centralized `api` object and `*ModuleTypes` namespaces in `@/lib/api`.
 - **Isomorphic Detection**: The client automatically detects its environment. Client-side requests use relative paths (`/api`) while server-side requests use absolute URLs from environment variables (`PUBLIC_SITE_URL`).
-- **Browser Debugging**: The `api` singleton is attached to `window.api` in browser environments for developer convenience.
+- **Browser Debugging**: The `api` aggregator is attached to `window.api` in browser environments for developer convenience.
 
 #### 2. Infrastructure Abstraction (defineApi)
 
