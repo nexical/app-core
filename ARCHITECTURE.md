@@ -73,20 +73,20 @@ The platform provides a unified infrastructure for building and consuming APIs.
 
 The `api` object is the universal entry point for all data access, exported as a singleton instance of `NexicalClient`.
 
-- **Mandate**: All SDK access (methods and types) MUST be routed through the centralized `api` object and `*ModuleTypes` namespaces in ` @/lib/api`.
+- **Mandate**: All SDK access (methods and types) MUST be routed through the centralized `api` object and `*ModuleTypes` namespaces in `@/lib/api`.
 - **Isomorphic Detection**: The client automatically detects its environment. Client-side requests use relative paths (`/api`) while server-side requests use absolute URLs from environment variables (`PUBLIC_SITE_URL`).
 - **Browser Debugging**: The `api` singleton is attached to `window.api` in browser environments for developer convenience.
 
 #### 2. Infrastructure Abstraction (defineApi)
 
-Manual API endpoints MUST be wrapped using `defineApi` from ` @/lib/api/api-docs`.
+Manual API endpoints MUST be wrapped using `defineApi` from `@/lib/api/api-docs`.
 
 - **Consistency**: Ensures consistent response formatting (ServiceResponse) and security enforcement.
 - **Metadata**: Integrates with OpenAPI documentation generation.
 
 #### 3. Query Parsing (parseQuery)
 
-List endpoints MUST use `parseQuery` from ` @/lib/api/api-query` to parse URL search parameters into structured Prisma `where`/`take`/`skip`/`orderBy` objects.
+List endpoints MUST use `parseQuery` from `@/lib/api/api-query` to parse URL search parameters into structured Prisma `where`/`take`/`skip`/`orderBy` objects.
 
 ### 3. Module Internals: The Service Layer Pattern
 
@@ -101,7 +101,7 @@ List endpoints MUST use `parseQuery` from ` @/lib/api/api-query` to parse URL se
   - **MANDATORY**: Implement the `public static async run(input: unknown, context: APIContext)` signature.
   - **MANDATORY**: Verify `context.locals.actor` exists and is authorized.
   - **RULE**: Actions MUST NOT access the 'db' (Prisma) directly. They MUST delegate all database operations to Services.
-- **CENTRALIZED SDK**: All SDK access (methods, types) MUST be routed through ` @/lib/api`. Use `api.{module}` for methods and `{Module}ModuleTypes` for types.
+- **CENTRALIZED SDK**: All SDK access (methods, types) MUST be routed through `@/lib/api`. Use `api.{module}` for methods and `{Module}ModuleTypes` for types.
 - **MIXED DIRECTORY:** Contains both machine-generated and manual files. **CRITICAL: NEVER edit files with the `// GENERATED CODE` header.**
 
 #### 2. The API Page (Handlers)
@@ -126,16 +126,27 @@ List endpoints MUST use `parseQuery` from ` @/lib/api/api-query` to parse URL se
   - **MANDATORY**: Implement the 4-step "Hook-First" logic flow: **Filter Input -> Execute Logic -> Dispatch Side-Effects -> Filter Output**.
   - **MIXED DIRECTORY:** Contains both machine-generated CRUD services and manual domain logic.
 
-#### 4. The Agent (Background Jobs)
+#### 4. The Agent (Background Jobs & Workers)
 
 - **Location:** `modules/{name}/src/agent/`
 - **Naming Convention:** `{kebab-case}.ts`. Class name should be PascalCase with a functional suffix (`*Processor`, `*Agent`).
-- **Role:** Asynchronous task processing.
+- **Role:** Asynchronous task processing and continuous background operations.
+- **Automated Discovery**: Every backend module agent MUST be registered in the centralized `packages/agent/src/registry.ts` file via the automated discovery script. Run `npm run generate` in `packages/agent` to update the global registry.
+- **Patterns**:
+  - **JobProcessor (Queue-based)**:
+    - **Trigger**: Activated by the Orchestrator when a discrete job is queued.
+    - **Contract**: MUST extend `JobProcessor<T>` and implement the `process(job, context)` method.
+    - **Validation**: MUST define a `public schema` (Zod) for payload validation.
+  - **PersistentAgent (Tick-based)**:
+    - **Trigger**: Runs continuously in an isolated process, triggered by a timed loop.
+    - **Contract**: MUST extend `PersistentAgent` and implement the `tick()` method.
+    - **Lifecycle**: MUST use a controlled `while(this.running)` loop with error isolation.
+- **Runtime Supervision Infrastructure**:
+  - **The Supervisor Pattern**: Agents MUST be managed by an `AgentSupervisor` that handles process lifecycles, signal handling (`SIGINT`/`SIGTERM`), and automatic recovery (5s delay).
+  - **Environment Awareness**: The supervisor MUST detect the entrypoint type and use the appropriate engine (`tsx` for development, `node` fork for production).
 - **Responsibilities:**
-  - **MANDATORY**: Extend `JobProcessor<T>`.
-  - **MANDATORY**: Define a `public static jobType: string`.
-  - **MANDATORY**: Define a `public schema` (Zod) for payload validation.
-  - **MANDATORY**: Access job data via `job.payload`.
+  - **MANDATORY**: **Configuration-Driven Initialization**: Use explicit constructor configuration objects (Constructor-Based Dependency Injection) for infrastructure setup. NEVER pull directly from `process.env` in the constructor.
+  - **MANDATORY**: **Standardized SDK**: Use `NexicalClient` with `AgentAuthStrategy` for all API interactions.
   - **RULE**: Direct 'db' access is permitted for pragmatic implementation, but delegation to Services is recommended for reusable logic.
 
 #### 5. Storage Provider Pattern
@@ -197,4 +208,20 @@ You MUST follow the specific instructions for the type of test you are creating.
 - **Tooling**: Playwright.
 - **Selectors**: **ALWAYS** use `data-testid` attributes (`page.getByTestId(...)`) for selecting elements. Do not rely on CSS classes or text content unless testing those specifically.
 - **Pattern**: Use **Page Objects** for complex interactions.
-- **Setup**: Use the `actor` fixture to create data and log in instantly (bypassing the login UI).
+
+---
+
+## 7. Technical Standards
+
+### 7.1 ESM Module Imports (.js extension)
+
+Local file imports in TypeScript MUST include the `.js` extension to satisfy ESM runtime requirements and Bun/Node.js compatibility.
+
+- **Rule**: All relative imports MUST include the '.js' extension.
+- **Example**: `import { JobRemoteLogger } from './logger.js';`
+
+### 7.2 Zero-Tolerance for 'any' Type
+
+The codebase avoids `any` to preserve type safety. `unknown` is used as a safe alternative for generic data.
+
+- **Rule**: Strictly forbid the 'any' type. Use specific interfaces, concrete types, or `unknown`.

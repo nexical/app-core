@@ -81,17 +81,23 @@ We enforce a strict module resolution strategy to avoid spaghetti dependencies.
 ### Import Aliases
 
 - **Mandatory Aliases**: You **MUST** use absolute import aliases for all internal code.
-  - ` @/` refers to `src/`.
-  - ` @modules/` refers to `modules/`.
-  - ` @tests/` refers to `tests/`.
-- **Whitespace**: A **SINGLE SPACE** is mandatory after the opening quote for all internal aliases and workspace packages (e.g., `'@/'`, `'@modules/'`, `'@tests/'`, `'@nexical/agent'`).
+  - `@/` refers to `src/`.
+  - `@modules/` refers to `modules/`.
+  - `@tests/` refers to `tests/`.
+- **Typography**: NEVER insert a space before the `@` symbol in import paths or aliases (e.g., use `'@/'`, NOT `' @/'`). This breaks TypeScript compilation.
 - **Forbidden**: Deep relative imports that traverse up the tree (e.g., `../../components/button`).
 
-### Relative Imports
+### Relative Imports & ESM
 
 - **Siblings Only**: You **MAY** use relative imports (`./`) for files within the **same directory**.
-  - _Good_: `import { Helper } from './helper';`
-  - _Bad_: `import { Button } from '../ui/button';` (Use `'@/components/ui/button'`)
+  - _Good_: `import { Helper } from './helper.js';`
+  - _Bad_: `import { Button } from '../ui/button.js';` (Use `'@/components/ui/button'`)
+- **ESM Extensions**: All relative imports **MUST** include the `.js` extension, even when pointing to `.ts` source files, to ensure compatibility with ESM module resolution.
+
+### Circular Dependency Mitigation
+
+- **Pattern**: When a direct import would cause a circular reference (common between low-level SDKs and high-level logic), use the `unknown` type with a clarifying comment.
+- **Example**: `api: unknown; // NexicalClient (Used as unknown to prevent circular dependency in SDK Types)`
 
 ### Export Strategy
 
