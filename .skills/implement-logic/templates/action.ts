@@ -1,3 +1,4 @@
+// GENERATED CODE - DO NOT MODIFY
 import type { APIContext } from 'astro';
 import type { ServiceResponse } from '@/types/service';
 import { getTranslation } from '@/lib/core/i18n';

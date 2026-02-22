@@ -1,6 +1,6 @@
 ---
 name: write-integration-tests
-description: "This skill defines the authoritative process for creating and maintaining integration tests within the Nexus Ecosystem. Integration tests follow a **'Black Box' API + 'White Box' Data Setup** philosop..."
+description: "This skill defines the authoritative process for creating and maintaining integration tests within the Nexus Ecosystem. Integration tests follow a **'Black Box' API + 'White Box' Data Setup** philosophy."
 ---
 
 # Skill: Write Integration Tests
@@ -17,9 +17,11 @@ This skill defines the authoritative process for creating and maintaining integr
 
 ## 2. Mandatory Patterns
 
-### Single-Space Alias Imports
+### Standardized Imports
 
-All internal alias imports MUST have a single space after the opening quote.
+Imports MUST use the `@tests/integration/lib/` alias. Do NOT use relative imports for test infrastructure.
+
+**CRITICAL**: Do NOT insert spaces before the `@` symbol in import paths or aliases.
 
 ```typescript
 import { ApiClient } from '@tests/integration/lib/client';
@@ -41,7 +43,7 @@ await client.as('user', { role: 'ADMIN' });
 Use `Factory.create` for speed and reliability.
 
 ```typescript
-const user = await Factory.create('user', { email: 'test @example.com' });
+const user = await Factory.create('user', { email: 'test@example.com' });
 ```
 
 ## 3. Standard Test Structure
@@ -75,7 +77,20 @@ describe('Module: {Name} API', () => {
 });
 ```
 
-## 4. Generated File Protection
+## 4. Directory Structure
+
+To maintain separation between machine-maintained and human-authored tests, adhere to the following directory structure:
+
+- **Generated Tests**: `tests/integration/api/generated/{entity}/`
+  - These files are managed by the generator.
+  - They contain the `// GENERATED CODE` header.
+  - **DO NOT EDIT** manually.
+
+- **Manual Tests**: `tests/integration/api/manual/`
+  - Place custom, complex, or multi-step integration scenarios here.
+  - You typically create these files manually.
+
+## 5. Generated File Protection
 
 Machine-generated tests (usually in `generated/` directories) include a protection header.
 **DO NOT MODIFY** files containing:

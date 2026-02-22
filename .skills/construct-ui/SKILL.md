@@ -20,7 +20,9 @@ You **MUST** follow the standards defined in:
 - **ESLint Compliance**: All code you generate must be strictly compliant with the project's ESLint rules. Always proactively check for and resolve any linting errors provided in tool feedback.
 - **Permissions**: Always use `Permission.check()` from the corresponding API module to verify access before rendering sensitive UI components or performing actions.
 - **Internationalization**: NEVER hardcode user-facing strings. Use the `useTranslation` hook and module-prefixed keys.
-- **Centralized SDK**: ALWAYS use the `api` object and `*ModuleTypes` from `@/lib/api`. Direct imports from module SDKs are forbidden.
+- **Centralized SDK**: ALWAYS use the `api` object from `@/lib/api/api` (NOT `@/lib/api`). Call methods via `api.{module}.{method}`. Direct imports from module SDKs are forbidden.
+- **Service Response Pattern**: API calls return a `ServiceResponse<T>`. You MUST check `result.success` before accessing data.
+- **Transition-Based Mutation**: Use React's `useTransition` for all async API state updates to ensure UI responsiveness.
 - **Mandatory Configuration**: Every UI module MUST have a `ui.yaml` file in its root directory defining its routing, shells, and registry metadata.
 
 ## 1. Core Hooks
@@ -113,3 +115,58 @@ Forms must use `react-hook-form` combined with `zod` for validation.
 
 - **Rule**: Wrap all module styles in `@layer components`.
 - **Rule**: Use semantic variables and surface utilities (e.g., `@apply surface-panel`).
+
+## 8. Async Data Mutation
+
+Interactive components must manage async state and API responses correctly.
+
+### Transition Pattern
+
+Use `useTransition` to handle pending states without blocking the UI. This is critical for keeping the interface responsive during network requests.
+
+```tsx
+import { useTransition } from 'react';
+
+const [isPending, startTransition] = useTransition();
+
+const handleSubmit = () => {
+  startTransition(async () => {
+    // API logic here...
+  });
+};
+```
+
+### Service Response Pattern
+
+The SDK returns a standardized `ServiceResponse<T>` object. It does NOT throw on logical errors (like "Email taken").
+
+- **Protocol**:
+  1.  **Check Success**: Always verify `result.success` (boolean) first.
+  2.  **Handle Success**: Access `result.data`.
+  3.  **Handle Logical Failure**: If `success` is false, `result.error` contains the translation key.
+  4.  **Handle Network Failure**: Wrap the entire block in `try/catch` for unexpected exceptions (parsing, 500s).
+
+```tsx
+// Correct Implementation
+import { api, type ApiError } from '@/lib/api/api'; // Import from /api/api
+
+const handleSubmit = () => {
+  startTransition(async () => {
+    try {
+      const result = await api.module.action(data);
+
+      if (result.success) {
+        // Success Path
+        onSuccess(result.data);
+      } else {
+        // Logical Error Path (e.g. Validation)
+        setError(t(result.error || 'error.unknown'));
+      }
+    } catch (e) {
+      // Network/System Error Path
+      const err = e as ApiError;
+      setError(err.message || 'common.error.network');
+    }
+  });
+};
+```

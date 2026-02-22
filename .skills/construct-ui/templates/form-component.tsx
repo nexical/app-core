@@ -1,13 +1,15 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import type { ApiError } from '@/lib/api/api';
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { api, type ApiError } from '@/lib/api/api';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from 'react-i18next';
+import { toast } from 'sonner';
 
 interface NameFormProps {
   onSuccess?: () => void;
@@ -26,6 +28,7 @@ type NameFormValues = z.infer<ReturnType<typeof createNameSchema>>;
  */
 export function NameForm({ onSuccess }: NameFormProps) {
   const [serverError, setServerError] = useState<string | null>(null);
+  const [isPending, startTransition] = useTransition();
   const { t } = useTranslation();
 
   const schema = createNameSchema(t);
@@ -33,22 +36,37 @@ export function NameForm({ onSuccess }: NameFormProps) {
   const {
     register,
     handleSubmit,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<NameFormValues>({
     resolver: zodResolver(schema),
   });
 
-  const onSubmit = async (data: NameFormValues) => {
+  const onSubmit = (data: NameFormValues) => {
     setServerError(null);
-    try {
-      // await api.__module__.__method__(data);
-      onSuccess?.();
-    } catch (error) {
-      const apiError = error as ApiError;
-      setServerError(
-        apiError.body?.error || apiError.message || t('__module__.errors.generic_failure'),
-      );
-    }
+    startTransition(async () => {
+      try {
+        // Example API call - Replace with actual SDK method
+        // const result = await api.__module__.__method__(data);
+
+        // MOCK for template compilation - remove in actual code
+        console.log('Mocking API call with data:', data);
+        const result = { success: true, error: null };
+
+        if (result.success) {
+          toast.success(t('__module__.notifications.success'));
+          onSuccess?.();
+        } else {
+          // Handle logical errors from the service (e.g., "User already exists")
+          setServerError(t(result.error || '__module__.errors.generic_failure'));
+        }
+      } catch (error) {
+        // Handle unexpected network or parsing errors
+        const apiError = error as ApiError;
+        setServerError(
+          apiError.body?.error || apiError.message || t('__module__.errors.generic_failure'),
+        );
+      }
+    });
   };
 
   return (
@@ -84,7 +102,7 @@ export function NameForm({ onSuccess }: NameFormProps) {
 
       <Button
         type="submit"
-        loading={isSubmitting}
+        loading={isPending}
         className="w-full"
         data-testid="__name__-submit-btn"
       >

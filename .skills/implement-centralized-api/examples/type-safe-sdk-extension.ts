@@ -1,21 +1,23 @@
-import { api as baseApi } from '@/lib/api/api';
-
 /**
  * MODULE SDK EXTENSION PATTERN
  * Each module generates its own SDK client via 'nexical gen api {module}'.
- * This client is exported from '@modules/{module}/src/sdk/index.ts'.
+ * This client is exported from '@core/src/lib/modules/hooks.ts{module}/src/sdk/index.ts'.
  */
 import { UserSDK } from '@modules/user/src/sdk';
 import type { UserModuleTypes } from '@modules/user/src/sdk';
+import { NexicalClient } from '@nexical/sdk';
+
+const client = new NexicalClient({ baseUrl: '/api' });
 
 /**
  * 1. Aggregating Methods
  * The central 'api' object in @core/src/lib/api/api.ts merges all module SDKs.
+ * We use Object.assign to ensure that base client methods (like .get(), .post())
+ * are preserved on the 'api' object, as spreading ({...client}) strips prototype methods.
  */
-export const api = {
-  ...baseApi,
-  user: new UserSDK(baseApi),
-};
+export const api = Object.assign(client, {
+  user: new UserSDK(client),
+});
 
 /**
  * 2. Aggregating Types

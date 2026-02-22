@@ -23,7 +23,7 @@ You **MUST** follow the standards defined in:
 
 While Services remain the primary "System of Record" for shared business logic, the Nexical Ecosystem permits **Universal Database Access**.
 
-- **Rule**: Import `db` from `@/lib/core/db` for all database operations across all backend layers (**Services and Hooks**).
+- **Rule**: Import `db` from `@/lib/core/db` for all database operations across all backend layers (**Services, Hooks, and Agents**).
 - **Restriction**: **NEVER** use `db` directly inside an Action. Actions must delegate to Services.
 - **Usage**: `import { db } from '@/lib/core/db';`
 
@@ -40,12 +40,13 @@ Services encapsulate complex domain logic, Prisma transactions, and emit hooks. 
   2. **Execute**: Perform logic/DB operation.
   3. **Dispatch (Post)**: `HookSystem.dispatch('{entity}.{action}Performed', ...)`
   4. **Filter (Read)**: `HookSystem.filter('{entity}.read', ...)`
+- **Virtual Models**: For entities defined in `api.yaml` but not `models.yaml` (Virtual Models), the Service Pattern remains identical (Static Class, `ServiceResponse`), but logic will typically involve external API calls or pure computation instead of `db` access.
 
 ## 3. The Action Pattern (API Gateways)
 
 Actions are single-purpose gateways triggered by API endpoints. They handle actor extraction and service delegation.
 
-- **Generation Protocol**: **NEVER** create Action files manually. Define the operation in `api.yaml` and run `nexical gen api {module}`.
+- **Generation Protocol**: **Prefer generated Actions** defined in `api.yaml`. Manual Actions are permitted in `src/actions/` for custom workflows (e.g., triggered by `src/pages/custom/`) but MUST follow the Action Pattern (Gateway, Validation, Service Delegation).
 - **Location**: `src/actions/`.
 - **Logic Policy**: **Gateways, not Engines**. Actions MUST NOT contain complex business logic or direct Prisma calls. They delegate to a `Service`.
 - **Authorization**: Use `ApiGuard.protect` or `RolePolicy` classes to enforce security. Manual actor checks should be minimized in favor of policy-driven enforcement.
@@ -79,6 +80,7 @@ For external integrations or polymorphic logic, use the Provider pattern.
 
 - **Job Processors**: Discrete tasks queued via `JobProcessor<T>`. Payloads MUST be defined in `models.yaml`.
 - **Persistent Agents**: Long-running workers extending `PersistentAgent`.
+- **Triggering Jobs**: Use `api.orchestrator.job.create` to enqueue jobs. Payloads must match the schema defined in `models.yaml`.
 
 ## 8. Templates
 

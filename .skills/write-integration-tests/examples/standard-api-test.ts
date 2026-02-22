@@ -11,7 +11,7 @@ describe('User Module: Profile API', () => {
 
   it('should return the current user profile when authenticated', async () => {
     // 1. Setup Data: Create a user directly in the database
-    const email = 'test-user @example.com';
+    const email = 'test-user@example.com';
     await Factory.create('user', { email, name: 'Test User' });
 
     // 2. Auth: Act as the newly created user
