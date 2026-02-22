@@ -1,4 +1,4 @@
-import { client } from '@/lib/api/api';
+import { api as baseApi } from '@/lib/api/api';
 
 /**
  * MODULE SDK EXTENSION PATTERN
@@ -13,8 +13,8 @@ import type { UserModuleTypes } from '@modules/user/src/sdk';
  * The central 'api' object in @core/src/lib/api/api.ts merges all module SDKs.
  */
 export const api = {
-  ...client,
-  user: new UserSDK(client),
+  ...baseApi,
+  user: new UserSDK(baseApi),
 };
 
 /**
@@ -30,13 +30,14 @@ export type { UserModuleTypes };
  * This ensures all calls share the same configuration and context.
  */
 export async function loadData() {
+  // MANDATORY: Check 'success' before accessing 'data' (CODE.md compliance)
   const { success, data, error } = await api.user.getProfile();
 
   if (success) {
     // data is strongly typed as UserModuleTypes.Profile
     console.info('User Profile:', data.name);
   } else {
-    // error is strongly typed string key
+    // error is strongly typed string key (translation key)
     console.error('Failed to load profile:', error);
   }
 }

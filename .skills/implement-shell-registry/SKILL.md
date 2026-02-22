@@ -48,6 +48,10 @@ export type ShellMatcher = string | ((context: ShellContext) => boolean);
 
 Selection logic MUST iterate through registry entries in reverse order (last to first). The first entry to satisfy the matcher wins. This ensures that the most recently registered component for a given condition takes precedence.
 
+### F. Client-Side Hydration ('use client')
+
+Interactive components registered in the shell (e.g., navigation items, widgets) MUST include the `'use client';` directive at the top of the file to ensure proper hydration within the Astro/Shell environment. While the registry itself is isomorphic, the _content_ it serves is often interactive.
+
 ---
 
 ## 3. Implementation Workflow
@@ -78,7 +82,7 @@ Implement lightweight, manual path matching for the following patterns within th
 ## 5. Templates & Examples
 
 - **Templates**:
-  - `templates/registry-class.ts`: Boilerplate for a new registry class.
+  - `templates/registry-class.ts`: Boilerplate for a concrete registry class (Direct Implementation).
   - `templates/registry-entry.ts`: Interface definitions.
 - **Examples**:
   - `examples/shell-registry-implementation.ts`: A complete implementation of the `ShellRegistryClass`.

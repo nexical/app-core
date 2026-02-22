@@ -45,21 +45,27 @@ import path from 'node:path';
 
 Integrations must never hardcode paths to specific modules. They must dynamically discover assets by scanning the filesystem.
 
-- **Root Resolution**: Always resolve paths relative to `process.cwd()`.
+- **Root Resolution**: Always resolve paths relative to `process.cwd()` using `path.resolve`. This ensures stability across different execution contexts.
 - **Iteration**: Use `fs.readdirSync` to iterate over `apps/backend/modules` or `apps/frontend/modules`.
 
 ```typescript
-const MODULES_DIR = path.join(process.cwd(), 'apps/frontend/modules');
+// Use path.resolve for robust resolution of top-level project directories
+const MODULES_DIR = path.resolve(process.cwd(), 'apps/frontend/modules');
 const modules = fs
   .readdirSync(MODULES_DIR)
-  .filter((f) => fs.statSync(path.join(MODULES_DIR, f)).isDirectory());
+  .filter((f) => fs.statSync(path.resolve(MODULES_DIR, f)).isDirectory());
 ```
+
+### Phased Module Discovery (Recommended)
+
+For more complex integrations that require specific loading orders (e.g., themes overriding features), use the `ModuleDiscovery` utility and respect the `ModulePhase` system defined in `core/MODULES.md`. Core Integrations are the primary consumers of this utility to ensure the "Modular Monolith" is wired up in the correct sequence.
 
 ### Client-Side Injection
 
 To make assets (like CSS or global scripts) available to the browser, use the `injectScript` hook method.
 
 - **Stage**: Usually `'page'` for global availability.
+- **Vite Compatibility**: Using `injectScript` is MANDATORY for ensuring that Vite processes the injected assets. This guarantees features like Hot Module Replacement (HMR), CSS minification, and proper bundling are applied to the modular assets.
 
 ```typescript
 injectScript('page', `import "@/styles/global.css";`);

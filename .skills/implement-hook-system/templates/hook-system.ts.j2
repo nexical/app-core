@@ -1,32 +1,37 @@
-import { db } from '@/lib/core/db';
-
 /**
  * Hook System Registry
  * 
  * Provides static methods for cross-module event registration and orchestration.
  * All operations are O(1) through private static Map storage.
  */
-type NormalizedHandler = (data: unknown, context?: unknown) => void | Promise<void> | unknown | Promise<unknown>;
+type NormalizedHandler = (data: unknown, context?: unknown) => unknown | Promise<unknown>;
 
 export class HookSystem {
   // Store handlers with a normalized signature to satisfy Map constraints
   private static handlers = new Map<string, Array<NormalizedHandler>>();
 
   /**
-   * Registers a listener for a specific event.
-   * Use generics for payload (T) and context (C).
+   * Static Utility: Prevent instantiation to maintain global stateless behavior.
    */
-  static on<T, C = unknown>(
+  private constructor() {}
+
+  /**
+   * Registers a listener for a specific event.
+   * Uses LIFO (Last-In-First-Out) priority via unshift().
+   * The most recently registered module will win in a filter pipeline.
+   */
+  static on<T = unknown, C = unknown>(
     event: string, 
     handler: (data: T, context?: C) => void | T | Promise<void | T>
   ): void {
     const eventHandlers = this.handlers.get(event) || [];
     
     // Cast to normalized signature for storage
-    // The runtime execution is safe because T matches unknown
+    // Internal Map MUST use (data: unknown, context?: unknown) => unknown
     const normalizedHandler = handler as unknown as NormalizedHandler;
     
-    eventHandlers.push(normalizedHandler);
+    // Last-In-First-Out: Prepend to the handlers list
+    eventHandlers.unshift(normalizedHandler);
     this.handlers.set(event, eventHandlers);
   }
 
@@ -34,7 +39,7 @@ export class HookSystem {
    * Dispatches parallel side-effects (Fire-and-Forget).
    * Ensures that all listeners run regardless of individual listener errors.
    */
-  static async dispatch<T, C = unknown>(event: string, data: T, context?: C): Promise<void> {
+  static async dispatch<T = unknown, C = unknown>(event: string, data: T, context?: C): Promise<void> {
     const eventHandlers = this.handlers.get(event) || [];
     if (eventHandlers.length === 0) return;
 
@@ -53,8 +58,9 @@ export class HookSystem {
   /**
    * Processes data through a sequential pipeline (Pipeline).
    * Each handler may return a modified version of the data.
+   * Registration order is respected (LIFO: newest first).
    */
-  static async filter<T, C = unknown>(event: string, data: T, context?: C): Promise<T> {
+  static async filter<T = unknown, C = unknown>(event: string, data: T, context?: C): Promise<T> {
     const eventHandlers = this.handlers.get(event) || [];
     let currentData = data;
 

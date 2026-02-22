@@ -10,6 +10,7 @@ This skill defines the authoritative pattern for the **Centralized API Client** 
 4.  **Environment Awareness**: Dynamically calculate the `baseUrl` based on the execution context (Browser vs. Server).
 5.  **Strict Import Formatting**: **NEVER** insert a space before the `@` symbol in import paths. (e.g., use `'@nexical/sdk'`, NOT `' @nexical/sdk'`).
 6.  **Zero-Tolerance for `any`**: All error interfaces and client extensions must be strictly typed.
+7.  **ServiceResponse Enforcement**: All aggregated SDK methods MUST return a `ServiceResponse<T>` as defined in `CODE.md`.
 
 ## Architecture: The Aggregator Pattern
 
@@ -52,7 +53,7 @@ The `api.ts` file contains generator markers (`[GENERATOR: MODULES_START]`). The
 
 ### Environment-Aware Base URL
 
-Use relative paths for browser-based requests to ensure they go through the application's middleware (proxy), and absolute URLs for server-side requests.
+Use relative paths for browser-based requests to ensure they go through the application's middleware (proxy), and absolute URLs for server-side requests. Server-side execution requires the `PUBLIC_SITE_URL` environment variable.
 
 ```typescript
 const baseUrl =
@@ -94,3 +95,4 @@ export interface ApiError {
 - [ ] Are module SDKs aggregated into the `api` object?
 - [ ] Are the `[GENERATOR: ...]` markers present and intact?
 - [ ] Is the `any` type completely absent?
+- [ ] Does server-side initialization log the configuration using `console.info`?

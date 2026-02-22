@@ -12,7 +12,7 @@ Located in `core/src/lib/modules/module-discovery.ts`, this static utility class
 
 - **Purpose**: Loading `module.config.mjs`, calculating phase-based execution order, and gathering high-level metadata.
 - **Mechanism**: Uses `fs.readdirSync` and `jiti.import`.
-- **Phases**: Modules are sorted by `type` (`core` -> `provider` -> `feature` -> `integration` -> `theme`) and then by `order`.
+- **Phases**: Modules are sorted by `type` (`core` -> `provider` -> `feature` -> `integration` -> `theme`) and then by `order`. **Default phase is 'feature' (weight 20) and default order is 50.**
 
 ### 2. Vite-Based Discovery (`glob-helper.ts`)
 
@@ -27,20 +27,20 @@ Located in `core/src/lib/core/glob-helper.ts`, this utility uses Vite's `import.
 
 ### 1. Static Utility Class Implementation
 
-Infrastructure utilities that do not require instance state MUST be implemented as static classes. This ensures a centralized, stateless API and consistent organization.
+Infrastructure utilities that do not require instance state MUST be implemented as static classes with **private static members** and a **private constructor** to prevent unnecessary instantiation. This ensures a centralized, stateless API and consistent organization.
 
 ### 2. Interface-First Configuration (`ModuleConfig`)
 
-Module metadata and configurations are defined using TypeScript interfaces rather than types or Zod schemas for internal infra.
+Module metadata and configurations are defined using TypeScript interfaces for the primary infrastructure definitions to keep the core lightweight.
 
 - **Prohibition**: The `any` type is strictly forbidden.
 - **Rule**: Use `unknown` for dynamic or unknown properties in `ModuleConfig` interfaces.
-- **Validation**: Always validate dynamic configuration before usage.
+- **Validation**: While interfaces define the contract, you MUST **validate dynamic configuration with a runtime schema validator (like Zod)** before usage to ensure system integrity, especially when data is sourced from external module files.
 
 ### 3. Import Hygiene
 
 - **Node.js Built-ins**: Always use the `node:` prefix for internal Node.js modules (e.g., `import fs from 'node:fs';`, `import path from 'node:path';`).
-- **Internal Aliases**: Use standard path aliases without spaces (e.g., `import { db } from '@/lib/core/db';`).
+- **Internal Aliases**: Use standard path aliases WITHOUT spaces before the @ symbol (e.g., `import { db } from '@/lib/core/db';`).
 
 ### 4. Kebab-Case Naming Rule
 
@@ -52,7 +52,10 @@ Always use named exports for classes, interfaces, and constant configurations. A
 
 ### 6. Phase-Based Execution
 
-Any logic that iterates over modules MUST respect the `PHASE_ORDER` defined in `ModuleDiscovery`.
+Any logic that iterates over modules MUST respect the `PHASE_ORDER` defined in `ModuleDiscovery`. Modules are sorted by phase weight first, then by their internal `order` property.
+
+- **Default Phase**: `feature` (20)
+- **Default Order**: `50`
 
 ```typescript
 export type ModulePhase = 'core' | 'provider' | 'feature' | 'integration' | 'theme';

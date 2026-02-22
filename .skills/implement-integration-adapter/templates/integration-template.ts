@@ -17,7 +17,8 @@ export default function createIntegration(): AstroIntegration {
 
         try {
           // Define module root relative to project root
-          const modulesDir = path.join(process.cwd(), 'apps/frontend/modules');
+          // Use path.resolve for robust resolution of top-level project directories
+          const modulesDir = path.resolve(process.cwd(), 'apps/frontend/modules');
 
           if (!fs.existsSync(modulesDir)) {
             console.warn(`[${INTEGRATION_NAME}] Modules directory not found at ${modulesDir}`);
@@ -26,22 +27,29 @@ export default function createIntegration(): AstroIntegration {
 
           // Dynamic Discovery Logic
           const modules = fs.readdirSync(modulesDir).filter((file) => {
-            return fs.statSync(path.join(modulesDir, file)).isDirectory();
+            return fs.statSync(path.resolve(modulesDir, file)).isDirectory();
           });
+
+          /**
+           * NOTE: For integrations requiring specific loading orders (Themes overriding Features),
+           * consider using the ModuleDiscovery utility to process modules in Phased order.
+           *
+           * Example (if ModuleDiscovery is available):
+           * const discovered = ModuleDiscovery.loadModules(modulesDir);
+           */
 
           console.info(`[${INTEGRATION_NAME}] Discovered ${modules.length} modules.`);
 
           // Example: Iterate and process
           for (const moduleName of modules) {
             console.debug(`[${INTEGRATION_NAME}] Scanning module: ${moduleName}`);
-            // const configPath = path.join(modulesDir, moduleName, 'module.config.mjs');
+            // const configPath = path.resolve(modulesDir, moduleName, 'module.config.mjs');
             // Check existence and process...
           }
 
           // Example: Injection
           // injectScript('page', `console.log("Injected by ${INTEGRATION_NAME}");`);
-          // To use injectScript, ensure it is used in the code or prefixed with _ in arguments if unused.
-          // Since it's destructured above, we keep it available for the template.
+          // Using injectScript is mandatory for Vite-compatible processing (HMR, CSS processing).
 
           // Suppress unused variable warning for template purposes if not used
           void injectScript;

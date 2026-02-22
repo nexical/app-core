@@ -33,43 +33,43 @@ export interface RegistryEntry<T, C> {
    * Optional matcher for context-aware selection.
    */
   matcher?: RegistryMatcher<C>;
-  /**
-   * Optional manual sort order (if applicable).
-   */
-  order?: number;
 }
 
 /**
- * Base Registry implementation ensuring LIFO priority and singleton state.
- * Uses a Map to preserve insertion order.
+ * Registry Class providing global state management.
+ *
+ * WHY: This class handles the viewport and zone slots as the "Immutable Kernel."
+ * It utilizes a private Map storage to preserve insertion order, which is
+ * critical for context-aware selection.
  */
-export class BaseRegistryClass<T, C extends object = PathContext> {
+class FeatureRegistryClass<T, C extends object = PathContext> {
   /**
-   * Private storage for registry entries.
-   * Map is used specifically to preserve insertion order for LIFO selection.
+   * Private Map Storage: Preserves insertion order.
+   * WHY: Map ensures that registration sequence is maintained, allowing
+   * the select() method to correctly prioritize later registrations (LIFO).
    */
   private registry: Map<string, RegistryEntry<T, C>> = new Map();
 
   /**
-   * Registers or overrides a component in the registry.
+   * Register with Delete-Set Reordering (LIFO Priority).
    *
-   * WHY: Existing keys are deleted before re-setting to ensure the item
-   * moves to the "end" of the Map, giving it the highest priority
-   * during reverse (LIFO) iteration.
+   * WHY: Deleting existing keys before re-setting ensures that the most
+   * recently registered component for a given name takes precedence by
+   * moving it to the end of the Map.
    */
-  public register(entry: RegistryEntry<T, C>): void {
-    if (this.registry.has(entry.name)) {
-      this.registry.delete(entry.name);
+  public register(name: string, data: T, matcher?: RegistryMatcher<C>): void {
+    if (this.registry.has(name)) {
+      this.registry.delete(name);
     }
-    this.registry.set(entry.name, entry);
+    this.registry.set(name, { name, data, matcher });
   }
 
   /**
-   * Selects an entry based on the provided context.
+   * Selection with LIFO Logic (Reverse Iteration).
    *
-   * WHY: Selection iterates in REVERSE order (Last-In-First-Out) to allow
-   * modules and themes to override core components simply by registering
-   * later in the lifecycle.
+   * WHY: Iterating through registry entries in reverse order (last to first)
+   * ensures that the latest module or theme to register a component for
+   * a specific condition wins.
    */
   public select(context: C): T | undefined {
     // Array conversion for reverse iteration while preserving Map order
@@ -86,25 +86,24 @@ export class BaseRegistryClass<T, C extends object = PathContext> {
   }
 
   /**
-   * Lightweight Manual Glob Matching.
+   * Lightweight Manual Polymorphic Matching (Glob and Predicate).
    * Supports '/*', '*', and exact string matches.
    *
-   * WHY: Manual implementation minimizes external dependencies and provides
-   * high performance for core routing patterns.
+   * WHY: Implementing manual path matching minimizes core dependencies and
+   * provides high-performance routing for the shell.
    */
-  protected matches(matcher: RegistryMatcher<C> | undefined, context: C): boolean {
+  private matches(matcher: RegistryMatcher<C> | undefined, context: C): boolean {
     if (!matcher) return true;
     if (typeof matcher === 'function') return matcher(context);
 
     // Ensure context has a URL for string-based path matching
-    if (
-      !('url' in context) ||
-      typeof (context as unknown as PathContext).url?.pathname !== 'string'
-    ) {
+    // Note: Cast to PathContext is safe here because we check for 'url' existence
+    const ctx = context as unknown as PathContext;
+    if (!ctx.url || typeof ctx.url.pathname !== 'string') {
       return false;
     }
 
-    const path = (context as unknown as PathContext).url.pathname;
+    const path = ctx.url.pathname;
 
     // Glob matching logic (/*, *, exact)
     if (matcher === '*') return true;
@@ -117,4 +116,9 @@ export class BaseRegistryClass<T, C extends object = PathContext> {
   }
 }
 
-// Example usage: export const ExampleRegistry = new BaseRegistryClass<MyData, MyContext>();
+/**
+ * Singleton Registry Instance.
+ * MANDATORY: Export a single named constant instance to ensure a global
+ * singleton state. Direct instantiation outside of this file is discouraged.
+ */
+export const FeatureRegistry = new FeatureRegistryClass<unknown, PathContext>();

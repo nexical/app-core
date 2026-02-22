@@ -1,0 +1,62 @@
+/**
+ * @skill-metadata
+ * description: Scalable, reactive API documentation component using Scalar.
+ * patterns:
+ *   - Named PascalCase Export
+ *   - Type-Safe Record Spec
+ *   - MutationObserver Theme Sync
+ *   - SSR-Safe useEffect Guard
+ */
+
+import React, { useState, useEffect } from 'react';
+
+// Fragment Tagged Template for Dynamic Injection (Simulation)
+const fragment = (template: TemplateStringsArray, ...substitutions: any[]) =>
+  template.reduce((acc, part, i) => acc + part + (substitutions[i] || ''), '');
+
+export const ScalarDocsFragment = fragment`
+import { ScalarApiReference } from '@scalar/api-reference-react';
+import { type ThemeId } from '@scalar/themes';
+
+interface Props {
+  spec: Record<string, unknown>; // MANDATORY: Zero-tolerance for 'any'
+}
+
+/**
+ * ScalarDocs component for rendering OpenAPI specifications within the Shell.
+ * Uses a MutationObserver to sync with the global dark mode.
+ */
+export const ScalarDocs = ({ spec }: Props) => {
+  const [theme, setTheme] = useState<ThemeId>('none');
+
+  useEffect(() => {
+    const checkTheme = () => {
+      // SSR Safety: Guarded inside useEffect
+      const isDark = document.documentElement.classList.contains('dark');
+      setTheme(isDark ? 'dark' : 'none');
+    };
+
+    checkTheme();
+
+    // Reactive Theme Synchronization: Sync Scalar state with global .dark class
+    const observer = new MutationObserver(checkTheme);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class'],
+    });
+
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div className="h-full w-full overflow-hidden">
+      <ScalarApiReference
+        configuration={{
+          spec: { content: spec },
+          theme,
+        }}
+      />
+    </div>
+  );
+};
+`;
