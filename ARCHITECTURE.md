@@ -288,9 +288,15 @@ Builders implement a `getSchema(node?: NodeContainer): FileDefinition` method.
 
 ### 8.3 Template Loading
 
-To keep builders clean, large blocks of default code are stored in `.tsf` (TypeScript Fragment) files. **These files must follow the strict Fragment Contract pattern (JSDoc headers, Phantom Declarations, and `fragment` tagged template exports) as defined in the `manage-templates` skill.**
+To keep builders clean, large blocks of default code are stored in `.tsf` (TypeScript Fragment) or `.txf` (TypeScript JSX Fragment) files. These files MUST follow the **Strict Fragment Contract**:
 
-- **TemplateLoader**: Use `TemplateLoader.load('path/to.tsf', vars)` to inject default method bodies.
+- **JSDoc Header**: Describe the fragment's purpose and inputs using the high-signal path-based format (e.g., `@source/path {type} variableName`).
+- **Phantom Declarations**: Variables used within the template MUST be declared using `declare const` before the default export to provide IDE support and type safety.
+- **Fragment Export**: The actual template string MUST be exported as the **default export** using the `fragment` tag.
+  - Use `.txf` or `/* tsx */` for React components.
+  - Use `.tsf` or `/* ts */` for standard logic.
+
+- **TemplateLoader**: Use `TemplateLoader.load('path/to.tsf', vars)` to inject default method bodies. This utility performs simple string interpolation of `${key}` variables before parsing the content into AST nodes.
 - **No Hardcoding**: Avoid hardcoding multi-line strings within the builder class.
 
 ### 8.4 Smart Import Resolution
@@ -307,3 +313,12 @@ The architecture supports "Virtual Models" — entities defined in `api.yaml` th
 - **Definition**: An entity is "Virtual" if it is declared in the API configuration but has no corresponding database table.
 - **Purpose**: Allows for purely functional API grouping (e.g., `auth`, `analytics`) without forcing a dummy database table.
 - **Behavior**: The generator creates the Controller, Service, and SDK artifacts but skips database schema generation.
+
+### 8.6 Primitive-Based Reconciliation
+
+To ensure safe and predictable AST manipulation, the generator employs a **Primitive-Based Reconciliation** pattern.
+
+- **Atomicity**: Each AST entity (Class, Method, Decorator) is managed by a dedicated `Primitive` class.
+- **The Lifecycle**: Primitives implement a standard lifecycle: `find()` (locate existing node), `create()` (generate if missing), and `update()` (reconcile drift).
+- **Structure-Based Creation**: To keep creation logic declarative, primitives use a private `toStructure()` method that maps internal configuration to `ts-morph` OptionalKind structures.
+- **Recursive Validation**: Validation results are aggregated across primitive compositions, allowing the system to detect and report structural drift without blind overwrites.
