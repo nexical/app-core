@@ -86,7 +86,7 @@ We enforce a strict module resolution strategy to avoid spaghetti dependencies.
   - `@/` refers to `src/`.
   - `@modules/` refers to `modules/`.
   - `@tests/` refers to `tests/`.
-- **Typography**: NEVER insert a space before the `@` symbol in import paths or aliases (e.g., use `'@/'`, NOT `'@/'`). This breaks TypeScript compilation.
+- **Typography**: NEVER insert a space before the `@` symbol in import paths or aliases (e.g., use `'@/'`, NOT `' @/'`). This breaks TypeScript compilation.
 - **Forbidden**: Deep relative imports that traverse up the tree (e.g., `../../components/button`).
 
 ### Node.js Standard Library Imports
@@ -110,7 +110,7 @@ We enforce a strict module resolution strategy to avoid spaghetti dependencies.
 ### Export Strategy
 
 - **Named Exports**: Prefer named exports for utilities, hooks, and libraries to ensure better tree-shaking and explicit importing.
-- **Internal Core Components**: Components located in `core/src/components/` that are not registry-injected **MUST** use named PascalCase exports to ensure explicit importing and better IDE support (e.g., `export const ScalarDocs = ...`).
+- **Internal Core Components**: Components located in `core/src/components/` that are not registry-injected **MUST** use named PascalCase exports to ensure explicit importing and better IDE support (e.g., `export function ComponentName() { ... }` or `export const ScalarDocs = ...`).
 - **Default Exports**: Use default exports ONLY for:
   - React Components (Pages/Layouts) that are lazy-loaded.
   - Registry Components (as required by the modular injection system).
@@ -196,7 +196,7 @@ we use a utility-first approach powered by **Tailwind CSS**.
 
 All UI primitives in `core/src/components/ui/` MUST strictly follow the Codebase Canon:
 
-- **Polymorphism**: Components MUST support the `asChild` prop using `@radix-ui/react-slot` to allow underlying element swapping.
+- **Polymorphism**: Container-based components MUST support the `asChild` prop using `@radix-ui/react-slot` to allow underlying element swapping. Void elements (e.g., Input) are exempt.
 - **Variant-Based Styling (CVA)**: Use `class-variance-authority` (CVA) to define component variants. Export the `variants` object alongside the component.
 - **Semantic Class Names**: CVA definitions SHOULD use semantic class names (e.g., `btn-default`) defined in `@layer components` CSS files.
 - **Metadata Data Attributes**: Components MUST include a `data-slot` attribute (e.g., `data-slot="button"`) and individual data-attributes for each variant state (e.g., `data-variant={variant}`).

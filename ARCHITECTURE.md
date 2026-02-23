@@ -30,12 +30,12 @@ We enforce a strict separation between the **Container** (Shell) and the **Conte
 ### Standardized UI Configuration (ui.yaml)
 
 - **Location:** `modules/{name}/ui.yaml`
-- **Role:** The declarative manifest for UI modules. It defines routing, shell associations, and registry metadata.
-- **Rule:** Every UI module MUST provide a `ui.yaml` file. The generator uses this file to wire the module into the global shell.
+- **Role:** The declarative manifest for UI modules. It defines routing, shell associations, and scaffolding metadata.
+- **Rule:** Every UI module MUST provide a `ui.yaml` file. The generator uses this file to scaffold components and wire routes. **Note:** Registry components are discovered automatically at runtime via `GlobHelper` and do not require explicit registration in this file for execution.
 
 ### Polymorphic UI Primitives
 
-Core UI components in `src/components/ui/` MUST follow the **Polymorphic UI Pattern** (`asChild`). This allows for maximum extensibility in a modular ecosystem, as it enables developers to swap underlying elements (e.g., using a `<Button>` as an `<a>` or `<Link>`) while maintaining the core's visual identity and behavioral rules. This pattern is foundational for the platform's composable nature.
+Core UI components in `src/components/ui/` MUST follow the **Polymorphic UI Pattern** (`asChild`). This allows for maximum extensibility in a modular ecosystem, as it enables developers to swap underlying elements (e.g., using a `<Button>` as an `<a>` or `<Link>`) while maintaining the core's visual identity and behavioral rules. Void elements (e.g., Input, Textarea) are exempt from this requirement.
 
 ### Transient UI Standards
 
@@ -58,8 +58,10 @@ The platform adheres to a strict "Agnostic Core" policy:
 - **Phased Execution Logic**: Modules are processed in a strict order defined by their `ModulePhase` (core -> provider -> feature -> integration -> theme) and an optional `order` priority within each phase. This ensures themes can consistently override feature logic.
 - **Module Loaders**: All cross-module registration must occur through the `HookSystem` or dedicated `Registries` (e.g., `RoleRegistry`, `EmailRegistry`).
 - **Registry Implementation Standards**:
-  - **File Structure & Naming**: Registries MUST be located in `src/lib/registries/` and follow the `*-registry.ts` naming convention.
-  - **Singleton Registry Instance**: Registries MUST be implemented as classes with private `Map` storage and instance methods, exported as a single named constant instance to ensure a global singleton state and preserve insertion order.
+  - **File Structure & Naming**: Registries MUST be located in `src/lib/registries/` (Standard) or domain-specific infrastructure folders (e.g., `src/lib/email/` for EmailRegistry). They MUST follow the `*-registry.ts` naming convention.
+  - **Implementation Patterns**:
+    - **Singleton Instance (Standard)**: Most registries (especially UI/Stateful ones) MUST be implemented as classes with private `Map` storage and instance methods, exported as a single named constant instance to ensure a global singleton state and preserve insertion order.
+    - **Static Infrastructure Utility (Exception)**: Core Infrastructure Registries (e.g., EmailRegistry) MAY use the **Static Infrastructure Utility Pattern** (Static Class with private static storage) to ensure global, stateless availability without instantiation.
   - **Core Initialization**: Registries MUST be imported in `core/src/init.ts` to be correctly initialized during the platform boot sequence.
   - **LIFO Override Priority**: Selection logic MUST follow a Last-In-First-Out (LIFO) pattern. When registering an item that might already exist, the old key MUST be deleted before setting the new one to ensure it moves to the end of the Map (highest priority).
   - **Polymorphic Matchers**: Registries MUST support "Matchers" that can be either static string patterns (globs like `/*` or `*`) or dynamic functional predicates.

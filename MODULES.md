@@ -48,13 +48,15 @@ export default function UserMenu() {
 
 ### Standardized UI Manifest (ui.yaml)
 
-Every UI module must contain a `ui.yaml` manifest in its root. This file acts as the source of truth for the module's visual integration.
+Every UI module must contain a `ui.yaml` manifest in its root. This file acts as the source of truth for the module's visual integration and scaffolding.
 
 - **Routes**: Defines virtual pages and their layout associations.
 - **Shells**: Defines custom shells and their activation patterns.
-- **Registry**: Configures the high-level metadata for registry injections.
+- **Registry**: Configures metadata for **scaffolding** registry components.
 - **Tables**: Configures generated TanStack Tables for models.
 - **Forms**: Configures generated React Hook Forms for models.
+
+> **Note**: Runtime discovery of Registry Components is handled automatically by the file system (via `GlobHelper`). You do **not** need to manually register existing components in `ui.yaml` for them to work. The `registry` block below is primarily used by the generator to create new files.
 
 ```yaml
 # modules/user-ui/ui.yaml
@@ -64,6 +66,8 @@ routes:
     shell: default
 
 registry:
+  # Used for scaffolding new components.
+  # Runtime loading is automatic based on file presence in src/registry/.
   header-end:
     - name: user-menu
       component: src/registry/header-end/20-user-menu.tsx
