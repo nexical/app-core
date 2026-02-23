@@ -1,3 +1,8 @@
+---
+name: implement-email-registry
+description: Global, stateless registry for managing transactional email templates in the backend.
+---
+
 # Skill: Implement Email Registry
 
 ## Description
