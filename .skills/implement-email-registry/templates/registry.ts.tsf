@@ -1,0 +1,47 @@
+/**
+ * @fragment
+ * @name registry-static
+ * @description A static registry implementation for infrastructure components (like Emails).
+ */
+export const registryStatic = fragment`
+import React from 'react';
+import { render } from '@react-email/render';
+
+/**
+ * Static Infrastructure Registry for ${1:ItemName}.
+ * Uses the "Static Class" pattern for global, stateless discovery.
+ */
+export class ${1:ItemName}Registry {
+  private static templates = new Map<string, React.ComponentType<unknown>>();
+
+  /**
+   * Register a ${2:template} for a specific ID.
+   * Overwrites any existing registration for this ID (Last-Write-Wins).
+   */
+  static register(id: string, component: React.ComponentType<any>) {
+    this.templates.set(id, component as React.ComponentType<unknown>);
+  }
+
+  /**
+   * Render a ${2:template} to an HTML string.
+   * @throws Error if the ID is not found.
+   */
+  static async render(id: string, props: unknown): Promise<string> {
+    const Component = this.templates.get(id);
+
+    if (!Component) {
+      throw new Error(`${1:ItemName} template not found for ID: \${id}`);
+    }
+
+    // Render the React component to HTML
+    return render(React.createElement(Component, props as any));
+  }
+
+  /**
+   * Check if a ${2:template} is registered.
+   */
+  static has(id: string): boolean {
+    return this.templates.has(id);
+  }
+}
+`;

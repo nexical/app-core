@@ -18,6 +18,7 @@ PWA features must be implemented with a strict focus on **SSR Safety**, **Type I
 PWA components located in `core/src/components/pwa/` (that are not registry-injected) MUST use named PascalCase exports. This distinguishes them from Registry components that use default exports.
 
 - **Mandate**: Use `export function ComponentName()`.
+- **Directive**: Interactive components (using hooks) MUST include `'use client';` at the top of the file to ensure proper hydration.
 - **Reasoning**: Ensures explicit importing and better IDE support for core-level utilities.
 
 ### 1.2 SSR-Safe Browser Access
@@ -43,7 +44,8 @@ To maintain strict type safety while handling experimental browser events (like 
 System-level prompts and overlays use specific Tailwind animation classes combined with fixed positioning to provide a consistent "operating system" feel.
 
 - **Rule**: Transient UI prompts MUST use the standard `animate-in` and `slide-in-from-*` classes for entry transitions.
-- **Example**: `fixed bottom-4 md:right-4 z-50 animate-in slide-in-from-bottom-4`
+- **Styling**: MUST use semantic color tokens (e.g., `bg-card`, `text-card-foreground`) as defined in `core/THEME.md` and `core/CODE.md`.
+- **Example**: `fixed bottom-4 md:right-4 z-50 animate-in slide-in-from-bottom-4 bg-card text-card-foreground`
 
 ### 2.3 Session-Based Dismissal Logic
 

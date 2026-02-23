@@ -14,7 +14,7 @@ This skill defines the authoritative pattern for the **Centralized API Client** 
 3.  **Modular SDK Aggregation**: The central `api` object MUST aggregate all module-specific SDKs (e.g., `api.user`, `api.billing`).
 4.  **Namespace-Based Types**: Export aggregated module types using the `*ModuleTypes` naming convention (e.g., `UserModuleTypes`).
 5.  **Environment Awareness**: Dynamically calculate the `baseUrl` based on the execution context (Browser vs. Server).
-6.  **Strict Import Formatting**: **NEVER** insert a space before the ` @` symbol in import paths. (e.g., use `'@nexical/sdk'`, NOT `' @nexical/sdk'`).
+6.  **Strict Import Formatting**: **NEVER** insert a space before the `@` symbol in import paths. (e.g., use `'@nexical/sdk'`, NOT `' @nexical/sdk'`).
 7.  **Zero-Tolerance for `any`**: All error interfaces and client extensions must be strictly typed.
 8.  **ServiceResponse Enforcement**: All aggregated SDK methods MUST return a `ServiceResponse<T>` as defined in `CODE.md`.
 
@@ -83,6 +83,8 @@ if (typeof window !== 'undefined') {
 ### Strongly-Typed Error Interfaces
 
 Define a standard `ApiError` interface to ensure predictable error handling across the entire ecosystem.
+
+**Note:** While `ApiError` defines the structure of the error response body from the server, client-side SDKs MUST wrap these in a `NexicalError` instance. This class provides a consistent interface for the application to handle failures, regardless of the underlying transport issue.
 
 ```typescript
 export interface ApiError {

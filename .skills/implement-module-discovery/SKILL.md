@@ -16,12 +16,12 @@ The discovery system is split into two complementary mechanisms to handle the di
 Located in `core/src/lib/modules/module-discovery.ts`, this static utility class is used for server-side and build-time operations where access to the Node.js filesystem (`fs`) is available.
 
 - **Purpose**: Loading `module.config.mjs`, calculating phase-based execution order, and gathering high-level metadata.
-- **Mechanism**: Uses `fs.readdirSync` and `jiti.import`.
+- **Mechanism**: Uses `fs.readdirSync` and `jiti` (initialized via `createJiti(import.meta.url)` for ESM compatibility).
 - **Phases**: Modules are sorted by `type` (`core` -> `provider` -> `feature` -> `integration` -> `theme`) and then by `order`. **Default phase is 'feature' (weight 20) and default order is 50.**
 
 ### 2. Vite-Based Discovery (`glob-helper.ts`)
 
-Located in `core/src/lib/core/glob-helper.ts`, this utility uses Vite's `import.meta.glob` feature. It is the primary discovery mechanism for the Astro/Vite application.
+Located in `core/src/lib/core/glob-helper.ts`, this static utility class uses Vite's `import.meta.glob` feature. It is the primary discovery mechanism for the Astro/Vite application.
 
 - **Purpose**: Gathering code modules (initialization scripts, registry components, routes, locales) that need to be bundled.
 - **Mechanism**: Uses static glob patterns evaluated at compile-time.
@@ -74,6 +74,13 @@ const PHASE_ORDER: Record<ModulePhase, number> = {
 };
 ```
 
+### 7. Jiti Initialization Pattern
+
+When using `jiti` for dynamic configuration loading, you MUST initialize it with the current file's context to ensure correct ESM resolution.
+
+- **Rule**: Always use `createJiti(import.meta.url)`.
+- **Example**: `const jiti = createJiti(import.meta.url);`
+
 ---
 
 ## Instructions
@@ -81,9 +88,10 @@ const PHASE_ORDER: Record<ModulePhase, number> = {
 ### Adding a New Discovery Target
 
 1.  **Identify the Target**: Determine if the new target is a configuration file (Node-based) or a code module (Vite-based).
-2.  **Update `glob-helper.ts`**: For code/asset targets, add a new exported function with the appropriate glob pattern.
+2.  **Update `glob-helper.ts`**: For code/asset targets, add a new **public static method** to the `GlobHelper` class with the appropriate glob pattern.
 3.  **Update `ModuleDiscovery`**: For configuration or metadata targets, update the `loadModules()` loop to gather the new data from the filesystem.
     - **Defensive Loading**: When loading external configuration files (Node-based), always wrap the operation in a `try-catch` block and provide sensible defaults if the file is missing or invalid.
+    - **Jiti Usage**: Ensure `jiti` is initialized with `createJiti(import.meta.url)` before loading any file.
 4.  **Define Types**: Update the `ModuleConfig` or related interfaces to include the new data, ensuring `unknown` is used for dynamic properties. Use **interfaces** for these definitions.
 5.  **Verify Compliance**: Run `npm run lint` or `nexical audit` to ensure adherence to naming conventions, import hygiene rules, and the prohibition of the `any` type.
 

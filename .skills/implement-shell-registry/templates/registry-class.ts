@@ -94,7 +94,16 @@ class FeatureRegistryClass<T, C extends object = PathContext> {
    */
   private matches(matcher: RegistryMatcher<C> | undefined, context: C): boolean {
     if (!matcher) return true;
-    if (typeof matcher === 'function') return matcher(context);
+
+    // Predicate Matching with Error Isolation
+    if (typeof matcher === 'function') {
+      try {
+        return matcher(context);
+      } catch (error) {
+        console.error('Registry matcher failed:', error);
+        return false;
+      }
+    }
 
     // Ensure context has a URL for string-based path matching
     // Note: Cast to PathContext is safe here because we check for 'url' existence

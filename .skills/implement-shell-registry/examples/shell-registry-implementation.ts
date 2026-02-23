@@ -89,7 +89,16 @@ class ShellRegistryClass {
    */
   private matches(matcher: ShellMatcher | undefined, context: ShellContext): boolean {
     if (!matcher) return true;
-    if (typeof matcher === 'function') return matcher(context);
+
+    // Predicate Matching with Error Isolation
+    if (typeof matcher === 'function') {
+      try {
+        return matcher(context);
+      } catch (error) {
+        console.error('ShellRegistry matcher failed:', error);
+        return false;
+      }
+    }
 
     // Extract path from strongly-typed ShellContext
     const path = context.url.pathname;

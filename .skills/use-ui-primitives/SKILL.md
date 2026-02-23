@@ -11,7 +11,7 @@ This skill defines the authoritative standards for building and extending the **
 
 ### 1. Polymorphic UI (asChild)
 
-All UI primitives MUST support the `asChild` pattern using `@radix-ui/react-slot`. This allows consumers to swap the underlying DOM element while maintaining all styles and behaviors.
+All container-based UI primitives (e.g., Button, Label, Card) MUST support the `asChild` pattern using `@radix-ui/react-slot`. This allows consumers to swap the underlying DOM element while maintaining all styles and behaviors. Void elements (e.g., Input, Textarea, Img) are exempt from this requirement.
 
 - **Mandate**: Use `const Comp = asChild ? Slot : 'button';` (or appropriate element).
 - **Benefit**: Allows seamless integration with routing libraries (`<Button asChild><a href="...">Link</a></Button>`) without DOM nesting issues.
@@ -37,6 +37,13 @@ Every primitive MUST include explicit data attributes for identification and sta
 All UI primitives MUST use `React.forwardRef` to ensure they can be used with focus management and third-party libraries (like Tooltips or Popovers).
 
 - **Mandate**: Always set a `displayName` matching the component name.
+
+### 5. Export Strategy
+
+All UI primitives MUST use **Named Exports** to ensure better tree-shaking and explicit importing. Default exports are reserved for lazy-loaded pages or registry components.
+
+- **Mandate**: `export { ComponentName, componentVariants };`
+- **Prohibition**: Do not use `export default ComponentName;` for core primitives.
 
 ## Implementation Standard
 

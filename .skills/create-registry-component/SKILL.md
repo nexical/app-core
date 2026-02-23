@@ -47,18 +47,6 @@ Registry components SHOULD wrap content in a layout container (e.g., `flex items
 
 Registry components MAY return `null` to opt-out of rendering (e.g., if a user lacks permissions or data is missing). The Shell handles these empty states gracefully.
 
-## 4. Manifest Registration
-
-After creating the component, you MUST register it in the module's `ui.yaml` file.
-
-```yaml
-registry:
-  { zone }:
-    - name: { kebab-name }
-      component: src/registry/{zone}/{order}-{kebab-name}.tsx
-      order: { order }
-```
-
-## 5. Template
+## 4. Template
 
 Refer to `templates/registry-component.tsx.template` for a boilerplate implementation.

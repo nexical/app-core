@@ -1,17 +1,18 @@
 ---
 name: implement-shell-registry
-description: "This skill guides the implementation of context-aware registries within the Nexical Ecosystem. Registries are the backbone of the 'Shell-Registry' pattern, allowing modules to 'pin' functionality or c..."
+description: "This skill guides the implementation of the **Shell Registry**, a specialized context-aware registry used to select the active Application Shell (Layout) based on the current environment (URL, User Role, Device). Unlike 'Zone Registries' which inject content *into* the shell, the Shell Registry determines *which* shell renders the content."
 ---
 
 # Skill: Implement Shell Registry
 
-This skill guides the implementation of context-aware registries within the Nexical Ecosystem. Registries are the backbone of the "Shell-Registry" pattern, allowing modules to "pin" functionality or content into specific "Zones" of the shell.
+This skill guides the implementation of the **Shell Registry**, a specialized context-aware registry used to select the active Application Shell (Layout) based on the current environment (URL, User Role, Device). Unlike "Zone Registries" which inject content _into_ the shell, the Shell Registry determines _which_ shell renders the content.
 
 ## 1. Core Principles
 
-- **Modular Monolith**: Registries enable an "Agnostic Core" where the shell doesn't know what's installed; it only renders what's in the registry.
-- **LIFO Selection**: Selection logic always prioritizes the most recently registered item (Last-In-First-Out).
+- **Context-Aware Selection**: The core function is to choose a single "Winner" (Layout) based on a rich context object, not just a URL path.
+- **LIFO Priority**: Selection logic always prioritizes the most recently registered item (Last-In-First-Out). This allows plugins (or themes) to override core defaults.
 - **Insertion Order**: Registry entries are stored in a `Map` to preserve insertion order, which is critical for LIFO iteration.
+- **Error Isolation**: Predicate functions provided by modules must be wrapped in `try-catch` blocks to prevent a single faulty module from crashing the entire shell selection process.
 
 ---
 
@@ -69,6 +70,7 @@ Interactive components registered in the shell (e.g., navigation items, widgets)
     - Use a private `Map<string, Entry>` for storage to preserve insertion order.
     - Implement a `register` method with Delete-Set reordering.
     - Implement a `select` method (MANDATORY NAME) using reverse iteration and polymorphic matching.
+    - **Crucial**: Wrap functional matcher execution in `try-catch` to ensure error isolation.
 4.  **Export a Singleton Instance**.
 5.  **Initialize**: Ensure the registry is imported in `core/src/init.ts` to be globally available during the platform boot sequence.
 
@@ -92,3 +94,4 @@ Implement lightweight, manual path matching for the following patterns within th
 - **Examples**:
   - `examples/shell-registry-implementation.ts`: A complete implementation of the `ShellRegistryClass`.
   - `examples/context-aware-matching.ts`: Selection using a `ShellContext`.
+  - `examples/init-registration.ts`: How to initialize the registry in `core/src/init.ts`.
