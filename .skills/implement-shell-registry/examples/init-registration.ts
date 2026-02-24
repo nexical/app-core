@@ -14,5 +14,5 @@ import '@/lib/registries/shell-registry';
 
 export async function init() {
   // ... other initialization logic
-  console.log('Core registries initialized');
+  console.info('Core registries initialized');
 }

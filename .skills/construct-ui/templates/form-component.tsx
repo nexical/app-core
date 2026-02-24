@@ -49,7 +49,7 @@ export function NameForm({ onSuccess }: NameFormProps) {
         // const result = await api.__module__.__method__(data);
 
         // MOCK for template compilation - remove in actual code
-        console.log('Mocking API call with data:', data);
+        console.info('Mocking API call with data:', data);
         const result = { success: true, error: null };
 
         if (result.success) {
