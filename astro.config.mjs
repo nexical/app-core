@@ -99,8 +99,6 @@ export default defineConfig({
     ssr: {
       noExternal: [/^@nexical\//, /modules\/.*\/src\/sdk/],
       external: [
-        'react',
-        'react-dom',
         'jiti',
         'nodemailer',
         'bcryptjs',
