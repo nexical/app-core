@@ -1,5 +1,5 @@
 import { z, type ZodObject, type ZodRawShape } from 'zod';
-import { APP_VERSION } from './version';
+import { APP_VERSION } from '@/lib/core/version.ts';
 
 export const getProcessEnv = (key: string) => {
   try {

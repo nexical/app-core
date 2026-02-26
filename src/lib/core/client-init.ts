@@ -1,5 +1,5 @@
-import { GlobHelper } from './glob-helper';
-import { Logger } from './logger';
+import { GlobHelper } from '@/lib/core/glob-helper.ts';
+import { Logger } from '@/lib/core/logger.ts';
 
 /**
  * Client-Side Module Initialization
