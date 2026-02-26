@@ -92,6 +92,7 @@ export default defineConfig({
       },
     },
     resolve: {
+      extensions: ['.ts', '.tsx', '.js', '.jsx', '.json', '.mjs', '.wasm'],
       extensionAlias: {
         '.js': ['.ts', '.js'],
       },
