@@ -1,6 +1,6 @@
 import type { APIRoute, APIContext } from 'astro';
 
-import { GlobHelper } from '../core/glob-helper';
+import { GlobHelperServer as GlobHelper } from '../core/glob-helper.server';
 
 export type ApiActor = App.Locals['actor'];
 
@@ -166,26 +166,38 @@ export function defineApi<T>(handler: ApiHandler<T>, docs: OpenAPIRouteDocs = {}
 }
 
 /**
- * Generates regular OpenAPI paths object for a specific module.
+ * Generates regular OpenAPI paths object for a specific module or the core application.
  *
- * @param module The module configuration from ModuleDiscovery
+ * @param module The module configuration from ModuleDiscovery, or 'core'
  * @param actor The current actor (if authorized) to filter visibility. If undefined, implies System/Public view (ALL docs).
  */
 export async function generateDocs(
-  module: { path: string; name: string },
+  module: { path: string; name: string } | 'core',
   actor?: ApiActor,
 ): Promise<Record<string, Record<string, unknown>>> {
   const paths: Record<string, Record<string, unknown>> = {};
-  const modulePrefix = `/modules/${module.name}/src/pages/api`;
+  const isCore = module === 'core';
+  const moduleName = isCore ? 'core' : (module as { name: string }).name;
+
+  // The possible base paths for module APIs
+  const basePaths = isCore
+    ? ['../../pages/api']
+    : [
+        `../../../modules/${moduleName}/src/pages/api`,
+        `../../../../apps/backend/modules/${moduleName}/src/pages/api`,
+        `../../../../apps/frontend/modules/${moduleName}/src/pages/api`,
+      ];
 
   const allApiModules = GlobHelper.getApiModules();
-  for (const [fileIdentifier, mod] of Object.entries(allApiModules)) {
-    // Filter by current module
-    if (!fileIdentifier.includes(modulePrefix)) continue;
+  for (const [fileIdentifier, modFn] of Object.entries(allApiModules)) {
+    const basePath = basePaths.find((p) => fileIdentifier.startsWith(p));
+    if (!basePath) continue;
+
+    // Load the module (handle both eager and lazy glob)
+    const mod = typeof modFn === 'function' ? await (modFn as () => Promise<unknown>)() : modFn;
 
     // Determine route path
-    // e.g. /modules/chat-api/src/pages/api/ai-persona/index.ts -> /ai-persona
-    let routePath = fileIdentifier.replace(modulePrefix, '').replace(/\.(ts|js)$/, '');
+    let routePath = fileIdentifier.replace(basePath, '').replace(/\.(ts|js)$/, '');
 
     if (routePath.endsWith('/index')) {
       routePath = routePath.slice(0, -6);
@@ -218,7 +230,7 @@ export async function generateDocs(
 
         if (isVisible) {
           pathItem[method.toLowerCase()] = {
-            tags: schema.tags || [module.name],
+            tags: schema.tags || [moduleName],
             summary: schema.summary,
             description: schema.description,
             operationId: schema.operationId,

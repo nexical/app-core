@@ -23,10 +23,6 @@ export class GlobHelper {
     });
   }
 
-  static getApiModules() {
-    return import.meta.glob('../../../modules/*/src/pages/api/**/*.{ts,js}', { eager: true });
-  }
-
   static getMiddlewareModules() {
     return import.meta.glob('/modules/*/src/middleware.ts', { eager: true });
   }

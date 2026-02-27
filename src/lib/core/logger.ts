@@ -1,38 +1,82 @@
 /* eslint-disable no-console */
-import { AsyncLocalStorage } from 'node:async_hooks';
+import type { AsyncLocalStorage } from 'node:async_hooks';
 
-/**
- * Log context for correlation ID propagation across async operations.
- * Uses AsyncLocalStorage for automatic context propagation.
- */
 export interface LogContext {
   correlationId?: string;
   [key: string]: unknown;
 }
 
-const asyncLocalStorage = new AsyncLocalStorage<LogContext>();
+/**
+ * Internal storage for log context.
+ * On the server, this uses AsyncLocalStorage.
+ * In the browser, this uses a simple variable (since there is no concurrency).
+ */
+class LogStorage {
+  private static instance: AsyncLocalStorage<LogContext> | null = null;
+  private static browserStore: LogContext | undefined = undefined;
+
+  static async init() {
+    if (typeof window === 'undefined' && !this.instance) {
+      try {
+        const { AsyncLocalStorage } = await import('node:async_hooks');
+        this.instance = new AsyncLocalStorage<LogContext>();
+      } catch {
+        // Ignore or fallback
+      }
+    }
+  }
+
+  static getStore(): LogContext | undefined {
+    if (typeof window !== 'undefined') {
+      return this.browserStore;
+    }
+    return this.instance?.getStore();
+  }
+
+  static run<T>(context: LogContext, fn: () => T): T {
+    if (typeof window !== 'undefined') {
+      const prev = this.browserStore;
+      this.browserStore = { ...prev, ...context };
+      try {
+        return fn();
+      } finally {
+        this.browserStore = prev;
+      }
+    }
+
+    if (this.instance) {
+      const existing = this.instance.getStore() || {};
+      return this.instance.run({ ...existing, ...context }, fn);
+    }
+    return fn();
+  }
+}
+
+// Initialize immediately (non-blocking)
+if (typeof window === 'undefined') {
+  LogStorage.init();
+}
 
 /**
  * Run a function within a log context. All Logger calls within this context
  * will automatically include the context metadata.
  */
 export function withLogContext<T>(context: LogContext, fn: () => T): T {
-  const existing = asyncLocalStorage.getStore() || {};
-  return asyncLocalStorage.run({ ...existing, ...context }, fn);
+  return LogStorage.run(context, fn);
 }
 
 /**
  * Get the current log context (if any).
  */
 export function getLogContext(): LogContext | undefined {
-  return asyncLocalStorage.getStore();
+  return LogStorage.getStore();
 }
 
 /**
  * Set a value in the current context (if one exists).
  */
 export function setLogContextValue(key: string, value: unknown): void {
-  const store = asyncLocalStorage.getStore();
+  const store = LogStorage.getStore();
   if (store) {
     store[key] = value;
   }
@@ -51,13 +95,13 @@ export function generateCorrelationId(): string {
  */
 export const Logger = {
   info: (message: string, meta?: Record<string, unknown>) => {
-    const context = asyncLocalStorage.getStore() || {};
+    const context = LogStorage.getStore() || {};
     const timestamp = new Date().toISOString();
     console.info(JSON.stringify({ timestamp, level: 'info', message, ...context, ...meta }));
   },
 
   error: (message: string, error?: unknown, meta?: Record<string, unknown>) => {
-    const context = asyncLocalStorage.getStore() || {};
+    const context = LogStorage.getStore() || {};
     const timestamp = new Date().toISOString();
     console.error(
       JSON.stringify({
@@ -72,14 +116,14 @@ export const Logger = {
   },
 
   warn: (message: string, meta?: Record<string, unknown>) => {
-    const context = asyncLocalStorage.getStore() || {};
+    const context = LogStorage.getStore() || {};
     const timestamp = new Date().toISOString();
     console.warn(JSON.stringify({ timestamp, level: 'warn', message, ...context, ...meta }));
   },
 
   debug: (message: string, meta?: Record<string, unknown>) => {
     if (process.env.NODE_ENV !== 'production') {
-      const context = asyncLocalStorage.getStore() || {};
+      const context = LogStorage.getStore() || {};
       const timestamp = new Date().toISOString();
       console.debug(JSON.stringify({ timestamp, level: 'debug', message, ...context, ...meta }));
     }
