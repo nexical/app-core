@@ -6,9 +6,7 @@ import path from 'node:path';
 import { defu } from 'defu';
 import node from '@astrojs/node';
 import modulePages from './src/lib/integrations/module-pages-integration.ts';
-
 import moduleEmailTheme from './src/lib/integrations/module-email-theme-integration.ts';
-
 import moduleStyles from './src/lib/integrations/module-styles-integration.ts';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -98,7 +96,7 @@ export default defineConfig({
       },
     },
     ssr: {
-      noExternal: [/^@nexical\//, /modules\/.*\/src\/sdk/],
+      noExternal: ['/^@nexical\//', '/modules\/.*\/src\/sdk/', '@astrojs/react'],
       external: [
         'jiti',
         'nodemailer',
