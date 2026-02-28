@@ -1,14 +1,19 @@
 import { NexicalClient } from '@nexical/sdk';
+import { config } from '../core/config';
 
 /**
  * The API Base URL is calculated based on the execution environment.
  * - Browser: Relative path (/api) to leverage built-in middleware.
  * - Server: Absolute URL (PUBLIC_SITE_URL) for direct backend access.
  */
-const baseUrl =
-  typeof window !== 'undefined'
-    ? '/api'
-    : (process.env.PUBLIC_SITE_URL || 'http://localhost:4321') + '/api';
+const baseUrl = config.PUBLIC_API_URL;
+
+if (!baseUrl) {
+  throw new Error(
+    '[API] Configuration Error: PUBLIC_API_URL is missing. ' +
+      'Please ensure it is defined in your environment or nexical.yaml.',
+  );
+}
 
 if (typeof window === 'undefined') {
   console.info('[API] Initializing server-side client with baseUrl:', baseUrl);

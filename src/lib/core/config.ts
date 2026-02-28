@@ -1,5 +1,5 @@
 import { z, type ZodObject, type ZodRawShape } from 'zod';
-import { APP_VERSION } from '@/lib/core/version.ts';
+import { APP_VERSION } from './version.ts';
 
 export const getProcessEnv = (key: string) => {
   try {
@@ -41,10 +41,17 @@ export function createConfig<T extends ZodRawShape>(schema: ZodObject<T>) {
   const parsed = schema.safeParse(processEnv);
 
   if (!parsed.success) {
-    console.warn('Invalid configuration:', parsed.error.format());
+    const errorMsg = `Invalid configuration: ${JSON.stringify(parsed.error.format(), null, 2)}`;
+    if (typeof window === 'undefined') {
+      throw new Error(errorMsg);
+    } else {
+      console.error(errorMsg);
+      // Return partial data or empty object if forced to continue in browser
+      return (parsed as { data?: z.infer<typeof schema> }).data || ({} as z.infer<typeof schema>);
+    }
   }
 
-  return parsed.success ? parsed.data : ({} as z.infer<typeof schema>);
+  return parsed.data;
 }
 
 const coreSchema = z.object({
@@ -70,6 +77,7 @@ const coreSchema = z.object({
     .default('false')
     .transform((v) => v === 'true'),
   PUBLIC_SITE_URL: z.string().optional(),
+  PUBLIC_API_URL: z.string().min(1, 'PUBLIC_API_URL is required'),
 });
 
 export const config = createConfig(coreSchema);
