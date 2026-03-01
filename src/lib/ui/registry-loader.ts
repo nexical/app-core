@@ -22,7 +22,10 @@ export async function getZoneComponents(zone: string): Promise<RegistryComponent
     // Filter by zone
     if (!path.includes(`/registry/${zone}/`)) continue;
 
-    const mod = modules[path] as Record<string, unknown>;
+    const mod = (await (modules[path] as () => Promise<Record<string, unknown>>)()) as Record<
+      string,
+      unknown
+    >;
 
     // Extract order and name from filename
     // Filename format: {order}-{name}.tsx (e.g., 10-dashboard.tsx) or just {name}.tsx
