@@ -20,12 +20,10 @@ interface I18nProviderProps {
 }
 
 export function I18nProvider({ children, initialLanguage, initialStore }: I18nProviderProps) {
-  // Hydrate if resources are provided (SSR context)
-  // We do this synchronously to ensure render has data
+  // Always apply the server-injected store so fresh locale keys are available.
+  // Using deep=true, overwrite=true ensures any new keys added since last load are picked up.
   if (initialLanguage && initialStore) {
-    if (!i18n.hasResourceBundle(initialLanguage, 'translation')) {
-      i18n.addResourceBundle(initialLanguage, 'translation', initialStore, true, true);
-    }
+    i18n.addResourceBundle(initialLanguage, 'translation', initialStore, true, true);
     if (i18n.language !== initialLanguage) {
       i18n.changeLanguage(initialLanguage);
     }

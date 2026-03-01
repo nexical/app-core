@@ -39,10 +39,10 @@ export class ModuleI18nIntegration {
     // 2. Scan Module Locales
     const moduleLocales = GlobHelper.getI18nModuleLocales();
     Object.keys(moduleLocales).forEach((path) => {
-      // path example: ../../modules/user/locales/en.json
-      const match = path.match(/\/modules\/[^/]+\/locales\/(.+)\.json$/);
+      // path example: /modules/user/locales/en.json or /modules/user/src/locales/generated/en.json
+      const match = path.match(/\/modules\/([^/]+)\/.*\/locales\/(?:.*\/)?([^/]+)\.json$/);
       if (match) {
-        languages.add(match[1]);
+        languages.add(match[2]);
       }
     });
 
@@ -72,10 +72,12 @@ export class ModuleI18nIntegration {
     const moduleLocales = GlobHelper.getI18nModuleLocales();
 
     for (const module of modules) {
-      // Find the locale file for this module
-      // We use endsWith to match the path regardless of relative prefix
-      const moduleKey = Object.keys(moduleLocales).find((k) =>
-        k.includes(`/modules/${module.name}/locales/${lang}.json`),
+      // We use includes/endsWith to match the path regardless of relative prefix or nested locale directories
+      const moduleKey = Object.keys(moduleLocales).find(
+        (k) =>
+          (k.includes(`/modules/${module.name}/locales/`) ||
+            k.includes(`/modules/${module.name}/src/locales/`)) &&
+          k.endsWith(`/${lang}.json`),
       );
 
       if (moduleKey && moduleLocales[moduleKey]) {
