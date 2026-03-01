@@ -8,21 +8,28 @@ await initializeModules();
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const { pathname } = context.url;
+  const origin = context.request.headers.get('Origin');
 
   // Skip middleware for assets
   if (pathname.match(/\.(css|js|png|jpg|jpeg|svg|gif|ico)$/)) {
     return next();
   }
 
+  if (context.request.method === 'OPTIONS') {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        'Access-Control-Allow-Origin': origin || '*',
+        'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type, Authorization, x-csrf-token',
+        'Access-Control-Allow-Credentials': 'true',
+      },
+    });
+  }
+
   const moduleMiddlewares = await getModuleMiddlewares();
 
-  // 1. Check for Public Routes from Modules
-  // (Planned usage for isPublic check)
-
-  // 2. Execute Module Middlewares
-  // Modules can handle auth, redirects, etc.
-  // They execute in order. If a module returns a response, the chain stops.
-  console.info(`[Middleware] Request: ${pathname}`);
+  let finalResponse: Response | undefined;
 
   for (const middleware of moduleMiddlewares) {
     if (middleware.onRequest) {
@@ -33,11 +40,27 @@ export const onRequest = defineMiddleware(async (context, next) => {
       if (response) {
         console.info(`[Middleware] Handled by module (returning response): ${pathname}`);
         await HookSystem.dispatch('core.module.handled', { path: pathname });
-        return response;
+        finalResponse = response;
+        break;
       }
     }
   }
 
-  // Default: Continue to next middleware or page
-  return next();
+  if (!finalResponse) {
+    finalResponse = await next();
+  }
+
+  const newHeaders = new Headers(finalResponse.headers);
+  if (origin) {
+    newHeaders.set('Access-Control-Allow-Origin', origin);
+    newHeaders.set('Access-Control-Allow-Credentials', 'true');
+  }
+
+  const resWithCors = new Response(finalResponse.body, {
+    status: finalResponse.status,
+    statusText: finalResponse.statusText,
+    headers: newHeaders,
+  });
+
+  return resWithCors;
 });
