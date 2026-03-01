@@ -24,10 +24,11 @@ describe('registry-loader', () => {
     const mockComp2 = () => null;
 
     vi.mocked(GlobHelper.getRegistryModules).mockReturnValue({
-      '/src/registry/header/10-logo.tsx': { default: mockComp1 },
-      '/modules/user/src/registry/header/20-avatar.tsx': { default: mockComp2 },
-      '/src/registry/footer/99-copyright.tsx': { default: () => null },
-    });
+      '/src/registry/header/10-logo.tsx': () => Promise.resolve({ default: mockComp1 }),
+      '/modules/user/src/registry/header/20-avatar.tsx': () =>
+        Promise.resolve({ default: mockComp2 }),
+      '/src/registry/footer/99-copyright.tsx': () => Promise.resolve({ default: () => null }),
+    } as any);
 
     const components = await getZoneComponents('header');
 
@@ -39,8 +40,8 @@ describe('registry-loader', () => {
 
   it('should handle components without numeric prefix', async () => {
     vi.mocked(GlobHelper.getRegistryModules).mockReturnValue({
-      '/src/registry/header/profile.tsx': { default: () => null, order: 5 },
-    });
+      '/src/registry/header/profile.tsx': () => Promise.resolve({ default: () => null, order: 5 }),
+    } as any);
 
     const components = await getZoneComponents('header');
     expect(components[0].name).toBe('profile');
@@ -49,8 +50,9 @@ describe('registry-loader', () => {
 
   it('should allow overriding name via export', async () => {
     vi.mocked(GlobHelper.getRegistryModules).mockReturnValue({
-      '/src/registry/header/10-logo.tsx': { default: () => null, name: 'MainLogo' },
-    });
+      '/src/registry/header/10-logo.tsx': () =>
+        Promise.resolve({ default: () => null, name: 'MainLogo' }),
+    } as any);
 
     const components = await getZoneComponents('header');
     expect(components[0].name).toBe('MainLogo');
@@ -58,8 +60,8 @@ describe('registry-loader', () => {
 
   it('should skip modules without default export', async () => {
     vi.mocked(GlobHelper.getRegistryModules).mockReturnValue({
-      '/src/registry/header/invalid.tsx': { someOtherExport: 'foo' },
-    });
+      '/src/registry/header/invalid.tsx': () => Promise.resolve({ someOtherExport: 'foo' }),
+    } as any);
 
     const components = await getZoneComponents('header');
     expect(components).toHaveLength(0);
@@ -67,8 +69,8 @@ describe('registry-loader', () => {
 
   it('should handle complex filename part extraction', async () => {
     vi.mocked(GlobHelper.getRegistryModules).mockReturnValue({
-      '/src/registry/header/10-multi-part-name.tsx': { default: () => null },
-    });
+      '/src/registry/header/10-multi-part-name.tsx': () => Promise.resolve({ default: () => null }),
+    } as any);
 
     const components = await getZoneComponents('header');
     expect(components[0].name).toBe('multi-part-name');

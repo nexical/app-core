@@ -25,13 +25,13 @@ describe('initializeClientModules', () => {
     const mockModuleDefault = vi.fn().mockResolvedValue(undefined);
 
     vi.mocked(GlobHelper.getCoreInits).mockReturnValue({
-      '/src/init.ts': { init: mockCoreInit },
-    });
+      '/src/init.ts': () => Promise.resolve({ init: mockCoreInit }),
+    } as any);
 
     vi.mocked(GlobHelper.getClientModuleInits).mockReturnValue({
-      '/modules/foo/src/init.ts': { init: mockModuleInit },
-      '/modules/bar/src/client-init.ts': { default: mockModuleDefault },
-    });
+      '/modules/foo/src/init.ts': () => Promise.resolve({ init: mockModuleInit }),
+      '/modules/bar/src/client-init.ts': () => Promise.resolve({ default: mockModuleDefault }),
+    } as any);
 
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
@@ -49,8 +49,8 @@ describe('initializeClientModules', () => {
 
     vi.mocked(GlobHelper.getCoreInits).mockReturnValue({});
     vi.mocked(GlobHelper.getClientModuleInits).mockReturnValue({
-      '/modules/err/src/init.ts': { init: mockErrorInit },
-    });
+      '/modules/err/src/init.ts': () => Promise.resolve({ init: mockErrorInit }),
+    } as any);
 
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 

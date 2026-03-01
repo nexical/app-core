@@ -21,12 +21,12 @@ describe('module-init', () => {
     const skippedInit = { notAFunction: true };
 
     vi.mocked(GlobHelper.getCoreInits).mockReturnValue({
-      core1: { init: coreInit },
-      core2: skippedInit,
-    });
+      core1: () => Promise.resolve({ init: coreInit }),
+      core2: () => Promise.resolve(skippedInit),
+    } as any);
     vi.mocked(GlobHelper.getModuleInits).mockReturnValue({
-      mod1: { init: modInit },
-    });
+      mod1: () => Promise.resolve({ init: modInit }),
+    } as any);
 
     const logSpy = vi.spyOn(console, 'info').mockImplementation(() => {});
 

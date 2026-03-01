@@ -24,8 +24,8 @@ describe('middleware-registry', () => {
   it('should aggregate and cache middlewares from modules', async () => {
     const mockModule = { default: { onRequest: vi.fn() } };
     vi.mocked(GlobHelper.getMiddlewareModules).mockReturnValue({
-      '/modules/test-mod/src/middleware.ts': mockModule,
-    });
+      '/modules/test-mod/src/middleware.ts': () => Promise.resolve(mockModule),
+    } as any);
     vi.mocked(ModuleDiscovery.loadModules).mockResolvedValue([
       { name: 'test-mod' } as Partial<LoadedModule> as LoadedModule,
     ]);
