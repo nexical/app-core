@@ -39,6 +39,7 @@ export default defineConfig({
   vite: defu(moduleViteConfig, {
     plugins: [tailwindcss()],
     server: {
+      cors: { credentials: true, origin: true },
       allowedHosts: process.env.ALLOWED_HOSTS
         ? process.env.ALLOWED_HOSTS.split(',')
         : ['web', 'localhost'],
@@ -96,7 +97,7 @@ export default defineConfig({
       },
     },
     ssr: {
-      noExternal: ['/^@nexical\//', '/modules\/.*\/src\/sdk/', '@astrojs/react'],
+      noExternal: [/^@nexical\//, /modules\/.*\/src\/sdk/, '@astrojs/react'],
       external: [
         'jiti',
         'nodemailer',
