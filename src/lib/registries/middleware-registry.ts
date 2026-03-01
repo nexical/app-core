@@ -34,10 +34,13 @@ export async function getModuleMiddlewares(): Promise<ModuleMiddleware[]> {
   for (const mod of sortedModules) {
     // Construct the key that matches the glob pattern result
     const key = `/modules/${mod.name}/src/middleware.ts`;
-    const middlewareModule = globbedMiddlewares[key] as Record<string, unknown>;
+    const middlewareFn = globbedMiddlewares[key] as () => Promise<Record<string, unknown>>;
 
-    if (middlewareModule && middlewareModule.default) {
-      middlewares.push(middlewareModule.default);
+    if (middlewareFn) {
+      const middlewareModule = (await middlewareFn()) as Record<string, unknown>;
+      if (middlewareModule.default) {
+        middlewares.push(middlewareModule.default as ModuleMiddleware);
+      }
     }
   }
 
