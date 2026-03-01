@@ -16,18 +16,17 @@ export async function initializeModules() {
   // We import glob eagerly so the side-effects (registration) run immediately.
   // 1. Initialize Core First (Registers default '*' shell)
   const core = GlobHelper.getCoreInits();
-  Object.values(core).forEach((mod: unknown) => {
-    const module = mod as { init?: () => Promise<void> };
-    if (typeof module.init === 'function') promises.push(module.init());
-  });
+  for (const path in core) {
+    const mod = (await core[path]()) as { init?: () => Promise<void> };
+    if (typeof mod.init === 'function') promises.push(mod.init());
+  }
 
   // 2. Initialize Modules (Registers specific overrides like 'auth')
-  // Includes standard 'init.ts' AND 'server-init.ts'
   const modules = GlobHelper.getModuleInits();
-  Object.values(modules).forEach((mod: unknown) => {
-    const module = mod as { init?: () => Promise<void> };
-    if (typeof module.init === 'function') promises.push(module.init());
-  });
+  for (const path in modules) {
+    const mod = (await modules[path]()) as { init?: () => Promise<void> };
+    if (typeof mod.init === 'function') promises.push(mod.init());
+  }
 
   await Promise.allSettled(promises);
 
