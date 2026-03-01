@@ -8,13 +8,15 @@ import { initializeClientModules } from '../../lib/core/client-init';
 import { useShellContext } from '../../hooks/use-shell-context';
 import { AppShellDesktop } from './app-shell-desktop';
 
-// Ensure modules are initialized when this component is loaded on the client
+// Trigger async init for any async work in module init() exports.
+// Module-level registrations (ShellRegistry etc.) have already run
+// synchronously via the eager glob in client-init.ts.
 initializeClientModules();
 
 interface MasterShellProps {
   shellName?: string;
   footerName?: string;
-  navData: any;
+  navData: Record<string, unknown>;
   children: React.ReactNode;
 }
 
@@ -29,34 +31,34 @@ export function MasterShell({
 
   useEffect(() => {
     setMounted(true);
+    // Hide the global loading spinner only after the shell has been resolved
+    // and React has mounted. This prevents flicker between wrong shells.
+    if (
+      typeof window !== 'undefined' &&
+      typeof (window as Window & { __hideLoader?: () => void }).__hideLoader === 'function'
+    ) {
+      (window as Window & { __hideLoader?: () => void }).__hideLoader!();
+    }
   }, []);
 
-  // Resolve shell by context on client, or initialShellName on server/initial mount
+  // Resolve shell by context on client, or initialShellName on server/initial mount.
+  // Because module inits run eagerly, ShellRegistry.get(initialShellName) is immediately
+  // available on the client without waiting for any async operation.
   const activeShellComponent = useMemo(() => {
     if (!mounted) {
-      // During SSR and initial hydration, use the shell the server selected
       return (initialShellName ? ShellRegistry.get(initialShellName) : null) || AppShellDesktop;
     }
-
-    // On the client after mount, re-evaluate based on reactive context
     const entry = ShellRegistry.findEntry(context);
     return entry?.component || AppShellDesktop;
   }, [mounted, context, initialShellName]);
 
-  // Resolve footer by context
-  // We can assume on server start we might not have a selected footer passed in props yet (unless we expand MasterShell props)
-  // For now, let's resolve it reactively or similar to shell.
-  // If we want SSR footer, we should ideally pass it as a prop too, but for now client-side resolution is acceptable as per "just like shell" request.
   const activeFooterComponent = useMemo(() => {
     if (!mounted) {
-      return (initialFooterName ? FooterRegistry.get(initialFooterName) : null) as any;
+      return initialFooterName ? FooterRegistry.get(initialFooterName) : null;
     }
     const entry = FooterRegistry.findEntry(context);
     return entry?.component;
   }, [mounted, context, initialFooterName]);
-
-  const ShellComponent = activeShellComponent;
-  const FooterComponent = activeFooterComponent;
 
   return (
     <ThemeProvider storageKey="app-theme">
