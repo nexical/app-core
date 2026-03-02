@@ -1,4 +1,4 @@
-import { GlobHelper } from '../core/glob-helper';
+import { GlobHelper } from '@/lib/core/glob-helper';
 
 /**
  * Dynamic Module Initialization
@@ -23,9 +23,15 @@ export async function initializeModules() {
 
   // 2. Initialize Modules (Registers specific overrides like 'auth')
   const modules = GlobHelper.getModuleInits();
+  console.log(
+    `[Core] Found ${Object.keys(modules).length} module init files: ${Object.keys(modules).join(', ')}`,
+  );
   for (const path in modules) {
     const mod = (await modules[path]()) as { init?: () => Promise<void> };
-    if (typeof mod.init === 'function') promises.push(mod.init());
+    if (typeof mod.init === 'function') {
+      console.log(`[Core] Initializing module: ${path}`);
+      promises.push(mod.init());
+    }
   }
 
   await Promise.allSettled(promises);

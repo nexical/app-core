@@ -20,14 +20,22 @@ export class GlobHelper {
   }
 
   /**
-   * Eagerly imports all client module init files so their module-level side-effects
+   * Eagerly imports all client core and module init files so their module-level side-effects
    * (e.g. ShellRegistry.register, RoleRegistry.register) run synchronously during
    * the Vite module graph evaluation — before any component can render.
    */
   static getClientModuleInitsEager() {
-    return import.meta.glob(['/modules/*/src/init.ts', '/modules/*/src/client-init.ts'], {
-      eager: true,
-    });
+    return import.meta.glob(
+      [
+        '/src/init.ts',
+        '/src/client-init.ts',
+        '/modules/*/src/init.ts',
+        '/modules/*/src/client-init.ts',
+      ],
+      {
+        eager: true,
+      },
+    );
   }
 
   static getMiddlewareModules() {

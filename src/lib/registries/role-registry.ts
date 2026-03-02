@@ -32,6 +32,10 @@ class RoleRegistry {
   public has(name: string): boolean {
     return this.policies.has(name);
   }
+
+  public getKeys(): string[] {
+    return Array.from(this.policies.keys());
+  }
   public async check(
     name: string,
     context: AstroGlobal | APIContext,

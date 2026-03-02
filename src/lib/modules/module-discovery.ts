@@ -32,39 +32,76 @@ export class ModuleDiscovery {
    * and returns them sorted by Phase and Order.
    */
   static async loadModules(): Promise<LoadedModule[]> {
-    if (!fs.existsSync(this.modulesDir)) {
-      return [];
-    }
-
-    const moduleNames = fs.readdirSync(this.modulesDir);
     const loadedModules: LoadedModule[] = [];
-    const jiti = createJiti(import.meta.url);
+    const cwd = process.cwd();
 
-    for (const name of moduleNames) {
-      const modulePath = path.join(this.modulesDir, name);
-      if (!fs.statSync(modulePath).isDirectory()) continue;
+    // 1. Try Loading via Vite Glob (Runtime-safe for Edge/Cloudflare)
+    try {
+      const globConfigs = import.meta.glob('/modules/*/module.config.mjs', { eager: true });
+      if (Object.keys(globConfigs).length > 0) {
+        for (const configPath in globConfigs) {
+          const mod = globConfigs[configPath] as { default?: ModuleConfig };
+          const config = (mod.default || mod || {}) as ModuleConfig;
 
-      const configPath = path.join(modulePath, 'module.config.mjs');
-      let config: ModuleConfig = {};
+          // Extract module name from path: /modules/{name}/module.config.mjs
+          const parts = configPath.split('/');
+          const name = parts[parts.indexOf('modules') + 1] || 'unknown';
 
-      if (fs.existsSync(configPath)) {
-        try {
-          const mod = (await jiti.import(configPath)) as { default?: ModuleConfig };
-          config = mod.default || mod || {};
-        } catch (e) {
-          console.warn(`[ModuleDiscovery] Failed to load config for ${name}:`, e);
+          // Apply Defaults
+          if (!config.type) config.type = 'feature';
+          if (config.order === undefined) config.order = 50;
+
+          // Resolve absolute path for FS operations
+          // Vite glob paths starting with / are relative to project root
+          const relativePath = configPath.startsWith('/') ? configPath.slice(1) : configPath;
+          const absolutePath = path.resolve(cwd, relativePath).replace('/module.config.mjs', '');
+
+          loadedModules.push({
+            name,
+            path: absolutePath,
+            config,
+          });
+        }
+
+        if (loadedModules.length > 0) {
+          return this.sortModules(loadedModules);
         }
       }
+    } catch (e) {
+      console.warn('[ModuleDiscovery] Vite Glob detection failed, falling back to FS...', e);
+    }
 
-      // Apply Defaults
-      if (!config.type) config.type = 'feature';
-      if (config.order === undefined) config.order = 50;
+    // 2. Fallback to FS (For CLI/Scripts)
+    if (typeof fs !== 'undefined' && fs.existsSync && fs.existsSync(this.modulesDir)) {
+      const moduleNames = fs.readdirSync(this.modulesDir);
+      const jiti = createJiti(import.meta.url);
 
-      loadedModules.push({
-        name,
-        path: modulePath,
-        config,
-      });
+      for (const name of moduleNames) {
+        const modulePath = path.join(this.modulesDir, name);
+        if (!fs.statSync(modulePath).isDirectory()) continue;
+
+        const configPath = path.join(modulePath, 'module.config.mjs');
+        let config: ModuleConfig = {};
+
+        if (fs.existsSync(configPath)) {
+          try {
+            const mod = (await jiti.import(configPath)) as { default?: ModuleConfig };
+            config = mod.default || mod || {};
+          } catch (e) {
+            console.warn(`[ModuleDiscovery] Failed to load config for ${name}:`, e);
+          }
+        }
+
+        // Apply Defaults
+        if (!config.type) config.type = 'feature';
+        if (config.order === undefined) config.order = 50;
+
+        loadedModules.push({
+          name,
+          path: modulePath,
+          config,
+        });
+      }
     }
 
     return this.sortModules(loadedModules);

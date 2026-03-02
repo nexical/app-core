@@ -1,5 +1,5 @@
-import { GlobHelper } from '@/lib/core/glob-helper.ts';
-import { Logger } from '@/lib/core/logger.ts';
+import { GlobHelper } from '@/lib/core/glob-helper';
+import { Logger } from '@/lib/core/logger';
 
 /**
  * Client-Side Module Initialization
@@ -22,12 +22,8 @@ export async function initializeClientModules() {
   Logger.info('[Core] Initializing Client modules...');
   const promises: Promise<void>[] = [];
 
-  // 1. Initialize Core (Shells registered in src/init.ts)
-  const core = GlobHelper.getCoreInits();
-  for (const path in core) {
-    const mod = (await core[path]()) as { init?: () => Promise<void> };
-    if (typeof mod.init === 'function') promises.push(mod.init());
-  }
+  // 1. Module-level registrations (Shells, Roles etc.) already ran
+  //    synchronously via the eager glob return at the top of this file.
 
   // 2. Call the init() export from each already-eagerly-loaded module.
   //    The module-level registrations already ran; this handles any async

@@ -1,5 +1,5 @@
 import type { APIContext } from 'astro';
-import { roleRegistry } from '../registries/role-registry';
+import { roleRegistry } from '@/lib/registries/role-registry';
 
 export class ApiGuard {
   /**
