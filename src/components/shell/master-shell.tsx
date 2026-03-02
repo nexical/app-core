@@ -26,8 +26,9 @@ export function MasterShell({
   navData,
   children,
 }: MasterShellProps) {
+  const [navDataState, setNavDataState] = useState(navData);
   const [mounted, setMounted] = useState(false);
-  const context = useShellContext(navData);
+  const context = useShellContext(navDataState);
 
   useEffect(() => {
     setMounted(true);
@@ -38,6 +39,25 @@ export function MasterShell({
       typeof (window as Window & { __hideLoader?: () => void }).__hideLoader === 'function'
     ) {
       (window as Window & { __hideLoader?: () => void }).__hideLoader!();
+    }
+
+    // Client-side hydration: If no user in navData, attempt to fetch session
+    if (!navDataState?.context?.user) {
+      import('@modules/user-ui/src/lib/auth-client')
+        .then(({ getSession }) => {
+          getSession().then((session) => {
+            if (session && session.user) {
+              console.log('[MasterShell] Client-side session hydrated:', session.user);
+              setNavDataState((prev: any) => ({
+                ...prev,
+                context: { ...prev.context, user: session.user },
+              }));
+            }
+          });
+        })
+        .catch((err) => {
+          console.error('[MasterShell] Error loading auth-client for hydration:', err);
+        });
     }
   }, []);
 
@@ -62,14 +82,17 @@ export function MasterShell({
 
   return (
     <ThemeProvider storageKey="app-theme">
-      <NavProvider value={navData}>
+      <NavProvider value={navDataState}>
         <div className="flex flex-col min-h-screen">
           <div className="flex-1 flex flex-col">
-            {React.createElement(activeShellComponent || AppShellDesktop, { navData, children })}
+            {React.createElement(activeShellComponent || AppShellDesktop, {
+              navData: navDataState,
+              children,
+            })}
           </div>
           {activeFooterComponent && (
             <footer className="w-full">
-              {React.createElement(activeFooterComponent, { navData })}
+              {React.createElement(activeFooterComponent, { navData: navDataState })}
             </footer>
           )}
         </div>
