@@ -47,7 +47,7 @@
   }
 
   .shell-header {
-    @apply flex items-center justify-between px-header-outer shrink-0 container-header;
+    @apply flex items-center justify-between px-header-outer shrink-0 container-header bg-background relative z-40;
     height: var(--header-height);
   }
 
