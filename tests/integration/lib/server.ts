@@ -50,12 +50,12 @@ export class ServerManager {
     const envTestPath = path.resolve(process.cwd(), '.env.test');
     if (fs.existsSync(envTestPath)) {
       console.log('Loading environment from .env.test');
-      dotenv.config({ path: envTestPath, override: true });
+      dotenv.config({ path: envTestPath, override: true, quiet: true });
     } else {
       const envPath = path.resolve(process.cwd(), '.env');
       if (fs.existsSync(envPath)) {
         console.log('Loading environment from .env (fallback)');
-        dotenv.config({ path: envPath, override: true });
+        dotenv.config({ path: envPath, override: true, quiet: true });
       }
     }
 

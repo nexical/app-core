@@ -4,6 +4,11 @@ import { cleanup } from '@testing-library/react';
 import * as matchers from '@testing-library/jest-dom/matchers';
 import { afterEach, vi, expect } from 'vitest';
 
+// Default environment variables for unit tests
+process.env.PUBLIC_API_URL = process.env.PUBLIC_API_URL || 'http://localhost:4321/api';
+process.env.PUBLIC_SITE_NAME = process.env.PUBLIC_SITE_NAME || 'Nexical';
+process.env.PUBLIC_SITE_VERSION = process.env.PUBLIC_SITE_VERSION || '0.0.1';
+
 expect.extend(matchers as unknown as Parameters<typeof expect.extend>[0]);
 import { TextEncoder, TextDecoder } from 'util';
 
