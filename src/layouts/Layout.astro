@@ -24,6 +24,10 @@ const {
   navData = Astro.props.navData || Astro.locals.navData || { context: {} },
 } = Astro.props;
 
+console.log(
+  `[LAYOUT SSR] Title: ${title}, Actor: ${JSON.stringify(Astro.locals.actor || 'none')}, Prop Context User: ${JSON.stringify(navData?.context?.user || 'none')}`,
+);
+
 // Shell Selection (Server-Side)
 const shellContext = {
   url: Astro.url,
@@ -63,9 +67,10 @@ const i18nData = {
 };
 ---
 
-<script is:inline define:vars={{ i18nData, publicConfig }}>
+<script is:inline define:vars={{ i18nData, publicConfig, navData }}>
   window.__I18N_DATA__ = i18nData;
   window.__APP_CONFIG__ = publicConfig;
+  console.log('NavData on client:', navData);
 </script>
 
 <html lang="en" class="dark">
