@@ -4,7 +4,9 @@ import { HookSystem } from './lib/modules/hooks';
 import { initializeModules } from './lib/modules/module-init';
 
 // Ensure modules are initialized for all requests (Page or API)
+console.info('[Core Middleware] Loading and initializing modules...');
 await initializeModules();
+console.info('[Core Middleware] Modules initialized.');
 
 export const onRequest = defineMiddleware(async (context, next) => {
   const { pathname } = context.url;
