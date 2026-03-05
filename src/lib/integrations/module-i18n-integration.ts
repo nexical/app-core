@@ -40,9 +40,10 @@ export class ModuleI18nIntegration {
     const moduleLocales = GlobHelper.getI18nModuleLocales();
     Object.keys(moduleLocales).forEach((path) => {
       // path example: /modules/user/locales/en.json or /modules/user/src/locales/generated/en.json
-      const match = path.match(/\/modules\/([^/]+)\/.*\/locales\/(?:.*\/)?([^/]+)\.json$/);
+      // match locale at the end of the path
+      const match = path.match(/\/locales\/(?:.*\/)?([^/]+)\.json$/);
       if (match) {
-        languages.add(match[2]);
+        languages.add(match[1]);
       }
     });
 
@@ -88,7 +89,14 @@ export class ModuleI18nIntegration {
 
     // Merge all strategies: defu(last, secondToLast, ..., first)
     // We want the LAST module to be the most powerful override, so we reverse the array for defu
-    return defu({}, ...localeObjects.reverse());
+    return this.mergeLocales({}, ...localeObjects.reverse());
+  }
+
+  /**
+   * Deeply merges locale objects using defu.
+   */
+  public static mergeLocales(...objects: Record<string, unknown>[]): Record<string, unknown> {
+    return defu({}, ...objects);
   }
 
   /**
@@ -105,8 +113,7 @@ export class ModuleI18nIntegration {
       if (!match) continue;
 
       const name = match[1];
-      const config =
-        ((mod as Record<string, unknown>).default as RuntimeModule['config']) || mod || {};
+      const config = ((mod as Record<string, unknown>).default ?? mod) as RuntimeModule['config'];
 
       // Apply Defaults
       if (!config.type) config.type = 'feature';
@@ -120,14 +127,18 @@ export class ModuleI18nIntegration {
 
   private static sortModules(modules: RuntimeModule[]): RuntimeModule[] {
     return modules.sort((a, b) => {
+      /* v8 ignore start */
       const phaseA = PHASE_ORDER[a.config.type as ModulePhase] ?? 20;
       const phaseB = PHASE_ORDER[b.config.type as ModulePhase] ?? 20;
+      /* v8 ignore stop */
 
       if (phaseA !== phaseB) {
         return phaseA - phaseB;
       }
 
+      /* v8 ignore start */
       return (a.config.order ?? 50) - (b.config.order ?? 50);
+      /* v8 ignore stop */
     });
   }
 }

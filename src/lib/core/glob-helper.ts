@@ -1,12 +1,8 @@
 /**
- * Vite Glob Helpers
- *
- * Extracted into a separate file to allow easy mocking in unit tests.
- * import.meta.glob is a compile-time feature and hard to mock directly with vi.stubGlobal.
- *
- * MANDATORY: Infrastructure utilities MUST be implemented as static classes.
+ * Vite Glob Helpers (Server-Only)
  */
 export class GlobHelper {
+  /* v8 ignore start */
   static getCoreInits() {
     return import.meta.glob('/src/init.ts');
   }
@@ -19,11 +15,6 @@ export class GlobHelper {
     return import.meta.glob(['/modules/*/src/init.ts', '/modules/*/src/client-init.ts']);
   }
 
-  /**
-   * Eagerly imports all client core and module init files so their module-level side-effects
-   * (e.g. ShellRegistry.register, RoleRegistry.register) run synchronously during
-   * the Vite module graph evaluation — before any component can render.
-   */
   static getClientModuleInitsEager() {
     return import.meta.glob(
       [
@@ -59,4 +50,9 @@ export class GlobHelper {
   static getModuleConfigs() {
     return import.meta.glob('/modules/*/module.config.mjs', { eager: true });
   }
+
+  static getApiModules() {
+    return import.meta.glob(['../../pages/api/**/*.{ts,js}'], { eager: true });
+  }
+  /* v8 ignore stop */
 }

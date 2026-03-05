@@ -14,6 +14,9 @@ export default defineConfig({
     fileParallelism: false,
     environment: 'node',
     globals: true,
+    env: {
+      PUBLIC_API_URL: 'http://localhost:4321/api',
+    },
     setupFiles: ['./tests/integration/env-setup.ts', './tests/integration/setup.ts'],
     include: ['tests/integration/**/*.test.{ts,tsx}'],
     exclude: ['**/node_modules/**', '**/dist/**'],

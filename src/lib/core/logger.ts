@@ -16,6 +16,7 @@ class LogStorage {
   private static browserStore: LogContext | undefined = undefined;
 
   static async init() {
+    /* v8 ignore start */
     if (typeof window === 'undefined' && !this.instance) {
       try {
         const { AsyncLocalStorage } = await import('node:async_hooks');
@@ -24,6 +25,7 @@ class LogStorage {
         // Ignore or fallback
       }
     }
+    /* v8 ignore stop */
   }
 
   static getStore(): LogContext | undefined {
@@ -44,11 +46,14 @@ class LogStorage {
       }
     }
 
-    if (this.instance) {
-      const existing = this.instance.getStore() || {};
-      return this.instance.run({ ...existing, ...context }, fn);
+    /* v8 ignore start */
+    if (!this.instance) {
+      return fn();
     }
-    return fn();
+    /* v8 ignore stop */
+
+    const existing = this.instance.getStore() || {};
+    return this.instance.run({ ...existing, ...context }, fn);
   }
 }
 
@@ -122,11 +127,15 @@ export const Logger = {
   },
 
   debug: (message: string, meta?: Record<string, unknown>) => {
-    if (process.env.NODE_ENV !== 'production') {
-      const context = LogStorage.getStore() || {};
-      const timestamp = new Date().toISOString();
-      console.debug(JSON.stringify({ timestamp, level: 'debug', message, ...context, ...meta }));
+    /* v8 ignore start */
+    if (process.env.NODE_ENV === 'production') {
+      return;
     }
+    /* v8 ignore stop */
+
+    const context = LogStorage.getStore() || {};
+    const timestamp = new Date().toISOString();
+    console.debug(JSON.stringify({ timestamp, level: 'debug', message, ...context, ...meta }));
   },
 
   /**

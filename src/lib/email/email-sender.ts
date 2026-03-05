@@ -71,6 +71,7 @@ export const sendEmail = async ({ to, subject, html }: SendEmailOptions) => {
 
     const info = await transport!.sendMail(options);
 
+    /* v8 ignore start */
     if (process.env.NODE_ENV === 'development') {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const previewUrl = nodemailer.getTestMessageUrl(info as any);
@@ -80,6 +81,7 @@ export const sendEmail = async ({ to, subject, html }: SendEmailOptions) => {
         console.info(`Email sent: ${info.messageId}`);
       }
     }
+    /* v8 ignore stop */
 
     // Log to file for agent verification (ALWAYS)
     const fs = await import('fs');

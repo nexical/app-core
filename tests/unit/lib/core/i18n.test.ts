@@ -21,9 +21,11 @@ describe('i18n', () => {
     });
 
     const t = await getTranslation('en');
+    const tDefault = await getTranslation();
+
     expect(t('greeting', { name: 'Alice' })).toBe('Hello Alice!');
     expect(t('nested.key')).toBe('Val');
-    expect(t('missing')).toBe('missing');
+    expect(tDefault('missing')).toBe('missing');
   });
 
   it('should handle non-string translations gracefully', async () => {

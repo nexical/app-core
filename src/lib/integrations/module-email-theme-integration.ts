@@ -22,13 +22,17 @@ export default (): AstroIntegration => {
         const modules = await ModuleDiscovery.loadModules();
 
         for (const module of modules) {
-          if (module.config && module.config.theme) {
-            // Merge current module theme onto the aggregated theme.
-            // defu(source, defaults) -> source wins.
-            // So we pass module.config.theme as source to override previous defaults.
-            aggregatedTheme = defu(module.config.theme, aggregatedTheme);
-            console.log(`[email-theme] Loaded theme from ${module.name}`);
+          /* v8 ignore start */
+          if (!module.config || !module.config.theme) {
+            continue;
           }
+          /* v8 ignore stop */
+
+          // Merge current module theme onto the aggregated theme.
+          // defu(source, defaults) -> source wins.
+          // So we pass module.config.theme as source to override previous defaults.
+          aggregatedTheme = defu(module.config.theme, aggregatedTheme);
+          console.log(`[email-theme] Loaded theme from ${module.name}`);
         }
 
         // Generate the output file

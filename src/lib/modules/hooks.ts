@@ -34,7 +34,7 @@ export class HookSystem {
    */
   static async dispatch<T, C = unknown>(event: string, data: T, context?: C): Promise<void> {
     const handlers = this.listeners.get(event);
-    if (!handlers || handlers.length === 0) return;
+    if (!handlers?.length) return;
 
     await Promise.allSettled(
       handlers.map((handler) => {
@@ -65,9 +65,7 @@ export class HookSystem {
     for (const handler of handlers) {
       try {
         const result = await handler(currentData, context);
-        if (result !== undefined) {
-          currentData = result as T;
-        }
+        currentData = (result === undefined ? currentData : result) as T;
       } catch (err) {
         console.error(`[HookSystem] Error in filter listener for ${event}:`, err);
       }

@@ -48,6 +48,7 @@ describe('Core DB', () => {
     vi.resetModules();
     vi.clearAllMocks();
     process.env.DATABASE_URL = 'postgresql://user:pass@localhost:5432/db';
+    delete (globalThis as unknown as Record<string, unknown>).prisma_db_v1;
   });
 
   it('should initialize successfully', async () => {
@@ -69,10 +70,31 @@ describe('Core DB', () => {
 
   it('should not set global instance in production', async () => {
     vi.stubEnv('NODE_ENV', 'production');
-    process.env.NODE_ENV = 'production'; // redundant but ensuring
+    process.env.NODE_ENV = 'production';
 
     await import('../../../../src/lib/core/db');
     expect((globalThis as unknown as Record<string, unknown>).prisma_db_v1).toBeUndefined();
+
+    vi.unstubAllEnvs();
+  });
+
+  it('should log debug info if DEBUG is set', async () => {
+    vi.stubEnv('DEBUG', 'true');
+    const consoleSpy = vi.spyOn(console, 'info');
+
+    await import('../../../../src/lib/core/db');
+    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('[DB] Initializing Prisma'));
+
+    vi.unstubAllEnvs();
+  });
+
+  it('should log MISSING if DATABASE_URL is not set and DEBUG is true', async () => {
+    delete process.env.DATABASE_URL;
+    vi.stubEnv('DEBUG', 'true');
+    const consoleSpy = vi.spyOn(console, 'info');
+
+    await import('../../../../src/lib/core/db');
+    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining('DATABASE_URL: MISSING'));
 
     vi.unstubAllEnvs();
   });

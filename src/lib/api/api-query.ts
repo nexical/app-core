@@ -47,17 +47,17 @@ export function parseQuery<T = unknown>(
 
   // Handle Top-Level Params
   if (searchParams.has('take')) {
-    const t = parseInt(searchParams.get('take') || '');
+    const t = parseInt(searchParams.get('take') as string);
     if (!isNaN(t)) take = t;
   }
   if (searchParams.has('skip')) {
-    const s = parseInt(searchParams.get('skip') || '');
+    const s = parseInt(searchParams.get('skip') as string);
     if (!isNaN(s)) skip = s;
   }
 
   // Handle OrderBy (format: field:asc or field:desc or just field)
   if (searchParams.has('orderBy')) {
-    const val = searchParams.get('orderBy') || '';
+    const val = searchParams.get('orderBy') as string;
     if (val.includes(':')) {
       const [field, dir] = val.split(':');
       orderBy = { [field]: dir.toLowerCase() === 'desc' ? 'desc' : 'asc' };

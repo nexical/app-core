@@ -7,9 +7,9 @@ import { DataTableColumnHeader } from '../../../../../src/components/ui/data-tab
 
 // Mock Radix DropdownMenu
 vi.mock('../../../../../src/components/ui/dropdown-menu', () => ({
-  DropdownMenu: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  DropdownMenuTrigger: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
-  DropdownMenuContent: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
+  DropdownMenu: ({ children }: { children: React.ReactNode }) => <div>{children} </div>,
+  DropdownMenuTrigger: ({ children }: { children: React.ReactNode }) => <div>{children} </div>,
+  DropdownMenuContent: ({ children }: { children: React.ReactNode }) => <div>{children} </div>,
   DropdownMenuItem: ({
     children,
     onClick,
@@ -20,9 +20,10 @@ vi.mock('../../../../../src/components/ui/dropdown-menu', () => ({
     <div
       role="menuitem"
       tabIndex={0}
-      data-testid="menu-item"
       onClick={onClick}
-      onKeyDown={(e) => e.key === 'Enter' && onClick?.()}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') onClick?.();
+      }}
     >
       {children}
     </div>
@@ -49,7 +50,7 @@ describe('DataTableColumnHeader', () => {
   it('should handle sorting and visibility actions', () => {
     render(<DataTableColumnHeader column={columnMock} title="Name" />);
 
-    const items = screen.getAllByTestId('menu-item');
+    const items = screen.getAllByRole('menuitem');
 
     // Asc
     fireEvent.click(items[0]);
@@ -59,7 +60,7 @@ describe('DataTableColumnHeader', () => {
     fireEvent.click(items[1]);
     expect(columnMock.toggleSorting).toHaveBeenCalledWith(true);
 
-    // Hide (item 2 is separator via HR, so item 2 in list is Hide)
+    // Hide
     fireEvent.click(items[2]);
     expect(columnMock.toggleVisibility).toHaveBeenCalledWith(false);
   });
@@ -72,5 +73,12 @@ describe('DataTableColumnHeader', () => {
     (columnMock.getIsSorted as unknown as Mock).mockReturnValue('asc');
     rerender(<DataTableColumnHeader column={columnMock} title="Name" />);
     expect(screen.getByRole('button')).toBeDefined();
+  });
+
+  it('should render simple div if column cannot be sorted', () => {
+    (columnMock.getCanSort as unknown as Mock).mockReturnValue(false);
+    render(<DataTableColumnHeader column={columnMock} title="Non-Sortable" />);
+    expect(screen.queryByRole('button')).toBeNull();
+    expect(screen.getByText('Non-Sortable')).toBeInTheDocument();
   });
 });

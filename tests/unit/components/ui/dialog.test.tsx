@@ -9,6 +9,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogClose,
+  DialogFooter,
 } from '@/components/ui/dialog';
 
 vi.mock('react-i18next', () => ({
@@ -26,6 +28,8 @@ describe('Dialog', () => {
             <DialogDescription>Dialog Description</DialogDescription>
           </DialogHeader>
           <div>Main Content</div>
+          <DialogFooter data-testid="footer">Footer</DialogFooter>
+          <DialogClose data-testid="close">Close</DialogClose>
         </DialogContent>
       </Dialog>,
     );
@@ -36,5 +40,7 @@ describe('Dialog', () => {
     expect(await screen.findByText('Dialog Title')).toBeDefined();
     expect(screen.getByText('Dialog Description')).toBeDefined();
     expect(screen.getByText('Main Content')).toBeDefined();
+    expect(screen.getByTestId('footer')).toBeInTheDocument();
+    expect(screen.getByTestId('close')).toBeInTheDocument();
   });
 });

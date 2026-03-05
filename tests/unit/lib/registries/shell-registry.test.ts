@@ -140,4 +140,17 @@ describe('ShellRegistry', () => {
     ShellRegistry.register('named', Comp, '/named');
     expect(ShellRegistry.get('named')).toBe(Comp);
   });
+
+  it('should return fallback if string matcher does not match', () => {
+    const Comp = () => null;
+    ShellRegistry.register('c1', Comp, '/exact-match');
+    const context = {
+      url: new URL('http://localhost/not-match'),
+      navData: {},
+      isMobile: false,
+      width: 0,
+      height: 0,
+    };
+    expect(ShellRegistry.find(context)).not.toBe(Comp);
+  });
 });

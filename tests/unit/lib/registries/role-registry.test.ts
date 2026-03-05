@@ -5,9 +5,6 @@ import type { APIContext } from 'astro';
 describe('RoleRegistry', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Since it's a singleton, we might want to clear it if possible
-    // But it doesn't expose a clear method.
-    // We'll just be careful.
   });
 
   it('should register and get a policy', () => {
@@ -36,5 +33,14 @@ describe('RoleRegistry', () => {
     roleRegistry.register('dup', { check: vi.fn() });
 
     expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('Overwriting role policy'));
+    warnSpy.mockRestore();
+  });
+
+  it('should return all registered keys', () => {
+    roleRegistry.register('role1', { check: vi.fn() });
+    roleRegistry.register('role2', { check: vi.fn() });
+    const keys = roleRegistry.getKeys();
+    expect(keys).toContain('role1');
+    expect(keys).toContain('role2');
   });
 });

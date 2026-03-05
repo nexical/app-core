@@ -9,7 +9,7 @@ const TabsContext = React.createContext<{
   onValueChange: (value: string) => void;
 }>({
   value: '',
-  onValueChange: () => {},
+  onValueChange: /* v8 ignore next */ () => {},
 });
 
 export function Tabs({

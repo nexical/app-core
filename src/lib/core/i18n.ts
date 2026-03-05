@@ -7,7 +7,7 @@ export type TranslationFunction = (key: string, params?: Record<string, string>)
  * Creates a translation function for a specific language.
  */
 export async function getTranslation(lang?: string): Promise<TranslationFunction> {
-  const targetLang = lang || config.PUBLIC_DEFAULT_LANGUAGE || 'en';
+  const targetLang = lang || config.PUBLIC_DEFAULT_LANGUAGE;
   const store = await ModuleI18nIntegration.getMergedLocale(targetLang);
 
   return function t(key: string, params?: Record<string, string>) {
@@ -33,9 +33,7 @@ export async function getServerTranslation(request: Request) {
   const cookies = request.headers.get('cookie') || '';
   // Simple cookie parsing
   const langCookie = cookies.split(';').find((c) => c.trim().startsWith('i18next='));
-  const lang = langCookie
-    ? langCookie.split('=')[1].trim()
-    : config.PUBLIC_DEFAULT_LANGUAGE || 'en';
+  const lang = langCookie ? langCookie.split('=')[1].trim() : config.PUBLIC_DEFAULT_LANGUAGE;
 
   return await getTranslation(lang);
 }

@@ -68,8 +68,11 @@ describe('api-query', () => {
       const testCases = [
         { query: 'active=true', expected: { active: true } },
         { query: 'active=false', expected: { active: false } },
+        { query: 'age=25', expected: { age: 25 } },
+        { query: 'name=John', expected: { name: 'John' } },
         { query: 'active.ne=true', expected: { active: { not: true } } },
         { query: 'name.ne=A', expected: { name: { not: 'A' } } },
+        { query: 'age.ne=18', expected: { age: { not: 18 } } },
         { query: 'age.gt=18', expected: { age: { gt: 18 } } },
         { query: 'age.gte=18', expected: { age: { gte: 18 } } },
         { query: 'age.lt=100', expected: { age: { lt: 100 } } },
@@ -114,6 +117,16 @@ describe('api-query', () => {
       }
     });
 
+    it('should throw InvalidFilterError without suggestions (line 114)', () => {
+      const params = new URLSearchParams('totallywrong.eq=test');
+      try {
+        parseQuery(params, options);
+      } catch (e: any) {
+        expect(e.details[0].suggestions.length).toBe(0);
+        expect(e.details[0].message).not.toContain('Did you mean');
+      }
+    });
+
     it('should throw InvalidFilterError for unauthorized operators', () => {
       const params = new URLSearchParams('active.gt=true');
       try {
@@ -122,6 +135,31 @@ describe('api-query', () => {
       } catch (e: any) {
         expect(e.details[0].type).toBe('INVALID_OPERATOR');
       }
+    });
+
+    it('should use 50/0 as absolute defaults if no options.defaults (line 42/43)', () => {
+      const result = parseQuery(new URLSearchParams(''), { fields: { name: 'string' as const } });
+      expect(result.take).toBe(50);
+      expect(result.skip).toBe(0);
+    });
+
+    it('should handle invalid pagination explicitly (line 50-55)', () => {
+      const params = new URLSearchParams('take=abc&skip=xyz');
+      const result = parseQuery(params, { fields: {}, defaults: { take: 15, skip: 5 } });
+      expect(result.take).toBe(15);
+      expect(result.skip).toBe(5);
+    });
+
+    it('should handle orderBy without colon (line 60)', () => {
+      const params = new URLSearchParams('orderBy=');
+      const result = parseQuery(params, { fields: {} });
+      expect(result.orderBy).toEqual({ '': 'asc' });
+    });
+
+    it('should handle multiple operators for same field (line 135)', () => {
+      const params = new URLSearchParams('age.gt=10&age.lt=50');
+      const result = parseQuery(params, options);
+      expect(result.where.age).toEqual({ gt: 10, lt: 50 });
     });
   });
 
@@ -132,6 +170,7 @@ describe('api-query', () => {
           age: 'number',
           active: 'boolean',
           name: 'string',
+          unknownfield: 'unknown' as any,
         },
       });
       expect(docs.find((d) => d.name === 'age.gt').schema.type).toBe('number');

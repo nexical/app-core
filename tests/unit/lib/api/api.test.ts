@@ -15,18 +15,18 @@ vi.mock('@nexical/sdk', () => ({
 describe('api client initialization', () => {
   beforeEach(() => {
     vi.resetModules();
-    vi.stubEnv('PUBLIC_SITE_URL', 'http://test.com');
   });
 
   it('should initialize with server-side baseUrl from env', async () => {
+    vi.stubEnv('PUBLIC_API_URL', 'http://test.com/api');
     // @ts-ignore
     global.window = undefined;
     const { api } = await import('@/lib/api/api');
     expect(api.options.baseUrl).toBe('http://test.com/api');
   });
 
-  it('should use localhost default if env is missing', async () => {
-    vi.stubEnv('PUBLIC_SITE_URL', '');
+  it('should use default if env is missing', async () => {
+    vi.stubEnv('PUBLIC_API_URL', 'http://localhost:4321/api');
     // @ts-ignore
     global.window = undefined;
     const { api } = await import('@/lib/api/api');
@@ -35,8 +35,12 @@ describe('api client initialization', () => {
 });
 
 describe('api client browser initialization', () => {
-  it('should initialize with /api baseUrl in browser', async () => {
+  beforeEach(() => {
     vi.resetModules();
+  });
+
+  it('should initialize with /api baseUrl in browser', async () => {
+    vi.stubEnv('PUBLIC_API_URL', 'http://should-not-be-used.com/api');
     // @ts-ignore
     global.window = { location: { origin: 'http://localhost' } };
     const { api } = await import('@/lib/api/api');

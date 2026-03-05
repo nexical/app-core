@@ -28,7 +28,7 @@ describe('registry-loader', () => {
       '/modules/user/src/registry/header/20-avatar.tsx': () =>
         Promise.resolve({ default: mockComp2 }),
       '/src/registry/footer/99-copyright.tsx': () => Promise.resolve({ default: () => null }),
-    } as any);
+    } as unknown as Record<string, () => Promise<unknown>>);
 
     const components = await getZoneComponents('header');
 
@@ -41,7 +41,7 @@ describe('registry-loader', () => {
   it('should handle components without numeric prefix', async () => {
     vi.mocked(GlobHelper.getRegistryModules).mockReturnValue({
       '/src/registry/header/profile.tsx': () => Promise.resolve({ default: () => null, order: 5 }),
-    } as any);
+    } as unknown as Record<string, () => Promise<unknown>>);
 
     const components = await getZoneComponents('header');
     expect(components[0].name).toBe('profile');
@@ -52,16 +52,25 @@ describe('registry-loader', () => {
     vi.mocked(GlobHelper.getRegistryModules).mockReturnValue({
       '/src/registry/header/10-logo.tsx': () =>
         Promise.resolve({ default: () => null, name: 'MainLogo' }),
-    } as any);
+    } as unknown as Record<string, () => Promise<unknown>>);
 
     const components = await getZoneComponents('header');
     expect(components[0].name).toBe('MainLogo');
   });
 
+  it('should handle paths with trailing slash or empty filename parts', async () => {
+    vi.mocked(GlobHelper.getRegistryModules).mockReturnValue({
+      '/src/registry/header/': () => Promise.resolve({ default: () => null }),
+    } as unknown as Record<string, () => Promise<unknown>>);
+
+    const components = await getZoneComponents('header');
+    expect(components[0].name).toBe('');
+  });
+
   it('should skip modules without default export', async () => {
     vi.mocked(GlobHelper.getRegistryModules).mockReturnValue({
       '/src/registry/header/invalid.tsx': () => Promise.resolve({ someOtherExport: 'foo' }),
-    } as any);
+    } as unknown as Record<string, () => Promise<unknown>>);
 
     const components = await getZoneComponents('header');
     expect(components).toHaveLength(0);
@@ -70,7 +79,7 @@ describe('registry-loader', () => {
   it('should handle complex filename part extraction', async () => {
     vi.mocked(GlobHelper.getRegistryModules).mockReturnValue({
       '/src/registry/header/10-multi-part-name.tsx': () => Promise.resolve({ default: () => null }),
-    } as any);
+    } as unknown as Record<string, () => Promise<unknown>>);
 
     const components = await getZoneComponents('header');
     expect(components[0].name).toBe('multi-part-name');

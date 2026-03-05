@@ -35,7 +35,11 @@ describe('Middleware', () => {
   });
 
   it('should skip assets', async () => {
-    const context = { url: new URL('http://localhost/style.css') } as APIContext;
+    const context = {
+      url: new URL('http://localhost/style.css'),
+      request: new Request('http://localhost/style.css'),
+      locals: { actor: null },
+    } as unknown as APIContext;
     const response = (await onRequest(context, next)) as Response;
     expect(await response.text()).toBe('next');
     expect(getModuleMiddlewares).not.toHaveBeenCalled();
@@ -43,14 +47,22 @@ describe('Middleware', () => {
 
   it('should allow public routes from modules', async () => {
     vi.mocked(getModuleMiddlewares).mockResolvedValue([{ publicRoutes: ['/public', '/docs/*'] }]);
-    const context = { url: new URL('http://localhost/public') } as APIContext;
+    const context = {
+      url: new URL('http://localhost/public'),
+      request: new Request('http://localhost/public'),
+      locals: { actor: null },
+    } as unknown as APIContext;
     const response = (await onRequest(context, next)) as Response;
     expect(await response.text()).toBe('next');
   });
 
   it('should handle wildcard public routes', async () => {
     vi.mocked(getModuleMiddlewares).mockResolvedValue([{ publicRoutes: ['/docs/*'] }]);
-    const context = { url: new URL('http://localhost/docs/api') } as APIContext;
+    const context = {
+      url: new URL('http://localhost/docs/api'),
+      request: new Request('http://localhost/docs/api'),
+      locals: { actor: null },
+    } as unknown as APIContext;
     const response = (await onRequest(context, next)) as Response;
     expect(await response.text()).toBe('next');
   });
@@ -62,7 +74,11 @@ describe('Middleware', () => {
       { onRequest: async () => new Response('should-not-run') },
     ]);
 
-    const context = { url: new URL('http://localhost/private') } as unknown as APIContext;
+    const context = {
+      url: new URL('http://localhost/private'),
+      request: new Request('http://localhost/private'),
+      locals: { actor: null },
+    } as unknown as APIContext;
     const response = (await onRequest(context, next)) as Response;
     expect(await response.text()).toBe('intercepted');
     expect(HookSystem.dispatch).toHaveBeenCalledWith('core.module.handled', expect.any(Object));
@@ -71,7 +87,11 @@ describe('Middleware', () => {
 
   it('should continue to next if no module middleware returns a response', async () => {
     vi.mocked(getModuleMiddlewares).mockResolvedValue([{ onRequest: async () => undefined }]);
-    const context = { url: new URL('http://localhost/private') } as unknown as APIContext;
+    const context = {
+      url: new URL('http://localhost/private'),
+      request: new Request('http://localhost/private'),
+      locals: { actor: null },
+    } as unknown as APIContext;
     const response = (await onRequest(context, next)) as Response;
     expect(await response.text()).toBe('next');
   });

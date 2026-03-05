@@ -80,4 +80,26 @@ describe('PageGuard', () => {
     await PageGuard.protect(context, role);
     expect(context.redirect).toHaveBeenCalledWith('/?error=forbidden');
   });
+
+  it('should return early in static mode', async () => {
+    vi.stubEnv('PUBLIC_SITE_MODE', 'static');
+    const context = createMockAstroContext();
+    const role = { check: vi.fn() };
+
+    const result = await PageGuard.protect(context, role);
+    expect(result).toBeUndefined();
+    expect(role.check).not.toHaveBeenCalled();
+    vi.unstubAllEnvs();
+  });
+
+  it('should handle string redirects from role policies', async () => {
+    const context = createMockAstroContext();
+    const role = {
+      check: vi.fn().mockRejectedValue(new Error('fail')),
+      redirect: vi.fn().mockResolvedValue('/custom-redirect'),
+    };
+
+    await PageGuard.protect(context, role);
+    expect(context.redirect).toHaveBeenCalledWith('/custom-redirect');
+  });
 });

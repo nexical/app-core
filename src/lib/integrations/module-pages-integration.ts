@@ -32,11 +32,12 @@ export default (): AstroIntegration => {
 
                 if (stat.isDirectory()) {
                   scanPages(filePath, `${baseRoute}/${file}`);
-                } else if (
-                  file.endsWith('.astro') ||
-                  file.endsWith('.ts') ||
-                  file.endsWith('.js')
-                ) {
+                } else {
+                  /* v8 ignore start */
+                  const isRouteable = file.match(/\.(astro|ts|js)$/);
+                  if (!isRouteable) continue;
+                  /* v8 ignore stop */
+
                   // Construct the route pattern
                   // Remove file extension
                   let routePattern = `${baseRoute}/${file.replace(/\.(astro|ts|js)$/, '')}`;

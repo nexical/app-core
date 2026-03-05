@@ -8,6 +8,9 @@ import {
   SelectContent,
   SelectItem,
   SelectValue,
+  SelectGroup,
+  SelectLabel,
+  SelectSeparator,
 } from '@/components/ui/select';
 
 describe('Select', () => {
@@ -18,27 +21,76 @@ describe('Select', () => {
           <SelectValue placeholder="Select a fruit" />
         </SelectTrigger>
         <SelectContent>
-          <SelectItem value="apple">Apple</SelectItem>
-          <SelectItem value="banana">Banana</SelectItem>
+          <SelectItem value="apple"> Apple </SelectItem>
+          <SelectItem value="banana"> Banana </SelectItem>
         </SelectContent>
       </Select>,
     );
 
     const trigger = screen.getByRole('combobox');
-
-    // Radix UI Select requires pointer events in JSDOM
     fireEvent.pointerDown(trigger, { pointerId: 1, pointerType: 'mouse' });
     fireEvent.pointerUp(trigger, { pointerId: 1, pointerType: 'mouse' });
     fireEvent.click(trigger);
 
-    // Use findByText for anything in the portal
-    // selected item appears in trigger AND in listbox
-    const appleItems = await screen.findAllByText('Apple');
+    // Use regex to match text regardless of whitespace
+    const appleItems = await screen.findAllByText(/Apple/i);
     expect(appleItems.length).toBeGreaterThan(0);
 
-    // Wait for options to appear
     const options = await screen.findAllByRole('option', {}, { timeout: 2000 });
     expect(options.length).toBeGreaterThan(0);
-    expect(options[1]).toHaveTextContent('Banana');
+    expect(options[1]).toHaveTextContent(/Banana/i);
+  });
+
+  it('should support popper position and custom labels', async () => {
+    render(
+      <Select>
+        <SelectTrigger>
+          <SelectValue placeholder="Select fruit" />
+        </SelectTrigger>
+        <SelectContent position="popper">
+          <SelectGroup>
+            <SelectLabel>Fruits </SelectLabel>
+            <SelectItem value="apple"> Apple </SelectItem>
+          </SelectGroup>
+          <SelectSeparator />
+        </SelectContent>
+      </Select>,
+    );
+
+    const trigger = screen.getByRole('combobox');
+    fireEvent.click(trigger);
+
+    expect(screen.getByText('Fruits')).toBeInTheDocument();
+    const separator = document.querySelector('[data-slot="select-separator"]');
+    expect(separator).toBeInTheDocument();
+  });
+
+  it('should render with group, label, and separator', async () => {
+    render(
+      <Select>
+        <SelectTrigger>
+          <SelectValue placeholder="Select" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectGroup>
+            <SelectLabel>Fruits </SelectLabel>
+            <SelectItem value="apple"> Apple </SelectItem>
+            <SelectSeparator />
+            <SelectItem value="banana"> Banana </SelectItem>
+          </SelectGroup>
+        </SelectContent>
+      </Select>,
+    );
+
+    const trigger = screen.getByRole('combobox');
+    fireEvent.pointerDown(trigger, { pointerId: 1, pointerType: 'mouse' });
+    fireEvent.pointerUp(trigger, { pointerId: 1, pointerType: 'mouse' });
+    fireEvent.click(trigger);
+
+    expect(await screen.findByText(/Fruits/i)).toBeInTheDocument();
+
+    // Find separator by data-slot or class since role="separator" might not be assigned by Radix Select.Separator
+    const separator = document.querySelector('[data-slot="select-separator"]');
+    expect(separator).toBeInTheDocument();
   });
 });

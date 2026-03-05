@@ -21,6 +21,14 @@ describe('ApiGuard', () => {
     await expect(ApiGuard.protect(context, 'MissingRole')).rejects.toThrow(/not found/);
   });
 
+  it('should return early if role is public and not in registry', async () => {
+    vi.mocked(roleRegistry.get).mockReturnValue(undefined);
+    const context = createMockAstroContext();
+
+    const result = await ApiGuard.protect(context, 'public');
+    expect(result).toBeUndefined();
+  });
+
   it('should call policy.check if role is found', async () => {
     const mockPolicy = { check: vi.fn().mockResolvedValue(undefined) };
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

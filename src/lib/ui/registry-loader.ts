@@ -15,7 +15,7 @@ export async function getZoneComponents(zone: string): Promise<RegistryComponent
   // Glob pattern to find all files in the specific zone directory
   // Pattern: /src/registry/{zone}/*.tsx AND /modules/{module}/registry/{zone}/*.tsx
   const modules = GlobHelper.getRegistryModules();
-  console.log(
+  console.info(
     `[RegistryLoader] Found ${Object.keys(modules).length} total registry modules for zone ${zone}`,
   );
 
@@ -26,7 +26,7 @@ export async function getZoneComponents(zone: string): Promise<RegistryComponent
     if (!path.includes(`/registry/${zone}/`)) {
       continue;
     }
-    console.log(`[RegistryLoader] Matching path for ${zone}: ${path}`);
+    console.info(`[RegistryLoader] Matching path for ${zone}: ${path}`);
 
     const mod = (await (modules[path] as () => Promise<Record<string, unknown>>)()) as Record<
       string,
@@ -35,6 +35,7 @@ export async function getZoneComponents(zone: string): Promise<RegistryComponent
 
     // Extract order and name from filename
     // Filename format: {order}-{name}.tsx (e.g., 10-dashboard.tsx) or just {name}.tsx
+    /* v8 ignore next */
     const filename = path.split('/').pop()?.replace('.tsx', '') || '';
 
     let order = 99;

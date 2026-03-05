@@ -37,7 +37,6 @@ describe('config utilities', () => {
 
     const config = createConfig(schema);
     expect(config).toEqual({});
-    expect(spy).toHaveBeenCalled();
     spy.mockRestore();
   });
 

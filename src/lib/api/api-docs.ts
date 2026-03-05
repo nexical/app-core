@@ -1,6 +1,6 @@
 import type { APIRoute, APIContext } from 'astro';
 
-import { GlobHelperServer as GlobHelper } from '../core/glob-helper.server';
+import { GlobHelper } from '../core/glob-helper';
 
 export type ApiActor = App.Locals['actor'];
 

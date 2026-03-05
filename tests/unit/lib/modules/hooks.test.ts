@@ -73,4 +73,16 @@ describe('HookSystem', () => {
     const result = await HookSystem.filter('empty.filter', 'original');
     expect(result).toBe('original');
   });
+
+  it('should handle dispatch with no listeners', async () => {
+    const { HookSystem } = await import('@/lib/modules/hooks');
+    await expect(HookSystem.dispatch('unregistered', {})).resolves.not.toThrow();
+  });
+
+  it('should handle filter returning undefined without modifying data', async () => {
+    const { HookSystem } = await import('@/lib/modules/hooks');
+    HookSystem.on('test-filter-undefined', () => undefined);
+    const result = await HookSystem.filter('test-filter-undefined', 'initial');
+    expect(result).toBe('initial');
+  });
 });

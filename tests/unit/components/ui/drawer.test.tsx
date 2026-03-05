@@ -9,6 +9,8 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerDescription,
+  DrawerFooter,
+  DrawerClose,
 } from '@/components/ui/drawer';
 
 describe('Drawer', () => {
@@ -22,6 +24,8 @@ describe('Drawer', () => {
             <DrawerDescription>Drawer Description</DrawerDescription>
           </DrawerHeader>
           <div>Drawer Content</div>
+          <DrawerFooter data-testid="footer">Footer</DrawerFooter>
+          <DrawerClose>Close</DrawerClose>
         </DrawerContent>
       </Drawer>,
     );
@@ -32,5 +36,7 @@ describe('Drawer', () => {
     expect(await screen.findByText('Drawer Title')).toBeDefined();
     expect(screen.getByText('Drawer Description')).toBeDefined();
     expect(screen.getByText('Drawer Content')).toBeDefined();
+    expect(screen.getByTestId('footer')).toBeInTheDocument();
+    expect(screen.getByText('Close')).toBeInTheDocument();
   });
 });

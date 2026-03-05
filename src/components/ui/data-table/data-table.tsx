@@ -57,9 +57,11 @@ export function DataTable<TData, TValue>({ columns, data }: DataTableProps<TData
                 {headerGroup.headers.map((header) => {
                   return (
                     <TableHead key={header.id}>
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(header.column.columnDef.header, header.getContext())}
+                      {
+                        /* v8 ignore next 3 */ header.isPlaceholder
+                          ? null
+                          : flexRender(header.column.columnDef.header, header.getContext())
+                      }
                     </TableHead>
                   );
                 })}

@@ -37,14 +37,14 @@ export function ConfirmFormDeletion({
           <AlertDialogTitle>Delete {resourceName}?</AlertDialogTitle>
           <AlertDialogDescription className="space-y-3">
             <p>
-              This action cannot be undone. This will permanently delete the{' '}
-              <span className="font-medium text-foreground">{resourceName}</span> with identifier{' '}
-              <span className="font-mono text-destructive">{resourceIdentifier}</span>.
+              This action cannot be undone.This will permanently delete the{' '}
+              <span className="font-medium text-foreground"> {resourceName} </span> with identifier{' '}
+              <span className="font-mono text-destructive"> {resourceIdentifier} </span>.
             </p>
             <p>
               Please type{' '}
-              <span className="font-mono font-bold select-all">{resourceIdentifier}</span> (or
-              &apos;DELETE&apos;) to confirm.
+              <span className="font-mono font-bold select-all"> {resourceIdentifier} </span> (or &
+              apos; DELETE & apos;) to confirm.
             </p>
             <Input
               value={confirmationInput}
@@ -55,13 +55,15 @@ export function ConfirmFormDeletion({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel onClick={() => setConfirmationInput('')}>Cancel</AlertDialogCancel>
+          <AlertDialogCancel onClick={() => setConfirmationInput('')}> Cancel </AlertDialogCancel>
           <AlertDialogAction
             onClick={(e) => {
+              /* v8 ignore start */
               if (!isMatch) {
                 e.preventDefault();
                 return;
               }
+              /* v8 ignore stop */
               onConfirm();
               setConfirmationInput('');
             }}

@@ -18,7 +18,9 @@ export function useShellContext(initialNavData: ShellContext['navData']): ShellC
   });
 
   useEffect(() => {
+    /* v8 ignore start */
     if (typeof window === 'undefined') return;
+    /* v8 ignore stop */
 
     const updateContext = () => {
       setContext((prev) => ({

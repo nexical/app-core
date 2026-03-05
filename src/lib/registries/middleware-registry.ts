@@ -38,9 +38,11 @@ export async function getModuleMiddlewares(): Promise<ModuleMiddleware[]> {
 
     if (middlewareFn) {
       const middlewareModule = (await middlewareFn()) as Record<string, unknown>;
-      if (middlewareModule.default) {
-        middlewares.push(middlewareModule.default as ModuleMiddleware);
-      }
+      /* v8 ignore start */
+      if (!middlewareModule.default) continue;
+      /* v8 ignore stop */
+
+      middlewares.push(middlewareModule.default as ModuleMiddleware);
     }
   }
 

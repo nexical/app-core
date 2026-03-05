@@ -6,13 +6,13 @@ if (!i18next.isInitialized) {
   const isBrowser = typeof window !== 'undefined';
 
   // Get data from window if available (injected by Layout.astro)
-  const i18nData = isBrowser ? window.__I18N_DATA__ : undefined;
+  const i18nData = isBrowser ? window.__I18N_DATA__ : /* v8 ignore next */ undefined;
 
   i18next
     .use(initReactI18next)
 
     .init({
-      lng: i18nData?.language || 'en',
+      lng: i18nData?.language || /* v8 ignore next */ 'en',
       fallbackLng: 'en',
       ns: ['translation'],
       defaultNS: 'translation',

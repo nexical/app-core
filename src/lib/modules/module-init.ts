@@ -17,19 +17,25 @@ export async function initializeModules() {
   // 1. Initialize Core First (Registers default '*' shell)
   const core = GlobHelper.getCoreInits();
   for (const path in core) {
-    const mod = (await core[path]()) as { init?: () => Promise<void> };
+    const rawMod = core[path];
+    const mod = (typeof rawMod === 'function' ? await rawMod() : rawMod) as {
+      init?: () => Promise<void>;
+    };
     if (typeof mod.init === 'function') promises.push(mod.init());
   }
 
   // 2. Initialize Modules (Registers specific overrides like 'auth')
   const modules = GlobHelper.getModuleInits();
-  console.log(
+  console.info(
     `[Core] Found ${Object.keys(modules).length} module init files: ${Object.keys(modules).join(', ')}`,
   );
   for (const path in modules) {
-    const mod = (await modules[path]()) as { init?: () => Promise<void> };
+    const rawMod = modules[path];
+    const mod = (typeof rawMod === 'function' ? await rawMod() : rawMod) as {
+      init?: () => Promise<void>;
+    };
     if (typeof mod.init === 'function') {
-      console.log(`[Core] Initializing module: ${path}`);
+      console.info(`[Core] Initializing module: ${path}`);
       promises.push(mod.init());
     }
   }

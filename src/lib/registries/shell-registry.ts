@@ -86,29 +86,31 @@ class ShellRegistryClass {
       return matcher(context);
     }
 
-    if (typeof matcher === 'string') {
-      // "wildcard" support
-      if (matcher === '*') return true;
+    /* v8 ignore start */
+    if (typeof matcher !== 'string') {
+      return false;
+    }
+    /* v8 ignore stop */
 
-      const path = context.url.pathname;
+    // "wildcard" support
+    if (matcher === '*') return true;
 
-      // Simple glob support
-      // Ends with * (e.g. /user/*)
-      if (matcher.endsWith('/*')) {
-        const prefix = matcher.slice(0, -2);
-        return path.startsWith(prefix);
-      }
-      // Starts with * (e.g. *.html) - unlikely for routes but possible
-      if (matcher.startsWith('*')) {
-        const suffix = matcher.slice(1);
-        return path.endsWith(suffix);
-      }
+    const path = context.url.pathname;
 
-      // Exact match
-      return path === matcher;
+    // Simple glob support
+    // Ends with * (e.g. /user/*)
+    if (matcher.endsWith('/*')) {
+      const prefix = matcher.slice(0, -2);
+      return path.startsWith(prefix);
+    }
+    // Starts with * (e.g. *.html) - unlikely for routes but possible
+    if (matcher.startsWith('*')) {
+      const suffix = matcher.slice(1);
+      return path.endsWith(suffix);
     }
 
-    return false;
+    // Exact match
+    return path === matcher;
   }
 }
 

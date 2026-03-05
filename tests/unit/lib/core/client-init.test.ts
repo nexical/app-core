@@ -1,6 +1,5 @@
 /** @vitest-environment node */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { initializeClientModules } from '../../../../src/lib/core/client-init';
 import { GlobHelper } from '../../../../src/lib/core/glob-helper';
 
 vi.mock('../../../../src/lib/core/glob-helper', () => ({
@@ -8,6 +7,7 @@ vi.mock('../../../../src/lib/core/glob-helper', () => ({
     getCoreInits: vi.fn(),
     getModuleInits: vi.fn(),
     getClientModuleInits: vi.fn(),
+    getClientModuleInitsEager: vi.fn(() => ({})),
     getApiModules: vi.fn().mockReturnValue({}),
     getMiddlewareModules: vi.fn(),
     getRegistryModules: vi.fn(),
@@ -17,46 +17,48 @@ vi.mock('../../../../src/lib/core/glob-helper', () => ({
 describe('initializeClientModules', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.resetModules();
   });
 
   it('should call init functions from globbed files', async () => {
-    const mockCoreInit = vi.fn().mockResolvedValue(undefined);
     const mockModuleInit = vi.fn().mockResolvedValue(undefined);
     const mockModuleDefault = vi.fn().mockResolvedValue(undefined);
 
-    vi.mocked(GlobHelper.getCoreInits).mockReturnValue({
-      '/src/init.ts': () => Promise.resolve({ init: mockCoreInit }),
-    } as any);
+    vi.mocked(GlobHelper.getClientModuleInitsEager).mockReturnValue({
+      '/modules/foo/src/init.ts': { init: mockModuleInit },
+      '/modules/bar/src/client-init.ts': { default: mockModuleDefault },
+    } as unknown as Record<string, unknown>);
 
-    vi.mocked(GlobHelper.getClientModuleInits).mockReturnValue({
-      '/modules/foo/src/init.ts': () => Promise.resolve({ init: mockModuleInit }),
-      '/modules/bar/src/client-init.ts': () => Promise.resolve({ default: mockModuleDefault }),
-    } as any);
-
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    // Import inside test to ensure mocks are respected
+    const { initializeClientModules } = await import('../../../../src/lib/core/client-init');
 
     await initializeClientModules();
 
-    expect(mockCoreInit).toHaveBeenCalled();
     expect(mockModuleInit).toHaveBeenCalled();
     expect(mockModuleDefault).toHaveBeenCalled();
-
-    logSpy.mockRestore();
   });
 
   it('should handle errors in init functions gracefully', async () => {
     const mockErrorInit = vi.fn().mockRejectedValue(new Error('Fail'));
 
-    vi.mocked(GlobHelper.getCoreInits).mockReturnValue({});
-    vi.mocked(GlobHelper.getClientModuleInits).mockReturnValue({
-      '/modules/err/src/init.ts': () => Promise.resolve({ init: mockErrorInit }),
-    } as any);
+    vi.mocked(GlobHelper.getClientModuleInitsEager).mockReturnValue({
+      '/modules/err/src/init.ts': { init: mockErrorInit },
+    } as unknown as Record<string, unknown>);
 
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
+    const { initializeClientModules } = await import('../../../../src/lib/core/client-init');
 
     await expect(initializeClientModules()).resolves.not.toThrow();
     expect(mockErrorInit).toHaveBeenCalled();
+  });
 
-    logSpy.mockRestore();
+  it('should handle modules with no exports gracefully', async () => {
+    vi.mocked(GlobHelper.getClientModuleInitsEager).mockReturnValue({
+      '/modules/empty/src/init.ts': {},
+    } as unknown as Record<string, unknown>);
+
+    const { initializeClientModules } = await import('../../../../src/lib/core/client-init');
+
+    await initializeClientModules();
+    // Reached line 34 F branch
   });
 });

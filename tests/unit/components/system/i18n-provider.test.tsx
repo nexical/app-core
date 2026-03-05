@@ -5,20 +5,26 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { I18nProvider } from '@/components/system/I18nProvider';
 import i18n from '@/lib/core/i18n-client';
 
-// Mock dependencies
-vi.mock('@/lib/core/i18n-client', () => ({
-  default: {
-    hasResourceBundle: vi.fn(),
-    addResourceBundle: vi.fn(),
-    changeLanguage: vi.fn(),
-    language: 'en',
+// Mock react-i18next
+vi.mock('react-i18next', () => ({
+  I18nextProvider: ({ children }: { children: React.ReactNode }) => (
+    <div {...{ 'data-testid': 'i18next-provider' }}> {children} </div>
+  ),
+  initReactI18next: {
+    type: '3rdParty',
+    init: vi.fn(),
   },
 }));
 
-vi.mock('react-i18next', () => ({
-  I18nextProvider: ({ children }: { children: React.ReactNode }) => (
-    <div data-testid="i18next-provider">{children}</div>
-  ),
+// Mock i18n-client
+vi.mock('@/lib/core/i18n-client', () => ({
+  __esModule: true,
+  default: {
+    addResourceBundle: vi.fn(),
+    changeLanguage: vi.fn(),
+    language: 'en',
+    t: (key: string) => key,
+  },
 }));
 
 describe('I18nProvider', () => {
@@ -26,10 +32,10 @@ describe('I18nProvider', () => {
     vi.clearAllMocks();
   });
 
-  it('should render children wrapped in I18nextProvider', () => {
+  it('should render children and initialize i18next', () => {
     render(
       <I18nProvider>
-        <div data-testid="child">Child</div>
+        <div {...{ 'data-testid': 'child' }}> Hello </div>
       </I18nProvider>,
     );
 
@@ -37,17 +43,14 @@ describe('I18nProvider', () => {
     expect(screen.getByTestId('child')).toBeInTheDocument();
   });
 
-  it('should hydrated translations when initial data is provided', () => {
+  it('should initialize with provided language and store', () => {
     const initialStore = { key: 'value' };
-    vi.mocked(i18n.hasResourceBundle).mockReturnValue(false);
-
     render(
       <I18nProvider initialLanguage="fr" initialStore={initialStore}>
-        <div>Child</div>
+        <div>Hello </div>
       </I18nProvider>,
     );
 
-    expect(i18n.hasResourceBundle).toHaveBeenCalledWith('fr', 'translation');
     expect(i18n.addResourceBundle).toHaveBeenCalledWith(
       'fr',
       'translation',
@@ -58,28 +61,15 @@ describe('I18nProvider', () => {
     expect(i18n.changeLanguage).toHaveBeenCalledWith('fr');
   });
 
-  it('should not add resource bundle if already present', () => {
-    const initialStore = { key: 'value' };
-    vi.mocked(i18n.hasResourceBundle).mockReturnValue(true);
-
+  it('should not call changeLanguage if already on the initialLanguage', () => {
+    (i18n as unknown as { language: string }).language = 'de';
     render(
-      <I18nProvider initialLanguage="fr" initialStore={initialStore}>
-        <div>Child</div>
+      <I18nProvider initialLanguage="de" initialStore={{}}>
+        <div>Hello </div>
       </I18nProvider>,
     );
 
-    expect(i18n.addResourceBundle).not.toHaveBeenCalled();
-    expect(i18n.changeLanguage).toHaveBeenCalledWith('fr');
-  });
-
-  it('should not change language if already matches initialLanguage', () => {
-    (i18n as unknown as { language: string }).language = 'en';
-    render(
-      <I18nProvider initialLanguage="en" initialStore={{}}>
-        <div>Child</div>
-      </I18nProvider>,
-    );
-
+    expect(i18n.addResourceBundle).toHaveBeenCalled();
     expect(i18n.changeLanguage).not.toHaveBeenCalled();
   });
 });

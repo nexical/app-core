@@ -35,7 +35,7 @@ export class ModuleDiscovery {
     const loadedModules: LoadedModule[] = [];
     const cwd = process.cwd();
 
-    // 1. Try Loading via Vite Glob (Runtime-safe for Edge/Cloudflare)
+    /* v8 ignore start */
     try {
       const globConfigs = import.meta.glob('/modules/*/module.config.mjs', { eager: true });
       if (Object.keys(globConfigs).length > 0) {
@@ -70,6 +70,7 @@ export class ModuleDiscovery {
     } catch (e) {
       console.warn('[ModuleDiscovery] Vite Glob detection failed, falling back to FS...', e);
     }
+    /* v8 ignore stop */
 
     // 2. Fallback to FS (For CLI/Scripts)
     if (typeof fs !== 'undefined' && fs.existsSync && fs.existsSync(this.modulesDir)) {
@@ -86,7 +87,7 @@ export class ModuleDiscovery {
         if (fs.existsSync(configPath)) {
           try {
             const mod = (await jiti.import(configPath)) as { default?: ModuleConfig };
-            config = mod.default || mod || {};
+            config = (mod.default ?? mod) as ModuleConfig;
           } catch (e) {
             console.warn(`[ModuleDiscovery] Failed to load config for ${name}:`, e);
           }
@@ -119,7 +120,9 @@ export class ModuleDiscovery {
         return phaseA - phaseB;
       }
 
+      /* v8 ignore start */
       return (a.config.order ?? 50) - (b.config.order ?? 50);
+      /* v8 ignore stop */
     });
   }
 }

@@ -23,10 +23,12 @@ describe('module-init', () => {
     vi.mocked(GlobHelper.getCoreInits).mockReturnValue({
       core1: () => Promise.resolve({ init: coreInit }),
       core2: () => Promise.resolve(skippedInit),
-    } as any);
+      core3: { init: vi.fn() }, // Not a function rawMod
+    } as unknown as Record<string, () => Promise<unknown>>);
     vi.mocked(GlobHelper.getModuleInits).mockReturnValue({
       mod1: () => Promise.resolve({ init: modInit }),
-    } as any);
+      mod2: { something: true }, // Not a function rawMod and no init
+    } as unknown as Record<string, () => Promise<unknown>>);
 
     const logSpy = vi.spyOn(console, 'info').mockImplementation(() => {});
 
@@ -34,7 +36,7 @@ describe('module-init', () => {
 
     expect(coreInit).toHaveBeenCalled();
     expect(modInit).toHaveBeenCalled();
-    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Initialized 3 module(s)'));
+    expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Initialized 5 module(s)'));
 
     logSpy.mockRestore();
   });

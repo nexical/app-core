@@ -85,4 +85,10 @@ describe('GlobHelper', () => {
     const inits = GlobHelper.getModuleInits();
     expect(typeof inits).toBe('object');
   });
+
+  it('should return glob results for client module inits eager', async () => {
+    const { GlobHelper } = await import('../../../../src/lib/core/glob-helper');
+    const inits = GlobHelper.getClientModuleInitsEager();
+    expect(typeof inits).toBe('object');
+  });
 });

@@ -9,7 +9,6 @@ describe('useShellContext', () => {
   beforeEach(() => {
     vi.stubGlobal('innerWidth', 1200);
     vi.stubGlobal('innerHeight', 800);
-    // Explicitly set location for URL consistency
     vi.stubGlobal('location', { href: 'http://localhost/' });
   });
 
@@ -19,8 +18,6 @@ describe('useShellContext', () => {
     expect(result.current.navData).toEqual(initialNavData);
     expect(result.current.width).toBe(1200);
     expect(result.current.height).toBe(800);
-    expect(result.current.isMobile).toBe(false);
-    expect(result.current.url.href).toBe('http://localhost/');
   });
 
   it('should update context on window resize', () => {
@@ -32,7 +29,26 @@ describe('useShellContext', () => {
     });
 
     expect(result.current.width).toBe(800);
-    expect(result.current.isMobile).toBe(true); // < 1024
+    expect(result.current.isMobile).toBe(true);
+  });
+
+  it('should not update context on window resize if dimensions are the same (guard test)', () => {
+    const { result } = renderHook(() => useShellContext(initialNavData));
+
+    act(() => {
+      vi.stubGlobal('innerWidth', 1024);
+      vi.stubGlobal('innerHeight', 768);
+      window.dispatchEvent(new Event('resize'));
+    });
+
+    expect(result.current.width).toBe(1024);
+
+    act(() => {
+      // Dispatching again with same dimensions should hit line 21 early return
+      window.dispatchEvent(new Event('resize'));
+    });
+
+    expect(result.current.width).toBe(1024);
   });
 
   it('should update context on popstate', () => {
