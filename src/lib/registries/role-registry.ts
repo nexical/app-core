@@ -18,11 +18,18 @@ export type RoleIdentifier = string;
 class RoleRegistry {
   private policies: Map<string, RolePolicy> = new Map();
 
-  public register(name: string, policy: RolePolicy) {
+  public register(nameOrPolicy: string | (RolePolicy & { name: string }), policy?: RolePolicy) {
+    const name = typeof nameOrPolicy === 'string' ? nameOrPolicy : nameOrPolicy.name;
+    const actualPolicy = typeof nameOrPolicy === 'string' ? policy : nameOrPolicy;
+
+    if (!actualPolicy) {
+      throw new Error(`[RoleRegistry] Policy is required for role '${name}'`);
+    }
+
     if (this.policies.has(name)) {
       console.warn(`[RoleRegistry] Overwriting role policy '${name}'`);
     }
-    this.policies.set(name, policy);
+    this.policies.set(name, actualPolicy);
   }
 
   public get(name: string): RolePolicy | undefined {
