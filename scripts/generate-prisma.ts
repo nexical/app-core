@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const coreDir = path.resolve(__dirname, '..');
 const prismaDir = path.join(coreDir, 'prisma');
-const modulesDir = path.join(coreDir, 'modules');
+const modulesDir = path.join(process.cwd(), 'modules');
 
 // Interfaces for our Schema Ontology
 interface PrismaField {
