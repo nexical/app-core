@@ -127,7 +127,8 @@ export function defineApi<T>(handler: ApiHandler<T>, docs: OpenAPIRouteDocs = {}
         lowerMessage.includes('unauthorized') ||
         lowerMessage.includes('forbidden') ||
         lowerMessage.includes('denied') ||
-        lowerMessage.includes('not a member')
+        lowerMessage.includes('not a member') ||
+        lowerMessage.includes('.forbidden')
       ) {
         status = 403;
       } else if (
@@ -135,10 +136,13 @@ export function defineApi<T>(handler: ApiHandler<T>, docs: OpenAPIRouteDocs = {}
         lowerMessage.includes('invalid') ||
         lowerMessage.includes('already exists') ||
         lowerMessage.includes('exists') ||
-        lowerMessage.includes('mismatch')
+        lowerMessage.includes('mismatch') ||
+        lowerMessage.includes('already a member') ||
+        lowerMessage.includes('bad request') ||
+        lowerMessage.includes('invitation.error')
       ) {
         status = 400;
-      } else if (lowerMessage.includes('not found')) {
+      } else if (lowerMessage.includes('not found') || lowerMessage.includes('not_found')) {
         status = 404;
       }
 
