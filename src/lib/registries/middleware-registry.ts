@@ -24,6 +24,7 @@ export async function getModuleMiddlewares(): Promise<ModuleMiddleware[]> {
   // 1. Load all available middleware files via Vite (Build/Runtime)
   // We use a glob to ensure Vite bundles these files
   const globbedMiddlewares = GlobHelper.getMiddlewareModules();
+  console.log('[MiddlewareRegistry] Globbed Middlewares:', Object.keys(globbedMiddlewares));
 
   // 2. Load module configurations to determine the correct order (Phase + Order)
   const sortedModules = await ModuleDiscovery.loadModules();
@@ -34,12 +35,19 @@ export async function getModuleMiddlewares(): Promise<ModuleMiddleware[]> {
   for (const mod of sortedModules) {
     // Construct the key that matches the glob pattern result
     const key = `/modules/${mod.name}/src/middleware.ts`;
+    console.log(`[MiddlewareRegistry] Checking key: ${key} for module ${mod.name}`);
     const middlewareFn = globbedMiddlewares[key] as () => Promise<Record<string, unknown>>;
 
     if (middlewareFn) {
+      console.log(`[MiddlewareRegistry] Found middleware for module ${mod.name}`);
       const middlewareModule = (await middlewareFn()) as Record<string, unknown>;
       /* v8 ignore start */
-      if (!middlewareModule.default) continue;
+      if (!middlewareModule.default) {
+        console.warn(
+          `[MiddlewareRegistry] Module ${mod.name} has no default export in middleware.ts`,
+        );
+        continue;
+      }
       /* v8 ignore stop */
 
       middlewares.push(middlewareModule.default as ModuleMiddleware);
