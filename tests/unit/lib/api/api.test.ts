@@ -22,7 +22,7 @@ describe('api client initialization', () => {
     // @ts-ignore
     global.window = undefined;
     const { api } = await import('@/lib/api/api');
-    expect(api.options.baseUrl).toBe('http://test.com/api');
+    expect((api as any).options.baseUrl).toBe('http://test.com/api');
   });
 
   it('should use default if env is missing', async () => {
@@ -30,7 +30,7 @@ describe('api client initialization', () => {
     // @ts-ignore
     global.window = undefined;
     const { api } = await import('@/lib/api/api');
-    expect(api.options.baseUrl).toBe('http://localhost:4321/api');
+    expect((api as any).options.baseUrl).toBe('http://localhost:4321/api');
   });
 });
 
@@ -44,7 +44,7 @@ describe('api client browser initialization', () => {
     // @ts-ignore
     global.window = { location: { origin: 'http://localhost' } };
     const { api } = await import('@/lib/api/api');
-    expect(api.options.baseUrl).toBe('/api');
+    expect((api as any).options.baseUrl).toBe('/api');
     expect((global.window as any).api).toBe(api);
     // @ts-ignore
     global.window = undefined;

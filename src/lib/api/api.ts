@@ -17,20 +17,8 @@ if (typeof window === 'undefined') {
 }
 
 // Global Nexical Client instance
-const client = new NexicalClient({
+export const api = new NexicalClient({
   baseUrl: finalBaseUrl,
-});
-
-/**
- * CENTRALIZED API AGGREGATOR
- * All SDK access (methods and types) MUST be routed through this object.
- * Modules register themselves here during generation.
- *
- * NOTE: We use Object.assign to preserve the 'client' prototype methods (get, post, etc.)
- */
-export const api = Object.assign(client, {
-  // [GENERATOR: MODULES_START]
-  // [GENERATOR: MODULES_END]
 });
 
 // Platform Debugging Hook
