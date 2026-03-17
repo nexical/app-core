@@ -19,6 +19,10 @@ export async function createMockContext(
       ...(id ? { id } : {}),
       ...(role ? { role } : {}),
     });
+    // Ensure actor has type property for compatibility with actions
+    if (actor && !('type' in actor)) {
+      (actor as any).type = type;
+    }
   }
 
   return {
