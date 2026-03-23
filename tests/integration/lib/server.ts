@@ -74,18 +74,26 @@ export class ServerManager {
     // Merge envs.
     const spawnEnv = { ...process.env, ...env };
 
-    let astroPath = path.resolve(process.cwd(), 'node_modules/astro/astro.js');
-    if (!fs.existsSync(astroPath)) {
-      // Try root node_modules if in a workspace
-      astroPath = path.resolve(process.cwd(), '../node_modules/astro/astro.js');
-    }
-    if (!fs.existsSync(astroPath)) {
-      // Try one more level up just in case (e.g. apps/backend)
-      astroPath = path.resolve(process.cwd(), '../../node_modules/astro/astro.js');
-    }
+    const findAstroBin = () => {
+      const bins = ['node_modules/astro/bin/astro.mjs', 'node_modules/astro/astro.js'];
+      const searchPaths = [
+        process.cwd(),
+        path.resolve(process.cwd(), '..'),
+        path.resolve(process.cwd(), '../..'),
+      ];
 
-    if (!fs.existsSync(astroPath)) {
-      console.error(`Could not find astro.js at ${astroPath}`);
+      for (const sp of searchPaths) {
+        for (const b of bins) {
+          const p = path.resolve(sp, b);
+          if (fs.existsSync(p)) return p;
+        }
+      }
+      return null;
+    };
+
+    const astroPath = findAstroBin();
+
+    if (!astroPath) {
       throw new Error('Astro binary not found. Ensure dependencies are installed.');
     }
 
