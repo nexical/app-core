@@ -12,8 +12,6 @@ export const onRequest = defineMiddleware(async (context, next) => {
   const { pathname } = context.url;
   const origin = context.request.headers.get('Origin');
 
-  console.log(`[CORE START] ${pathname}, Actor: ${JSON.stringify(context.locals.actor || 'none')}`);
-
   // Skip middleware for assets
   if (pathname.match(/\.(css|js|png|jpg|jpeg|svg|gif|ico)$/)) {
     return next();
@@ -43,7 +41,6 @@ export const onRequest = defineMiddleware(async (context, next) => {
 
   for (const middleware of moduleMiddlewares) {
     if (middleware.onRequest) {
-      console.log(`[Core Middleware] Executing middleware...`);
       const response = await middleware.onRequest(
         context,
         async () => undefined as unknown as Response,
@@ -61,11 +58,7 @@ export const onRequest = defineMiddleware(async (context, next) => {
   }
 
   // If intercepted, use that response. Otherwise, proceed to the actual Astro route.
-  console.log(
-    `[CORE MID] ${pathname}, Final Actor: ${JSON.stringify(context.locals.actor || 'none')}`,
-  );
   const finalResponse = interceptResponse || (await next());
-  console.log(`[Core Middleware] Finished processing ${pathname}`);
 
   const newHeaders = new Headers(finalResponse.headers);
   if (origin) {
