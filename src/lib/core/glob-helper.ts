@@ -52,7 +52,12 @@ export class GlobHelper {
   }
 
   static getApiModules() {
-    return import.meta.glob(['../../pages/api/**/*.{ts,js}'], { eager: true });
+    return import.meta.glob(
+      ['/src/pages/api/**/*.{ts,js}', '/modules/*/src/pages/api/**/*.{ts,js}'],
+      {
+        eager: true,
+      },
+    );
   }
   /* v8 ignore stop */
 }
