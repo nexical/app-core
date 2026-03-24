@@ -15,7 +15,16 @@ export class ApiGuard {
     const policy = roleRegistry.get(roleName);
 
     if (!policy) {
-      if (roleName === 'public') return;
+      const normalized = roleName.toUpperCase();
+      if (normalized === 'PUBLIC') return;
+
+      if (normalized === 'ANONYMOUS') {
+        if (context.locals.actor) {
+          throw new Error('This endpoint is restricted to unauthenticated users only');
+        }
+        return;
+      }
+
       console.error(`[ApiGuard] Role policy '${roleName}' not found in registry.`);
       throw new Error(`Role policy '${roleName}' not found`);
     }

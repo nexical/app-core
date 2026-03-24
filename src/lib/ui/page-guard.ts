@@ -28,7 +28,7 @@ export class PageGuard {
     // If output is static, we shouldn't block the build.
     // Real protection happens via client-side libraries or middleware.
     // For now, we allow the page to build.
-    if (import.meta.env.PUBLIC_SITE_MODE === 'static') {
+    if (typeof import.meta !== 'undefined' && import.meta.env?.PUBLIC_SITE_MODE === 'static') {
       return;
     }
 
@@ -37,6 +37,16 @@ export class PageGuard {
     if (typeof RoleClassOrName === 'string') {
       const policy = roleRegistry.get(RoleClassOrName);
       if (!policy) {
+        const normalized = RoleClassOrName.toUpperCase();
+        if (normalized === 'PUBLIC') return;
+
+        if (normalized === 'ANONYMOUS') {
+          if ((context as any).locals.actor) {
+            return context.redirect('/');
+          }
+          return;
+        }
+
         console.error(`[PageGuard] Role policy '${RoleClassOrName}' not found in registry.`);
         throw new Error(`Role policy '${RoleClassOrName}' not found`);
       }
