@@ -186,7 +186,12 @@ export async function generateDocs(
   // The possible base paths for module APIs
   const basePaths = isCore
     ? ['../../pages/api', '/src/pages/api']
-    : [`/modules/${moduleName}/src/pages/api`];
+    : [
+        `/modules/${moduleName}/src/pages/api`,
+        `../../../modules/${moduleName}/src/pages/api`,
+        `../../../../apps/backend/modules/${moduleName}/src/pages/api`,
+        `../../../../apps/frontend/modules/${moduleName}/src/pages/api`,
+      ];
 
   const allApiModules = GlobHelper.getApiModules();
   for (const [fileIdentifier, modFn] of Object.entries(allApiModules)) {
